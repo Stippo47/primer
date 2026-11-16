@@ -1,0 +1,125 @@
+{
+  "title": "The plan",
+  "topic": "plan",
+  "stack": "plan",
+  "order": 1,
+  "kind": "report",
+  "cards": [
+    {
+      "id": "shape",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The shape of it",
+      "text": "Built like Riffle: the PC writes lessons, the phone plays them, nothing runs in between.",
+      "why": "Primer is a working name. Nothing is built yet; this deck is the plan, and the next deck has the questions.",
+      "parts": [
+        { "id": "like-riffle", "title": "What carries over from Riffle", "text": "A public app on GitHub Pages with no lessons in it. A private repo for lessons and media. The phone keeps everything for offline use. Every attempt you make goes up as a new file, so nothing collides. A skill on the PC checks and sends lessons, the way the riffle skill sends decks. Riffle's storage, sending, notification, gesture and test code get copied as the starting point." },
+        { "id": "new", "title": "The three new things", "text": "1. Lesson steps can be a globe or a running simulation, not just words, so the app needs a kit of parts and a strict way for a lesson to ask for one.\n\n2. Lessons have a voice and motion, made on the PC, that must stay in step on the phone.\n\n3. The app keeps track of what you know." },
+        { "id": "bonus", "title": "A bonus of this build", "text": "Because every answer comes back to the PC, whoever writes your next lesson can see what you got wrong first. A course can lean toward your weak spots." },
+        { "id": "price", "title": "The price of free", "text": "There's no AI inside the app. A session on the PC does the writing, so a new topic needs that session open and the PC awake, as Riffle does. An AI inside the app would need a paid key." }
+      ]
+    },
+    {
+      "id": "parts",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Parts",
+      "text": "A part (the globe) knows nothing about lessons. A lesson is a file that sets it up and tells it what to do.",
+      "why": "This is the heart of the app, and what makes one globe serve countries, hurricanes, plane routes and deforestation.",
+      "parts": [
+        { "id": "contract", "title": "What every part declares", "text": "Settings: can it spin (freely, by itself, locked), can it zoom, which labels and from what zoom, how detailed, can it be touched at all.\n\nCalls, what a lesson can tell it: turn to a place, zoom, highlight countries, colour by data, draw a route, draw a storm's track, set the year.\n\nWhat it reports: which country was tapped.\n\nSo \"tap Mongolia\" and \"watch the hurricane form\" are the same globe with different lines in the lesson's file." },
+        { "id": "three-jobs", "title": "One description, three jobs", "text": "Each part lists its own settings and calls. From that list come three things that can't drift apart:\n\nThe catalogue a future writer reads to know what exists.\n\nThe Playground on your phone: any part opened by itself, with its settings to fiddle with. That's the tools-for-real-life mode.\n\nThe tests: each part is tried with each setting on an iPhone-sized screen." },
+        { "id": "rules", "title": "Rules that keep the kit small", "text": "A lesson never carries one-off code. If it needs something new, the kit grows, built general enough for the next lesson.\n\nA general part beats a specific one: a network with things travelling along it covers DNS, loading a web page, route finding, supply chains and food webs." },
+        { "id": "first-kit", "title": "The first kit", "text": "Globe and flat map. Network. Stage (a backdrop with vector actors that move and can be dragged, for tactics and narrated scenes). Layers (a picture that peels, slices or pulls apart). Chart. Cards (picture, sound or word, for flags, birds, vocabulary). Sandbox (bodies and forces). Tokens (blocks that snap into a program). Inputs (slider, dial, number guess, order, match, tap the spot).\n\nSpecific ones, like a guitar neck that sounds or a circuit board, get built when a lesson first asks: 2 to 6 agent-hours each." }
+      ]
+    },
+    {
+      "id": "lessons",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Lessons",
+      "text": "5 to 15 minutes, one screen per step, with Duolingo's rhythm and Brilliant's content.",
+      "why": "Steps: a narrated scene, a play step with a goal, a predict step, a short explanation, a quick check, and a real photo or document.",
+      "parts": [
+        { "id": "wrong", "title": "Getting it really wrong", "text": "These are rules the checker enforces:\n\nBig answer spaces first: a slider, a placement, a drawn line, a built program, before a choice of four.\n\nPredict, commit, run: the app plays out your answer. Your orbit decays, your bridge sags. Then the right one is laid over it.\n\nWhen there are choices, the writer must say why each wrong one is tempting, or the lesson is refused.\n\nEvery play step must be able to fail: the writer supplies a believable wrong try and the checker runs it." },
+        { "id": "scenes", "title": "Scenes are scripts", "text": "A scene is a list of lines. Each line is what's said and what the parts do while it's said. Actions hang on words (\"at the word rise\"), not on seconds, so changing the voice or a sentence doesn't break the timing.\n\nOne sound clip per line. So a scene can stop between lines and wait for you to do something, and fixing a sentence re-voices one clip.\n\nThe globe that was narrated at you is the same globe you then get your hands on." },
+        { "id": "silent", "title": "It works with the sound off", "text": "Every line is also a caption, and a tap moves on. Sound off on the bus is a normal way to use it. It's also the fallback: iPhone home-screen apps had a bug this year where sound died after the first run." },
+        { "id": "look", "title": "The look, honestly", "text": "Kurzgesagt is drawn by a studio. What I can do reliably is the part that's rules: a tight palette, flat shapes, soft glow, clean motion. That gets good-looking moving diagrams, not hand-drawn characters with charm. So: one sample scene in a few looks, as short films, before any kit gets drawn. You own the look." }
+      ]
+    },
+    {
+      "id": "knows",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "What it knows you know",
+      "text": "Pop quizzes, tests, exams and the endless mode are one mechanism seen four ways.",
+      "why": "Every lesson lists its facts, each with two or more ways of asking it, so you learn the fact and not the question.",
+      "parts": [
+        { "id": "four", "title": "Check, test, exam", "text": "Check: facts from the last few steps, inside the lesson, free to miss.\n\nTest: a unit's facts, asked in ways the lesson didn't use.\n\nExam: the whole topic, harder, no hints, a pass mark, the topic's best trophy." },
+        { "id": "review", "title": "Review, the endless mode", "text": "What comes up is chosen by a memory model: each fact has an estimate of how likely you are to still know it, and it's shown when it's about to slip. Topics are mixed on purpose.\n\nIt tests, it doesn't reteach: a miss shows the answer, one line of why, and a link to the lesson step.\n\nA fact can bring its figure: the globe already turned to the right ocean.\n\nCombo: right answers in a row multiply what you earn. The model picks the facts, so it can't be farmed with easy ones, and a recall after two months pays more than one after a day." },
+        { "id": "families", "title": "Families of facts", "text": "For every flag, every local bird, every country's place: the writer gives a table and a few question shapes, and the app makes the hundreds of facts itself." },
+        { "id": "strong-weak", "title": "Strong and weak", "text": "A screen per topic: its facts as dots from bright to faded, and the ones you keep missing. The writer on the PC sees the same." }
+      ]
+    },
+    {
+      "id": "asking",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "Asking for a topic",
+      "text": "\"Teach me about bears, extensive\" becomes a lesson list, then lessons, each checked before it's sent.",
+      "why": "Three levels: Glance (1 to 2 lessons), Solid (4 to 6 and a test), Deep (10 to 15 or more, unit tests, an exam, its own trophies).",
+      "parts": [
+        { "id": "cost", "title": "What each level costs", "text": "Guesses until a pilot has been through the loop. Glance: 2 to 5 agent-hours. Solid: 8 to 15. Deep: 20 to 40, spread over several agents, so about a night.\n\nA lesson that needs a part the kit doesn't have costs more, and that's flagged before it's built." },
+        { "id": "steps", "title": "The steps", "text": "For Solid and Deep, the lesson list comes to your phone first, so you can drop, add or re-aim lessons before anything is built.\n\nThen research with every number's source and year kept. Then writing, building and voicing.\n\nThen checks: it fits the smallest iPhone, every play step can be passed and failed, and a second agent checks the claims against the sources." },
+        { "id": "source", "title": "From a lecture or textbook", "text": "The same steps, with your source as the spine. The lesson says where it follows the source and where it adds or disagrees. A photo of a page works as well as a PDF." },
+        { "id": "honest", "title": "Honesty", "text": "Rules for the writer: say plainly what's known, disputed and wrong. No softening words for death, suicide, drugs or violence. Statistics with source, year and what they do and don't measure. If the touchy fact is the natural next thing, say it.\n\nAny step can be flagged \"something's off\" and it comes back to the writer.\n\nThe one narrow limit: how dangerous things work and what happened, yes; a working recipe for mass harm, no.\n\nAn AI writer will still get things wrong sometimes. The checks reduce that; they don't end it." }
+      ]
+    },
+    {
+      "id": "rewards",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "Rewards",
+      "text": "One idea ties your list together: the room is your memory.",
+      "why": "Trophies, the room, the currency and the unlocks become one loop instead of four systems.",
+      "parts": [
+        { "id": "trophies", "title": "Trophies are the furniture", "text": "Each topic makes its own trophies, designed with the course. Bears: a paw cast, a salmon, a claw-marked log, and a gold one for the exam. They go on the shelves, walls and floor of the cutaway room. So the room fills with what you've learned." },
+        { "id": "dust", "title": "Objects dull as memory fades", "text": "A topic you haven't reviewed gathers dust: its objects lose colour. Reviewing polishes them. Tap an object to review its topic.\n\nThis does a streak's job without a streak. The pull to come back is your own shelf going grey, and it's honest, because it follows what you'd still remember." },
+        { "id": "currency", "title": "Currency and unlocks", "text": "Earned from lessons, tests, exams and combos. It buys the room's bones (wallpaper, floor, lights, shelves, a bigger room), looks for the avatar, and early unlocks.\n\nFinishing the lesson that introduces a part opens it in the Playground. Paying opens it early. Nothing in a lesson is ever locked." },
+        { "id": "feel", "title": "Every press", "text": "A sound, a tick and a little spring on every press, from one place so it's consistent and tunable. Riffle's tick trick may have been removed by a recent iOS: to be tried on your phone." },
+        { "id": "caution", "title": "One caution", "text": "Research on rewards: paying people for something they already enjoy tends to make them enjoy it less. Rewards that say how well you did are safer than rewards for turning up. So it pays for recall and mastery, not for opening the app." }
+      ]
+    },
+    {
+      "id": "research",
+      "kind": "report",
+      "rarity": "common",
+      "title": "What the research found",
+      "text": "Three agents looked things up. The full files are in the project's docs folder.",
+      "why": "Each claim in them is marked as checked today or only recalled.",
+      "parts": [
+        { "id": "teardown", "title": "The take-apart skill", "text": "Almost certainly \"teardown\" (github.com/elvarofficial/teardown, released 30 October): it turns any machine into a 3D model you can pull apart, slice and isolate pieces of. About 80% sure it's the one you meant.\n\nIt writes a one-off page per machine, shaped for a wide desktop screen. I'd take its ideas, not its code: one viewer in the kit, each model as data (pieces, how each moves apart, in what order), with a question at each build-up step.\n\nGood for engines, locks, pumps, buildings, a tree trunk's layers. Poor for anything organic." },
+        { "id": "voice", "title": "Voice", "text": "Free voices that run on this PC are good now. Shortlist: Chatterbox (expressive, 23 languages), Kokoro (plainer, very fast, very consistent), Higgs Audio 3 (may sound best, 100+ languages). The rankings came from weak sources, so the pick should be by ear.\n\nAbout half a megabyte of sound per minute." },
+        { "id": "motion", "title": "Motion", "text": "Brilliant and Duolingo both use Rive, where an animator draws each piece in an editor. There's no animator here, so the motion is code moving the kit's parts, using GSAP, which became fully free in 2025." },
+        { "id": "globe", "title": "Globe and data", "text": "Accurate country shapes are public domain (Natural Earth), under a megabyte. Drawn flat on a canvas, which suits the look. Free sources exist for storm tracks, flight routes, forest loss, bird photos and calls, and animal silhouettes." },
+        { "id": "phone", "title": "Only your phone can answer", "text": "Sound in a home-screen app on your iOS version. Whether the tick still works. How many glowing shapes it draws smoothly. These go first in stage 1." }
+      ]
+    },
+    {
+      "id": "stages",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Stages",
+      "text": "Your version 1 (a framework and parts, no lessons built in) is stages 1 and 2.",
+      "why": "Hours are agent-hours and are guesses.",
+      "parts": [
+        { "id": "s0", "title": "0: look, voice, answers", "text": "A sample scene in a few looks, a page of voice samples, the three phone tests, and your answers to the next deck. 3 to 5 hours." },
+        { "id": "s1", "title": "1: the shell", "text": "Riffle's core copied. A lesson player with explain, check and play steps. Inputs and one figure part. The feel of presses. The skill with check and send. One tiny pilot lesson, tried on your iPhone before anything else is built. 12 to 18 hours." },
+        { "id": "s2", "title": "2: scenes, kit, review", "text": "Scenes with voice. Globe, Network, Stage, Chart, Cards. Facts, tests and Review. The Playground. 25 to 35 hours." },
+        { "id": "s3", "title": "3: asking for topics", "text": "Asking from the phone, the three levels, sources, the second-agent check. The first real course at each level. 10 to 15 hours plus the courses." },
+        { "id": "s4", "title": "4: rewards", "text": "Currency, trophies, the room, the shop, unlocks. 15 to 20 hours." },
+        { "id": "s5", "title": "5: more parts", "text": "Take-apart models, Sandbox, Tokens, a sounding guitar, circuits, as lessons ask. Exams. A language as an experiment. 2 to 6 hours each." }
+      ]
+    }
+  ]
+}

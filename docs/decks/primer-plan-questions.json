@@ -1,0 +1,170 @@
+{
+  "title": "Questions on the plan",
+  "topic": "plan",
+  "stack": "plan",
+  "order": 2,
+  "kind": "questions",
+  "cards": [
+    {
+      "id": "stage0",
+      "kind": "question",
+      "rarity": "rare",
+      "title": "Start stage 0?",
+      "text": "Shall I make the sample scene in a few looks, a page of voice samples, and the three phone tests?",
+      "why": "It's 3 to 5 agent-hours and settles the two things a plan can't: whether the look has charm, and whether sound behaves on your iPhone. Nothing else gets built until you've seen them.",
+      "pick": "Yes. The scene is a hurricane forming over a globe, about 20 seconds, in three or four looks."
+    },
+    {
+      "id": "pilots",
+      "kind": "question",
+      "rarity": "rare",
+      "title": "Pilot lessons",
+      "text": "You said no lessons in version 1. Can a few small ones drive the build, kept in your private repo?",
+      "why": "A kit built with no lesson to test it against ends up as parts that look good alone and don't fit together. The app itself would still ship with none.",
+      "pick": "Three, as unlike as possible: where hurricanes form (globe), what happens when you type a web address (network), ten local birds (cards).",
+      "details": "If you'd rather other topics, say which. The point is that they use different parts: one map-shaped, one diagram-shaped, one memorising-shaped."
+    },
+    {
+      "id": "name",
+      "kind": "options",
+      "rarity": "common",
+      "title": "A name",
+      "text": "Primer is only what I called the folder. Which would you keep? Or comment with your own.",
+      "why": "The repo and the icon on your phone get this name.",
+      "pick": "primer",
+      "options": [
+        { "id": "primer", "label": "Primer", "text": "A first book on a subject. Also the book in The Diamond Age that teaches one child anything." },
+        { "id": "tinker", "label": "Tinker", "text": "For the playgrounds and taking things apart." },
+        { "id": "whet", "label": "Whet", "text": "To sharpen, and to whet your curiosity." },
+        { "id": "kiln", "label": "Kiln", "text": "Where things get fired until they hold." }
+      ]
+    },
+    {
+      "id": "room",
+      "kind": "design",
+      "rarity": "rare",
+      "title": "The room is your memory",
+      "text": "Each topic's trophies are the room's furniture, and they dull when that topic's memory fades.",
+      "why": "It joins your trophies, room and currency into one loop, and pulls you back to review without a streak. Reviewing polishes them. Tap one to review its topic.",
+      "pick": "Yes. Currency buys the room's bones (walls, floor, lights, shelves); the objects themselves are only earned.",
+      "details": "The other way is a shop where everything, trophies included, is bought. That's simpler to understand, but then the room says how much you've played, not what you know."
+    },
+    {
+      "id": "streak",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "A daily streak?",
+      "text": "Duolingo's hook is the streak. Do you want one?",
+      "why": "A streak rewards turning up, and losing a long one tends to make people quit. The dulling room does the same job and forgives a week away.",
+      "pick": "No streak. The room is the pull."
+    },
+    {
+      "id": "wager",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "A wager in review",
+      "text": "Before answering, you could tap \"sure\". Sure and right pays double. Sure and wrong costs you.",
+      "why": "It makes a wrong answer sting a little, and gives the currency a tie to knowing things. People also fix confidently wrong answers best once they're shown.",
+      "pick": "Yes, in Review and exams only, and optional each time."
+    },
+    {
+      "id": "lives",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "Lives in lessons?",
+      "text": "Should a wrong answer in a lesson cost anything?",
+      "why": "You want to be able to get things really wrong. If that costs lives, you start playing safe instead of trying things.",
+      "pick": "No lives in lessons. Exams have a pass mark and a wait before a retake."
+    },
+    {
+      "id": "unlocks",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Playground unlocks",
+      "text": "How does a part, like the globe, open up for free play?",
+      "why": "You suggested beating a lesson or paying. Both fit: the tool is something you earned.",
+      "pick": "Finishing the lesson that introduces it opens it. Currency opens it early. Nothing inside a lesson is locked."
+    },
+    {
+      "id": "levels",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Thoroughness",
+      "text": "Three named levels, or a finer slider?",
+      "why": "Three is easy to pick from a phone, and each means something clear: Glance is 1 to 2 lessons, Solid 4 to 6 with a test, Deep 10 to 15 or more with an exam.",
+      "pick": "Three levels. For Solid and Deep, you see and edit the lesson list before anything is built."
+    },
+    {
+      "id": "asking",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Where you ask",
+      "text": "How do you ask for a new topic?",
+      "why": "Asking from the phone needs a session on the PC waiting for it, like Riffle's. That's worth building once lessons are good, not before.",
+      "pick": "In chat for stages 1 and 2. From a screen in the app from stage 3, with a place to attach a source."
+    },
+    {
+      "id": "pictures",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Pictures from the web",
+      "text": "Which pictures get copied into your lessons?",
+      "why": "Copied pictures work offline. There's a great deal of openly licensed material (Wikimedia, NASA, open nature photos), so this rarely costs anything.",
+      "pick": "Open-licensed ones are copied in, with credit. Rights-reserved ones are linked, not copied."
+    },
+    {
+      "id": "sound",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Sound on or off",
+      "text": "Should lessons start with the voice on?",
+      "why": "Every scene has captions and works by tapping through, so either is fine. This is only where it starts.",
+      "pick": "Voice on with short captions, a mute button always in reach, and it remembers what you last chose."
+    },
+    {
+      "id": "teardown",
+      "kind": "question",
+      "rarity": "common",
+      "title": "The take-apart skill",
+      "text": "Is \"teardown\" the one you meant: any machine as a 3D model you pull apart and slice?",
+      "why": "I found no skill called obliterate that does this. If it's a different one, a link or a few more words would find it.",
+      "pick": "Yes, that one. Build it as a kit part in stage 5: one viewer, each model as data, a question at each build-up step."
+    },
+    {
+      "id": "worldwise",
+      "kind": "question",
+      "rarity": "common",
+      "title": "WorldWise",
+      "text": "Your geography app from June has a globe, country facts and a passport. What should come across?",
+      "why": "It's built a different way, so its code doesn't drop in. Its facts and ideas do.",
+      "pick": "Take its country tables and the globe coloured by how well you know each country. Leave the code and the travel economy."
+    },
+    {
+      "id": "language",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "Learning a language",
+      "text": "When should a language course be tried?",
+      "why": "It's hundreds of lessons, wants listening and speaking, and lives on the review loop. The app will carry it, but shaping the framework around it now would slow everything else.",
+      "pick": "As an experiment after stage 3, once Review and the voices are proven. Culture goes in as scenes and real photos."
+    },
+    {
+      "id": "tabs",
+      "kind": "design",
+      "rarity": "common",
+      "title": "The layout",
+      "text": "Four tabs along the bottom: Learn, Review, Playground, Room.",
+      "why": "Learn is a path of lesson nodes for each topic, like Duolingo's. Review is the endless mode. Playground holds the parts you've opened. Room is the cutaway.",
+      "pick": "These four. A sketch of each screen comes with stage 0's sample scene."
+    },
+    {
+      "id": "repos",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "Two repos",
+      "text": "May I make a public repo for the app and a private one for your lessons, as with Riffle?",
+      "why": "The public one holds only the player and parts, never a lesson, your name or a local path. Your phone will need its own key for the private one, which only you make.",
+      "pick": "Yes, once the name is settled. Until then the plan is committed on the PC only."
+    }
+  ]
+}
