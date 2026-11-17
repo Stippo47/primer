@@ -1,8 +1,8 @@
-# Primer (working name): plan
+# Primer: plan
 
 A personal, free learning app in the spirit of Brilliant: flat vector art, narrated animations, things to play with that can really go wrong, and a reward loop that makes it hard to put down. The app itself is only a framework and a kit of reusable parts. Lessons are written for one person, on request, by an AI working on the PC, and played on the phone.
 
-Status: plan and research only. Nothing is built. Estimates are in agent-hours and are guesses until the first pilot lesson has been through the whole loop.
+Status: the plan was answered on 2026-11-16 and stage 0 has started. `DECISIONS.md` records what the answers changed (thoroughness, voice, layout, rewards, asking, pictures) and wins where the two differ. Nothing of the app is built. Estimates are in agent-hours and are guesses until the first pilot lesson has been through the whole loop.
 
 Research behind this plan is in `docs/research/`:
 
