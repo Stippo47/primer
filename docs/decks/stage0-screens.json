@@ -1,0 +1,64 @@
+{
+  "title": "The screens, sketched",
+  "topic": "stage0",
+  "order": 4,
+  "cards": [
+    {
+      "id": "screens",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The main screens",
+      "text": "Sketches of each screen in the Mix look, from your answers. Mark any that's off and say what you'd change.",
+      "why": "These are sketches to react to, not final art. They show where things live and how the room, the fading trophies and the globe display could work before any of it is built.",
+      "details": "Things in these pictures that I made up and you haven't decided: every price, the locked attic, the wager costing 10, \"Platinum at 150 countries\", and Prism and Pendulum as playground parts. Ignore the numbers; react to the layout and the ideas.\n\nKnown weak spots: the avatar and objects are plain flat shapes, the dulled light bulb's inside reads as a letter M, and which things were earned and which bought is only told by the legend under the room, not by the objects themselves.",
+      "parts": [
+        { "id": "home", "title": "Home: the room", "text": "A cutaway room. Earned things: bear poster, salmon plush, bear carpet, clawed log, storm cup, flag, a globe on a gold stand. Bought: the red bed, shelf, lamp. Two objects are dusty with a ring round them because their topic is fading; tapping one starts a review. The switch at the top changes between Room, Globe and a locked Board.", "images": ["../../stage0/screens/shots/home-A.png"] },
+        { "id": "globe", "title": "Globe display", "text": "Your idea of the globe coming alive: learned countries fill in, a landmark stands up, a bird flies over where it lives, and the stand shows your level.", "images": ["../../stage0/screens/shots/displays.png"] },
+        { "id": "learn", "title": "Learn", "text": "One topic's path: lessons, a test at the end of each unit, and an exam with the topic's trophy at the end. The second picture is the topic list, with each topic's length and depth.", "images": ["../../stage0/screens/shots/learn.png", "../../stage0/screens/shots/learn-topics.png"] },
+        { "id": "review", "title": "Review", "text": "The endless mode mid-question: a snippet from a past lesson, the question, the combo, and the small \"I'm sure\" button. The second picture is strong and weak by topic.", "images": ["../../stage0/screens/shots/review.png", "../../stage0/screens/shots/review-strengths.png"] },
+        { "id": "playground", "title": "Playground", "text": "The parts you've opened, and locked ones that say which lesson opens them or what it costs to open early.", "images": ["../../stage0/screens/shots/playground-A.png"] },
+        { "id": "shop", "title": "Shop", "text": "Generic things to buy: walls, floors, plain furniture, clothes. A last row shows earned-only things, which are never for sale.", "images": ["../../stage0/screens/shots/shop.png"] },
+        { "id": "profile", "title": "Profile", "text": "Stats with no streak, strong and weak by topic, and settings.", "images": ["../../stage0/screens/shots/profile.png"] }
+      ]
+    },
+    {
+      "id": "tabbar",
+      "kind": "options",
+      "rarity": "uncommon",
+      "title": "Where the Playground lives",
+      "text": "Home in the centre needs an odd number of tabs. Which way? The pictures on the back show each.",
+      "why": "You listed Learn, Review, Playground and Home, Shop, Profile. Six tabs can't have a centre, so one of them has to live inside Home as a door in the room.",
+      "pick": "b2",
+      "details": "A is closest to what you wrote. I lean to B2 because the Playground grows with every topic and is the part you'd reach for as a tool in real life, so it earns a tab, while the Shop is visited least and makes sense as a door in the room it sells things for.",
+      "images": ["../../stage0/screens/shots/tabs.png", "../../stage0/screens/shots/home-A.png", "../../stage0/screens/shots/home-B.png", "../../stage0/screens/shots/home-B2.png", "../../stage0/screens/shots/playground-B2.png"],
+      "options": [
+        { "id": "a", "label": "A", "text": "Learn, Review, Home, Shop, Profile. The Playground is a door in the room." },
+        { "id": "b", "label": "B", "text": "Six tabs, everything one tap away. Tight, and Home sits off-centre." },
+        { "id": "b2", "label": "B2", "text": "Learn, Playground, Home, Review, Profile. The Shop is a door in the room." }
+      ]
+    },
+    {
+      "id": "level-name",
+      "kind": "options",
+      "rarity": "common",
+      "title": "Name the second level",
+      "text": "Your four lengths were Glance, a blank, Solid and Deep. What should the 2 to 4 lesson one be called? Or comment with your own.",
+      "why": "It shows on every topic in the list, so it should say at a glance how much you're in for.",
+      "pick": "tour",
+      "options": [
+        { "id": "tour", "label": "Tour", "text": "A walk round the main sights." },
+        { "id": "sketch", "label": "Sketch", "text": "The outline, without the detail." },
+        { "id": "taster", "label": "Taster", "text": "Enough to know if you want more." }
+      ]
+    },
+    {
+      "id": "depth-steps",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Steps of depth",
+      "text": "Depth is your second dial: how complex a topic gets. How many steps should it have?",
+      "why": "Length says how much ground is covered. Depth says how hard the ideas get. Fewer steps are easier to choose between when asking for a topic.",
+      "pick": "Three: Plain (no background needed), Standard, and Rigorous (the real maths, sources and edge cases)."
+    }
+  ]
+}

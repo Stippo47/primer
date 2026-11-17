@@ -1,0 +1,29 @@
+<!doctype html>
+<!--
+  Primer: sketches of the main screens, in the "mix" look. Static pictures for layout
+  decisions, not app code. Nothing here is tappable.
+
+    index.html                      a list of every sketch
+    index.html?screen=home&tabs=A   one sketch, 414 x 896
+      screen: learn | topics | review | strengths | home | shop | profile | playground | displays | tabs
+      tabs:   A (five tabs) | B (six tabs) | B2 (five tabs, Shop inside Home)
+
+  Modules and the map file need http, so serve the stage0 folder (any static server).
+  tools/shoot.mjs does that itself and writes the pictures in shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Primer screen sketches</title>
+<link rel="stylesheet" href="css/screens.css">
+<script type="importmap">
+{ "imports": { "d3-array": "../scene/vendor/d3-array.min.mjs", "d3-geo": "../scene/vendor/d3-geo.min.mjs" } }
+</script>
+<script src="../scene/vendor/topojson-client.min.js"></script>
+</head>
+<body>
+<div id="phone"></div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
