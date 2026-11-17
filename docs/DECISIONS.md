@@ -71,6 +71,52 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 - **A lesson without voice isn't silent.** It can still have sound effects, ambience or calm music. So there are three kinds of sound: voice, effects, and ambience or music.
 - **The wager is dropped.** Unclear the first time and sent back the second. Review has no "I'm sure" button; the combo alone rewards a run of right answers. The Review sketch still shows the button and is out of date on that.
 
+- **The phone on silent: the app ignores the switch.** Voice, effects and music each have their own switch in the app, and those alone decide what plays.
+
+## 2026-11-17: answers to the stage 0 decks
+
+### The look
+
+- **Mix it is**, which is the Night art inside the chunky controls. Judged to look good, so the kit is built on art drawn by rule.
+- **Bounce sits between gentle and medium.**
+- **The hurricane needs redrawing,** and the glow around it goes.
+
+### Voices
+
+- **Narrator shortlist: Heart and Chatterbox A.** More are wanted before choosing, an older-sounding narrator above all.
+- **French: Siwis and Chatterbox A** both passed.
+- **Four more languages to hear:** Japanese, Spanish, Italian, Hindi.
+- My own rule here, theirs to overturn: no voice is copied from a recording of a real person who hasn't agreed to it.
+
+### Thoroughness
+
+- **One dial, not two.** Glance, Tour, Solid, Deep: each step is both longer and deeper. Course pacing stays a separate choice.
+
+### Layout
+
+- **Five tabs: Learn, Review with the Playground inside it, Home, Shop, Profile.** Home is in the centre. What the joined tab is called is open.
+
+### Home
+
+- **The room is wider than the screen and pans sideways.**
+- **There are several rooms,** reached by doors or arrows. A topic's things live in the room that suits them: food in a kitchen.
+- **The avatar is probably not a person.** A monster or an animal; options to be shown.
+- **Words appear only when something is touched.** No legend under the room, no banner.
+- **Nothing is ringed until it's touched,** and then not with a dotted line. A fading thing shows it by how it looks.
+- **The globe display is entered by tapping the globe in the room,** and left by a back arrow in the top left. There is no switcher. It shows and doesn't tell; words come on a tap.
+- Of the drawn objects, only the trophies and the globe were good enough. Those two set the bar for the rest.
+
+### The other screens
+
+- **Learn:** good. The path wants more love: raised buttons with a symbol for the kind of step, the current one marked out, something alive beside the path.
+- **Review:** too busy. Anything that can be read from the picture loses its label.
+- **Playground:** fewer words. No "Open" and no count of parts. A locked part looks like an open one, with its price and a coin where the words and the lock were, and every locked part says which lesson it comes from.
+- **Shop: learning unlocks, coins buy.** A unique thing shows as an outline until its lesson is done, and then it can be bought. This replaces "earn unique" from the first answers. **Prizes are different:** trophies and the like are given, and never appear in the shop. Nothing is labelled with what it's obviously for.
+- **Profile:** no "fading" label; colour and number do it. The scale runs blue to grey, not blue to red. A warning mark on a topic opens its details, such as the day it was last studied. "Strong and weak" becomes "Skills" or "Knowledge".
+
 ### Still open
 
-- **The phone on silent:** which of the three kinds of sound still play. Asked as a card.
+- The name of the joined Review and Playground tab.
+- Which animal or monster the avatar is.
+- The narrator, after the second round of voices.
+- Whether the shell (stage 1) starts now. Asked as a card.

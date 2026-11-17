@@ -1,0 +1,10 @@
+{
+  "id": "start-shell",
+  "kind": "question",
+  "rarity": "rare",
+  "title": "Start the app's shell?",
+  "text": "Your answers settled the look, the five tabs and what the phone can do. Shall I start building the real app's shell while the sketches get their second round?",
+  "why": "The shell is the bare app: it installs on your phone, has the five tabs, sound and the tick, and can play one tiny test lesson from the private repo. It's 12 to 18 agent-hours, and nothing in it depends on the room, the avatar or the narrator.",
+  "pick": "Yes, start it now, alongside the second round of sketches and voices.",
+  "details": "The second round is already under way from your comments: the room made wide with a second room and animal or monster avatars to choose from, the other screens with less text, a redrawn hurricane, and more voices including older narrators and the four languages you asked for.\n\nIf you'd rather see that round first, say so and the shell waits."
+}
