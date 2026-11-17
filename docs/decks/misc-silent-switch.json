@@ -1,0 +1,27 @@
+{
+  "id": "silent-switch",
+  "kind": "options",
+  "rarity": "uncommon",
+  "title": "Phone on silent",
+  "text": "With the phone's silent switch on, what should still make sound?",
+  "why": "Your phone test showed the app can choose. If you keep the phone on silent most of the time, the wrong choice means narration and pronunciations never play, or the app makes noise on the bus.",
+  "pick": "voice",
+  "details": "Whichever you choose, the app also gets its own switches for voice, effects and music, and narrated animations always show their words on screen.\n\nA web app can't tell whether the silent switch is on. So if voice follows the switch, a narrated animation plays without sound and can't say why. That's the main reason I lean to voice playing anyway, the way a video does.\n\nOne more thing your choice decides: sound that ignores the switch also pauses music you're playing from another app. Sound that follows the switch plays over it.",
+  "options": [
+    {
+      "id": "voice",
+      "label": "Voice only",
+      "text": "Narration and pronunciations still play, like a video. Taps, chimes and music go quiet."
+    },
+    {
+      "id": "nothing",
+      "label": "Nothing",
+      "text": "Silent means silent. Narration shows as words only."
+    },
+    {
+      "id": "all",
+      "label": "Everything",
+      "text": "The app ignores the switch and uses only its own sound settings."
+    }
+  ]
+}
