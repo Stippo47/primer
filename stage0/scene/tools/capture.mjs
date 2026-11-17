@@ -4,10 +4,16 @@
 //   node tools/capture.mjs --look all              all four looks
 //   node tools/capture.mjs --look mix --still 17.8 one full-size picture -> stills/mix.png
 //   node tools/capture.mjs --look mix --shots 1,6,12 --out <folder>   quick check frames
+//   node tools/capture.mjs --look mix --storm bands               the scene with one hurricane drawing -> films/mix-bands.mp4
+//   node tools/capture.mjs --look mix --storm all --closeup       each drawing close up, a square 4 second loop -> films/storm-<id>.mp4
+//   node tools/capture.mjs --look mix --storm all --closeup --still 1   the close-up as a picture -> stills/storm-<id>.png
+//   node tools/capture.mjs --look mix --storm all --still 17.8    the whole scene with each drawing -> stills/storm-<id>-scene.png
 //
-// Options: --out <folder> (default: the scene folder), --fps 30, --crf 24, --hold 0.5,
-//          --browser <path to Edge or Chrome>, --ffmpeg <path> (default: ffmpeg on PATH).
-// The films kept in films/ were made with --crf 24 (bright, mix), 25 (night) and 27 (paper), to stay near 2 MB each.
+// Options: --out <folder> (default: the scene folder), --fps 30, --crf 24, --hold 0.5, --name <file name without .mp4>,
+//          --browser <path to Edge or Chrome>, --ffmpeg <path> (default: ffmpeg on PATH),
+//          --port <local server port>, --debug-port <browser debugging port> (both picked freely if left out).
+// The films kept in films/ were made with --crf 24 (bright, mix), 25 (night) and 27 (paper), to stay near 2 MB each,
+// and the storm close-ups with --crf 22. mix-r1.mp4 is the Mix film from before the hurricane was redrawn.
 // Needs Node 22 or newer (it uses the built-in WebSocket). No packages to install.
 
 import { spawn } from 'node:child_process';
@@ -24,9 +30,12 @@ const OUT = args.out || SCENE;
 const LOOKS = args.look === 'all' || !args.look ? ['night', 'bright', 'paper', 'mix'] : String(args.look).split(',');
 const FPS = Number(args.fps) || 30;
 const CRF = Number(args.crf) || 24;
-const HOLD = args.hold === undefined ? 0.5 : Number(args.hold);
-const DURATION = 20;
-const W = 414, H = 896, SCALE = 2;
+const CLOSEUP = Boolean(args.closeup);
+const ALL_STORMS = ['bands', 'paper', 'pinwheel', 'puffs', 'disc', 'r1-noglow', 'r1'];
+const STORMS = !args.storm ? [null] : args.storm === 'all' ? ALL_STORMS : String(args.storm).split(',');
+const HOLD = CLOSEUP ? 0 : args.hold === undefined ? 0.5 : Number(args.hold);   // a loop must not rest on its last frame
+const DURATION = CLOSEUP ? 4 : 20;
+const W = 414, H = CLOSEUP ? 414 : 896, SCALE = 2;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function findBrowser() {
@@ -45,9 +54,9 @@ function findBrowser() {
   throw new Error('No browser found. Pass --browser <path>.');
 }
 
-const server = await serve(0);
+const server = await serve(Number(args.port) || 0);
 const base = `http://127.0.0.1:${server.address().port}`;
-const debugPort = 9400 + Math.floor(Math.random() * 400);
+const debugPort = Number(args['debug-port']) || 9400 + Math.floor(Math.random() * 400);
 const profile = mkdtempSync(join(tmpdir(), 'primer-film-'));
 const browser = spawn(findBrowser(), ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--mute-audio',
   `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
@@ -95,36 +104,40 @@ await send('Runtime.enable');
 await send('Page.enable');
 await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: SCALE, mobile: true });
 
-async function open(look) {
-  await send('Page.navigate', { url: `${base}/index.html?look=${look}&film=1&dpr=${SCALE}` });
+async function open(look, storm) {
+  const extra = (storm ? `&storm=${storm}` : '') + (CLOSEUP ? '&closeup=1' : '');
+  await send('Page.navigate', { url: `${base}/index.html?look=${look}&film=1&dpr=${SCALE}${extra}` });
   for (let i = 0; i < 80; i++) {
     await sleep(150);
     if (pageErrors.length) throw new Error(pageErrors.join('\n'));
     try { if (await ev('window.ready === true')) return; } catch { /* still loading */ }
   }
-  throw new Error(`${look}: the page never became ready`);
+  throw new Error(`${look}${storm ? ' ' + storm : ''}: the page never became ready`);
 }
 
 let failed = false;
 try {
-  for (const look of LOOKS) {
-    await open(look);
+  for (const look of LOOKS) for (const storm of STORMS) {
+    await open(look, storm);
+    // a storm's own films and stills are named after it; the scene is named after its look
+    const label = storm ? (CLOSEUP ? `storm-${storm}` : `${look}-${storm}`) : look;
     if (args.shots) {
       mkdirSync(OUT, { recursive: true });
       for (const t of String(args.shots).split(',').map(Number)) {
-        writeFileSync(join(OUT, `${look}-${t.toFixed(2).padStart(5, '0')}.png`), await frame(t));
+        writeFileSync(join(OUT, `${label}${CLOSEUP && !storm ? '-close' : ''}-${t.toFixed(2).padStart(5, '0')}.png`), await frame(t));
       }
-      console.log(`${look}: shots written`);
+      console.log(`${label}: shots written`);
       continue;
     }
     if (args.still !== undefined) {
       mkdirSync(join(OUT, 'stills'), { recursive: true });
-      writeFileSync(join(OUT, 'stills', `${look}.png`), await frame(Number(args.still)));
-      console.log(`${look}: still written`);
+      const name = storm ? `storm-${storm}${CLOSEUP ? "" : "-scene"}` : look;
+      writeFileSync(join(OUT, 'stills', `${name}.png`), await frame(Number(args.still)));
+      console.log(`${name}: still written`);
       continue;
     }
     mkdirSync(join(OUT, 'films'), { recursive: true });
-    const file = join(OUT, 'films', `${look}.mp4`);
+    const file = join(OUT, 'films', `${args.name || label}.mp4`);
     const ff = spawn(args.ffmpeg || 'ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
       '-an', '-c:v', 'libx264', '-preset', 'veryslow', '-tune', 'animation', '-crf', String(CRF), '-pix_fmt', 'yuv420p',
       '-profile:v', 'high', '-movflags', '+faststart', '-r', String(FPS), file], { stdio: ['pipe', 'inherit', 'inherit'] });
@@ -133,12 +146,12 @@ try {
     for (let i = 0; i < total; i++) {
       const png = await frame(Math.min(DURATION, i / FPS));
       if (!ff.stdin.write(png)) await new Promise(r => ff.stdin.once('drain', r));
-      if (i % 100 === 0) console.log(`${look}: frame ${i} of ${total}`);
+      if (i % 100 === 0) console.log(`${label}: frame ${i} of ${total}`);
     }
     ff.stdin.end();
     await done;
     if (pageErrors.length) throw new Error(pageErrors.join('\n'));
-    console.log(`${look}: ${file}`);
+    console.log(`${label}: ${file}`);
   }
 } catch (e) {
   failed = true;

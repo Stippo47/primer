@@ -4,7 +4,7 @@
   "after": "Kurzgesagt art in Duolingo chrome",
   "fonts": { "ui": "Nunito", "art": "Nunito" },
 
-  "motion": { "bounce": 0.55, "overshoot": 0.9, "pop": 1.2, "squash": 0.16, "idle": 1, "captionRise": 18 },
+  "motion": { "bounce": 0.425, "overshoot": 0.675, "pop": 1.175, "squash": 0.13, "idle": 1, "captionRise": 16 },
 
   "chrome": {
     "gutter": 16,
@@ -59,6 +59,7 @@
   "cloud": { "fill": "#ffffff", "shade": "#b9c6ff", "depth": 2, "alpha": 0.97, "drift": 1, "stroke": "#000000", "strokeWidth": 0 },
 
   "storm": {
+    "draw": "bands",
     "fill": "#ffffff", "shade": "#aebfff", "tired": "#c3c9ee", "depth": 3,
     "swirl": "#8fa4f5", "swirlAlpha": 0.9, "eye": "#1b2a80",
     "glow": "#bfd4ff", "glowAlpha": 0.24,

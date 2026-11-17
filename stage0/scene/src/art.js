@@ -5,9 +5,11 @@
 import { geoOrthographic, geoPath, geoGraticule, geoDistance, geoInterpolate } from 'd3-geo';
 import * as E from './ease.js';
 import { T, VIEW, GUESS, BIRTH, TRACK, UPDRAFTS, BANDS, BAND_SHAPE } from './script.js';
+import { createStorms, STORMS } from './storms.js';
 
 const { TAU, lerp, ramp, clamp01, rgba, mix } = E;
 const W = 414, H = 896;
+const CLOSE = { side: 414, loop: 4, turns: 2, at: 17.6, zoom: 2.6 };   // the square close-up of the storm, for comparing drawings
 const RAD = Math.PI / 180;
 const PI = Math.PI;
 
@@ -83,10 +85,13 @@ function trackAt(u) {
   return [cr(0), cr(1)];
 }
 
-export function createArt(canvas, look, world, { dpr = 2 } = {}) {
+export function createArt(canvas, look, world, { dpr = 2, storm, closeup = false } = {}) {
   canvas.width = W * dpr;
-  canvas.height = H * dpr;
+  canvas.height = (closeup ? CLOSE.side : H) * dpr;
   const ctx = canvas.getContext('2d');
+  // which hurricane drawing: the address wins, then the look, then the first drawing
+  const stormId = STORMS.includes(storm) ? storm : STORMS.includes(look.storm.draw) ? look.storm.draw : 'r1';
+  const storms = createStorms(ctx, look);
   const { feature, mesh } = globalThis.topojson;
   const land = feature(world, world.objects.land);
   const borders = mesh(world, world.objects.countries, (a, b) => a !== b);
@@ -313,7 +318,7 @@ export function createArt(canvas, look, world, { dpr = 2 } = {}) {
     drawEquator(t, c);
 
     renderLand(c);
-    ctx.drawImage(landLayer, 0, 0, W, H);
+    ctx.drawImage(landLayer, 0, 0, W, landLayer.height / dpr);
 
     // one light, top left: a flat shadow side and a thin lit edge
     if (G.shade.alpha > 0) {
@@ -449,82 +454,8 @@ export function createArt(canvas, look, world, { dpr = 2 } = {}) {
     });
   }
 
-  // ---- the storm ----
-  function stormShape(R, angle, sweep) {
-    const p = new Path2D();
-    for (let a = 0; a < 4; a++) {
-      const big = a % 2 === 0;
-      const turn = lerp(0.6, 3.25, sweep) * (big ? 1 : 0.62);
-      const reach = R * lerp(0.72, 1.5, sweep) * (big ? 1 : 0.8);
-      const base = angle + a * PI / 2;
-      const outer = [], inner = [];
-      for (let i = 0; i <= 20; i++) {
-        const s = i / 20;
-        const th = base + s * turn;
-        const r = lerp(R * 0.3, reach, Math.pow(s, 0.85));
-        const w = R * (big ? 0.46 : 0.34) * Math.pow(1 - s, 0.75) + 0.2;
-        outer.push([Math.cos(th) * (r + w / 2), Math.sin(th) * (r + w / 2)]);
-        inner.push([Math.cos(th) * (r - w / 2), Math.sin(th) * (r - w / 2)]);
-      }
-      p.moveTo(outer[0][0], outer[0][1]);
-      for (let i = 1; i < outer.length; i++) p.lineTo(outer[i][0], outer[i][1]);
-      for (let i = inner.length - 1; i >= 0; i--) p.lineTo(inner[i][0], inner[i][1]);
-      p.closePath();
-    }
-    disc(p, 0, 0, R * 0.56);
-    return p;
-  }
-  function drawStorm(x, y, o) {
-    const St = look.storm, R = o.R;
-    const p = stormShape(R, o.angle, o.sweep);
-    if (St.shadowAlpha > 0) {
-      ctx.save();
-      ctx.translate(x + 2 + o.lift * 4, y + 5 + o.lift * 11);
-      ctx.fillStyle = rgba(St.shadow, St.shadowAlpha * o.alpha);
-      ctx.fill(p);
-      ctx.restore();
-    }
-    ctx.save();
-    ctx.translate(x, y - o.lift * 9);
-    ctx.globalAlpha = o.alpha;
-    if (St.glowAlpha > 0) {
-      const gr = R * 2.5, g = ctx.createRadialGradient(0, 0, R * 0.4, 0, 0, gr);
-      g.addColorStop(0, rgba(St.glow, St.glowAlpha * o.vigor));
-      g.addColorStop(1, rgba(St.glow, 0));
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(0, 0, gr, 0, TAU); ctx.fill();
-    }
-    ctx.scale(1 + o.squash, 1 - o.squash);
-    const fill = mix(St.tired, St.fill, o.vigor);
-    ctx.lineJoin = 'round';
-    if (St.strokeWidth) {
-      ctx.strokeStyle = St.stroke; ctx.lineWidth = St.strokeWidth * 2;
-      ctx.stroke(p);
-    }
-    if (St.depth) {
-      ctx.save(); ctx.translate(0, St.depth); ctx.fillStyle = mix(St.tired, St.shade, o.vigor); ctx.fill(p); ctx.restore();
-    }
-    ctx.fillStyle = fill;
-    ctx.fill(p);
-    // two strokes inside the disc, so the turning shows in the middle too
-    ctx.strokeStyle = rgba(St.swirl, St.swirlAlpha);
-    ctx.lineWidth = Math.max(1.2, R * 0.085);
-    ctx.lineCap = 'round';
-    for (let a = 0; a < 2; a++) {
-      ctx.beginPath();
-      for (let i = 0; i <= 12; i++) {
-        const s = i / 12, th = o.angle + a * PI + 0.9 + s * 2.3, r = R * lerp(0.16, 0.44, s);
-        const px = Math.cos(th) * r, py = Math.sin(th) * r;
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-    }
-    if (o.eye > 0.02) {
-      ctx.fillStyle = St.eye;
-      ctx.beginPath(); ctx.arc(0, 0, R * 0.15 * o.eye, 0, TAU); ctx.fill();
-    }
-    ctx.restore();
-  }
+  // ---- the storm: drawn in storms.js, several ways ----
+  const drawStorm = (x, y, o) => storms.draw(stormId, x, y, o);
 
   // air flowing in. curl = 0 runs straight in; curl = 1 is bent into a turn.
   function drawInflow(x, y, R, t, curl, alpha) {
@@ -830,7 +761,7 @@ export function createArt(canvas, look, world, { dpr = 2 } = {}) {
     const bentIn = E.window_(t, T.spinUp[0] - 0.15, T.travel[0] + 0.7, 0.35);
     drawInflow(x, y, R * 1.05, t, curl, bentIn);
 
-    drawStorm(x, y, { R, angle, sweep, eye, vigor, lift, squash, alpha: t < T.press ? clamp01(inDock * 2) : 1 });
+    drawStorm(x, y, { R, angle, sweep, eye, vigor, lift, squash, time: t, alpha: t < T.press ? clamp01(inDock * 2) : 1 });
 
     const noSpin = pop(t, T.fizzle, 0.5) * (1 - E.inn(ramp(t, T.slide[0] - 0.35, T.slide[0])));
     chip('No spin', guess[0], guess[1] - 46, noSpin, { accent: true });
@@ -870,5 +801,25 @@ export function createArt(canvas, look, world, { dpr = 2 } = {}) {
     ctx.restore();
   }
 
-  return { render };
+  // The storm alone, close, turning on the sea: a loop of CLOSE.loop seconds with no seam.
+  // The globe is held still at one moment of the scene; only the storm moves.
+  function renderCloseup(u) {
+    const side = CLOSE.side, t = CLOSE.at;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalAlpha = 1;
+    const go = ramp(t, T.travel[0], T.travel[1]);
+    const g = trackAt(lerp(go, E.inOut(go), 0.55));
+    const c = { lon: g[0] - 1.5, lat: g[1] + 1, zoom: 1, spin: 1, r: 272 * CLOSE.zoom, cx: side / 2, cy: side / 2 };
+    proj.translate([c.cx, c.cy]).scale(c.r).rotate([-c.lon, -c.lat, 0]);
+    drawGlobe(t, c);
+    const [x, y] = proj(g);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(CLOSE.zoom, CLOSE.zoom);
+    const k = (((u / CLOSE.loop) % 1) + 1) % 1;
+    drawStorm(0, 0, { R: 30, angle: -0.4 - TAU * CLOSE.turns * k, sweep: 1, eye: 1, vigor: 1, lift: 0, squash: 0, time: k * CLOSE.loop, alpha: 1 });
+    ctx.restore();
+  }
+
+  return { render, renderCloseup, stormId };
 }

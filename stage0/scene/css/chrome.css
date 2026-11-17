@@ -60,3 +60,8 @@ body { display: flex; align-items: center; justify-content: center; -webkit-user
 #looks a { color: var(--text); opacity: 0.55; text-decoration: none; }
 #looks a.on { opacity: 1; }
 @media (min-width: 700px) { body:not(.film) #looks { display: flex; } }
+
+/* the storm close-up: a square picture and nothing else */
+body.closeup #phone { height: 414px; }
+body.closeup #art { height: 414px; }
+body.closeup #top, body.closeup #caption, body.closeup #bottom { display: none; }

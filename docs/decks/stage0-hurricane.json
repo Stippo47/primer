@@ -1,0 +1,36 @@
+{
+  "title": "The hurricane, redrawn",
+  "topic": "stage0",
+  "order": 5,
+  "cards": [
+    {
+      "id": "hurricane",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "The hurricane, redrawn",
+      "text": "Five new ways to draw the hurricane, all without the glow. Tick any you'd keep.",
+      "why": "You said the hurricane didn't look the best and its glow didn't fit. The one you pick replaces it in the sample scene, and becomes the storm any weather lesson would reuse.",
+      "pick": ["bands"],
+      "details": "Each film on the board is a four-second loop of the storm close up, much bigger than it will be on your phone. The film on this card is the whole scene again at its real size, with my pick, Bands.\n\nWhy Bands: it's the nearest to a real hurricane seen from above, with a clear eye, a thick wall of cloud round it, and long curved bands with sea showing between them. It also winds up in the scene: the bands grow longer and wrap tighter as the storm starts to turn. Cut paper is my second choice. It's bolder and more of a graphic, and less like the real thing.\n\nHonest notes. Bands has the finest detail, so it's the one most likely to look thin on a small screen. Puffs is charming up close, but at real size its arms can read as strings of beads. Disc is the plainest. Pinwheel is the simplest and the safest, and the nearest to the old drawing.\n\nAll of them turn anticlockwise, as storms do north of the equator. None uses blur, which is what was slow in the phone test, but none of these has run on your phone yet.\n\nThe scene film also has the bounce set halfway between gentle and medium, as you chose.",
+      "videos": ["../../stage0/scene/films/mix.mp4"],
+      "items": [
+        { "id": "bands", "label": "Bands", "video": "../../stage0/scene/films/storm-bands.mp4", "text": "Long cloud bands wound round a thick middle, with sea showing between them. The nearest to a real one." },
+        { "id": "paper", "label": "Cut paper", "video": "../../stage0/scene/films/storm-paper.mp4", "text": "Three flat swirls stacked like cut paper, blue up to white. The upper ones turn faster." },
+        { "id": "pinwheel", "label": "Pinwheel", "video": "../../stage0/scene/films/storm-pinwheel.mp4", "text": "One fat body, two fat arms and a big eye. The simplest, made to read at a glance." },
+        { "id": "puffs", "label": "Puffs", "video": "../../stage0/scene/films/storm-puffs.mp4", "text": "Built from many small round clouds, which ride inward along the arms." },
+        { "id": "disc", "label": "Disc", "video": "../../stage0/scene/films/storm-disc.mp4", "text": "Seen from straight above: a round sheet of cloud with grooves wound into it." },
+        { "id": "old", "label": "Old, no glow", "video": "../../stage0/scene/films/storm-r1-noglow.mp4", "text": "The first drawing with only its glow taken away, to compare against." }
+      ]
+    },
+    {
+      "id": "bounce-halfway",
+      "kind": "report",
+      "rarity": "common",
+      "title": "Bounce, set halfway",
+      "text": "The sample scene again, with the bounce halfway between gentle and medium, as you chose.",
+      "why": "It sets how lively every label, button and shape feels across the app. Watch the labels pop in, the storm land when it's dropped, and the Continue button wake up.",
+      "details": "Gentle was the Night film and medium was the old Mix film. Every number that makes up the bounce now sits midway between those two: how hard things ring when they pop in, how far they overshoot, and how much the storm squashes when it lands.\n\nThe hurricane in this film is the Bands drawing, my pick from the board in this deck.",
+      "videos": ["../../stage0/scene/films/mix.mp4"]
+    }
+  ]
+}
