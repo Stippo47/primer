@@ -1,0 +1,171 @@
+[
+  {
+    "file": "kokoro-am_santa.m4a",
+    "voice": "kokoro-am_santa",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 26.59,
+    "bytes": 223954
+  },
+  {
+    "file": "qwen-elder_m2.m4a",
+    "voice": "qwen-elder_m2",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 26.46,
+    "bytes": 216546
+  },
+  {
+    "file": "kokoro-old_gs.m4a",
+    "voice": "kokoro-old_gs",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 28.77,
+    "bytes": 244478
+  },
+  {
+    "file": "kokoro-old_so.m4a",
+    "voice": "kokoro-old_so",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 26.7,
+    "bytes": 226313
+  },
+  {
+    "file": "qwen-elder_m.m4a",
+    "voice": "qwen-elder_m",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 30.07,
+    "bytes": 251329
+  },
+  {
+    "file": "kokoro-bm_george.m4a",
+    "voice": "kokoro-bm_george",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 27.62,
+    "bytes": 232209
+  },
+  {
+    "file": "kokoro-bm_lewis.m4a",
+    "voice": "kokoro-bm_lewis",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 26.01,
+    "bytes": 221462
+  },
+  {
+    "file": "kokoro-am_onyx.m4a",
+    "voice": "kokoro-am_onyx",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 23.17,
+    "bytes": 194413
+  },
+  {
+    "file": "chatterbox-slower.m4a",
+    "voice": "chatterbox-slower",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 21.27,
+    "bytes": 181876
+  },
+  {
+    "file": "kokoro-af_bella.m4a",
+    "voice": "kokoro-af_bella",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 24.7,
+    "bytes": 210335
+  },
+  {
+    "file": "kokoro-af_kore.m4a",
+    "voice": "kokoro-af_kore",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 24.08,
+    "bytes": 205135
+  },
+  {
+    "file": "kokoro-bf_isabella.m4a",
+    "voice": "kokoro-bf_isabella",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 23.95,
+    "bytes": 206779
+  },
+  {
+    "file": "kokoro-am_fenrir.m4a",
+    "voice": "kokoro-am_fenrir",
+    "lines": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seconds": 24.01,
+    "bytes": 201322
+  }
+]

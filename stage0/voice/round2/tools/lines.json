@@ -1,0 +1,16 @@
+{
+  "note": "Lines 1 to 5 are round 1's English narrator lines, unchanged, so new voices compare directly. Lines 7 to 10 are the designer's four sentences, word for word. Number 6 was round 1's French line and is not used here.",
+  "lines": [
+    {"n": 1, "lang": "en", "text": "Warm water is the fuel."},
+    {"n": 2, "lang": "en", "text": "Above about 26 degrees, the air over the ocean starts to rise."},
+    {"n": 3, "lang": "en", "text": "Not on the equator, though. There's no spin there to start it turning."},
+    {"n": 4, "lang": "en", "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people."},
+    {"n": 5, "lang": "en", "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup."},
+    {"n": 7, "lang": "ja", "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+     "respell": "こんにちは。きょうはいい天気ですね。ありがとうございます。",
+     "respell_note": "The same sentence with 今日 written in kana. Only for an engine whose own front end misreads 今日は; see gen_chatterbox2.py."},
+    {"n": 8, "lang": "es", "text": "Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla."},
+    {"n": 9, "lang": "it", "text": "Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille."},
+    {"n": 10, "lang": "hi", "text": "नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।"}
+  ]
+}

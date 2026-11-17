@@ -1,0 +1,209 @@
+{
+  "title": "More voices",
+  "topic": "stage0",
+  "order": 8,
+  "cards": [
+    {
+      "id": "narrators-2",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "More narrators",
+      "text": "Eight more voices read the same five lines, older-sounding first. Tap to hear, tick any you'd keep.",
+      "why": "You asked for an older narrator. Nobody has heard these: a machine checked the words and guessed which ones sound older. The two you liked are first, to compare. My pick is on reliability and those numbers alone.",
+      "pick": [
+        "george"
+      ],
+      "details": "The lines are the same five as last time, so everything compares directly with Heart and Chatterbox A. Each clip is 20 to 30 seconds.\n\nHow \"older-sounding\" was judged: nobody on this side can listen, so a separate age-guessing program scored every voice, next to how deep and how slow it is. Heart comes out at 31 and Chatterbox A at 38. Read the guesses as a ranking, not as real ages.\n\nSanta (guess 67), George (57) and Lewis (47) come with Kokoro, the engine behind Heart: instant, and right first time, every time. Santa is built from very little recorded material, so it may have rough edges. George is the best-made of the three and the slowest. Lewis is very deep, which turned out not to mean old.\n\nGeorge + Santa (63) is those two Kokoro voices averaged together and slowed by 8%. As fast and as reliable as any Kokoro voice.\n\nStoryteller (64) and Elder (59) come from a third engine, Qwen3-TTS, which makes a voice from a written description: \"a British man of about eighty with an aged, gravelly, kind voice\" and \"an elderly man in his seventies with a warm, deep, unhurried voice\". No real person's voice is copied. All its lines were right first time, but a line takes about 10 seconds to make where Kokoro takes a tenth of a second.\n\nBella and Isabella are two more Kokoro women, for range. Bella is its best-rated voice after Heart.\n\nLeft off the board to keep it short: the voice you liked from Chatterbox with calmer settings (it came out no older and got more lines wrong), a second blend, and three more Kokoro voices that are deep or young but not old. All 28 of Kokoro's English voices were made and measured, and any of them can be put up in a second if you want more.",
+      "items": [
+        {
+          "id": "heart",
+          "label": "Heart · liked",
+          "audio": "../../stage0/voice/board/kokoro-af_heart.m4a",
+          "text": "One of the two you liked last time."
+        },
+        {
+          "id": "cb-a",
+          "label": "Chatterbox A · liked",
+          "audio": "../../stage0/voice/board/chatterbox-default.m4a",
+          "text": "The other one you liked last time."
+        },
+        {
+          "id": "santa",
+          "label": "Santa",
+          "audio": "../../stage0/voice/round2/board/kokoro-am_santa.m4a",
+          "text": "American man. Sounds the oldest, by the machine's guess."
+        },
+        {
+          "id": "storyteller",
+          "label": "Storyteller",
+          "audio": "../../stage0/voice/round2/board/qwen-elder_m2.m4a",
+          "text": "Made from a description: a British man of about eighty."
+        },
+        {
+          "id": "george-santa",
+          "label": "George + Santa",
+          "audio": "../../stage0/voice/round2/board/kokoro-old_gs.m4a",
+          "text": "George and Santa mixed, a little slower."
+        },
+        {
+          "id": "elder",
+          "label": "Elder",
+          "audio": "../../stage0/voice/round2/board/qwen-elder_m.m4a",
+          "text": "Made from a description: an elderly man, warm and deep. The slowest."
+        },
+        {
+          "id": "george",
+          "label": "George",
+          "audio": "../../stage0/voice/round2/board/kokoro-bm_george.m4a",
+          "text": "British man, unhurried. My pick."
+        },
+        {
+          "id": "lewis",
+          "label": "Lewis",
+          "audio": "../../stage0/voice/round2/board/kokoro-bm_lewis.m4a",
+          "text": "British man, very deep."
+        },
+        {
+          "id": "bella",
+          "label": "Bella",
+          "audio": "../../stage0/voice/round2/board/kokoro-af_bella.m4a",
+          "text": "American woman. The best-rated voice after Heart."
+        },
+        {
+          "id": "isabella",
+          "label": "Isabella",
+          "audio": "../../stage0/voice/round2/board/kokoro-bf_isabella.m4a",
+          "text": "British woman."
+        }
+      ]
+    },
+    {
+      "id": "japanese",
+      "kind": "board",
+      "rarity": "common",
+      "title": "Japanese voices",
+      "text": "Three voices say \"こんにちは。今日はいい天気ですね。ありがとうございます。\" Tick any that sound right.",
+      "why": "A first listen, like the French one, for a language course later. A machine could make out the right words in all three, but Japanese is where its checking is weakest and it can't judge accent at all. A Japanese speaker's ear is worth far more than this check.",
+      "pick": [
+        "alpha"
+      ],
+      "details": "It means: Hello. Nice weather today, isn't it? Thank you very much.\n\nAlpha and Tebukuro are two of the five Japanese voices that come with Kokoro, the engine behind Heart. Alpha is its best-rated. Both were right first time.\n\nChatterbox A is the voice you liked, in its Japanese mode. One real fault turned up: left alone it reads 今日は (\"today\") as \"konnichiwa\" (\"hello\"), every time, because of the dictionary it leans on. For this clip the word was spelled out in kana so it is told the right reading. The machine check can't hear which way it came out, so this clip is the least certain of the three.\n\nNot checked in any of them: pitch accent and long vowels, which matter in Japanese.\n\nMy pick is on Kokoro's own rating and the word check alone.",
+      "items": [
+        {
+          "id": "alpha",
+          "label": "Alpha",
+          "audio": "../../stage0/voice/round2/clips/kokoro-jf_alpha-7.m4a",
+          "text": "Woman. The best-rated Japanese voice from Heart's engine."
+        },
+        {
+          "id": "tebukuro",
+          "label": "Tebukuro",
+          "audio": "../../stage0/voice/round2/clips/kokoro-jf_tebukuro-7.m4a",
+          "text": "Woman. From Heart's engine."
+        },
+        {
+          "id": "cb-ja",
+          "label": "Chatterbox A",
+          "audio": "../../stage0/voice/round2/clips/chatterbox-kana-7.m4a",
+          "text": "The voice you liked, in Japanese. The least certain."
+        }
+      ]
+    },
+    {
+      "id": "spanish",
+      "kind": "board",
+      "rarity": "common",
+      "title": "Spanish voices",
+      "text": "Three voices say \"Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla.\" Tick any that sound right.",
+      "why": "A first listen, for a language course later. A machine heard the right words in all three and is fairly good at Spanish, but it can't tell a natural accent from a stiff one, or Spain's sounds from Latin America's.",
+      "pick": [
+        "dora"
+      ],
+      "details": "It means: Good morning. How are you? My name is Rosa and I live in Seville.\n\nDora and Alex come with Kokoro, the engine behind Heart. Both were right first time. Kokoro gives no quality rating for its Spanish voices, and its third one is a Santa character, left out.\n\nChatterbox A is the voice you liked, in its Spanish mode. It was right on the second try; the first had a stray sound after the last word.\n\nMy pick is Dora only because the sentence is a woman introducing herself. The word check found nothing to choose between Dora and Alex.",
+      "items": [
+        {
+          "id": "dora",
+          "label": "Dora",
+          "audio": "../../stage0/voice/round2/clips/kokoro-ef_dora-8.m4a",
+          "text": "Woman. From Heart's engine."
+        },
+        {
+          "id": "alex",
+          "label": "Alex",
+          "audio": "../../stage0/voice/round2/clips/kokoro-em_alex-8.m4a",
+          "text": "Man. From Heart's engine."
+        },
+        {
+          "id": "cb-es",
+          "label": "Chatterbox A",
+          "audio": "../../stage0/voice/round2/clips/chatterbox-default-8.m4a",
+          "text": "The voice you liked, in Spanish."
+        }
+      ]
+    },
+    {
+      "id": "italian",
+      "kind": "board",
+      "rarity": "common",
+      "title": "Italian voices",
+      "text": "Three voices: \"Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille.\" Tick any that sound right.",
+      "why": "A first listen, for a language course later. A machine heard the right words in all three and is fairly good at Italian, but it can't judge accent, stress or doubled letters like the ll in mille.",
+      "pick": [
+        "sara"
+      ],
+      "details": "It means: Good morning. My name is Giulia, pleased to meet you. Thank you very much.\n\nSara and Nicola are the two Italian voices that come with Kokoro, the engine behind Heart. Both were right first time, and Kokoro rates them the same.\n\nChatterbox A is the voice you liked, in its Italian mode. It was right on the third try: one try had a stray sound after the last word, and one added an extra \"Grazie\".\n\nMy pick is Sara because the sentence is a woman introducing herself, and the machine was a little surer of her words.",
+      "items": [
+        {
+          "id": "sara",
+          "label": "Sara",
+          "audio": "../../stage0/voice/round2/clips/kokoro-if_sara-9.m4a",
+          "text": "Woman. From Heart's engine."
+        },
+        {
+          "id": "nicola",
+          "label": "Nicola",
+          "audio": "../../stage0/voice/round2/clips/kokoro-im_nicola-9.m4a",
+          "text": "Man. From Heart's engine."
+        },
+        {
+          "id": "cb-it",
+          "label": "Chatterbox A",
+          "audio": "../../stage0/voice/round2/clips/chatterbox-default-9.m4a",
+          "text": "The voice you liked, in Italian."
+        }
+      ]
+    },
+    {
+      "id": "hindi",
+      "kind": "board",
+      "rarity": "common",
+      "title": "Hindi voices",
+      "text": "Three voices say \"नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।\" Tick any that sound right.",
+      "why": "A first listen, for a language course later. A machine could make out the right words in all three, but it has heard far less Hindi than English, so a pass means less here. A Hindi speaker's ear is worth far more than this check.",
+      "pick": [
+        "psi"
+      ],
+      "details": "It means: Hello. How are you? My name is Arjun. Thank you.\n\nAlpha and Psi are two of the four Hindi voices that come with Kokoro, the engine behind Heart. All four were right first time and Kokoro rates them the same, so these are simply one woman and one man.\n\nChatterbox A is the voice you liked, in its Hindi mode. It was right on the third try; the first two had a stray sound after the last word.\n\nKokoro works out Hindi pronunciation from spelling rules, which is where a voice can go subtly wrong in ways this check would not notice.\n\nMy pick is Psi only because the sentence is a man introducing himself.",
+      "items": [
+        {
+          "id": "alpha-hi",
+          "label": "Alpha",
+          "audio": "../../stage0/voice/round2/clips/kokoro-hf_alpha-10.m4a",
+          "text": "Woman. From Heart's engine."
+        },
+        {
+          "id": "psi",
+          "label": "Psi",
+          "audio": "../../stage0/voice/round2/clips/kokoro-hm_psi-10.m4a",
+          "text": "Man. From Heart's engine."
+        },
+        {
+          "id": "cb-hi",
+          "label": "Chatterbox A",
+          "audio": "../../stage0/voice/round2/clips/chatterbox-default-10.m4a",
+          "text": "The voice you liked, in Hindi."
+        }
+      ]
+    }
+  ]
+}

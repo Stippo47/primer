@@ -1,0 +1,139 @@
+{
+  "asked_for": "More narrator voices, an older-sounding one above all, and first samples in Japanese, Spanish, Italian and Hindi.",
+  "how_this_differs_from_round_1": [
+    "Same five English lines, same encoder (round 1's encode.py), same loudness, same recogniser.",
+    "check_asr2.py builds on round 1's check: it adds Hindi and Japanese comparisons, the recogniser's own guess at the language, and its confidence in the words.",
+    "Clips are cut at the first pause longer than 0.7 s, as in round 1, for Chatterbox English. Kokoro blends and the described voices speak slowly, so they use 1.0 s; the four language lines hold three sentences each, so they use 1.2 s. A longer limit keeps more of whatever an engine adds after a pause, so it is the stricter choice for the 'sound after the last word' test.",
+    "Retakes are automatic (takes.py): a clip is remade with a new seed until the recogniser hears the right words and no long tail, and every discarded take is listed under check_discarded_takes.",
+    "Joined board clips use half a second between lines, the same as round 1's, measured from its files.",
+    "Round 1's encoder corrects the loudness at most five times, which left six stored Kokoro clips off target (Lewis, line 1, by 2 dB). encode_more.py repeats the same steps up to twenty times and was run on those six. The lufs figure on every clip below is what the finished file measures."
+  ],
+  "measurements": {
+    "pitch_hz": "Median pitch of the voice over the five English lines (measure.py). Lower is deeper.",
+    "words_per_minute": "Spoken words divided by the length of the five trimmed clips. Heart is 184, Chatterbox A is 233.",
+    "pause_share": "Share of the clip time that is quiet.",
+    "age_guess": "A separate model's guess at the speaker's age, averaged over the five lines (estimate_age.py). A ranking aid only: the model was trained on real people and has never been checked on computer voices. It agrees with what is known about the voices (the one named Santa comes out oldest), which is some comfort and no proof.",
+    "sameness_mean": "How alike the voice is from line to line, by a speaker encoder (sameness.py). A fixed Kokoro voice scores about 0.90; two different voices of the same sex score about 0.72.",
+    "grade": "Kokoro's publisher's own grade for the quality and amount of training data behind a voice. Not a listening score."
+  },
+  "engines": [
+    {
+      "id": "kokoro",
+      "name": "Kokoro 82M",
+      "model": "hexgrad/Kokoro-82M, v1.0",
+      "version": "kokoro 0.9.4, misaki 0.9.4, torch 2.11.0+cu128",
+      "licence": "Apache-2.0 (code, model and voices)",
+      "source": "PyPI package kokoro; model and voice files from the publisher's Hugging Face repo",
+      "notes": [
+        "Same text gives the same audio every time. All 204 Kokoro clips made this round (28 English voices, 10 blends and slowed voices, 14 clips in the four languages) had the right words first time.",
+        "A blend is a weighted average of the style files of voices that ship with the model. Nothing is recorded or imitated.",
+        "Japanese needed extra text packages, and one substitution: pyopenjtalk has no ready-built Windows package and needs a compiler, so pyopenjtalk-plus (the same module, ready-built) was installed instead. Kokoro's default Japanese front end uses fugashi with the UniDic dictionary, not Open JTalk, so the substitute is only imported, not used.",
+        "Kokoro's front end drops the Japanese full stop (。) and the Hindi one (।): three sentences come out with no pause between them. gen_kokoro2.py hands it Western full stops instead; the words are unchanged. An app using Kokoro for these languages would need the same small step.",
+        "af_nicole is a whispered voice with long pauses. Round 1's trimming cut its lines short, so it was re-encoded with gentler trimming to measure it. Not a narrator candidate as it stands.",
+        "bm_fable has about a second of sound after the last word on four of its five lines, every time. Not put forward."
+      ]
+    },
+    {
+      "id": "chatterbox",
+      "name": "Chatterbox Multilingual",
+      "model": "ResembleAI/chatterbox, multilingual v2 weights (t3_mtl23ls_v2)",
+      "version": "chatterbox-tts 0.1.7, torch 2.11.0+cu128",
+      "licence": "MIT (code and model)",
+      "source": "As round 1: PyPI package, model files from the publisher's Hugging Face repo",
+      "notes": [
+        "Only the built-in voice was used this round (round 1's 'Chatterbox A'). No reference recordings.",
+        "Random by nature, so every clip is checked and remade if wrong.",
+        "Its Japanese front end turns kanji into kana with a dictionary (pykakasi) that always reads 今日は as the greeting 'konnichiwa'. Given '今日はいい天気ですね' it is told to say 'konnichiwa ii tenki desu ne'. This is certain from its code and from the text it produces, though the recogniser cannot hear the difference (see languages.ja). chatterbox-kana-7 is the same sentence with 今日 written きょう, so the engine is told the right reading."
+      ]
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen3-TTS (VoiceDesign, then Base)",
+      "model": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign and Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+      "version": "qwen-tts 0.1.1, torch 2.11.0+cu128, without the optional flash-attn speed-up",
+      "licence": "Apache-2.0 (code and both models)",
+      "source": "PyPI package qwen-tts; model files from the publisher's Hugging Face repos. Its own new environment.",
+      "chosen_instead_of": "Parler-TTS (Apache-2.0), which the brief named first. Qwen3-TTS is newer, also builds a voice from a written description, and its publisher documents a way to keep that voice steady. Parler-TTS was not installed or tried.",
+      "notes": [
+        "No recording of any person is involved. The model is given a description in words and invents a voice.",
+        "Description alone drifts: with the same description and nothing else, the five lines were about as alike as five different men (sameness 0.76, least alike pair 0.64). Words were right first time on all 10 clips.",
+        "The publisher's recipe fixes that: make one reference line from the description, then give that made-up recording to the Base model as the voice for every line. Sameness rose to 0.86 to 0.88, close to a fixed Kokoro voice. All 15 clips were right first time. The Base model is a voice-cloning model; here the only thing it copies is the first model's invention. It must never be pointed at a recording of a real person.",
+        "Slow next to the others: 1.6 seconds of computing per second of speech on this graphics card, against 0.02 for Kokoro and 0.6 for Chatterbox. Peak graphics memory 5.4 GB.",
+        "Random by nature, like Chatterbox, but repeatable: two separate runs with the same seeds gave the same reference clip, byte for byte, and lines of the same length.",
+        "It also speaks Japanese, Spanish and Italian (not Hindi). Not tried in those languages this round."
+      ]
+    }
+  ],
+  "measuring_tools": [
+    {"name": "faster-whisper large-v3", "use": "word check, as round 1", "licence": "MIT"},
+    {"name": "pykakasi 2.3.0", "use": "kana readings for the Japanese comparison", "licence": "GPL-3.0-or-later. Used as a tool only; nothing from it ships."},
+    {"name": "audeering/wav2vec2-large-robust-24-ft-age-gender", "use": "age guess", "licence": "CC BY-NC-SA 4.0: non-commercial. Used only to measure; nothing from it ships. Not an engine, so strictly outside the brief's download list; from its publisher's own Hugging Face page."},
+    {"name": "Chatterbox's speaker encoder (ve.pt)", "use": "line-to-line sameness", "licence": "MIT, already present"},
+    {"name": "librosa pYIN", "use": "pitch", "licence": "ISC, already present"}
+  ],
+  "older_voice_attempts": [
+    {
+      "way": "Kokoro's lowest and slowest stock voices",
+      "result": "The two lowest-pitched men (Onyx 86 Hz, Lewis 90 Hz) are not the oldest-sounding by the age guess (39 and 47). Santa (67) and George (57) are, and they are also the two slowest. Low pitch alone does not make a voice old.",
+      "kept": ["kokoro-am_santa", "kokoro-bm_george", "kokoro-bm_lewis", "kokoro-am_onyx"]
+    },
+    {
+      "way": "Kokoro blends at a slower speed",
+      "result": "Works, and is free: same speed and reliability as any Kokoro voice. Ten were made. Blending the two deepest voices, as the brief suggested (Lewis + Onyx), gives a deep voice that is not old (age guess 46). Blends with Santa or George in them are: George + Santa 63, Santa + Onyx 61, George + Santa + Lewis 59. Slowing a voice changes pace, not age (George at 0.9 speed: 148 words a minute, age guess 58 against 57). A blend built on Heart with two older-sounding British women moved Heart from 31 to 39.",
+      "kept": ["kokoro-old_gs", "kokoro-old_so"]
+    },
+    {
+      "way": "Chatterbox's built-in voice with calmer settings",
+      "result": "Does not give an older voice, barely a slower one, and costs reliability. Three settings were tried (exaggeration / cfg / temperature): 0.35/0.3/0.7 was no slower (232 words a minute against 233) and needed 14 takes for 5 lines, one of which never came out right in 6; 0.25/0.2/0.6 was 213 words a minute and needed 12 takes for 5 lines; 0.2/0.1/0.5 was 212 words a minute and needed 7 takes for 5 lines. Age guess stayed at 34 to 38 (round 1's is 38). The last one is on the board so the designer can hear what 'calmer' amounts to. Typical faults: 'start a turning' for 'start it turning', mangled numbers ('more than 0 to 100 people'), a stray word or babble after the last word.",
+      "kept": ["chatterbox-slower"]
+    },
+    {
+      "way": "A voice made from a written description",
+      "result": "Works: see the qwen engine notes. The elderly-man description gave the slowest and nearly the deepest voice of the round (145 words a minute, 94 Hz, age guess 59); a British man of about eighty gave age guess 64 at 104 Hz. A 'very old woman' description came out at age guess 37 and is not put forward: either the model did not follow it or the age guess is poor on older women's voices, and nobody here can tell which.",
+      "kept": ["qwen-elder_m", "qwen-elder_m2"]
+    },
+    {
+      "way": "Cloning a real older speaker",
+      "result": "Not done, by rule. It was not needed: three other ways gave voices the age guess puts at 59 to 67."
+    }
+  ],
+  "languages": {
+    "how_far_to_trust_the_check": "A pass means the recogniser could make out the right words. It cannot judge accent, rhythm, stress or whether a native speaker would wince, and it tends to write down the sentence it expects. Spanish and Italian: fairly strong, the recogniser is good in both. Hindi: weaker; it has heard far less Hindi, and small marks (है / हैं) are beyond it. Japanese: weakest; see ja.",
+    "ja": {
+      "put_forward": ["kokoro-jf_alpha", "kokoro-jf_tebukuro", "chatterbox-kana"],
+      "kokoro": "Five voices, all with the right words. Alpha has the best grade (C+); Tebukuro is one of two at C and the recogniser was a little surer of its words than of Gongitsune's. The one man, Kumo, is C-.",
+      "chatterbox": "One take each for the sentence as written and with 今日 spelled in kana, both marked 'cannot tell': the recogniser writes 今日は for both the greeting and 'today', so it cannot say whether the second phrase was 'kyou wa' (right) or 'konnichiwa' (wrong). By its own front end the as-written clip is told to say it wrong, and the kana clip right; the kana clip is the one on the board. An earlier, stricter version of the check failed all 11 Chatterbox takes on this point before the ambiguity was understood.",
+      "weak": [
+        "The 'sound after the last word' test is off for Japanese: the recogniser's word times are wrong there.",
+        "Pitch accent and vowel length, which matter in Japanese, are not checked at all.",
+        "今日は is unreadable to the check, as above."
+      ]
+    },
+    "es": {
+      "put_forward": ["kokoro-ef_dora", "kokoro-em_alex", "chatterbox-default"],
+      "kokoro": "Three voices, no published grades, all with the right words. Dora and Alex are put forward; the third is a Santa character voice.",
+      "chatterbox": "Right on the second take; the first had sound after the last word.",
+      "weak": ["Kokoro's Spanish front end is espeak's general Spanish. Whether 'Sevilla' and 'llamo' come out with a Castilian or a Latin American sound is not something this check can tell."]
+    },
+    "it": {
+      "put_forward": ["kokoro-if_sara", "kokoro-im_nicola", "chatterbox-default"],
+      "kokoro": "Both voices (grade C), both with the right words.",
+      "chatterbox": "Right on the third take: one take had sound after the last word, one added an extra 'Grazie.'",
+      "weak": ["Double consonants (mille) and stress are not checked."]
+    },
+    "hi": {
+      "put_forward": ["kokoro-hf_alpha", "kokoro-hm_psi", "chatterbox-default"],
+      "kokoro": "Four voices, all grade C, all with the right words. One woman and one man are put forward: Alpha, and Psi, the one whose language the recogniser was surest of.",
+      "chatterbox": "Right on the third take; the first two had sound after the last word.",
+      "weak": [
+        "The recogniser is less practised in Hindi and its confidence numbers mean less.",
+        "Kokoro's Hindi goes through espeak, a rule-based front end; schwa deletion and retroflex sounds are where such front ends go wrong, and the check would not notice."
+      ]
+    }
+  },
+  "not_in_the_tables": [
+    "Chatterbox English at 0.35/0.3/0.7 and a first run at 0.25/0.2/0.6 with the 1.0 s pause limit: 10 clips, 16 discarded takes, one clip never right. Summarised under older_voice_attempts; the rows below are the rerun with round 1's 0.7 s limit.",
+    "Qwen3-TTS from the description alone (two voices, 10 clips): right words, but the voice drifts. Replaced by the steady recipe.",
+    "A first set of Chatterbox Japanese takes checked with a rule that read every 今日 as 'kyou': 11 takes, all failed. Replaced once the ambiguity was understood."
+  ]
+}

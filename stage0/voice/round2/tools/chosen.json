@@ -1,0 +1,32 @@
+{
+  "note": "Which voices round 2 puts forward. Their clips are stored in ../clips; every other voice was generated, checked and measured the same way and is described in samples.json by its numbers only (Kokoro can remake any of them in under a second).",
+  "english": [
+    "kokoro-am_santa", "qwen-elder_m2", "kokoro-old_gs", "kokoro-old_so", "qwen-elder_m", "kokoro-bm_george",
+    "kokoro-bm_lewis", "kokoro-am_onyx", "chatterbox-slower",
+    "kokoro-af_bella", "kokoro-af_kore", "kokoro-bf_isabella", "kokoro-am_fenrir"
+  ],
+  "languages": {
+    "ja": ["kokoro-jf_alpha", "kokoro-jf_tebukuro", "chatterbox-kana"],
+    "es": ["kokoro-ef_dora", "kokoro-em_alex", "chatterbox-default"],
+    "it": ["kokoro-if_sara", "kokoro-im_nicola", "chatterbox-default"],
+    "hi": ["kokoro-hf_alpha", "kokoro-hm_psi", "chatterbox-default"]
+  },
+  "kept_as_evidence": ["chatterbox-default"],
+  "kept_as_evidence_note": "chatterbox-default-7 is the Japanese sentence exactly as written, where Chatterbox's own front end reads 今日は as the greeting. It is not on a board; chatterbox-kana-7 is.",
+  "round1_reference": ["kokoro-af_heart@round1", "chatterbox-default@round1", "chatterbox-en_f1@round1"],
+  "why": {
+    "kokoro-am_santa": "Older candidate: the oldest-sounding stock voice by the age guess (67) and one of the slowest. Weakest training data of any English voice (grade D-).",
+    "kokoro-bm_george": "Older candidate: second-oldest stock voice by the age guess (57), the slowest stock voice (159 words a minute), and the best grade among the older-sounding men (C).",
+    "kokoro-bm_lewis": "Older candidate by the brief's rule: second-lowest pitch (90 Hz) and slow (170 words a minute). Age guess 47. Grade D+.",
+    "kokoro-am_onyx": "Older candidate by the brief's rule: the lowest pitch of all (86 Hz). Not slow (193) and not old by the age guess (39). Grade D.",
+    "kokoro-old_gs": "Blend, 60% George and 40% Santa, at 0.92 speed: the oldest-sounding blend by the age guess (63), mostly built on the better-graded voice.",
+    "kokoro-old_so": "Blend, 60% Santa and 40% Onyx, at 0.92 speed: nearly as old by the age guess (61) and much deeper than Santa alone (124 Hz against 167).",
+    "qwen-elder_m": "Made from the description 'an elderly man in his seventies with a warm, deep, unhurried voice': the slowest (145 words a minute) and nearly the deepest (94 Hz) of everything here. Age guess 59.",
+    "qwen-elder_m2": "Made from the description 'a British man of about eighty with an aged, gravelly, kind voice': age guess 64, second only to Santa. A little less steady from line to line than the other described voice.",
+    "chatterbox-slower": "The voice the designer liked (Chatterbox A) with the calmest settings that still behaved: 9% slower than round 1's, no older.",
+    "kokoro-af_bella": "A woman unlike Heart in age guess (43 against 31) though not in pitch; the best-graded voice after Heart (A-).",
+    "kokoro-af_kore": "A woman unlike Heart: 50 Hz lower (151 against 202). Grade C+.",
+    "kokoro-bf_isabella": "A woman unlike Heart: British. Grade C.",
+    "kokoro-am_fenrir": "For range: the best-graded man not heard in round 1 (C+), and a young one by the age guess (24)."
+  }
+}

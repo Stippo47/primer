@@ -1,0 +1,5368 @@
+{
+  "made": "2026-11-17",
+  "round": 2,
+  "naturalness": "Not judged. No person has listened to these clips. Words were checked by a recogniser; pitch, pace, age and line-to-line sameness are machine measurements.",
+  "format": "AAC-LC in M4A, mono, 24 kHz, 64 kbps, one file per line; board/ has one joined file per voice",
+  "loudness_target_lufs": -16,
+  "clips_total_bytes": 3160630,
+  "asked_for": "More narrator voices, an older-sounding one above all, and first samples in Japanese, Spanish, Italian and Hindi.",
+  "how_this_differs_from_round_1": [
+    "Same five English lines, same encoder (round 1's encode.py), same loudness, same recogniser.",
+    "check_asr2.py builds on round 1's check: it adds Hindi and Japanese comparisons, the recogniser's own guess at the language, and its confidence in the words.",
+    "Clips are cut at the first pause longer than 0.7 s, as in round 1, for Chatterbox English. Kokoro blends and the described voices speak slowly, so they use 1.0 s; the four language lines hold three sentences each, so they use 1.2 s. A longer limit keeps more of whatever an engine adds after a pause, so it is the stricter choice for the 'sound after the last word' test.",
+    "Retakes are automatic (takes.py): a clip is remade with a new seed until the recogniser hears the right words and no long tail, and every discarded take is listed under check_discarded_takes.",
+    "Joined board clips use half a second between lines, the same as round 1's, measured from its files.",
+    "Round 1's encoder corrects the loudness at most five times, which left six stored Kokoro clips off target (Lewis, line 1, by 2 dB). encode_more.py repeats the same steps up to twenty times and was run on those six. The lufs figure on every clip below is what the finished file measures."
+  ],
+  "measurements": {
+    "pitch_hz": "Median pitch of the voice over the five English lines (measure.py). Lower is deeper.",
+    "words_per_minute": "Spoken words divided by the length of the five trimmed clips. Heart is 184, Chatterbox A is 233.",
+    "pause_share": "Share of the clip time that is quiet.",
+    "age_guess": "A separate model's guess at the speaker's age, averaged over the five lines (estimate_age.py). A ranking aid only: the model was trained on real people and has never been checked on computer voices. It agrees with what is known about the voices (the one named Santa comes out oldest), which is some comfort and no proof.",
+    "sameness_mean": "How alike the voice is from line to line, by a speaker encoder (sameness.py). A fixed Kokoro voice scores about 0.90; two different voices of the same sex score about 0.72.",
+    "grade": "Kokoro's publisher's own grade for the quality and amount of training data behind a voice. Not a listening score."
+  },
+  "engines": [
+    {
+      "id": "kokoro",
+      "name": "Kokoro 82M",
+      "model": "hexgrad/Kokoro-82M, v1.0",
+      "version": "kokoro 0.9.4, misaki 0.9.4, torch 2.11.0+cu128",
+      "licence": "Apache-2.0 (code, model and voices)",
+      "source": "PyPI package kokoro; model and voice files from the publisher's Hugging Face repo",
+      "notes": [
+        "Same text gives the same audio every time. All 204 Kokoro clips made this round (28 English voices, 10 blends and slowed voices, 14 clips in the four languages) had the right words first time.",
+        "A blend is a weighted average of the style files of voices that ship with the model. Nothing is recorded or imitated.",
+        "Japanese needed extra text packages, and one substitution: pyopenjtalk has no ready-built Windows package and needs a compiler, so pyopenjtalk-plus (the same module, ready-built) was installed instead. Kokoro's default Japanese front end uses fugashi with the UniDic dictionary, not Open JTalk, so the substitute is only imported, not used.",
+        "Kokoro's front end drops the Japanese full stop (。) and the Hindi one (।): three sentences come out with no pause between them. gen_kokoro2.py hands it Western full stops instead; the words are unchanged. An app using Kokoro for these languages would need the same small step.",
+        "af_nicole is a whispered voice with long pauses. Round 1's trimming cut its lines short, so it was re-encoded with gentler trimming to measure it. Not a narrator candidate as it stands.",
+        "bm_fable has about a second of sound after the last word on four of its five lines, every time. Not put forward."
+      ]
+    },
+    {
+      "id": "chatterbox",
+      "name": "Chatterbox Multilingual",
+      "model": "ResembleAI/chatterbox, multilingual v2 weights (t3_mtl23ls_v2)",
+      "version": "chatterbox-tts 0.1.7, torch 2.11.0+cu128",
+      "licence": "MIT (code and model)",
+      "source": "As round 1: PyPI package, model files from the publisher's Hugging Face repo",
+      "notes": [
+        "Only the built-in voice was used this round (round 1's 'Chatterbox A'). No reference recordings.",
+        "Random by nature, so every clip is checked and remade if wrong.",
+        "Its Japanese front end turns kanji into kana with a dictionary (pykakasi) that always reads 今日は as the greeting 'konnichiwa'. Given '今日はいい天気ですね' it is told to say 'konnichiwa ii tenki desu ne'. This is certain from its code and from the text it produces, though the recogniser cannot hear the difference (see languages.ja). chatterbox-kana-7 is the same sentence with 今日 written きょう, so the engine is told the right reading."
+      ]
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen3-TTS (VoiceDesign, then Base)",
+      "model": "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign and Qwen/Qwen3-TTS-12Hz-1.7B-Base",
+      "version": "qwen-tts 0.1.1, torch 2.11.0+cu128, without the optional flash-attn speed-up",
+      "licence": "Apache-2.0 (code and both models)",
+      "source": "PyPI package qwen-tts; model files from the publisher's Hugging Face repos. Its own new environment.",
+      "chosen_instead_of": "Parler-TTS (Apache-2.0), which the brief named first. Qwen3-TTS is newer, also builds a voice from a written description, and its publisher documents a way to keep that voice steady. Parler-TTS was not installed or tried.",
+      "notes": [
+        "No recording of any person is involved. The model is given a description in words and invents a voice.",
+        "Description alone drifts: with the same description and nothing else, the five lines were about as alike as five different men (sameness 0.76, least alike pair 0.64). Words were right first time on all 10 clips.",
+        "The publisher's recipe fixes that: make one reference line from the description, then give that made-up recording to the Base model as the voice for every line. Sameness rose to 0.86 to 0.88, close to a fixed Kokoro voice. All 15 clips were right first time. The Base model is a voice-cloning model; here the only thing it copies is the first model's invention. It must never be pointed at a recording of a real person.",
+        "Slow next to the others: 1.6 seconds of computing per second of speech on this graphics card, against 0.02 for Kokoro and 0.6 for Chatterbox. Peak graphics memory 5.4 GB.",
+        "Random by nature, like Chatterbox, but repeatable: two separate runs with the same seeds gave the same reference clip, byte for byte, and lines of the same length.",
+        "It also speaks Japanese, Spanish and Italian (not Hindi). Not tried in those languages this round."
+      ]
+    }
+  ],
+  "measuring_tools": [
+    {
+      "name": "faster-whisper large-v3",
+      "use": "word check, as round 1",
+      "licence": "MIT"
+    },
+    {
+      "name": "pykakasi 2.3.0",
+      "use": "kana readings for the Japanese comparison",
+      "licence": "GPL-3.0-or-later. Used as a tool only; nothing from it ships."
+    },
+    {
+      "name": "audeering/wav2vec2-large-robust-24-ft-age-gender",
+      "use": "age guess",
+      "licence": "CC BY-NC-SA 4.0: non-commercial. Used only to measure; nothing from it ships. Not an engine, so strictly outside the brief's download list; from its publisher's own Hugging Face page."
+    },
+    {
+      "name": "Chatterbox's speaker encoder (ve.pt)",
+      "use": "line-to-line sameness",
+      "licence": "MIT, already present"
+    },
+    {
+      "name": "librosa pYIN",
+      "use": "pitch",
+      "licence": "ISC, already present"
+    }
+  ],
+  "older_voice_attempts": [
+    {
+      "way": "Kokoro's lowest and slowest stock voices",
+      "result": "The two lowest-pitched men (Onyx 86 Hz, Lewis 90 Hz) are not the oldest-sounding by the age guess (39 and 47). Santa (67) and George (57) are, and they are also the two slowest. Low pitch alone does not make a voice old.",
+      "kept": [
+        "kokoro-am_santa",
+        "kokoro-bm_george",
+        "kokoro-bm_lewis",
+        "kokoro-am_onyx"
+      ]
+    },
+    {
+      "way": "Kokoro blends at a slower speed",
+      "result": "Works, and is free: same speed and reliability as any Kokoro voice. Ten were made. Blending the two deepest voices, as the brief suggested (Lewis + Onyx), gives a deep voice that is not old (age guess 46). Blends with Santa or George in them are: George + Santa 63, Santa + Onyx 61, George + Santa + Lewis 59. Slowing a voice changes pace, not age (George at 0.9 speed: 148 words a minute, age guess 58 against 57). A blend built on Heart with two older-sounding British women moved Heart from 31 to 39.",
+      "kept": [
+        "kokoro-old_gs",
+        "kokoro-old_so"
+      ]
+    },
+    {
+      "way": "Chatterbox's built-in voice with calmer settings",
+      "result": "Does not give an older voice, barely a slower one, and costs reliability. Three settings were tried (exaggeration / cfg / temperature): 0.35/0.3/0.7 was no slower (232 words a minute against 233) and needed 14 takes for 5 lines, one of which never came out right in 6; 0.25/0.2/0.6 was 213 words a minute and needed 12 takes for 5 lines; 0.2/0.1/0.5 was 212 words a minute and needed 7 takes for 5 lines. Age guess stayed at 34 to 38 (round 1's is 38). The last one is on the board so the designer can hear what 'calmer' amounts to. Typical faults: 'start a turning' for 'start it turning', mangled numbers ('more than 0 to 100 people'), a stray word or babble after the last word.",
+      "kept": [
+        "chatterbox-slower"
+      ]
+    },
+    {
+      "way": "A voice made from a written description",
+      "result": "Works: see the qwen engine notes. The elderly-man description gave the slowest and nearly the deepest voice of the round (145 words a minute, 94 Hz, age guess 59); a British man of about eighty gave age guess 64 at 104 Hz. A 'very old woman' description came out at age guess 37 and is not put forward: either the model did not follow it or the age guess is poor on older women's voices, and nobody here can tell which.",
+      "kept": [
+        "qwen-elder_m",
+        "qwen-elder_m2"
+      ]
+    },
+    {
+      "way": "Cloning a real older speaker",
+      "result": "Not done, by rule. It was not needed: three other ways gave voices the age guess puts at 59 to 67."
+    }
+  ],
+  "languages": {
+    "how_far_to_trust_the_check": "A pass means the recogniser could make out the right words. It cannot judge accent, rhythm, stress or whether a native speaker would wince, and it tends to write down the sentence it expects. Spanish and Italian: fairly strong, the recogniser is good in both. Hindi: weaker; it has heard far less Hindi, and small marks (है / हैं) are beyond it. Japanese: weakest; see ja.",
+    "ja": {
+      "put_forward": [
+        "kokoro-jf_alpha",
+        "kokoro-jf_tebukuro",
+        "chatterbox-kana"
+      ],
+      "kokoro": "Five voices, all with the right words. Alpha has the best grade (C+); Tebukuro is one of two at C and the recogniser was a little surer of its words than of Gongitsune's. The one man, Kumo, is C-.",
+      "chatterbox": "One take each for the sentence as written and with 今日 spelled in kana, both marked 'cannot tell': the recogniser writes 今日は for both the greeting and 'today', so it cannot say whether the second phrase was 'kyou wa' (right) or 'konnichiwa' (wrong). By its own front end the as-written clip is told to say it wrong, and the kana clip right; the kana clip is the one on the board. An earlier, stricter version of the check failed all 11 Chatterbox takes on this point before the ambiguity was understood.",
+      "weak": [
+        "The 'sound after the last word' test is off for Japanese: the recogniser's word times are wrong there.",
+        "Pitch accent and vowel length, which matter in Japanese, are not checked at all.",
+        "今日は is unreadable to the check, as above."
+      ]
+    },
+    "es": {
+      "put_forward": [
+        "kokoro-ef_dora",
+        "kokoro-em_alex",
+        "chatterbox-default"
+      ],
+      "kokoro": "Three voices, no published grades, all with the right words. Dora and Alex are put forward; the third is a Santa character voice.",
+      "chatterbox": "Right on the second take; the first had sound after the last word.",
+      "weak": [
+        "Kokoro's Spanish front end is espeak's general Spanish. Whether 'Sevilla' and 'llamo' come out with a Castilian or a Latin American sound is not something this check can tell."
+      ]
+    },
+    "it": {
+      "put_forward": [
+        "kokoro-if_sara",
+        "kokoro-im_nicola",
+        "chatterbox-default"
+      ],
+      "kokoro": "Both voices (grade C), both with the right words.",
+      "chatterbox": "Right on the third take: one take had sound after the last word, one added an extra 'Grazie.'",
+      "weak": [
+        "Double consonants (mille) and stress are not checked."
+      ]
+    },
+    "hi": {
+      "put_forward": [
+        "kokoro-hf_alpha",
+        "kokoro-hm_psi",
+        "chatterbox-default"
+      ],
+      "kokoro": "Four voices, all grade C, all with the right words. One woman and one man are put forward: Alpha, and Psi, the one whose language the recogniser was surest of.",
+      "chatterbox": "Right on the third take; the first two had sound after the last word.",
+      "weak": [
+        "The recogniser is less practised in Hindi and its confidence numbers mean less.",
+        "Kokoro's Hindi goes through espeak, a rule-based front end; schwa deletion and retroflex sounds are where such front ends go wrong, and the check would not notice."
+      ]
+    }
+  },
+  "not_in_the_tables": [
+    "Chatterbox English at 0.35/0.3/0.7 and a first run at 0.25/0.2/0.6 with the 1.0 s pause limit: 10 clips, 16 discarded takes, one clip never right. Summarised under older_voice_attempts; the rows below are the rerun with round 1's 0.7 s limit.",
+    "Qwen3-TTS from the description alone (two voices, 10 clips): right words, but the voice drifts. Replaced by the steady recipe.",
+    "A first set of Chatterbox Japanese takes checked with a rule that read every 今日 as 'kyou': 11 takes, all failed. Replaced once the ambiguity was understood."
+  ],
+  "lines": [
+    {
+      "n": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel."
+    },
+    {
+      "n": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise."
+    },
+    {
+      "n": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning."
+    },
+    {
+      "n": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people."
+    },
+    {
+      "n": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup."
+    },
+    {
+      "n": 7,
+      "lang": "ja",
+      "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+      "respell": "こんにちは。きょうはいい天気ですね。ありがとうございます。",
+      "respell_note": "The same sentence with 今日 written in kana. Only for an engine whose own front end misreads 今日は; see gen_chatterbox2.py."
+    },
+    {
+      "n": 8,
+      "lang": "es",
+      "text": "Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla."
+    },
+    {
+      "n": 9,
+      "lang": "it",
+      "text": "Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille."
+    },
+    {
+      "n": 10,
+      "lang": "hi",
+      "text": "नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।"
+    }
+  ],
+  "takes_by_engine": {
+    "kokoro": {
+      "clips": 204,
+      "takes": 204,
+      "right_first_time": 204,
+      "failed_after_all_takes": 0
+    },
+    "chatterbox": {
+      "clips": 15,
+      "takes": 29,
+      "right_first_time": 6,
+      "failed_after_all_takes": 0
+    },
+    "qwen": {
+      "clips": 15,
+      "takes": 15,
+      "right_first_time": 15,
+      "failed_after_all_takes": 0
+    }
+  },
+  "voices": [
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "langs": [
+        "es",
+        "hi",
+        "it",
+        "ja"
+      ],
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "check": {
+        "clips": 4,
+        "takes": 9,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "minor",
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "kana",
+      "langs": [
+        "ja"
+      ],
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "minor"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slow",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "exaggeration": 0.25,
+        "cfg_weight": 0.2,
+        "temperature": 0.6
+      },
+      "seconds": 19.12,
+      "pitch_hz": 151.1,
+      "pitch_low_hz": 98.0,
+      "pitch_high_hz": 211.3,
+      "words_per_minute": 213.4,
+      "pause_share": 0.097,
+      "age_guess": 33.8,
+      "age_guess_per_clip": [
+        41.2,
+        31.9,
+        41.4,
+        25.8,
+        38.5
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.98,
+      "sameness_mean": 0.908,
+      "sameness_min": 0.879,
+      "check": {
+        "clips": 5,
+        "takes": 12,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seconds": 19.27,
+      "pitch_hz": 164.8,
+      "pitch_low_hz": 101.5,
+      "pitch_high_hz": 220.0,
+      "words_per_minute": 211.7,
+      "pause_share": 0.084,
+      "age_guess": 37.0,
+      "age_guess_per_clip": [
+        51.8,
+        39.9,
+        37.0,
+        31.6,
+        37.4
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.98,
+      "sameness_mean": 0.911,
+      "sameness_min": 0.888,
+      "check": {
+        "clips": 5,
+        "takes": 7,
+        "right_first_time": 3,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "The voice the designer liked (Chatterbox A) with the calmest settings that still behaved: 9% slower than round 1's, no older."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_alloy",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.78,
+      "pitch_hz": 144.3,
+      "pitch_low_hz": 118.3,
+      "pitch_high_hz": 180.8,
+      "words_per_minute": 187.4,
+      "pause_share": 0.113,
+      "age_guess": 38.2,
+      "age_guess_per_clip": [
+        35.1,
+        45.3,
+        43.5,
+        33.6,
+        36.6
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.97,
+      "sameness_mean": 0.914,
+      "sameness_min": 0.876,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_aoede",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.46,
+      "pitch_hz": 183.9,
+      "pitch_low_hz": 152.9,
+      "pitch_high_hz": 246.9,
+      "words_per_minute": 190.1,
+      "pause_share": 0.107,
+      "age_guess": 36.5,
+      "age_guess_per_clip": [
+        43.4,
+        49.8,
+        41.1,
+        29.3,
+        32.7
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.905,
+      "sameness_min": 0.86,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "A-",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.7,
+      "pitch_hz": 205.3,
+      "pitch_low_hz": 174.6,
+      "pitch_high_hz": 252.7,
+      "words_per_minute": 179.8,
+      "pause_share": 0.163,
+      "age_guess": 42.7,
+      "age_guess_per_clip": [
+        39.6,
+        49.6,
+        43.6,
+        40.6,
+        40.9
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.897,
+      "sameness_min": 0.81,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "A woman unlike Heart in age guess (43 against 31) though not in pitch; the best-graded voice after Heart (A-)."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "A",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.2,
+      "pitch_hz": 201.7,
+      "pitch_low_hz": 167.7,
+      "pitch_high_hz": 267.7,
+      "words_per_minute": 183.8,
+      "pause_share": 0.148,
+      "age_guess": 30.8,
+      "age_guess_per_clip": [
+        33.8,
+        36.8,
+        32.3,
+        28.2,
+        28.4
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.899,
+      "sameness_min": 0.841,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_jessica",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 20.04,
+      "pitch_hz": 211.3,
+      "pitch_low_hz": 170.6,
+      "pitch_high_hz": 282.0,
+      "words_per_minute": 203.6,
+      "pause_share": 0.076,
+      "age_guess": 30.0,
+      "age_guess_per_clip": [
+        29.1,
+        39.5,
+        28.1,
+        28.0,
+        26.9
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.97,
+      "sameness_mean": 0.898,
+      "sameness_min": 0.82,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.08,
+      "pitch_hz": 151.1,
+      "pitch_low_hz": 117.2,
+      "pitch_high_hz": 227.8,
+      "words_per_minute": 184.8,
+      "pause_share": 0.079,
+      "age_guess": 41.7,
+      "age_guess_per_clip": [
+        47.0,
+        48.8,
+        40.7,
+        41.3,
+        36.3
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.911,
+      "sameness_min": 0.855,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "A woman unlike Heart: 50 Hz lower (151 against 202). Grade C+."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_nicole",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "B-",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 33.12,
+      "pitch_hz": 158.3,
+      "pitch_low_hz": 141.0,
+      "pitch_high_hz": 190.7,
+      "words_per_minute": 123.2,
+      "pause_share": 0.301,
+      "age_guess": 29.9,
+      "age_guess_per_clip": [
+        32.0,
+        34.7,
+        25.9,
+        30.3,
+        27.7
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.903,
+      "sameness_min": 0.822,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_nova",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.34,
+      "pitch_hz": 160.1,
+      "pitch_low_hz": 137.0,
+      "pitch_high_hz": 211.3,
+      "words_per_minute": 191.2,
+      "pause_share": 0.1,
+      "age_guess": 36.0,
+      "age_guess_per_clip": [
+        28.8,
+        43.1,
+        39.5,
+        34.2,
+        33.2
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.896,
+      "sameness_min": 0.827,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_river",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 20.3,
+      "pitch_hz": 178.7,
+      "pitch_low_hz": 155.6,
+      "pitch_high_hz": 221.3,
+      "words_per_minute": 200.9,
+      "pause_share": 0.077,
+      "age_guess": 31.6,
+      "age_guess_per_clip": [
+        33.6,
+        37.1,
+        33.5,
+        28.9,
+        29.4
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.98,
+      "sameness_mean": 0.916,
+      "sameness_min": 0.861,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_sarah",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.17,
+      "pitch_hz": 193.7,
+      "pitch_low_hz": 147.7,
+      "pitch_high_hz": 272.0,
+      "words_per_minute": 184.0,
+      "pause_share": 0.164,
+      "age_guess": 35.6,
+      "age_guess_per_clip": [
+        36.9,
+        42.6,
+        33.5,
+        35.0,
+        32.2
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.913,
+      "sameness_min": 0.873,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_sky",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "female",
+      "grade": "C-",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.95,
+      "pitch_hz": 159.2,
+      "pitch_low_hz": 129.2,
+      "pitch_high_hz": 216.5,
+      "words_per_minute": 185.9,
+      "pause_share": 0.149,
+      "age_guess": 45.4,
+      "age_guess_per_clip": [
+        42.7,
+        52.2,
+        45.6,
+        44.8,
+        41.7
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.917,
+      "sameness_min": 0.864,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_adam",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "F+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.6,
+      "pitch_hz": 120.7,
+      "pitch_low_hz": 91.4,
+      "pitch_high_hz": 145.1,
+      "words_per_minute": 188.9,
+      "pause_share": 0.145,
+      "age_guess": 39.2,
+      "age_guess_per_clip": [
+        39.2,
+        38.1,
+        39.1,
+        36.7,
+        43.6
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.906,
+      "sameness_min": 0.85,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_echo",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.11,
+      "pitch_hz": 108.1,
+      "pitch_low_hz": 83.8,
+      "pitch_high_hz": 147.7,
+      "words_per_minute": 184.6,
+      "pause_share": 0.134,
+      "age_guess": 33.2,
+      "age_guess_per_clip": [
+        35.2,
+        41.9,
+        42.0,
+        26.5,
+        29.1
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.96,
+      "sameness_mean": 0.897,
+      "sameness_min": 0.823,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_eric",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 20.12,
+      "pitch_hz": 156.5,
+      "pitch_low_hz": 113.9,
+      "pitch_high_hz": 208.9,
+      "words_per_minute": 202.8,
+      "pause_share": 0.075,
+      "age_guess": 37.8,
+      "age_guess_per_clip": [
+        37.1,
+        43.3,
+        36.6,
+        30.6,
+        45.2
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.912,
+      "sameness_min": 0.854,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.01,
+      "pitch_hz": 133.9,
+      "pitch_low_hz": 98.6,
+      "pitch_high_hz": 200.6,
+      "words_per_minute": 185.4,
+      "pause_share": 0.086,
+      "age_guess": 24.2,
+      "age_guess_per_clip": [
+        31.1,
+        23.6,
+        23.4,
+        23.0,
+        25.2
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.96,
+      "sameness_mean": 0.908,
+      "sameness_min": 0.839,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "For range: the best-graded man not heard in round 1 (C+), and a young one by the age guess (24)."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_liam",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.05,
+      "pitch_hz": 122.1,
+      "pitch_low_hz": 95.8,
+      "pitch_high_hz": 181.8,
+      "words_per_minute": 193.8,
+      "pause_share": 0.084,
+      "age_guess": 38.6,
+      "age_guess_per_clip": [
+        43.0,
+        39.1,
+        39.5,
+        32.2,
+        45.1
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.924,
+      "sameness_min": 0.884,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 24.41,
+      "pitch_hz": 116.5,
+      "pitch_low_hz": 94.5,
+      "pitch_high_hz": 153.2,
+      "words_per_minute": 167.2,
+      "pause_share": 0.135,
+      "age_guess": 49.2,
+      "age_guess_per_clip": [
+        49.3,
+        52.6,
+        48.6,
+        44.1,
+        54.5
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.907,
+      "sameness_min": 0.855,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.17,
+      "pitch_hz": 86.3,
+      "pitch_low_hz": 76.4,
+      "pitch_high_hz": 106.3,
+      "words_per_minute": 192.7,
+      "pause_share": 0.034,
+      "age_guess": 38.7,
+      "age_guess_per_clip": [
+        38.8,
+        42.1,
+        41.7,
+        34.8,
+        39.7
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.891,
+      "sameness_min": 0.829,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Older candidate by the brief's rule: the lowest pitch of all (86 Hz). Not slow (193) and not old by the age guess (39). Grade D."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_puck",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 20.81,
+      "pitch_hz": 113.2,
+      "pitch_low_hz": 88.8,
+      "pitch_high_hz": 163.9,
+      "words_per_minute": 196.0,
+      "pause_share": 0.024,
+      "age_guess": 22.2,
+      "age_guess_per_clip": [
+        21.1,
+        21.8,
+        22.0,
+        20.6,
+        25.5
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.97,
+      "sameness_mean": 0.903,
+      "sameness_min": 0.842,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "langs": [
+        "en"
+      ],
+      "accent": "American",
+      "sex": "male",
+      "grade": "D-",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 24.59,
+      "pitch_hz": 166.7,
+      "pitch_low_hz": 113.9,
+      "pitch_high_hz": 258.6,
+      "words_per_minute": 165.9,
+      "pause_share": 0.132,
+      "age_guess": 67.2,
+      "age_guess_per_clip": [
+        60.9,
+        67.1,
+        69.5,
+        65.8,
+        69.7
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.911,
+      "sameness_min": 0.846,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Older candidate: the oldest-sounding stock voice by the age guess (67) and one of the slowest. Weakest training data of any English voice (grade D-)."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_alice",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "female",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.85,
+      "pitch_hz": 215.0,
+      "pitch_low_hz": 154.7,
+      "pitch_high_hz": 290.3,
+      "words_per_minute": 178.5,
+      "pause_share": 0.081,
+      "age_guess": 51.0,
+      "age_guess_per_clip": [
+        44.5,
+        55.1,
+        48.7,
+        52.5,
+        49.1
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.911,
+      "sameness_min": 0.858,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "female",
+      "grade": "B-",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.66,
+      "pitch_hz": 183.9,
+      "pitch_low_hz": 154.7,
+      "pitch_high_hz": 215.0,
+      "words_per_minute": 188.4,
+      "pause_share": 0.136,
+      "age_guess": 30.9,
+      "age_guess_per_clip": [
+        29.2,
+        34.3,
+        29.2,
+        31.4,
+        29.0
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.917,
+      "sameness_min": 0.878,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.95,
+      "pitch_hz": 206.5,
+      "pitch_low_hz": 172.6,
+      "pitch_high_hz": 245.5,
+      "words_per_minute": 185.8,
+      "pause_share": 0.143,
+      "age_guess": 42.8,
+      "age_guess_per_clip": [
+        35.8,
+        49.4,
+        45.1,
+        43.3,
+        37.2
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.893,
+      "sameness_min": 0.819,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "A woman unlike Heart: British. Grade C."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_lily",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "female",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 22.87,
+      "pitch_hz": 190.4,
+      "pitch_low_hz": 139.4,
+      "pitch_high_hz": 258.6,
+      "words_per_minute": 178.4,
+      "pause_share": 0.084,
+      "age_guess": 48.1,
+      "age_guess_per_clip": [
+        52.3,
+        56.3,
+        50.2,
+        44.6,
+        43.8
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.888,
+      "sameness_min": 0.81,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_daniel",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "male",
+      "grade": "D",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 21.76,
+      "pitch_hz": 124.2,
+      "pitch_low_hz": 87.8,
+      "pitch_high_hz": 146.8,
+      "words_per_minute": 187.5,
+      "pause_share": 0.089,
+      "age_guess": 50.9,
+      "age_guess_per_clip": [
+        60.3,
+        53.7,
+        52.9,
+        45.9,
+        50.9
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.915,
+      "sameness_min": 0.857,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_fable",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "male",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 23.43,
+      "pitch_hz": 113.2,
+      "pitch_low_hz": 55.0,
+      "pitch_high_hz": 157.4,
+      "words_per_minute": 174.1,
+      "pause_share": 0.011,
+      "age_guess": 25.4,
+      "age_guess_per_clip": [
+        31.0,
+        32.7,
+        23.5,
+        23.0,
+        21.3
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.75,
+      "sameness_mean": 0.894,
+      "sameness_min": 0.817,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 4
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "male",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 25.62,
+      "pitch_hz": 141.8,
+      "pitch_low_hz": 103.8,
+      "pitch_high_hz": 177.7,
+      "words_per_minute": 159.2,
+      "pause_share": 0.15,
+      "age_guess": 57.2,
+      "age_guess_per_clip": [
+        64.7,
+        57.8,
+        59.4,
+        54.3,
+        57.1
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.908,
+      "sameness_min": 0.859,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Older candidate: second-oldest stock voice by the age guess (57), the slowest stock voice (159 words a minute), and the best grade among the older-sounding men (C)."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "langs": [
+        "en"
+      ],
+      "accent": "British",
+      "sex": "male",
+      "grade": "D+",
+      "settings": {
+        "speed": 1.0
+      },
+      "seconds": 24.01,
+      "pitch_hz": 90.4,
+      "pitch_low_hz": 67.3,
+      "pitch_high_hz": 122.1,
+      "words_per_minute": 169.9,
+      "pause_share": 0.143,
+      "age_guess": 47.2,
+      "age_guess_per_clip": [
+        50.6,
+        43.7,
+        52.6,
+        46.9,
+        45.3
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.898,
+      "sameness_min": 0.821,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Older candidate by the brief's rule: second-lowest pitch (90 Hz) and slow (170 words a minute). Age guess 47. Grade D+."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "deep_lo",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.9,
+        "blend": {
+          "bm_lewis": 0.5,
+          "am_onyx": 0.5
+        },
+        "front_end": "b"
+      },
+      "seconds": 24.41,
+      "pitch_hz": 90.9,
+      "pitch_low_hz": 72.2,
+      "pitch_high_hz": 117.9,
+      "words_per_minute": 167.1,
+      "pause_share": 0.119,
+      "age_guess": 46.3,
+      "age_guess_per_clip": [
+        52.3,
+        45.6,
+        52.9,
+        42.3,
+        45.9
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.911,
+      "sameness_min": 0.857,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "ef_dora",
+      "langs": [
+        "es"
+      ],
+      "accent": "Spanish",
+      "sex": "female",
+      "grade": null,
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "em_alex",
+      "langs": [
+        "es"
+      ],
+      "accent": "Spanish",
+      "sex": "male",
+      "grade": null,
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "em_santa",
+      "langs": [
+        "es"
+      ],
+      "accent": "Spanish",
+      "sex": "male",
+      "grade": null,
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "george_slow",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.9,
+        "blend": {
+          "bm_george": 1.0
+        },
+        "front_end": "b"
+      },
+      "seconds": 27.48,
+      "pitch_hz": 141.8,
+      "pitch_low_hz": 105.6,
+      "pitch_high_hz": 176.6,
+      "words_per_minute": 148.4,
+      "pause_share": 0.155,
+      "age_guess": 57.9,
+      "age_guess_per_clip": [
+        66.4,
+        59.3,
+        60.4,
+        56.4,
+        54.2
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.927,
+      "sameness_min": 0.901,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "heart_older",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.95,
+        "blend": {
+          "af_heart": 0.5,
+          "bf_alice": 0.25,
+          "bf_lily": 0.25
+        },
+        "front_end": "a"
+      },
+      "seconds": 22.93,
+      "pitch_hz": 205.3,
+      "pitch_low_hz": 161.0,
+      "pitch_high_hz": 267.7,
+      "words_per_minute": 177.9,
+      "pause_share": 0.122,
+      "age_guess": 38.7,
+      "age_guess_per_clip": [
+        40.5,
+        49.2,
+        41.6,
+        35.0,
+        33.7
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.893,
+      "sameness_min": 0.82,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hf_alpha",
+      "langs": [
+        "hi"
+      ],
+      "accent": "Hindi",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hf_beta",
+      "langs": [
+        "hi"
+      ],
+      "accent": "Hindi",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hm_omega",
+      "langs": [
+        "hi"
+      ],
+      "accent": "Hindi",
+      "sex": "male",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hm_psi",
+      "langs": [
+        "hi"
+      ],
+      "accent": "Hindi",
+      "sex": "male",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "if_sara",
+      "langs": [
+        "it"
+      ],
+      "accent": "Italian",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "im_nicola",
+      "langs": [
+        "it"
+      ],
+      "accent": "Italian",
+      "sex": "male",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_alpha",
+      "langs": [
+        "ja"
+      ],
+      "accent": "Japanese",
+      "sex": "female",
+      "grade": "C+",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_gongitsune",
+      "langs": [
+        "ja"
+      ],
+      "accent": "Japanese",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_nezumi",
+      "langs": [
+        "ja"
+      ],
+      "accent": "Japanese",
+      "sex": "female",
+      "grade": "C-",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_tebukuro",
+      "langs": [
+        "ja"
+      ],
+      "accent": "Japanese",
+      "sex": "female",
+      "grade": "C",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jm_kumo",
+      "langs": [
+        "ja"
+      ],
+      "accent": "Japanese",
+      "sex": "male",
+      "grade": "C-",
+      "settings": {
+        "speed": 1.0
+      },
+      "check": {
+        "clips": 1,
+        "takes": 1,
+        "right_first_time": 1,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gl",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.5,
+          "bm_lewis": 0.5
+        },
+        "front_end": "b"
+      },
+      "seconds": 26.25,
+      "pitch_hz": 120.7,
+      "pitch_low_hz": 76.0,
+      "pitch_high_hz": 152.9,
+      "words_per_minute": 155.5,
+      "pause_share": 0.149,
+      "age_guess": 53.1,
+      "age_guess_per_clip": [
+        60.9,
+        54.7,
+        55.7,
+        49.4,
+        53.0
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.908,
+      "sameness_min": 0.817,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "seconds": 26.77,
+      "pitch_hz": 147.7,
+      "pitch_low_hz": 101.5,
+      "pitch_high_hz": 202.9,
+      "words_per_minute": 152.4,
+      "pause_share": 0.146,
+      "age_guess": 62.9,
+      "age_guess_per_clip": [
+        64.5,
+        63.7,
+        67.5,
+        58.7,
+        64.8
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.899,
+      "sameness_min": 0.822,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Blend, 60% George and 40% Santa, at 0.92 speed: the oldest-sounding blend by the age guess (63), mostly built on the better-graded voice."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gsl",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.9,
+        "blend": {
+          "bm_george": 0.34,
+          "am_santa": 0.33,
+          "bm_lewis": 0.33
+        },
+        "front_end": "b"
+      },
+      "seconds": 26.8,
+      "pitch_hz": 134.6,
+      "pitch_low_hz": 94.0,
+      "pitch_high_hz": 186.1,
+      "words_per_minute": 152.2,
+      "pause_share": 0.148,
+      "age_guess": 59.4,
+      "age_guess_per_clip": [
+        65.3,
+        61.9,
+        62.8,
+        55.8,
+        58.3
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.906,
+      "sameness_min": 0.836,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_ms",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_michael": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "a"
+      },
+      "seconds": 25.79,
+      "pitch_hz": 135.8,
+      "pitch_low_hz": 97.9,
+      "pitch_high_hz": 191.5,
+      "words_per_minute": 158.2,
+      "pause_share": 0.145,
+      "age_guess": 53.5,
+      "age_guess_per_clip": [
+        52.5,
+        56.2,
+        52.6,
+        49.6,
+        58.1
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.923,
+      "sameness_min": 0.867,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "seconds": 24.7,
+      "pitch_hz": 124.2,
+      "pitch_low_hz": 89.9,
+      "pitch_high_hz": 181.8,
+      "words_per_minute": 165.2,
+      "pause_share": 0.121,
+      "age_guess": 60.6,
+      "age_guess_per_clip": [
+        55.5,
+        61.2,
+        61.8,
+        58.3,
+        64.2
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.914,
+      "sameness_min": 0.88,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Blend, 60% Santa and 40% Onyx, at 0.92 speed: nearly as old by the age guess (61) and much deeper than Santa alone (124 Hz against 167)."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_sol",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.4,
+          "am_onyx": 0.3,
+          "bm_lewis": 0.3
+        },
+        "front_end": "a"
+      },
+      "seconds": 24.54,
+      "pitch_hz": 117.9,
+      "pitch_low_hz": 81.9,
+      "pitch_high_hz": 169.4,
+      "words_per_minute": 166.3,
+      "pause_share": 0.121,
+      "age_guess": 55.5,
+      "age_guess_per_clip": [
+        52.7,
+        57.7,
+        61.4,
+        50.5,
+        57.9
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.918,
+      "sameness_min": 0.883,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "santa_slow",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 1.0
+        },
+        "front_end": "a"
+      },
+      "seconds": 26.0,
+      "pitch_hz": 167.7,
+      "pitch_low_hz": 111.3,
+      "pitch_high_hz": 263.1,
+      "words_per_minute": 156.9,
+      "pause_share": 0.131,
+      "age_guess": 67.6,
+      "age_guess_per_clip": [
+        62.1,
+        68.0,
+        66.4,
+        67.5,
+        69.9
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.922,
+      "sameness_min": 0.876,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_f",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "mode": "reuse",
+        "description": "A very old woman, around eighty-five. Her voice is thin and a little creaky with age, but warm, steady and clear. She reads slowly and calmly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seconds": 25.83,
+      "pitch_hz": 146.0,
+      "pitch_low_hz": 128.6,
+      "pitch_high_hz": 188.2,
+      "words_per_minute": 158.0,
+      "pause_share": 0.13,
+      "age_guess": 36.7,
+      "age_guess_per_clip": [
+        38.5,
+        38.9,
+        38.4,
+        36.0,
+        34.0
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.882,
+      "sameness_min": 0.802,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seconds": 28.07,
+      "pitch_hz": 93.6,
+      "pitch_low_hz": 70.5,
+      "pitch_high_hz": 119.3,
+      "words_per_minute": 145.3,
+      "pause_share": 0.094,
+      "age_guess": 59.1,
+      "age_guess_per_clip": [
+        55.3,
+        59.8,
+        59.5,
+        57.8,
+        61.6
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.884,
+      "sameness_min": 0.797,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Made from the description 'an elderly man in his seventies with a warm, deep, unhurried voice': the slowest (145 words a minute) and nearly the deepest (94 Hz) of everything here. Age guess 59."
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "langs": [
+        "en"
+      ],
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seconds": 24.46,
+      "pitch_hz": 104.4,
+      "pitch_low_hz": 76.4,
+      "pitch_high_hz": 137.0,
+      "words_per_minute": 166.8,
+      "pause_share": 0.078,
+      "age_guess": 63.7,
+      "age_guess_per_clip": [
+        60.9,
+        64.0,
+        66.2,
+        62.3,
+        64.8
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 1.0,
+      "sameness_mean": 0.861,
+      "sameness_min": 0.731,
+      "check": {
+        "clips": 5,
+        "takes": 5,
+        "right_first_time": 5,
+        "failed_after_all_takes": 0,
+        "verdicts": [
+          "ok"
+        ],
+        "long_tails": 0
+      },
+      "clips_in_repo": true,
+      "put_forward": true,
+      "why": "Made from the description 'a British man of about eighty with an aged, gravelly, kind voice': age guess 64, second only to Santa. A little less steady from line to line than the other described voice."
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "langs": [
+        "en"
+      ],
+      "from_round": 1,
+      "seconds": 22.2,
+      "pitch_hz": 201.7,
+      "pitch_low_hz": 167.7,
+      "pitch_high_hz": 267.7,
+      "words_per_minute": 183.8,
+      "pause_share": 0.147,
+      "age_guess": 30.7,
+      "age_guess_per_clip": [
+        34.0,
+        37.4,
+        32.5,
+        27.5,
+        28.3
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.895,
+      "sameness_min": 0.82,
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "langs": [
+        "en"
+      ],
+      "from_round": 1,
+      "seconds": 17.49,
+      "pitch_hz": 151.1,
+      "pitch_low_hz": 93.6,
+      "pitch_high_hz": 227.8,
+      "words_per_minute": 233.2,
+      "pause_share": 0.08,
+      "age_guess": 38.0,
+      "age_guess_per_clip": [
+        47.1,
+        35.8,
+        41.0,
+        32.8,
+        41.5
+      ],
+      "heard_as": "male",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.9,
+      "sameness_min": 0.86,
+      "clips_in_repo": false,
+      "put_forward": false
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "langs": [
+        "en"
+      ],
+      "from_round": 1,
+      "seconds": 18.87,
+      "pitch_hz": 214.4,
+      "pitch_low_hz": 178.7,
+      "pitch_high_hz": 258.6,
+      "words_per_minute": 216.2,
+      "pause_share": 0.034,
+      "age_guess": 34.7,
+      "age_guess_per_clip": [
+        35.1,
+        36.9,
+        31.2,
+        33.0,
+        37.4
+      ],
+      "heard_as": "female",
+      "heard_as_sure": 0.99,
+      "sameness_mean": 0.861,
+      "sameness_min": 0.812,
+      "clips_in_repo": false,
+      "put_forward": false
+    }
+  ],
+  "board": [
+    {
+      "file": "kokoro-am_santa.m4a",
+      "voice": "kokoro-am_santa",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 26.59,
+      "bytes": 223954
+    },
+    {
+      "file": "qwen-elder_m2.m4a",
+      "voice": "qwen-elder_m2",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 26.46,
+      "bytes": 216546
+    },
+    {
+      "file": "kokoro-old_gs.m4a",
+      "voice": "kokoro-old_gs",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 28.77,
+      "bytes": 244478
+    },
+    {
+      "file": "kokoro-old_so.m4a",
+      "voice": "kokoro-old_so",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 26.7,
+      "bytes": 226313
+    },
+    {
+      "file": "qwen-elder_m.m4a",
+      "voice": "qwen-elder_m",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 30.07,
+      "bytes": 251329
+    },
+    {
+      "file": "kokoro-bm_george.m4a",
+      "voice": "kokoro-bm_george",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 27.62,
+      "bytes": 232209
+    },
+    {
+      "file": "kokoro-bm_lewis.m4a",
+      "voice": "kokoro-bm_lewis",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 26.01,
+      "bytes": 221462
+    },
+    {
+      "file": "kokoro-am_onyx.m4a",
+      "voice": "kokoro-am_onyx",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 23.17,
+      "bytes": 194413
+    },
+    {
+      "file": "chatterbox-slower.m4a",
+      "voice": "chatterbox-slower",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 21.27,
+      "bytes": 181876
+    },
+    {
+      "file": "kokoro-af_bella.m4a",
+      "voice": "kokoro-af_bella",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 24.7,
+      "bytes": 210335
+    },
+    {
+      "file": "kokoro-af_kore.m4a",
+      "voice": "kokoro-af_kore",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 24.08,
+      "bytes": 205135
+    },
+    {
+      "file": "kokoro-bf_isabella.m4a",
+      "voice": "kokoro-bf_isabella",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 23.95,
+      "bytes": 206779
+    },
+    {
+      "file": "kokoro-am_fenrir.m4a",
+      "voice": "kokoro-am_fenrir",
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "seconds": 24.01,
+      "bytes": 201322
+    }
+  ],
+  "check_discarded_takes": [
+    {
+      "file": "chatterbox-slow-1.m4a",
+      "take": 1,
+      "heard": "Warm water is the fuel.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.48
+    },
+    {
+      "file": "chatterbox-slow-2.m4a",
+      "take": 1,
+      "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.17
+    },
+    {
+      "file": "chatterbox-slow-3.m4a",
+      "take": 1,
+      "heard": "Not on the equator though, there's no spin there to start a turning.",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.28
+    },
+    {
+      "file": "chatterbox-slow-4.m4a",
+      "take": 1,
+      "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 0 to 100 people.",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.38
+    },
+    {
+      "file": "chatterbox-slower-3.m4a",
+      "take": 1,
+      "heard": "Not on the equator, though. There's no spin there to start it turning. They're it.",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.38
+    },
+    {
+      "file": "chatterbox-slower-4.m4a",
+      "take": 1,
+      "heard": "In 2005, Hurricane Katrina reached 280,000 km an hour and killed more than 0 dotted people,",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.7
+    },
+    {
+      "file": "chatterbox-slow-1.m4a",
+      "take": 2,
+      "heard": "Warm water is the fuel.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.42
+    },
+    {
+      "file": "chatterbox-slow-4.m4a",
+      "take": 2,
+      "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 100 and 800 people.",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.38
+    },
+    {
+      "file": "chatterbox-slow-4.m4a",
+      "take": 3,
+      "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people. The tree pulled",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.14
+    },
+    {
+      "file": "chatterbox-default-10.m4a",
+      "take": 1,
+      "heard": "नमस्ते, आप कैसे हैं? मेरा नाम अर्जुन है, धन्यवाद.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.74
+    },
+    {
+      "file": "chatterbox-default-8.m4a",
+      "take": 1,
+      "heard": "Buenos días, ¿cómo estás? Me llamo Rosa y vivo en Sevilla.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.32
+    },
+    {
+      "file": "chatterbox-default-9.m4a",
+      "take": 1,
+      "heard": "Buongiorno, mi chiamo Giulia, piacere di conoscerti, grazie mille.",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 0.98
+    },
+    {
+      "file": "chatterbox-default-10.m4a",
+      "take": 2,
+      "heard": "नमस्ते आप कैसे हैं मेरा नाम अर्जुन है धन्यवाद",
+      "problem": "sound after the last word",
+      "sound_after_last_word_seconds": 1.49
+    },
+    {
+      "file": "chatterbox-default-9.m4a",
+      "take": 2,
+      "heard": "Buongiorno, mi chiamo Giulia, piacere di conoscerti, grazie mille. Grazie.",
+      "problem": "words",
+      "sound_after_last_word_seconds": 0.26
+    }
+  ],
+  "clips": [
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 7,
+      "lang": "ja",
+      "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "seed": 8,
+      "file": "clips/chatterbox-default-7.m4a",
+      "duration": 3.101,
+      "lufs": -16.15,
+      "true_peak_db": -2.77,
+      "bytes": 29562,
+      "generation_seconds": 1.991,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "ja",
+        "heard": "今日は、今日はいい天気ですね。ありがとうございます。",
+        "verdict": "minor",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.84,
+        "long_tail": false,
+        "tail_test_usable": false,
+        "language_guess": "ja",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.934,
+        "note": "cannot tell: the recogniser wrote 今日は, which is both the greeting 'konnichiwa' and 'kyou wa' (today). Right if read one way, wrong the other"
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 8,
+      "lang": "es",
+      "text": "Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla.",
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "seed": 109,
+      "file": "clips/chatterbox-default-8.m4a",
+      "duration": 2.692,
+      "lufs": -16.14,
+      "true_peak_db": -2.8,
+      "bytes": 23221,
+      "generation_seconds": 2.315,
+      "takes": 2,
+      "passed_check": true,
+      "check": {
+        "lang": "es",
+        "heard": "Buenos días, ¿cómo estás? Me llamo Rosa y vivo en Sevilla.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.25,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "es",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.984
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 9,
+      "lang": "it",
+      "text": "Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille.",
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "seed": 210,
+      "file": "clips/chatterbox-default-9.m4a",
+      "duration": 3.376,
+      "lufs": -16.01,
+      "true_peak_db": -2.82,
+      "bytes": 30930,
+      "generation_seconds": 2.615,
+      "takes": 3,
+      "passed_check": true,
+      "check": {
+        "lang": "it",
+        "heard": "Buongiorno, mi chiamo Giulia, piacere di conoscerti, grazie mille.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.34,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "it",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.955
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 10,
+      "lang": "hi",
+      "text": "नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।",
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "seed": 211,
+      "file": "clips/chatterbox-default-10.m4a",
+      "duration": 3.328,
+      "lufs": -16.16,
+      "true_peak_db": -2.72,
+      "bytes": 31252,
+      "generation_seconds": 1.902,
+      "takes": 3,
+      "passed_check": true,
+      "check": {
+        "lang": "hi",
+        "heard": "नमस्ते, आप कैसे हैं? मेरा नाम अर्जुन है, धन्यवाद.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.17,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "hi",
+        "language_guess_sure": 0.969,
+        "word_confidence": 0.991
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "kana",
+      "line": 7,
+      "lang": "ja",
+      "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+      "sent_to_engine": "こんにちは。きょうはいい天気ですね。ありがとうございます。",
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "seed": 8,
+      "file": "clips/chatterbox-kana-7.m4a",
+      "duration": 2.697,
+      "lufs": -16.15,
+      "true_peak_db": -2.81,
+      "bytes": 23936,
+      "generation_seconds": 1.648,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "ja",
+        "heard": "今日は、今日はいい天気ですね。ありがとうございます。",
+        "verdict": "minor",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.72,
+        "long_tail": false,
+        "tail_test_usable": false,
+        "language_guess": "ja",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.946,
+        "note": "cannot tell: the recogniser wrote 今日は, which is both the greeting 'konnichiwa' and 'kyou wa' (today). Right if read one way, wrong the other"
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seed": 2,
+      "file": "clips/chatterbox-slower-1.m4a",
+      "duration": 1.439,
+      "lufs": -16.12,
+      "true_peak_db": -2.89,
+      "bytes": 12458,
+      "generation_seconds": 1.212,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.32,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.97
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seed": 3,
+      "file": "clips/chatterbox-slower-2.m4a",
+      "duration": 3.96,
+      "lufs": -16.06,
+      "true_peak_db": -2.85,
+      "bytes": 34929,
+      "generation_seconds": 2.528,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.44,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.979
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seed": 104,
+      "file": "clips/chatterbox-slower-3.m4a",
+      "duration": 3.315,
+      "lufs": -16.0,
+      "true_peak_db": -2.18,
+      "bytes": 31023,
+      "generation_seconds": 2.25,
+      "takes": 2,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator though, there's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.36,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.96
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seed": 105,
+      "file": "clips/chatterbox-slower-4.m4a",
+      "duration": 6.48,
+      "lufs": -16.03,
+      "true_peak_db": -2.39,
+      "bytes": 58400,
+      "generation_seconds": 3.16,
+      "takes": 2,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.95
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "slower",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "exaggeration": 0.2,
+        "cfg_weight": 0.1,
+        "temperature": 0.5
+      },
+      "seed": 6,
+      "file": "clips/chatterbox-slower-5.m4a",
+      "duration": 4.076,
+      "lufs": -16.04,
+      "true_peak_db": -2.62,
+      "bytes": 37135,
+      "generation_seconds": 2.314,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.995,
+        "word_confidence": 0.932
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_bella-1.m4a",
+      "duration": 1.467,
+      "lufs": -16.24,
+      "true_peak_db": -2.86,
+      "bytes": 13560,
+      "generation_seconds": 0.806,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.37,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.929
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_bella-2.m4a",
+      "duration": 4.163,
+      "lufs": -16.13,
+      "true_peak_db": -2.67,
+      "bytes": 38878,
+      "generation_seconds": 0.065,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.5,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.99
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_bella-3.m4a",
+      "duration": 3.412,
+      "lufs": -16.19,
+      "true_peak_db": -2.75,
+      "bytes": 31643,
+      "generation_seconds": 0.048,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.41,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.995
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_bella-4.m4a",
+      "duration": 8.168,
+      "lufs": -16.03,
+      "true_peak_db": -2.68,
+      "bytes": 71766,
+      "generation_seconds": 0.08,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.47,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.971
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_bella",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_bella-5.m4a",
+      "duration": 5.487,
+      "lufs": -16.16,
+      "true_peak_db": -1.58,
+      "bytes": 49404,
+      "generation_seconds": 0.068,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.984
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_kore-1.m4a",
+      "duration": 1.37,
+      "lufs": -16.06,
+      "true_peak_db": -3.62,
+      "bytes": 12508,
+      "generation_seconds": 0.862,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.33,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.955
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_kore-2.m4a",
+      "duration": 4.025,
+      "lufs": -16.21,
+      "true_peak_db": -2.48,
+      "bytes": 35890,
+      "generation_seconds": 0.066,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.47,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.975
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_kore-3.m4a",
+      "duration": 3.448,
+      "lufs": -16.09,
+      "true_peak_db": -2.87,
+      "bytes": 31930,
+      "generation_seconds": 0.065,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator though, there's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.33,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.964
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_kore-4.m4a",
+      "duration": 7.986,
+      "lufs": -16.08,
+      "true_peak_db": -2.79,
+      "bytes": 71296,
+      "generation_seconds": 0.077,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.47,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.967
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_kore",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-af_kore-5.m4a",
+      "duration": 5.248,
+      "lufs": -16.18,
+      "true_peak_db": -2.61,
+      "bytes": 46130,
+      "generation_seconds": 0.067,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.51,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.97
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_fenrir-1.m4a",
+      "duration": 1.388,
+      "lufs": -16.24,
+      "true_peak_db": -2.76,
+      "bytes": 12600,
+      "generation_seconds": 0.873,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.35,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.972
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_fenrir-2.m4a",
+      "duration": 3.994,
+      "lufs": -16.1,
+      "true_peak_db": -2.2,
+      "bytes": 36455,
+      "generation_seconds": 0.066,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.45,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.987
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_fenrir-3.m4a",
+      "duration": 3.469,
+      "lufs": -16.1,
+      "true_peak_db": -2.46,
+      "bytes": 32462,
+      "generation_seconds": 0.068,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator though, there's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.35,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.966
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_fenrir-4.m4a",
+      "duration": 7.878,
+      "lufs": -16.2,
+      "true_peak_db": -2.52,
+      "bytes": 70017,
+      "generation_seconds": 0.085,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.98
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_fenrir",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_fenrir-5.m4a",
+      "duration": 5.282,
+      "lufs": -16.13,
+      "true_peak_db": -2.54,
+      "bytes": 47797,
+      "generation_seconds": 0.054,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.54,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.98
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_onyx-1.m4a",
+      "duration": 1.798,
+      "lufs": -16.11,
+      "true_peak_db": -2.91,
+      "bytes": 15319,
+      "generation_seconds": 0.813,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.48,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.98,
+        "word_confidence": 0.965
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_onyx-2.m4a",
+      "duration": 3.784,
+      "lufs": -16.09,
+      "true_peak_db": -2.84,
+      "bytes": 33937,
+      "generation_seconds": 0.049,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.36,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.981
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_onyx-3.m4a",
+      "duration": 3.439,
+      "lufs": -16.2,
+      "true_peak_db": -2.72,
+      "bytes": 30953,
+      "generation_seconds": 0.047,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator though, there's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.952
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_onyx-4.m4a",
+      "duration": 7.208,
+      "lufs": -16.09,
+      "true_peak_db": -1.96,
+      "bytes": 61687,
+      "generation_seconds": 0.076,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.45,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.958
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_onyx",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_onyx-5.m4a",
+      "duration": 4.943,
+      "lufs": -16.14,
+      "true_peak_db": -2.54,
+      "bytes": 44318,
+      "generation_seconds": 0.052,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.56,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.993,
+        "word_confidence": 0.94
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_santa-1.m4a",
+      "duration": 1.731,
+      "lufs": -16.25,
+      "true_peak_db": -2.75,
+      "bytes": 15430,
+      "generation_seconds": 0.845,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.35,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.953,
+        "word_confidence": 0.943
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_santa-2.m4a",
+      "duration": 4.419,
+      "lufs": -16.18,
+      "true_peak_db": -2.31,
+      "bytes": 38741,
+      "generation_seconds": 0.049,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise,",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.34,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.971
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_santa-3.m4a",
+      "duration": 3.967,
+      "lufs": -16.23,
+      "true_peak_db": -2.13,
+      "bytes": 36140,
+      "generation_seconds": 0.048,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.33,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.979
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_santa-4.m4a",
+      "duration": 8.559,
+      "lufs": -16.16,
+      "true_peak_db": -2.55,
+      "bytes": 75462,
+      "generation_seconds": 0.081,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.944
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_santa",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-am_santa-5.m4a",
+      "duration": 5.915,
+      "lufs": -16.15,
+      "true_peak_db": -2.44,
+      "bytes": 51805,
+      "generation_seconds": 0.067,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.52,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.989,
+        "word_confidence": 0.94
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bf_isabella-1.m4a",
+      "duration": 1.687,
+      "lufs": -16.09,
+      "true_peak_db": -2.28,
+      "bytes": 16021,
+      "generation_seconds": 0.828,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.41,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.991,
+        "word_confidence": 0.96
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bf_isabella-2.m4a",
+      "duration": 4.111,
+      "lufs": -16.08,
+      "true_peak_db": -2.6,
+      "bytes": 37754,
+      "generation_seconds": 0.083,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.43,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.989
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bf_isabella-3.m4a",
+      "duration": 3.586,
+      "lufs": -16.23,
+      "true_peak_db": -2.56,
+      "bytes": 33912,
+      "generation_seconds": 0.063,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.41,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.99
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bf_isabella-4.m4a",
+      "duration": 7.6,
+      "lufs": -16.09,
+      "true_peak_db": -1.87,
+      "bytes": 68467,
+      "generation_seconds": 0.09,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 km an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.44,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.94
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_isabella",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bf_isabella-5.m4a",
+      "duration": 4.97,
+      "lufs": -16.22,
+      "true_peak_db": -2.74,
+      "bytes": 45648,
+      "generation_seconds": 0.068,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.55,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.961
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_george-1.m4a",
+      "duration": 2.085,
+      "lufs": -16.04,
+      "true_peak_db": -4.32,
+      "bytes": 18532,
+      "generation_seconds": 0.825,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.43,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.96
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_george-2.m4a",
+      "duration": 4.629,
+      "lufs": -16.19,
+      "true_peak_db": -2.98,
+      "bytes": 40311,
+      "generation_seconds": 0.05,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.47,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.983
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_george-3.m4a",
+      "duration": 3.903,
+      "lufs": -16.19,
+      "true_peak_db": -2.45,
+      "bytes": 34901,
+      "generation_seconds": 0.048,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.982
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_george-4.m4a",
+      "duration": 9.05,
+      "lufs": -16.19,
+      "true_peak_db": -2.79,
+      "bytes": 79588,
+      "generation_seconds": 0.079,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.955
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_george",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_george-5.m4a",
+      "duration": 5.957,
+      "lufs": -16.23,
+      "true_peak_db": -2.57,
+      "bytes": 52513,
+      "generation_seconds": 0.068,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.6,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.981,
+        "word_confidence": 0.974
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_lewis-1.m4a",
+      "duration": 1.887,
+      "lufs": -16.19,
+      "true_peak_db": -4.84,
+      "bytes": 17838,
+      "generation_seconds": 0.851,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.33,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.995,
+        "word_confidence": 0.886
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_lewis-2.m4a",
+      "duration": 4.35,
+      "lufs": -16.16,
+      "true_peak_db": -2.9,
+      "bytes": 40040,
+      "generation_seconds": 0.065,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.37,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.995,
+        "word_confidence": 0.984
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_lewis-3.m4a",
+      "duration": 3.826,
+      "lufs": -16.17,
+      "true_peak_db": -2.57,
+      "bytes": 35960,
+      "generation_seconds": 0.064,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.35,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.994
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_lewis-4.m4a",
+      "duration": 8.349,
+      "lufs": -16.19,
+      "true_peak_db": -2.49,
+      "bytes": 76222,
+      "generation_seconds": 0.079,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 km an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.43,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.922
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bm_lewis",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-bm_lewis-5.m4a",
+      "duration": 5.598,
+      "lufs": -16.25,
+      "true_peak_db": -2.63,
+      "bytes": 50477,
+      "generation_seconds": 0.071,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.48,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.993,
+        "word_confidence": 0.983
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "ef_dora",
+      "line": 8,
+      "lang": "es",
+      "text": "Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla.",
+      "sounds_from_front_end": "bwˈenos ðˈias. ¿kˈomo estˈas? me ʎˈamo rˈosa i βˈiβo en seβˈiʎa.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-ef_dora-8.m4a",
+      "duration": 3.376,
+      "lufs": -16.16,
+      "true_peak_db": -2.82,
+      "bytes": 28715,
+      "generation_seconds": 0.992,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "es",
+        "heard": "Buenos días, ¿cómo estás? Me llamo Rosa y vivo en Sevilla.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.3,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "es",
+        "language_guess_sure": 0.987,
+        "word_confidence": 0.991
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "em_alex",
+      "line": 8,
+      "lang": "es",
+      "text": "Buenos días. ¿Cómo estás? Me llamo Rosa y vivo en Sevilla.",
+      "sounds_from_front_end": "bwˈenos ðˈias. ¿kˈomo estˈas? me ʎˈamo rˈosa i βˈiβo en seβˈiʎa.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-em_alex-8.m4a",
+      "duration": 3.427,
+      "lufs": -16.13,
+      "true_peak_db": -1.34,
+      "bytes": 28789,
+      "generation_seconds": 0.941,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "es",
+        "heard": "Buenos días, ¿cómo estás? Me llamo Rosa y vivo en Sevilla.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.27,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "es",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.995
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hf_alpha",
+      "line": 10,
+      "lang": "hi",
+      "text": "नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।",
+      "sent_to_engine": "नमस्ते. आप कैसे हैं? मेरा नाम अर्जुन है. धन्यवाद.",
+      "sounds_from_front_end": "nəmˈʌsteː. ˌaːp kˈɛːseː hɛ̃? mˌeːɾaː nˈaːm ˈʌɾɟʊn hɛː. dʰˌənjəʋˈaːd.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-hf_alpha-10.m4a",
+      "duration": 3.875,
+      "lufs": -16.06,
+      "true_peak_db": -2.81,
+      "bytes": 34629,
+      "generation_seconds": 0.956,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "hi",
+        "heard": "नमस्ते आप कैसे हैं? मेरा नाम अर्जुन है, धन्यवाद.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.18,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "hi",
+        "language_guess_sure": 0.957,
+        "word_confidence": 0.995
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "hm_psi",
+      "line": 10,
+      "lang": "hi",
+      "text": "नमस्ते। आप कैसे हैं? मेरा नाम अर्जुन है। धन्यवाद।",
+      "sent_to_engine": "नमस्ते. आप कैसे हैं? मेरा नाम अर्जुन है. धन्यवाद.",
+      "sounds_from_front_end": "nəmˈʌsteː. ˌaːp kˈɛːseː hɛ̃? mˌeːɾaː nˈaːm ˈʌɾɟʊn hɛː. dʰˌənjəʋˈaːd.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-hm_psi-10.m4a",
+      "duration": 3.799,
+      "lufs": -16.23,
+      "true_peak_db": -2.53,
+      "bytes": 33142,
+      "generation_seconds": 0.856,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "hi",
+        "heard": "नमस्ते आप कैसे हैं? मेरा नाम अर्जुन है. धन्यवाद.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.1,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "hi",
+        "language_guess_sure": 0.975,
+        "word_confidence": 0.988
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "if_sara",
+      "line": 9,
+      "lang": "it",
+      "text": "Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille.",
+      "sounds_from_front_end": "bʊonʤˈɔrno. mɪ kjˈamo ʤˈulia, pjaʧˈere dɪ konˈoʃertɪ. ɡrˈaʦje mˈille.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-if_sara-9.m4a",
+      "duration": 3.662,
+      "lufs": -16.06,
+      "true_peak_db": -2.74,
+      "bytes": 34000,
+      "generation_seconds": 0.965,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "it",
+        "heard": "Buongiorno mi chiamo Giulia, piacere di conoscerti, grazie mille.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.18,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "it",
+        "language_guess_sure": 1.0,
+        "word_confidence": 0.972
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "im_nicola",
+      "line": 9,
+      "lang": "it",
+      "text": "Buongiorno. Mi chiamo Giulia, piacere di conoscerti. Grazie mille.",
+      "sounds_from_front_end": "bʊonʤˈɔrno. mɪ kjˈamo ʤˈulia, pjaʧˈere dɪ konˈoʃertɪ. ɡrˈaʦje mˈille.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-im_nicola-9.m4a",
+      "duration": 4.047,
+      "lufs": -16.16,
+      "true_peak_db": -2.74,
+      "bytes": 35698,
+      "generation_seconds": 0.876,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "it",
+        "heard": "Buongiorno mi chiamo Giulia piacere di conoscerti, grazie mille.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.19,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "it",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.942
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_alpha",
+      "line": 7,
+      "lang": "ja",
+      "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+      "sent_to_engine": "こんにちは. 今日はいい天気ですね. ありがとうございます.",
+      "sounds_from_front_end": "koɲɲiʨiβa. kʲoː βa iː teŋkʲi desɨ ne. aɾʲiɡatoː ɡoʣaimasɨ.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-jf_alpha-7.m4a",
+      "duration": 3.856,
+      "lufs": -16.12,
+      "true_peak_db": -1.97,
+      "bytes": 33906,
+      "generation_seconds": 1.854,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "ja",
+        "heard": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 1.02,
+        "long_tail": false,
+        "tail_test_usable": false,
+        "language_guess": "ja",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.934
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "jf_tebukuro",
+      "line": 7,
+      "lang": "ja",
+      "text": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+      "sent_to_engine": "こんにちは. 今日はいい天気ですね. ありがとうございます.",
+      "sounds_from_front_end": "koɲɲiʨiβa. kʲoː βa iː teŋkʲi desɨ ne. aɾʲiɡatoː ɡoʣaimasɨ.",
+      "settings": {
+        "speed": 1.0
+      },
+      "file": "clips/kokoro-jf_tebukuro-7.m4a",
+      "duration": 4.701,
+      "lufs": -16.11,
+      "true_peak_db": -2.77,
+      "bytes": 40652,
+      "generation_seconds": 0.855,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "ja",
+        "heard": "こんにちは。今日はいい天気ですね。ありがとうございます。",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.98,
+        "long_tail": false,
+        "tail_test_usable": false,
+        "language_guess": "ja",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.923
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "sounds_from_front_end": "wˈɔːm wˈɔːtə ɪz ðə fjˈuːəl.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "file": "clips/kokoro-old_gs-1.m4a",
+      "duration": 2.143,
+      "lufs": -16.04,
+      "true_peak_db": -2.73,
+      "bytes": 18941,
+      "generation_seconds": 1.564,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.993,
+        "word_confidence": 0.961
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "sounds_from_front_end": "əbˈʌv əbˈWt twˈɛnti sˈɪks dɪɡɹˈiːz, ði ˈɛː ˈQvə ði ˈQʃᵊn stˈɑːts tə ɹˈIz.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "file": "clips/kokoro-old_gs-2.m4a",
+      "duration": 4.871,
+      "lufs": -16.11,
+      "true_peak_db": -1.77,
+      "bytes": 43725,
+      "generation_seconds": 0.075,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.975
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "sounds_from_front_end": "nˌɒt ˌɒn ði ɪkwˈAtə, ðˌQ. ðˌɛːz nˈQ spˈɪn ðɛː tə stˈɑːt ɪt tˈɜːnɪŋ.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "file": "clips/kokoro-old_gs-3.m4a",
+      "duration": 4.226,
+      "lufs": -16.17,
+      "true_peak_db": -4.27,
+      "bytes": 37623,
+      "generation_seconds": 0.077,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.45,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.999,
+        "word_confidence": 0.977
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "sounds_from_front_end": "ɪn tˈuː θˈWzᵊnd fˈIv, hˈʌɹɪkᵊn kətɹˈiːnə ɹˈiːʧt tˈuː hˈʌndɹəd ˈAti kˈɪləmˌiːtəz ɐn ˈWə, and kˈɪld mˈɔː ðən wˈʌn θˈWzᵊnd ˈAt hˈʌndɹəd pˈiːpᵊl.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "file": "clips/kokoro-old_gs-4.m4a",
+      "duration": 9.266,
+      "lufs": -16.13,
+      "true_peak_db": -2.47,
+      "bytes": 82779,
+      "generation_seconds": 0.083,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.49,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.997,
+        "word_confidence": 0.946
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_gs",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "sounds_from_front_end": "ðə kˈapɪtᵊl ɒv ˈIslənd ɪz ɹˈAkʤəvˌɪk. ɪn fɹˈɛnʧ, θˈaŋk juː vˈɛɹi mˈʌʧ ɪz mɛːsˈiː bˈQkuː.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "bm_george": 0.6,
+          "am_santa": 0.4
+        },
+        "front_end": "b"
+      },
+      "file": "clips/kokoro-old_gs-5.m4a",
+      "duration": 6.265,
+      "lufs": -16.25,
+      "true_peak_db": -2.73,
+      "bytes": 54076,
+      "generation_seconds": 0.098,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.67,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.992,
+        "word_confidence": 0.955
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "sounds_from_front_end": "wˈɔɹm wˈɔTəɹ ɪz ðə fjˈuᵊl.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "file": "clips/kokoro-old_so-1.m4a",
+      "duration": 1.854,
+      "lufs": -16.24,
+      "true_peak_db": -2.79,
+      "bytes": 17043,
+      "generation_seconds": 0.084,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.41,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.983,
+        "word_confidence": 0.969
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "sounds_from_front_end": "əbˈʌv əbˈWt twˈɛnti sˈɪks dəɡɹˈiz, ði ˈɛɹ ˈOvəɹ ði ˈOʃən stˈɑɹts tə ɹˈIz.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "file": "clips/kokoro-old_so-2.m4a",
+      "duration": 4.405,
+      "lufs": -16.18,
+      "true_peak_db": -1.33,
+      "bytes": 39065,
+      "generation_seconds": 0.094,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.39,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.998,
+        "word_confidence": 0.982
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "sounds_from_front_end": "nˌɑt ˌɔn ði əkwˈATəɹ, ðˌO. ðˌɛɹz nˈO spˈɪn ðɛɹ tə stˈɑɹt ɪt tˈɜɹnɪŋ.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "file": "clips/kokoro-old_so-3.m4a",
+      "duration": 4.026,
+      "lufs": -16.1,
+      "true_peak_db": -1.68,
+      "bytes": 36648,
+      "generation_seconds": 0.095,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.41,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.987
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "sounds_from_front_end": "ɪn tˈu θˈWzᵊnd fˈIv, hˈɜɹəkˌAn kətɹˈinə ɹˈiʧt tˈu hˈʌndɹəd ˈATi kəlˈɑməTəɹz ɐn ˈWəɹ, ænd kˈɪld mˈɔɹ ðən wˈʌn θˈWzᵊnd ˈAt hˈʌndɹəd pˈipᵊl.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "file": "clips/kokoro-old_so-4.m4a",
+      "duration": 8.457,
+      "lufs": -16.21,
+      "true_peak_db": -3.15,
+      "bytes": 75258,
+      "generation_seconds": 0.106,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.989,
+        "word_confidence": 0.957
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "old_so",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "sounds_from_front_end": "ðə kˈæpəTᵊl ʌv ˈIslənd ɪz ɹˈAkʤəvˌɪk. ɪn fɹˈɛnʧ, θˈæŋk ju vˈɛɹi mˈʌʧ ɪz mɛɹsˈi bˌOkˈu.",
+      "settings": {
+        "speed": 0.92,
+        "blend": {
+          "am_santa": 0.6,
+          "am_onyx": 0.4
+        },
+        "front_end": "a"
+      },
+      "file": "clips/kokoro-old_so-5.m4a",
+      "duration": 5.961,
+      "lufs": -16.2,
+      "true_peak_db": -2.36,
+      "bytes": 52465,
+      "generation_seconds": 0.097,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.64,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.986,
+        "word_confidence": 0.944
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seed": 2,
+      "file": "clips/qwen-elder_m-1.m4a",
+      "duration": 2.242,
+      "lufs": -16.2,
+      "true_peak_db": -2.69,
+      "bytes": 19812,
+      "generation_seconds": 4.412,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.48,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.817,
+        "word_confidence": 0.964
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seed": 3,
+      "file": "clips/qwen-elder_m-2.m4a",
+      "duration": 5.799,
+      "lufs": -16.15,
+      "true_peak_db": -2.57,
+      "bytes": 52313,
+      "generation_seconds": 9.927,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.52,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.982,
+        "word_confidence": 0.983
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seed": 4,
+      "file": "clips/qwen-elder_m-3.m4a",
+      "duration": 4.677,
+      "lufs": -16.35,
+      "true_peak_db": -3.42,
+      "bytes": 41895,
+      "generation_seconds": 8.78,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.948,
+        "word_confidence": 0.974
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seed": 5,
+      "file": "clips/qwen-elder_m-4.m4a",
+      "duration": 9.028,
+      "lufs": -16.21,
+      "true_peak_db": -2.52,
+      "bytes": 81328,
+      "generation_seconds": 16.249,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.996,
+        "word_confidence": 0.974
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "mode": "reuse",
+        "description": "An elderly man in his seventies with a warm, deep, unhurried voice. He speaks slowly and clearly, like the narrator of a nature documentary, recorded very close and clean."
+      },
+      "seed": 6,
+      "file": "clips/qwen-elder_m-5.m4a",
+      "duration": 6.327,
+      "lufs": -16.25,
+      "true_peak_db": -1.68,
+      "bytes": 55316,
+      "generation_seconds": 11.147,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.57,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.973,
+        "word_confidence": 0.977
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "line": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel.",
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seed": 2,
+      "file": "clips/qwen-elder_m2-1.m4a",
+      "duration": 1.91,
+      "lufs": -16.12,
+      "true_peak_db": -2.72,
+      "bytes": 16665,
+      "generation_seconds": 3.733,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.43,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.946,
+        "word_confidence": 0.965
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "line": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seed": 3,
+      "file": "clips/qwen-elder_m2-2.m4a",
+      "duration": 4.682,
+      "lufs": -16.15,
+      "true_peak_db": -2.55,
+      "bytes": 41859,
+      "generation_seconds": 8.594,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.58,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.994,
+        "word_confidence": 0.982
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "line": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seed": 4,
+      "file": "clips/qwen-elder_m2-3.m4a",
+      "duration": 3.841,
+      "lufs": -16.19,
+      "true_peak_db": -1.58,
+      "bytes": 33900,
+      "generation_seconds": 6.987,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.32,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.991,
+        "word_confidence": 0.983
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "line": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seed": 5,
+      "file": "clips/qwen-elder_m2-4.m4a",
+      "duration": 8.396,
+      "lufs": -16.14,
+      "true_peak_db": -2.38,
+      "bytes": 73786,
+      "generation_seconds": 15.19,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.971,
+        "word_confidence": 0.942
+      }
+    },
+    {
+      "engine": "qwen",
+      "voice": "elder_m2",
+      "line": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "settings": {
+        "mode": "reuse",
+        "description": "A British man of about eighty with an aged, gravelly, kind voice. He tells the story slowly and calmly, with a storyteller's warmth, recorded very close and clean."
+      },
+      "seed": 6,
+      "file": "clips/qwen-elder_m2-5.m4a",
+      "duration": 5.634,
+      "lufs": -16.13,
+      "true_peak_db": -2.71,
+      "bytes": 49444,
+      "generation_seconds": 10.107,
+      "takes": 1,
+      "passed_check": true,
+      "check": {
+        "lang": "en",
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false,
+        "tail_test_usable": true,
+        "language_guess": "en",
+        "language_guess_sure": 0.965,
+        "word_confidence": 0.978
+      }
+    }
+  ]
+}
