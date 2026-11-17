@@ -1,0 +1,44 @@
+{
+  "title": "Phone tests",
+  "topic": "stage0",
+  "order": 1,
+  "kind": "report",
+  "cards": [
+    {
+      "id": "phone",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Three phone tests",
+      "text": "Open this in Safari and add it to your home screen: https://stippo47.github.io/primer/stage0/phone/",
+      "why": "About two minutes. It shows whether sound survives closing and reopening the app, whether a tick can be felt, and what glows cost on your phone. Paste the results into a comment here.",
+      "details": "Only your phone can answer these. The page sends nothing anywhere; it keeps its results on the phone until you copy them.\n\nIf the numbers in the glow test say 60 but it looked jerky to you, trust your eyes and say so.",
+      "parts": [
+        {
+          "id": "install",
+          "title": "Put it on the phone",
+          "text": "In Safari tap Share, then Add to Home Screen, then Add. Turn the volume up, the silent switch off and Low Power Mode off. Open \"Primer test\" from the home screen."
+        },
+        {
+          "id": "sound",
+          "title": "Sound, three rounds",
+          "text": "Go straight to Sound. Play the chime and the tone, and say whether you heard each.\n\nThen close the app fully, open it again from the home screen, and do both again.\n\nThen flip the phone to silent, tap the button that says you have, and do both once more. Flip it back after."
+        },
+        {
+          "id": "tick",
+          "title": "Tick",
+          "text": "Tap each card and say whether you felt anything."
+        },
+        {
+          "id": "glow",
+          "title": "Glow",
+          "text": "Tap Start and watch for about 40 seconds without touching the screen. Then say whether it looked smooth or jerky."
+        },
+        {
+          "id": "results",
+          "title": "Results",
+          "text": "Open Results, type your iOS number (Settings, General, About), tap Copy results, and paste them into a comment on this card."
+        }
+      ]
+    }
+  ]
+}
