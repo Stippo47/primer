@@ -1,0 +1,772 @@
+{
+  "made": "2026-11-16",
+  "naturalness": "Not judged. No person has listened to these clips; the check below only compares words.",
+  "format": "AAC-LC in M4A, mono, 24 kHz, 64 kbps, one file per line",
+  "loudness_target_lufs": -16,
+  "clips_total_bytes": 993080,
+  "speed_note": "Speed is seconds of computing per second of speech on one NVIDIA GeForce RTX 5080, model already loaded. Memory is the peak graphics memory PyTorch held.",
+  "lines": [
+    {
+      "n": 1,
+      "lang": "en",
+      "text": "Warm water is the fuel."
+    },
+    {
+      "n": 2,
+      "lang": "en",
+      "text": "Above about 26 degrees, the air over the ocean starts to rise."
+    },
+    {
+      "n": 3,
+      "lang": "en",
+      "text": "Not on the equator, though. There's no spin there to start it turning."
+    },
+    {
+      "n": 4,
+      "lang": "en",
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people."
+    },
+    {
+      "n": 5,
+      "lang": "en",
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "note": "A stress test: an Icelandic place name and a French phrase, read in English mode."
+    },
+    {
+      "n": 6,
+      "lang": "fr",
+      "text": "Merci beaucoup, à demain.",
+      "note": "French mode. Kokoro uses its separate French voice here; Chatterbox uses the same model as for English."
+    }
+  ],
+  "engines": [
+    {
+      "id": "kokoro",
+      "name": "Kokoro 82M",
+      "model": "hexgrad/Kokoro-82M, v1.0",
+      "source": "PyPI package kokoro; model files from the publisher's Hugging Face repo",
+      "licence": "Apache-2.0 (code, model and voices)",
+      "french": "A separate French voice (ff_siwis). The English voices do not speak French.",
+      "voices": [
+        {
+          "id": "af_heart",
+          "label": "Heart · American, female",
+          "source": "ships with the model"
+        },
+        {
+          "id": "am_michael",
+          "label": "Michael · American, male",
+          "source": "ships with the model"
+        },
+        {
+          "id": "bf_emma",
+          "label": "Emma · British, female",
+          "source": "ships with the model"
+        },
+        {
+          "id": "ff_siwis",
+          "label": "Siwis · French, female",
+          "source": "ships with the model"
+        }
+      ],
+      "notes": [
+        "Same text gives the same audio every time, so a line can be regenerated exactly.",
+        "No voice cloning and no emotion control. Only the voices that ship with it.",
+        "The English text front end fetches a small spaCy language model (en_core_web_sm, MIT) on first run."
+      ],
+      "version": "kokoro 0.9.4, model v1.0, torch 2.11.0+cu128",
+      "graphics_card": "NVIDIA GeForce RTX 5080",
+      "seconds_per_audio_second": 0.016,
+      "typical_15_word_line_seconds": 0.066,
+      "typical_15_word_line_audio_seconds": 6.8,
+      "peak_vram_mb": 942,
+      "model_load_seconds": 1.04,
+      "settings": {
+        "speed": 1.0
+      },
+      "retakes": 0
+    },
+    {
+      "id": "chatterbox",
+      "name": "Chatterbox Multilingual",
+      "model": "ResembleAI/chatterbox, multilingual v2 weights (t3_mtl23ls_v2)",
+      "source": "PyPI package chatterbox-tts 0.1.7, installed without its pinned PyTorch 2.6, which cannot drive this graphics card; model files from the publisher's Hugging Face repo",
+      "licence": "MIT (code and model)",
+      "french": "The same model in French mode, with either voice.",
+      "voices": [
+        {
+          "id": "default",
+          "label": "Built-in voice",
+          "source": "ships with the model"
+        },
+        {
+          "id": "en_f1",
+          "label": "Demo voice · English, female",
+          "source": "the publisher's own demo reference clip, 3 seconds; its speaker and licence are not stated"
+        },
+        {
+          "id": "fr_f1",
+          "label": "Demo voice · French, female",
+          "source": "the publisher's own demo reference clip, 7 seconds; its speaker and licence are not stated"
+        }
+      ],
+      "notes": [
+        "Random by nature: the same text gives different audio on each run unless the seed is fixed.",
+        "Every output carries the publisher's inaudible watermark.",
+        "The publisher retired the project in August 2026: no more updates. A newer v3 model exists only in the source repository, not in the PyPI package, so it was not used.",
+        "Any voice other than the built-in one is made by imitating a short reference recording."
+      ],
+      "version": "chatterbox-tts 0.1.7, torch 2.11.0+cu128",
+      "graphics_card": "NVIDIA GeForce RTX 5080",
+      "seconds_per_audio_second": 0.585,
+      "typical_15_word_line_seconds": 2.768,
+      "typical_15_word_line_audio_seconds": 5.28,
+      "peak_vram_mb": 3704,
+      "model_load_seconds": 7.81,
+      "settings": {
+        "exaggeration": 0.5,
+        "cfg_weight": 0.5,
+        "temperature": 0.8
+      },
+      "retakes": 8
+    }
+  ],
+  "skipped": [
+    {
+      "id": "higgs",
+      "name": "Higgs Audio V3",
+      "model": "bosonai/higgs-tts-3-4b",
+      "licence": "Research and non-commercial licence for the model",
+      "reason": "it could not be run here within the rules. The publisher only supports it through a Linux server stack inside Docker, which this Windows PC does not have and cannot get without an administrator prompt. The serving package on PyPI does not install (it needs a build of its core that is not on PyPI). The publisher has confirmed it on 40 GB of graphics memory and calls 24 GB unverified; 16 GB is only reached by third-party shrunken copies. It also ships no voices: every voice is an imitation of a reference recording."
+    }
+  ],
+  "page_notes": [
+    "Chatterbox's demo voices imitate short reference recordings from its publisher's own demo page. Kokoro's voices ship with it.",
+    "Chatterbox Multilingual: 5 of its 12 clips came out with a wrong word or a stray sound on the first try and were made again (8 retakes in all). You are hearing the takes that passed the word check."
+  ],
+  "check": {
+    "recogniser": "faster-whisper large-v3 (cuda)",
+    "what_it_catches": "Wrong, missing or extra words, and sound that carries on more than 0.8 s after the last word. It forgives accents, so a badly said foreign word can still pass.",
+    "flagged_clips": [],
+    "discarded_takes": [
+      {
+        "file": "clips/chatterbox-default-2.m4a",
+        "take": 1,
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise. Well,",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.39
+      },
+      {
+        "file": "clips/chatterbox-default-3.m4a",
+        "take": 1,
+        "heard": "Not on the equator though, there's no spin there to start it turning.",
+        "problem": "sound after the last word",
+        "sound_after_last_word_seconds": 0.9
+      },
+      {
+        "file": "clips/chatterbox-default-6.m4a",
+        "take": 1,
+        "heard": "Merci beaucoup Adema.",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.31
+      },
+      {
+        "file": "clips/chatterbox-en_f1-1.m4a",
+        "take": 1,
+        "heard": "Warm water is the fuel, is.",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.36
+      },
+      {
+        "file": "clips/chatterbox-en_f1-2.m4a",
+        "take": 1,
+        "heard": "Well, about 26 degrees, the air over the ocean starts to rise.",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.46
+      },
+      {
+        "file": "clips/chatterbox-default-3.m4a",
+        "take": 2,
+        "heard": "Not on the equator though, there's no spin there to start a turning.",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.3
+      },
+      {
+        "file": "clips/chatterbox-default-6.m4a",
+        "take": 2,
+        "heard": "Merci beaucoup. À demain. S'entend-il et à demain.",
+        "problem": "words",
+        "sound_after_last_word_seconds": 0.72
+      },
+      {
+        "file": "clips/chatterbox-en_f1-2.m4a",
+        "take": 2,
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "problem": "sound after the last word",
+        "sound_after_last_word_seconds": 0.98
+      }
+    ]
+  },
+  "clips": [
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "line": 1,
+      "text": "Warm water is the fuel.",
+      "file": "clips/kokoro-af_heart-1.m4a",
+      "duration": 1.476,
+      "lufs": -16.1,
+      "true_peak_db": -3.85,
+      "bytes": 13263,
+      "generation_seconds": 0.073,
+      "takes": 1,
+      "check": {
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.36,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "line": 1,
+      "text": "Warm water is the fuel.",
+      "file": "clips/kokoro-am_michael-1.m4a",
+      "duration": 1.625,
+      "lufs": -16.24,
+      "true_peak_db": -2.39,
+      "bytes": 14867,
+      "generation_seconds": 0.069,
+      "takes": 1,
+      "check": {
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.36,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "line": 1,
+      "text": "Warm water is the fuel.",
+      "file": "clips/kokoro-bf_emma-1.m4a",
+      "duration": 1.7,
+      "lufs": -16.11,
+      "true_peak_db": -2.96,
+      "bytes": 15959,
+      "generation_seconds": 0.043,
+      "takes": 1,
+      "check": {
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 1,
+      "text": "Warm water is the fuel.",
+      "file": "clips/chatterbox-default-1.m4a",
+      "duration": 1.315,
+      "lufs": -16.23,
+      "true_peak_db": -3.07,
+      "bytes": 11585,
+      "generation_seconds": 1.891,
+      "takes": 1,
+      "check": {
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.38,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "line": 1,
+      "text": "Warm water is the fuel.",
+      "file": "clips/chatterbox-en_f1-1.m4a",
+      "duration": 1.487,
+      "lufs": -16.12,
+      "true_peak_db": -2.89,
+      "bytes": 12903,
+      "generation_seconds": 1.84,
+      "takes": 2,
+      "check": {
+        "heard": "Warm water is the fuel.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.39,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "line": 2,
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "file": "clips/kokoro-af_heart-2.m4a",
+      "duration": 4.077,
+      "lufs": -16.21,
+      "true_peak_db": -2.25,
+      "bytes": 39504,
+      "generation_seconds": 0.082,
+      "takes": 1,
+      "check": {
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.44,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "line": 2,
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "file": "clips/kokoro-am_michael-2.m4a",
+      "duration": 4.475,
+      "lufs": -16.21,
+      "true_peak_db": -1.77,
+      "bytes": 40727,
+      "generation_seconds": 0.088,
+      "takes": 1,
+      "check": {
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.51,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "line": 2,
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "file": "clips/kokoro-bf_emma-2.m4a",
+      "duration": 4.053,
+      "lufs": -16.14,
+      "true_peak_db": -2.21,
+      "bytes": 38165,
+      "generation_seconds": 0.081,
+      "takes": 1,
+      "check": {
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.43,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 2,
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "file": "clips/chatterbox-default-2.m4a",
+      "duration": 3.312,
+      "lufs": -16.07,
+      "true_peak_db": -2.88,
+      "bytes": 31301,
+      "generation_seconds": 2.984,
+      "takes": 2,
+      "check": {
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.39,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "line": 2,
+      "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+      "file": "clips/chatterbox-en_f1-2.m4a",
+      "duration": 3.557,
+      "lufs": -16.2,
+      "true_peak_db": -2.88,
+      "bytes": 31148,
+      "generation_seconds": 2.937,
+      "takes": 3,
+      "check": {
+        "heard": "Above about 26 degrees, the air over the ocean starts to rise.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.44,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "line": 3,
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "file": "clips/kokoro-af_heart-3.m4a",
+      "duration": 3.399,
+      "lufs": -16.18,
+      "true_peak_db": -2.59,
+      "bytes": 32205,
+      "generation_seconds": 0.079,
+      "takes": 1,
+      "check": {
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.38,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "line": 3,
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "file": "clips/kokoro-am_michael-3.m4a",
+      "duration": 3.728,
+      "lufs": -16.15,
+      "true_peak_db": -2.17,
+      "bytes": 34337,
+      "generation_seconds": 0.083,
+      "takes": 1,
+      "check": {
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.31,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "line": 3,
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "file": "clips/kokoro-bf_emma-3.m4a",
+      "duration": 3.442,
+      "lufs": -16.08,
+      "true_peak_db": -1.44,
+      "bytes": 30718,
+      "generation_seconds": 0.075,
+      "takes": 1,
+      "check": {
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.42,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 3,
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "file": "clips/chatterbox-default-3.m4a",
+      "duration": 2.962,
+      "lufs": -16.17,
+      "true_peak_db": -3.69,
+      "bytes": 27939,
+      "generation_seconds": 2.292,
+      "takes": 3,
+      "check": {
+        "heard": "Not on the equator though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.34,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "line": 3,
+      "text": "Not on the equator, though. There's no spin there to start it turning.",
+      "file": "clips/chatterbox-en_f1-3.m4a",
+      "duration": 3.184,
+      "lufs": -16.19,
+      "true_peak_db": -2.93,
+      "bytes": 27823,
+      "generation_seconds": 1.901,
+      "takes": 1,
+      "check": {
+        "heard": "Not on the equator, though. There's no spin there to start it turning.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.38,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "line": 4,
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "file": "clips/kokoro-af_heart-4.m4a",
+      "duration": 7.884,
+      "lufs": -16.1,
+      "true_peak_db": -2.79,
+      "bytes": 71899,
+      "generation_seconds": 0.094,
+      "takes": 1,
+      "check": {
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.46,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "line": 4,
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "file": "clips/kokoro-am_michael-4.m4a",
+      "duration": 8.772,
+      "lufs": -16.15,
+      "true_peak_db": -1.44,
+      "bytes": 79322,
+      "generation_seconds": 0.098,
+      "takes": 1,
+      "check": {
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.45,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "line": 4,
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "file": "clips/kokoro-bf_emma-4.m4a",
+      "duration": 7.411,
+      "lufs": -16.13,
+      "true_peak_db": -1.52,
+      "bytes": 66799,
+      "generation_seconds": 0.095,
+      "takes": 1,
+      "check": {
+        "heard": "In 2005, Hurricane Katrina reached 280 km an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.47,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 4,
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "file": "clips/chatterbox-default-4.m4a",
+      "duration": 5.551,
+      "lufs": -16.05,
+      "true_peak_db": -2.3,
+      "bytes": 48961,
+      "generation_seconds": 4.769,
+      "takes": 1,
+      "check": {
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.45,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "line": 4,
+      "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people.",
+      "file": "clips/chatterbox-en_f1-4.m4a",
+      "duration": 5.929,
+      "lufs": -16.1,
+      "true_peak_db": -2.78,
+      "bytes": 53419,
+      "generation_seconds": 3.048,
+      "takes": 1,
+      "check": {
+        "heard": "In 2005, Hurricane Katrina reached 280 kilometers an hour and killed more than 1,800 people.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.51,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "line": 5,
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "file": "clips/kokoro-af_heart-5.m4a",
+      "duration": 5.363,
+      "lufs": -16.22,
+      "true_peak_db": -2.19,
+      "bytes": 48253,
+      "generation_seconds": 0.092,
+      "takes": 1,
+      "check": {
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.5,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "line": 5,
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "file": "clips/kokoro-am_michael-5.m4a",
+      "duration": 5.806,
+      "lufs": -16.13,
+      "true_peak_db": -2.04,
+      "bytes": 53122,
+      "generation_seconds": 0.089,
+      "takes": 1,
+      "check": {
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.53,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "line": 5,
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "file": "clips/kokoro-bf_emma-5.m4a",
+      "duration": 5.056,
+      "lufs": -16.19,
+      "true_peak_db": -2.47,
+      "bytes": 45644,
+      "generation_seconds": 0.082,
+      "takes": 1,
+      "check": {
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.56,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 5,
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "file": "clips/chatterbox-default-5.m4a",
+      "duration": 4.352,
+      "lufs": -16.05,
+      "true_peak_db": -2.33,
+      "bytes": 39841,
+      "generation_seconds": 3.274,
+      "takes": 1,
+      "check": {
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.51,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "line": 5,
+      "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup.",
+      "file": "clips/chatterbox-en_f1-5.m4a",
+      "duration": 4.716,
+      "lufs": -16.09,
+      "true_peak_db": -2.84,
+      "bytes": 41676,
+      "generation_seconds": 2.774,
+      "takes": 1,
+      "check": {
+        "heard": "The capital of Iceland is Reykjavik. In French, thank you very much is merci beaucoup.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.5,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "kokoro",
+      "voice": "ff_siwis",
+      "line": 6,
+      "text": "Merci beaucoup, à demain.",
+      "file": "clips/kokoro-ff_siwis-6.m4a",
+      "duration": 1.422,
+      "lufs": -16.23,
+      "true_peak_db": -3.07,
+      "bytes": 13147,
+      "generation_seconds": 0.066,
+      "takes": 1,
+      "check": {
+        "heard": "Merci beaucoup, à demain.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.36,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "line": 6,
+      "text": "Merci beaucoup, à demain.",
+      "file": "clips/chatterbox-default-6.m4a",
+      "duration": 1.514,
+      "lufs": -16.22,
+      "true_peak_db": -2.8,
+      "bytes": 14431,
+      "generation_seconds": 1.618,
+      "takes": 3,
+      "check": {
+        "heard": "Merci beaucoup. À demain.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.33,
+        "long_tail": false
+      }
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "fr_f1",
+      "line": 6,
+      "text": "Merci beaucoup, à demain.",
+      "file": "clips/chatterbox-fr_f1-6.m4a",
+      "duration": 1.436,
+      "lufs": -16.14,
+      "true_peak_db": -1.69,
+      "bytes": 14122,
+      "generation_seconds": 1.715,
+      "takes": 1,
+      "check": {
+        "heard": "Merci beaucoup, à demain.",
+        "verdict": "ok",
+        "differences": [],
+        "sound_after_last_word_seconds": 0.32,
+        "long_tail": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,418 @@
+{
+  "line": 2,
+  "text": "Above about 26 degrees, the air over the ocean starts to rise.",
+  "method": "CTC forced alignment, torchaudio forced_align over facebook/wav2vec2-base-960h, about 20 ms steps",
+  "units": "seconds from the start of the clip",
+  "clips": [
+    {
+      "engine": "chatterbox",
+      "voice": "default",
+      "file": "chatterbox-default-2.m4a",
+      "duration": 3.312,
+      "mean_score": 0.973,
+      "words": [
+        {
+          "word": "Above",
+          "start": 0.06,
+          "end": 0.241,
+          "score": 0.978
+        },
+        {
+          "word": "about",
+          "start": 0.281,
+          "end": 0.442,
+          "score": 0.923
+        },
+        {
+          "word": "26",
+          "start": 0.522,
+          "end": 0.863,
+          "score": 1.0
+        },
+        {
+          "word": "degrees,",
+          "start": 0.943,
+          "end": 1.264,
+          "score": 0.991
+        },
+        {
+          "word": "the",
+          "start": 1.385,
+          "end": 1.485,
+          "score": 0.985
+        },
+        {
+          "word": "air",
+          "start": 1.626,
+          "end": 1.726,
+          "score": 1.0
+        },
+        {
+          "word": "over",
+          "start": 1.826,
+          "end": 1.947,
+          "score": 0.996
+        },
+        {
+          "word": "the",
+          "start": 1.987,
+          "end": 2.067,
+          "score": 0.965
+        },
+        {
+          "word": "ocean",
+          "start": 2.168,
+          "end": 2.348,
+          "score": 0.994
+        },
+        {
+          "word": "starts",
+          "start": 2.429,
+          "end": 2.669,
+          "score": 0.956
+        },
+        {
+          "word": "to",
+          "start": 2.71,
+          "end": 2.79,
+          "score": 0.972
+        },
+        {
+          "word": "rise.",
+          "start": 2.85,
+          "end": 3.091,
+          "score": 0.917
+        }
+      ],
+      "first_voice": true
+    },
+    {
+      "engine": "chatterbox",
+      "voice": "en_f1",
+      "file": "chatterbox-en_f1-2.m4a",
+      "duration": 3.557,
+      "mean_score": 0.906,
+      "words": [
+        {
+          "word": "Above",
+          "start": 0.04,
+          "end": 0.281,
+          "score": 0.964
+        },
+        {
+          "word": "about",
+          "start": 0.362,
+          "end": 0.563,
+          "score": 0.953
+        },
+        {
+          "word": "26",
+          "start": 0.603,
+          "end": 0.985,
+          "score": 0.988
+        },
+        {
+          "word": "degrees,",
+          "start": 1.085,
+          "end": 1.467,
+          "score": 0.988
+        },
+        {
+          "word": "the",
+          "start": 1.588,
+          "end": 1.688,
+          "score": 0.893
+        },
+        {
+          "word": "air",
+          "start": 1.748,
+          "end": 1.869,
+          "score": 0.947
+        },
+        {
+          "word": "over",
+          "start": 1.949,
+          "end": 2.07,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 2.11,
+          "end": 2.191,
+          "score": 0.999
+        },
+        {
+          "word": "ocean",
+          "start": 2.271,
+          "end": 2.492,
+          "score": 0.974
+        },
+        {
+          "word": "starts",
+          "start": 2.572,
+          "end": 2.834,
+          "score": 0.892
+        },
+        {
+          "word": "to",
+          "start": 2.894,
+          "end": 2.974,
+          "score": 0.718
+        },
+        {
+          "word": "rise.",
+          "start": 3.035,
+          "end": 3.396,
+          "score": 0.558
+        }
+      ],
+      "first_voice": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "af_heart",
+      "file": "kokoro-af_heart-2.m4a",
+      "duration": 4.077,
+      "mean_score": 0.963,
+      "words": [
+        {
+          "word": "Above",
+          "start": 0.1,
+          "end": 0.301,
+          "score": 0.923
+        },
+        {
+          "word": "about",
+          "start": 0.341,
+          "end": 0.522,
+          "score": 0.999
+        },
+        {
+          "word": "26",
+          "start": 0.603,
+          "end": 0.984,
+          "score": 0.949
+        },
+        {
+          "word": "degrees,",
+          "start": 1.105,
+          "end": 1.486,
+          "score": 0.992
+        },
+        {
+          "word": "the",
+          "start": 1.948,
+          "end": 2.049,
+          "score": 0.949
+        },
+        {
+          "word": "air",
+          "start": 2.169,
+          "end": 2.29,
+          "score": 0.992
+        },
+        {
+          "word": "over",
+          "start": 2.37,
+          "end": 2.49,
+          "score": 0.909
+        },
+        {
+          "word": "the",
+          "start": 2.531,
+          "end": 2.631,
+          "score": 0.946
+        },
+        {
+          "word": "ocean",
+          "start": 2.752,
+          "end": 2.972,
+          "score": 0.987
+        },
+        {
+          "word": "starts",
+          "start": 3.093,
+          "end": 3.334,
+          "score": 0.928
+        },
+        {
+          "word": "to",
+          "start": 3.414,
+          "end": 3.475,
+          "score": 1.0
+        },
+        {
+          "word": "rise.",
+          "start": 3.555,
+          "end": 3.836,
+          "score": 0.985
+        }
+      ],
+      "first_voice": true
+    },
+    {
+      "engine": "kokoro",
+      "voice": "am_michael",
+      "file": "kokoro-am_michael-2.m4a",
+      "duration": 4.475,
+      "mean_score": 0.981,
+      "words": [
+        {
+          "word": "Above",
+          "start": 0.1,
+          "end": 0.301,
+          "score": 0.992
+        },
+        {
+          "word": "about",
+          "start": 0.361,
+          "end": 0.542,
+          "score": 0.934
+        },
+        {
+          "word": "26",
+          "start": 0.602,
+          "end": 1.043,
+          "score": 0.981
+        },
+        {
+          "word": "degrees,",
+          "start": 1.184,
+          "end": 1.645,
+          "score": 0.97
+        },
+        {
+          "word": "the",
+          "start": 2.147,
+          "end": 2.227,
+          "score": 1.0
+        },
+        {
+          "word": "air",
+          "start": 2.448,
+          "end": 2.548,
+          "score": 1.0
+        },
+        {
+          "word": "over",
+          "start": 2.649,
+          "end": 2.769,
+          "score": 1.0
+        },
+        {
+          "word": "the",
+          "start": 2.829,
+          "end": 2.91,
+          "score": 0.999
+        },
+        {
+          "word": "ocean",
+          "start": 3.05,
+          "end": 3.271,
+          "score": 0.996
+        },
+        {
+          "word": "starts",
+          "start": 3.391,
+          "end": 3.652,
+          "score": 0.967
+        },
+        {
+          "word": "to",
+          "start": 3.712,
+          "end": 3.793,
+          "score": 1.0
+        },
+        {
+          "word": "rise.",
+          "start": 3.873,
+          "end": 4.234,
+          "score": 0.933
+        }
+      ],
+      "first_voice": false
+    },
+    {
+      "engine": "kokoro",
+      "voice": "bf_emma",
+      "file": "kokoro-bf_emma-2.m4a",
+      "duration": 4.053,
+      "mean_score": 0.945,
+      "words": [
+        {
+          "word": "Above",
+          "start": 0.1,
+          "end": 0.301,
+          "score": 0.981
+        },
+        {
+          "word": "about",
+          "start": 0.341,
+          "end": 0.562,
+          "score": 0.909
+        },
+        {
+          "word": "26",
+          "start": 0.642,
+          "end": 1.064,
+          "score": 1.0
+        },
+        {
+          "word": "degrees,",
+          "start": 1.184,
+          "end": 1.585,
+          "score": 0.972
+        },
+        {
+          "word": "the",
+          "start": 1.926,
+          "end": 2.027,
+          "score": 0.952
+        },
+        {
+          "word": "air",
+          "start": 2.147,
+          "end": 2.247,
+          "score": 1.0
+        },
+        {
+          "word": "over",
+          "start": 2.328,
+          "end": 2.468,
+          "score": 0.996
+        },
+        {
+          "word": "the",
+          "start": 2.528,
+          "end": 2.609,
+          "score": 0.909
+        },
+        {
+          "word": "ocean",
+          "start": 2.709,
+          "end": 2.93,
+          "score": 0.997
+        },
+        {
+          "word": "starts",
+          "start": 3.03,
+          "end": 3.331,
+          "score": 0.991
+        },
+        {
+          "word": "to",
+          "start": 3.391,
+          "end": 3.471,
+          "score": 1.0
+        },
+        {
+          "word": "rise.",
+          "start": 3.532,
+          "end": 3.893,
+          "score": 0.632
+        }
+      ],
+      "first_voice": false
+    }
+  ]
+}

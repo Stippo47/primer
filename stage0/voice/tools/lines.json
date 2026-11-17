@@ -1,0 +1,14 @@
+{
+  "lines": [
+    {"n": 1, "lang": "en", "text": "Warm water is the fuel."},
+    {"n": 2, "lang": "en", "text": "Above about 26 degrees, the air over the ocean starts to rise."},
+    {"n": 3, "lang": "en", "text": "Not on the equator, though. There's no spin there to start it turning."},
+    {"n": 4, "lang": "en", "text": "In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people."},
+    {"n": 5, "lang": "en", "text": "The capital of Iceland is Reykjavík. In French, thank you very much is merci beaucoup."},
+    {"n": 6, "lang": "fr", "text": "Merci beaucoup, à demain."}
+  ],
+  "bench": {
+    "note": "A 15-word line used only to time generation. It is not shipped as a clip.",
+    "text": "Warm ocean water evaporates, rises, cools, and releases the heat that keeps the storm growing."
+  }
+}

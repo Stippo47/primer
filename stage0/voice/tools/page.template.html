@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Primer voice samples</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0e1020; --card: #171a30; --row: #20243f; --row-on: #2c3260;
+    --text: #eef0fb; --dim: #a3a8c6; --line: #2d3254;
+    --warm: #ffb454; --said: #ffd9a3; --warn: #ff8f8f;
+    --kokoro: #5fd1c5; --chatterbox: #f58bb0; --higgs: #b79bff;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 0 max(14px, env(safe-area-inset-right)) 150px max(14px, env(safe-area-inset-left));
+  }
+  header, main, footer { max-width: 680px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 22px 0 6px; }
+  h2 { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin: 0 0 8px; font-weight: 600; }
+  p { margin: 8px 0; }
+  .dim { color: var(--dim); font-size: 15px; }
+  .card { background: var(--card); border-radius: 16px; padding: 16px 14px 14px; margin: 18px 0; }
+  .say { font-size: 22px; line-height: 1.35; margin: 0 0 12px; font-weight: 600; }
+  .say .w { border-radius: 6px; padding: 1px 2px; margin: 0 -2px; transition: color .08s, background-color .08s; }
+  .say.live .w { color: var(--dim); }
+  .say.live .w.said { color: var(--said); }
+  .say.live .w.now { color: #1a1300; background: var(--warm); }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .all {
+    width: 100%; min-height: 52px; border-radius: 12px; background: transparent;
+    border: 1.5px solid var(--line); color: var(--text); font-weight: 600; margin-bottom: 10px;
+  }
+  .all.on { border-color: var(--warm); color: var(--warm); }
+  .clip {
+    display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px;
+    width: 100%; min-height: 64px; padding: 8px 14px 8px 10px; margin: 8px 0 0;
+    background: var(--row); border-radius: 12px; text-align: left;
+  }
+  .clip.on { background: var(--row-on); outline: 2px solid var(--warm); }
+  .icon { width: 44px; height: 44px; border-radius: 50%; background: #0006; display: grid; place-items: center; }
+  .icon::before { content: ""; border-style: solid; border-width: 9px 0 9px 15px; border-color: transparent transparent transparent var(--text); margin-left: 4px; }
+  .clip.playing .icon::before { border: 0; width: 5px; height: 18px; margin: 0; box-shadow: -5px 0 0 var(--text), 5px 0 0 var(--text); background: transparent; }
+  .who b { display: block; font-weight: 600; }
+  .who span { color: var(--dim); font-size: 14px; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+  .secs { color: var(--dim); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .heard { margin: 4px 4px 0 64px; font-size: 14px; color: var(--warn); }
+  .note { font-size: 14px; color: var(--dim); margin: 10px 2px 0; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; }
+  footer ul { padding-left: 20px; }
+  footer li { margin: 6px 0; }
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #0a0c18f2; border-top: 1px solid var(--line);
+    padding: 8px max(14px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  #bar div { max-width: 680px; margin: 0 auto; }
+  #now { font-size: 14px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  audio { width: 100%; height: 44px; display: block; }
+  #problem { color: var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Voice samples</h1>
+  <p>Every voice reads the same lines. Tap a voice to hear it, or play a whole line to hear the voices one after another.</p>
+  <p class="dim">All clips are set to the same loudness. Nobody has listened to these yet: a machine checked the words, not how natural they sound.</p>
+  <p id="problem"></p>
+</header>
+<main id="lines"></main>
+<footer>
+  <div class="card">
+    <h2>The engines</h2>
+    <div class="scroll"><table id="engines"></table></div>
+    <p class="note" id="speednote"></p>
+    <ul class="dim" id="extras"></ul>
+  </div>
+</footer>
+<div id="bar"><div>
+  <div id="now">Nothing playing</div>
+  <audio id="player" controls preload="none"></audio>
+</div></div>
+
+<script id="samples-inline" type="application/json">{{SAMPLES}}</script>
+<script id="timings-inline" type="application/json">{{TIMINGS}}</script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const player = $("player");
+let current = null;   // the clip that is loaded in the player
+let queue = [];       // clips still to come when a whole line is playing
+let allButton = null;
+const rows = new Map();   // file -> row button
+const words = new Map();  // line number -> { box, spans }
+const timings = new Map(); // file -> word timings
+
+async function load(name) {
+  const builtIn = () => JSON.parse($(name + "-inline").textContent);
+  if (location.protocol === "file:") return builtIn();  // opened straight from disk: browsers refuse to fetch there
+  try {
+    const r = await fetch(name + ".json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch (e) {
+    return builtIn();
+  }
+}
+
+function clipLabel(c, engines) {
+  const e = engines[c.engine];
+  const v = e.voices.find((v) => v.id === c.voice) || { label: c.voice };
+  return { engine: e.name, voice: v.label };
+}
+
+function build(samples, timing) {
+  const engines = Object.fromEntries(samples.engines.map((e) => [e.id, e]));
+  for (const t of timing.clips) timings.set("clips/" + t.file, t.words);
+  for (const line of samples.lines) {
+    const clips = samples.clips.filter((c) => c.line === line.n);
+    if (!clips.length) continue;
+    const card = el("section", "card");
+    card.append(el("h2", "", "Line " + line.n + (line.lang === "fr" ? " · French" : "")));
+    const say = el("p", "say");
+    say.lang = line.lang;
+    const spans = line.text.split(" ").map((w) => el("span", "w", w));
+    spans.forEach((s, i) => { if (i) say.append(" "); say.append(s); });
+    words.set(line.n, { box: say, spans });
+    card.append(say);
+
+    const all = el("button", "all", "Play all " + clips.length + " in a row");
+    all.type = "button";
+    all.addEventListener("click", () => {
+      if (allButton === all) { stop(); return; }
+      queue = clips.slice(1);
+      setAll(all);
+      start(clips[0]);
+    });
+    if (clips.length > 1) card.append(all);
+
+    for (const c of clips) {
+      const label = clipLabel(c, engines);
+      const row = el("button", "clip");
+      row.type = "button";
+      const who = el("span", "who");
+      const name = el("b");
+      const dot = el("i", "dot");
+      dot.style.background = "var(--" + c.engine + ", #999)";
+      name.append(dot, label.engine);
+      who.append(name, el("span", "", label.voice));
+      row.append(el("span", "icon"), who, el("span", "secs", c.duration.toFixed(1) + " s"));
+      row.setAttribute("aria-label", "Play line " + line.n + ", " + label.engine + ", " + label.voice);
+      row.addEventListener("click", () => {
+        queue = []; setAll(null);
+        if (current === c && !player.paused) player.pause();
+        else if (current === c && !player.ended && player.currentTime > 0) player.play();
+        else start(c);
+      });
+      rows.set(c.file, row);
+      c.label = label;
+      card.append(row);
+      if (c.check && c.check.verdict !== "ok") {
+        card.append(el("p", "heard", "Word check heard: “" + c.check.heard + "”"));
+      }
+    }
+    if (line.n === timing.line) card.append(el("p", "note", "Words light up as they are spoken. The times come from lining the known text up against each finished clip."));
+    if (line.note) card.append(el("p", "note", line.note));
+    $("lines").append(card);
+  }
+
+  const table = $("engines");
+  const head = el("tr");
+  ["Engine", "Licence", "Speed", "Memory"].forEach((h) => head.append(el("th", "", h)));
+  table.append(head);
+  for (const e of samples.engines) {
+    const tr = el("tr");
+    const name = el("td");
+    const dot = el("i", "dot");
+    dot.style.background = "var(--" + e.id + ", #999)";
+    name.append(dot, e.name);
+    tr.append(name, el("td", "", e.licence),
+      el("td", "", e.seconds_per_audio_second.toFixed(2) + " s per second of speech; a 15-word line takes " + e.typical_15_word_line_seconds.toFixed(e.typical_15_word_line_seconds < 1 ? 2 : 1) + " s"),
+      el("td", "", (e.peak_vram_mb / 1024).toFixed(1) + " GB"));
+    table.append(tr);
+  }
+  $("speednote").textContent = samples.speed_note || "";
+  for (const s of samples.skipped || []) $("extras").append(el("li", "", s.name + " was not sampled: " + s.reason));
+  for (const n of samples.page_notes || []) $("extras").append(el("li", "", n));
+}
+
+function setAll(button) {
+  if (allButton) { allButton.classList.remove("on"); allButton.textContent = allButton.dataset.idle; }
+  allButton = button;
+  if (button) { button.dataset.idle = button.dataset.idle || button.textContent; button.classList.add("on"); button.textContent = "Stop"; }
+}
+
+function start(c) {
+  mark(null);
+  current = c;
+  player.src = c.file;
+  $("now").textContent = "Line " + c.line + " · " + c.label.engine + " · " + c.label.voice;
+  const p = player.play();
+  if (p) p.catch(() => {});
+  mark(c);
+}
+
+function stop() {
+  queue = []; setAll(null);
+  player.pause();
+}
+
+function mark(c) {
+  for (const r of rows.values()) r.classList.remove("on", "playing");
+  for (const w of words.values()) { w.box.classList.remove("live"); w.spans.forEach((s) => s.classList.remove("said", "now")); }
+  if (!c) return;
+  rows.get(c.file).classList.add("on");
+  if (timings.has(c.file)) words.get(c.line).box.classList.add("live");
+}
+
+function paint() {
+  if (current && timings.has(current.file)) {
+    const t = player.currentTime, tw = timings.get(current.file), spans = words.get(current.line).spans;
+    tw.forEach((w, i) => {
+      spans[i].classList.toggle("said", t >= w.start);
+      spans[i].classList.toggle("now", t >= w.start && t < (tw[i + 1] ? tw[i + 1].start : w.end + 0.15));
+    });
+  }
+  if (!player.paused && !player.ended) requestAnimationFrame(paint);
+}
+
+player.addEventListener("play", () => { if (current) rows.get(current.file).classList.add("playing"); requestAnimationFrame(paint); });
+player.addEventListener("pause", () => { if (current) rows.get(current.file).classList.remove("playing"); });
+player.addEventListener("ended", () => {
+  if (current) rows.get(current.file).classList.remove("playing");
+  paint();
+  if (queue.length) { const next = queue.shift(); setTimeout(() => { if (allButton) start(next); }, 450); }
+  else setAll(null);
+});
+player.addEventListener("error", () => { if (current) $("problem").textContent = "Could not play " + current.file; });
+
+async function selftest(samples) {
+  const out = [];
+  for (const c of samples.clips) {
+    out.push(await new Promise((done) => {
+      const a = new Audio();
+      a.preload = "auto";
+      a.addEventListener("canplaythrough", () => done(c.file + " ok " + a.duration.toFixed(2)), { once: true });
+      a.addEventListener("error", () => done(c.file + " FAILED"), { once: true });
+      a.src = c.file;
+    }));
+  }
+  const bad = out.filter((l) => l.endsWith("FAILED")).length;
+  const pre = el("pre", "", out.join("\n"));
+  pre.id = "selftest";
+  pre.dataset.result = bad ? "failed " + bad : "ok " + out.length;
+  document.body.append(pre);
+}
+
+(async () => {
+  try {
+    const [samples, timing] = await Promise.all([load("samples"), load("timings")]);
+    build(samples, timing);
+    if (location.search.includes("selftest")) await selftest(samples);
+  } catch (e) {
+    $("problem").textContent = "The sample list did not load: " + e.message;
+    throw e;
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "engines": [
+    {
+      "id": "kokoro",
+      "name": "Kokoro 82M",
+      "model": "hexgrad/Kokoro-82M, v1.0",
+      "source": "PyPI package kokoro; model files from the publisher's Hugging Face repo",
+      "licence": "Apache-2.0 (code, model and voices)",
+      "french": "A separate French voice (ff_siwis). The English voices do not speak French.",
+      "voices": [
+        {"id": "af_heart", "label": "Heart · American, female", "source": "ships with the model"},
+        {"id": "am_michael", "label": "Michael · American, male", "source": "ships with the model"},
+        {"id": "bf_emma", "label": "Emma · British, female", "source": "ships with the model"},
+        {"id": "ff_siwis", "label": "Siwis · French, female", "source": "ships with the model"}
+      ],
+      "notes": [
+        "Same text gives the same audio every time, so a line can be regenerated exactly.",
+        "No voice cloning and no emotion control. Only the voices that ship with it.",
+        "The English text front end fetches a small spaCy language model (en_core_web_sm, MIT) on first run."
+      ]
+    },
+    {
+      "id": "chatterbox",
+      "name": "Chatterbox Multilingual",
+      "model": "ResembleAI/chatterbox, multilingual v2 weights (t3_mtl23ls_v2)",
+      "source": "PyPI package chatterbox-tts 0.1.7, installed without its pinned PyTorch 2.6, which cannot drive this graphics card; model files from the publisher's Hugging Face repo",
+      "licence": "MIT (code and model)",
+      "french": "The same model in French mode, with either voice.",
+      "voices": [
+        {"id": "default", "label": "Built-in voice", "source": "ships with the model"},
+        {"id": "en_f1", "label": "Demo voice · English, female", "source": "the publisher's own demo reference clip, 3 seconds; its speaker and licence are not stated"},
+        {"id": "fr_f1", "label": "Demo voice · French, female", "source": "the publisher's own demo reference clip, 7 seconds; its speaker and licence are not stated"}
+      ],
+      "notes": [
+        "Random by nature: the same text gives different audio on each run unless the seed is fixed.",
+        "Every output carries the publisher's inaudible watermark.",
+        "The publisher retired the project in August 2026: no more updates. A newer v3 model exists only in the source repository, not in the PyPI package, so it was not used.",
+        "Any voice other than the built-in one is made by imitating a short reference recording."
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "id": "higgs",
+      "name": "Higgs Audio V3",
+      "model": "bosonai/higgs-tts-3-4b",
+      "licence": "Research and non-commercial licence for the model",
+      "reason": "it could not be run here within the rules. The publisher only supports it through a Linux server stack inside Docker, which this Windows PC does not have and cannot get without an administrator prompt. The serving package on PyPI does not install (it needs a build of its core that is not on PyPI). The publisher has confirmed it on 40 GB of graphics memory and calls 24 GB unverified; 16 GB is only reached by third-party shrunken copies. It also ships no voices: every voice is an imitation of a reference recording."
+    }
+  ],
+  "page_notes": [
+    "Chatterbox's demo voices imitate short reference recordings from its publisher's own demo page. Kokoro's voices ship with it."
+  ],
+  "line_notes": {
+    "5": "A stress test: an Icelandic place name and a French phrase, read in English mode.",
+    "6": "French mode. Kokoro uses its separate French voice here; Chatterbox uses the same model as for English."
+  }
+}
