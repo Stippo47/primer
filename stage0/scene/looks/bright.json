@@ -1,0 +1,91 @@
+{
+  "id": "bright",
+  "title": "Bright",
+  "after": "Duolingo",
+  "fonts": { "ui": "Nunito", "art": "Nunito" },
+
+  "motion": { "bounce": 0.75, "overshoot": 1.3, "pop": 1.25, "squash": 0.22, "idle": 0.8, "captionRise": 22 },
+
+  "chrome": {
+    "gutter": 16,
+    "ground": "#ffffff",
+    "text": "#3c3c3c",
+    "key": "#ff9600",
+    "caption": { "size": 23, "weight": 800, "lineHeight": 1.3, "align": "left", "valign": "top", "tracking": 0, "indent": 6, "top": 654 },
+    "tag": { "fill": "#ddf4ff", "text": "#1899d6", "border": "2px solid #84d8ff", "radius": 10, "weight": 800, "tracking": 0.06, "upper": true },
+    "bar": { "height": 16, "radius": 99, "track": "#e5e5e5", "fill": "#58cc02", "shine": 0.3, "glow": "none" },
+    "close": { "color": "#afafaf", "weight": 3.2 },
+    "button": {
+      "height": 52, "radius": 16, "depth": 4, "size": 16, "weight": 800, "tracking": 0.05, "upper": true,
+      "fill": "#58cc02", "edge": "#58a700", "text": "#ffffff", "border": "none",
+      "glow": "0 0 0 transparent",
+      "offFill": "#e5e5e5", "offEdge": "#d2d2d2", "offText": "#afafaf", "offBorder": "none"
+    }
+  },
+
+  "stage": { "inset": 16, "radius": 24, "bleedTop": 0, "bleedBottom": 0, "fade": 0, "fill": ["#ddf4ff", "#c4ebff"], "border": "#84d8ff", "borderWidth": 2, "depth": 4, "edge": "#84d8ff" },
+
+  "space": {
+    "stars": { "count": 14, "color": "#ffffff", "alpha": 0.95, "size": [2, 5.5], "twinkle": 0.3, "glints": 0.3 },
+    "blobs": [
+      { "x": 330, "y": 190, "r": 150, "color": "#ffffff", "alpha": 0.6 },
+      { "x": 80, "y": 520, "r": 130, "color": "#ffffff", "alpha": 0.45 }
+    ]
+  },
+
+  "globe": {
+    "glow": { "color": "#ffffff", "alpha": 0, "spread": 0.1 },
+    "base": { "color": "#1687c2", "depth": 7 },
+    "shade": { "color": "#0b4f7a", "alpha": 0, "shift": 0.2, "size": 1.07 },
+    "rim": { "color": "#ffffff", "alpha": 0.3, "width": 0.03 },
+    "limb": { "color": "#ffffff", "alpha": 0, "width": 3 },
+    "outline": { "color": "#000000", "width": 0 },
+    "graticule": { "color": "#ffffff", "alpha": 0.14, "width": 1.2 }
+  },
+
+  "land": {
+    "fill": "#58cc02", "edge": "#3f9e00", "depth": 3.4, "light": null,
+    "coast": { "color": "#000000", "width": 0 },
+    "border": { "color": "#ffffff", "alpha": 0.6, "width": 0.9 }
+  },
+
+  "sst": {
+    "steps": ["#2bb3f3", "#86d8fb", "#ffe45c", "#ff9f1c", "#ff4b4b"],
+    "dim": 0, "wobble": 1,
+    "isotherm": { "color": "#ffffff", "alpha": 1, "width": 2.8, "dash": [0.1, 6.5], "glow": 0 }
+  },
+
+  "cloud": { "fill": "#ffffff", "shade": "#bfe6ff", "depth": 2.4, "alpha": 1, "drift": 1, "stroke": "#000000", "strokeWidth": 0 },
+
+  "storm": {
+    "fill": "#ffffff", "shade": "#a8d8f5", "tired": "#b8c4cc", "depth": 3.4,
+    "swirl": "#7cc4ee", "swirlAlpha": 1, "eye": "#1899d6",
+    "glow": "#ffffff", "glowAlpha": 0,
+    "shadow": "#0a3f66", "shadowAlpha": 0.24,
+    "turn": 3.0, "stroke": "#000000", "strokeWidth": 0
+  },
+
+  "ink": {
+    "updraft": { "color": "#ffffff", "alpha": 1, "width": 3.6, "wave": 2.2, "tail": 0.5 },
+    "arrow": { "color": "#3c3c3c", "alpha": 1, "width": 3.6 },
+    "equator": { "color": "#3c3c3c", "alpha": 0.9, "width": 2.6, "dash": [0.1, 7.5], "label": "#3c3c3c", "labelAlpha": 1 },
+    "track": { "color": "#3c3c3c", "alpha": 1, "dot": 2.9 },
+    "ripple": { "color": "#ffffff", "alpha": 0.95, "width": 3.5 }
+  },
+
+  "chip": {
+    "fill": "#ffffff", "text": "#4b4b4b", "edge": "#cfd6db", "depth": 3, "radius": 12,
+    "border": "#e5e5e5", "borderWidth": 2, "size": 13.5, "weight": 800, "padX": 11, "padY": 6, "upper": false,
+    "accentFill": "#ff9600", "accentText": "#ffffff", "accentEdge": "#cd7900", "accentBorder": "#ff9600"
+  },
+
+  "plate": {
+    "fill": "#ffffff", "alpha": 1, "radius": 16, "border": "#e5e5e5", "borderWidth": 2, "depth": 4, "edge": "#e5e5e5",
+    "barHeight": 12, "barRadius": 5, "barStroke": null,
+    "size": 12, "weight": 800, "text": "#777777", "muted": "#afafaf", "accent": "#ff9600", "stem": 3
+  },
+
+  "dock": { "fill": "#ddf4ff", "alpha": 1, "ring": "#1cb0f6", "ringWidth": 2.5, "dash": [6, 6], "pulse": "#1cb0f6", "depth": 4, "edge": "#84d8ff" },
+
+  "finger": { "fill": "#ffffff", "shade": "#c9d6de", "sleeve": "#ce82ff", "alpha": 1, "depth": 2.5, "stroke": "#000000", "strokeWidth": 0, "touch": "#ffffff" }
+}

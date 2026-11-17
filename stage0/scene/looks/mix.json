@@ -1,0 +1,92 @@
+{
+  "id": "mix",
+  "title": "Mix",
+  "after": "Kurzgesagt art in Duolingo chrome",
+  "fonts": { "ui": "Nunito", "art": "Nunito" },
+
+  "motion": { "bounce": 0.55, "overshoot": 0.9, "pop": 1.2, "squash": 0.16, "idle": 1, "captionRise": 18 },
+
+  "chrome": {
+    "gutter": 16,
+    "ground": "#141a3c",
+    "text": "#ffffff",
+    "key": "#ffc83d",
+    "caption": { "size": 23, "weight": 800, "lineHeight": 1.3, "align": "left", "valign": "top", "tracking": 0, "indent": 6, "top": 654 },
+    "tag": { "fill": "#222a60", "text": "#6fd6ff", "border": "2px solid #364090", "radius": 10, "weight": 800, "tracking": 0.06, "upper": true },
+    "bar": { "height": 16, "radius": 99, "track": "#2a3168", "fill": "#ffc83d", "shine": 0.35, "glow": "none" },
+    "close": { "color": "#5d66ad", "weight": 3.2 },
+    "button": {
+      "height": 52, "radius": 16, "depth": 4, "size": 16, "weight": 800, "tracking": 0.05, "upper": true,
+      "fill": "#49c6ff", "edge": "#1b8fd1", "text": "#0e1436", "border": "none",
+      "glow": "0 0 0 transparent",
+      "offFill": "#262d60", "offEdge": "#1c2250", "offText": "#5d66ad", "offBorder": "none"
+    }
+  },
+
+  "stage": { "inset": 16, "radius": 26, "bleedTop": 0, "bleedBottom": 0, "fade": 0, "fill": ["#0a0e2e", "#1d1552"], "border": "#2f3678", "borderWidth": 2, "depth": 4, "edge": "#2f3678" },
+
+  "space": {
+    "stars": { "count": 70, "color": "#d6e2ff", "alpha": 0.9, "size": [0.6, 1.8], "twinkle": 0.65, "glints": 0.09 },
+    "blobs": [
+      { "x": 60, "y": 200, "r": 200, "color": "#5b2bd6", "alpha": 0.3 },
+      { "x": 370, "y": 540, "r": 220, "color": "#0fa3b1", "alpha": 0.18 },
+      { "x": 340, "y": 150, "r": 140, "color": "#e0439a", "alpha": 0.13 }
+    ]
+  },
+
+  "globe": {
+    "glow": { "color": "#4f7cff", "alpha": 0.6, "spread": 0.15 },
+    "base": { "color": "#000000", "depth": 0 },
+    "shade": { "color": "#070a2e", "alpha": 0.36, "shift": 0.2, "size": 1.07 },
+    "rim": { "color": "#a8d4ff", "alpha": 0.3, "width": 0.028 },
+    "limb": { "color": "#7fb0ff", "alpha": 0.5, "width": 3 },
+    "outline": { "color": "#000000", "width": 0 },
+    "graticule": { "color": "#ffffff", "alpha": 0.05, "width": 1 }
+  },
+
+  "land": {
+    "fill": "#2bc4a4", "edge": "#127a85", "depth": 3.2, "light": "#7df0cf",
+    "coast": { "color": "#000000", "width": 0 },
+    "border": { "color": "#0c5a6b", "alpha": 0.5, "width": 0.7 }
+  },
+
+  "sst": {
+    "steps": ["#1b2a80", "#3b3db8", "#8b3fbf", "#ee4b7a", "#ffa23a"],
+    "dim": 0.55, "wobble": 1,
+    "isotherm": { "color": "#fff0b8", "alpha": 0.95, "width": 2, "dash": [0.1, 5.5], "glow": 0.3 }
+  },
+
+  "cloud": { "fill": "#ffffff", "shade": "#b9c6ff", "depth": 2, "alpha": 0.97, "drift": 1, "stroke": "#000000", "strokeWidth": 0 },
+
+  "storm": {
+    "fill": "#ffffff", "shade": "#aebfff", "tired": "#c3c9ee", "depth": 3,
+    "swirl": "#8fa4f5", "swirlAlpha": 0.9, "eye": "#1b2a80",
+    "glow": "#bfd4ff", "glowAlpha": 0.24,
+    "shadow": "#060830", "shadowAlpha": 0.27,
+    "turn": 2.8, "stroke": "#000000", "strokeWidth": 0
+  },
+
+  "ink": {
+    "updraft": { "color": "#ffe6b3", "alpha": 1, "width": 3, "wave": 2.4, "tail": 0.15 },
+    "arrow": { "color": "#ffffff", "alpha": 1, "width": 3.2 },
+    "equator": { "color": "#ffffff", "alpha": 0.9, "width": 2.2, "dash": [0.1, 7], "label": "#ffffff", "labelAlpha": 0.9 },
+    "track": { "color": "#ffffff", "alpha": 0.95, "dot": 2.6 },
+    "ripple": { "color": "#ffffff", "alpha": 0.85, "width": 3 }
+  },
+
+  "chip": {
+    "fill": "#ffffff", "text": "#1b1f5e", "edge": "#b9c2ee", "depth": 3, "radius": 12,
+    "border": "transparent", "borderWidth": 0, "size": 13.5, "weight": 800, "padX": 11, "padY": 6, "upper": false,
+    "accentFill": "#ffc83d", "accentText": "#2a1650", "accentEdge": "#c98a00", "accentBorder": "transparent"
+  },
+
+  "plate": {
+    "fill": "#141a3c", "alpha": 1, "radius": 16, "border": "#2f3678", "borderWidth": 2, "depth": 4, "edge": "#2f3678",
+    "barHeight": 12, "barRadius": 5, "barStroke": null,
+    "size": 12, "weight": 800, "text": "#dde4ff", "muted": "#7f88c8", "accent": "#ffc83d", "stem": 3
+  },
+
+  "dock": { "fill": "#141a3c", "alpha": 1, "ring": "#6fd6ff", "ringWidth": 2.5, "dash": [6, 6], "pulse": "#6fd6ff", "depth": 4, "edge": "#2f3678" },
+
+  "finger": { "fill": "#ffffff", "shade": "#c5d0ff", "sleeve": "#ff7a59", "alpha": 1, "depth": 2.5, "stroke": "#000000", "strokeWidth": 0, "touch": "#ffffff" }
+}

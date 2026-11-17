@@ -1,0 +1,88 @@
+{
+  "id": "paper",
+  "title": "Paper",
+  "after": "Brilliant",
+  "fonts": { "ui": "Source Serif 4", "art": "Outfit" },
+
+  "motion": { "bounce": 0, "overshoot": 0, "pop": 0.8, "squash": 0, "idle": 0.35, "captionRise": 6 },
+
+  "chrome": {
+    "gutter": 22,
+    "ground": "#f7f4ec",
+    "text": "#1e2430",
+    "key": "#d9480f",
+    "caption": { "size": 23, "weight": 500, "lineHeight": 1.32, "align": "left", "valign": "top", "tracking": -0.005, "indent": 0, "top": 654 },
+    "tag": { "fill": "transparent", "text": "#d9480f", "border": "1px solid #d9480f", "radius": 3, "weight": 600, "tracking": 0.1, "upper": true },
+    "bar": { "height": 3, "radius": 0, "track": "#d9d3c5", "fill": "#1e2430", "shine": 0, "glow": "none" },
+    "close": { "color": "#1e2430", "weight": 1.4 },
+    "button": {
+      "height": 52, "radius": 5, "depth": 0, "size": 17, "weight": 600, "tracking": 0.005, "upper": false,
+      "fill": "#1e2430", "edge": "transparent", "text": "#f7f4ec", "border": "1px solid #1e2430",
+      "glow": "0 0 0 transparent",
+      "offFill": "transparent", "offEdge": "transparent", "offText": "#a9a498", "offBorder": "1px solid #cfc9bc"
+    }
+  },
+
+  "stage": { "inset": 22, "radius": 2, "bleedTop": 0, "bleedBottom": 0, "fade": 0, "fill": ["#fcfaf5", "#fcfaf5"], "border": "#1e2430", "borderWidth": 1, "depth": 0, "edge": "#000000" },
+
+  "space": {
+    "stars": { "count": 0, "color": "#000000", "alpha": 0, "size": [1, 1], "twinkle": 0, "glints": 0 },
+    "blobs": []
+  },
+
+  "globe": {
+    "glow": { "color": "#ffffff", "alpha": 0, "spread": 0.1 },
+    "base": { "color": "#000000", "depth": 0 },
+    "shade": { "color": "#1e2430", "alpha": 0, "shift": 0.2, "size": 1.07 },
+    "rim": { "color": "#ffffff", "alpha": 0, "width": 0.03 },
+    "limb": { "color": "#ffffff", "alpha": 0, "width": 3 },
+    "outline": { "color": "#1e2430", "width": 1.2 },
+    "graticule": { "color": "#1e2430", "alpha": 0.15, "width": 0.6 }
+  },
+
+  "land": {
+    "fill": "#fcfaf5", "edge": "#000000", "depth": 0, "light": null,
+    "coast": { "color": "#1e2430", "width": 0.75 },
+    "border": { "color": "#1e2430", "alpha": 0.3, "width": 0.5 }
+  },
+
+  "sst": {
+    "steps": ["#dce8ef", "#ede6cb", "#f6d89e", "#f2b46c", "#e98a45"],
+    "dim": 0.6, "wobble": 0.5,
+    "isotherm": { "color": "#1e2430", "alpha": 1, "width": 1.1, "dash": [4, 3], "glow": 0 }
+  },
+
+  "cloud": { "fill": "#ffffff", "shade": "#ffffff", "depth": 0, "alpha": 1, "drift": 0, "stroke": "#1e2430", "strokeWidth": 1 },
+
+  "storm": {
+    "fill": "#ffffff", "shade": "#ffffff", "tired": "#d5d0c3", "depth": 0,
+    "swirl": "#1e2430", "swirlAlpha": 0.85, "eye": "#1e2430",
+    "glow": "#ffffff", "glowAlpha": 0,
+    "shadow": "#1e2430", "shadowAlpha": 0.1,
+    "turn": 2.2, "stroke": "#1e2430", "strokeWidth": 1.1
+  },
+
+  "ink": {
+    "updraft": { "color": "#1e2430", "alpha": 0.95, "width": 1.5, "wave": 2, "tail": 0.6 },
+    "arrow": { "color": "#1e2430", "alpha": 1, "width": 1.4 },
+    "equator": { "color": "#1e2430", "alpha": 0.9, "width": 1, "dash": [6, 4], "label": "#1e2430", "labelAlpha": 0.9 },
+    "track": { "color": "#d9480f", "alpha": 1, "dot": 1.9 },
+    "ripple": { "color": "#1e2430", "alpha": 0.6, "width": 1 }
+  },
+
+  "chip": {
+    "fill": "#fcfaf5", "text": "#1e2430", "edge": "#000000", "depth": 0, "radius": 3,
+    "border": "#1e2430", "borderWidth": 1, "size": 12, "weight": 500, "padX": 8, "padY": 5, "upper": false,
+    "accentFill": "#d9480f", "accentText": "#ffffff", "accentEdge": "#000000", "accentBorder": "#d9480f"
+  },
+
+  "plate": {
+    "fill": "#fcfaf5", "alpha": 1, "radius": 3, "border": "#1e2430", "borderWidth": 1, "depth": 0, "edge": "#000000",
+    "barHeight": 9, "barRadius": 0, "barStroke": "#1e2430",
+    "size": 11, "weight": 400, "text": "#1e2430", "muted": "#8a8578", "accent": "#d9480f", "stem": 1.2
+  },
+
+  "dock": { "fill": "#fcfaf5", "alpha": 1, "ring": "#1e2430", "ringWidth": 1, "dash": [4, 4], "pulse": "#d9480f", "depth": 0, "edge": "#000000" },
+
+  "finger": { "fill": "#ffffff", "shade": "#ffffff", "sleeve": "#fcfaf5", "alpha": 1, "depth": 0, "stroke": "#1e2430", "strokeWidth": 1.1, "touch": "#d9480f" }
+}
