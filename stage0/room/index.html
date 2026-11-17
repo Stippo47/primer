@@ -1,0 +1,42 @@
+<!doctype html>
+<!--
+  Primer: the Home room, second go. A sketch to react to, not app code.
+  A wide room that pans, a kitchen through the door, things that show they are fading,
+  a bubble on touch, the globe display, and six avatar candidates.
+
+    index.html                      the live sketch: drag sideways, tap things, tap the door, tap the globe
+    index.html?nav=arrows           change rooms with edge arrows (also: doors, both)
+    index.html?avatar=fox           who stands in the room: fox, capy, axo, tuft, glim, pebble
+    index.html?card=fox&hat=1       one avatar by itself
+
+  Modules and the map file need http, so serve this folder (any static server).
+  tools/capture.mjs does that itself and writes shots/ and films/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Primer room sketch</title>
+<link rel="stylesheet" href="css/room.css">
+<script type="importmap">
+{ "imports": { "d3-array": "./vendor/d3-array.min.mjs", "d3-geo": "./vendor/d3-geo.min.mjs" } }
+</script>
+<script src="vendor/topojson-client.min.js"></script>
+</head>
+<body>
+<div id="phone">
+  <canvas id="art"></canvas>
+  <div class="tabs">
+    <div class="tab"><div class="ic"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M14 7.5C11.4 5.6 8.3 5 4.5 5.3a1 1 0 0 0-1 1v13.2a1 1 0 0 0 1.1 1c3.4-.2 6.3.4 9.4 2.4 3.1-2 6-2.6 9.4-2.4a1 1 0 0 0 1.1-1V6.3a1 1 0 0 0-1-1C19.7 5 16.6 5.6 14 7.5z" fill="currentColor"/><path d="M14 8.5v13" stroke="#0f1434" stroke-width="2" stroke-linecap="round" opacity="0.55"/></svg></div><span>Learn</span></div>
+    <div class="tab"><div class="ic"><svg width="26" height="26" viewBox="0 0 28 28"><g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 13.5a8.5 8.5 0 0 1 14.8-5.2"/><path d="M21.5 3.8v5.2h-5.2"/><path d="M22.5 14.5a8.5 8.5 0 0 1-14.8 5.2"/><path d="M6.5 24.2V19h5.2"/></g></svg></div><span>Practice</span></div>
+    <div class="tab home on"><div class="knob"><svg width="34" height="34" viewBox="0 0 28 28"><path d="M4.5 13.2 14 4.8l9.5 8.4v9.3a1.5 1.5 0 0 1-1.5 1.5h-4.7v-6.5h-6.6V24H6a1.5 1.5 0 0 1-1.5-1.5z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg></div><span>Home</span></div>
+    <div class="tab"><div class="ic"><svg width="26" height="26" viewBox="0 0 28 28"><path d="M5.5 10.5h17l-1.3 12.3a2 2 0 0 1-2 1.7H8.8a2 2 0 0 1-2-1.7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 13V9a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M10 13.5v1M18 13.5v1" stroke="#0f1434" stroke-width="2.6" stroke-linecap="round" opacity="0.5"/></svg></div><span>Shop</span></div>
+    <div class="tab"><div class="ic"><svg width="26" height="26" viewBox="0 0 28 28"><circle cx="14" cy="9.5" r="5.3" fill="currentColor"/><path d="M4.3 23.3c.7-4.7 4.5-7.3 9.7-7.3s9 2.6 9.7 7.3a1.5 1.5 0 0 1-1.5 1.7H5.8a1.5 1.5 0 0 1-1.5-1.7z" fill="currentColor"/></svg></div><span>Profile</span></div>
+  </div>
+  <div class="homebar"></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

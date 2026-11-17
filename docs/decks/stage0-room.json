@@ -1,0 +1,100 @@
+{
+  "title": "The room, second go",
+  "topic": "stage0",
+  "order": 7,
+  "cards": [
+    {
+      "id": "room-2",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The room, second go",
+      "text": "Home redrawn from your notes: a wide room you drag, a kitchen, no words until you touch. Mark what's off.",
+      "why": "You said only the trophies and the globe looked decent, so every object was redrawn to that bar: one light from the top left, a lit edge, a shaded edge, rounder shapes. These are still sketches to react to, drawn by code, not the app.",
+      "details": "What changed from your notes: the room is about two and a half screens wide and you drag it. Nothing is written on it at rest and nothing is ringed. A fading thing shows it by itself. Words come only in a small bubble when you touch something. The globe opens when you tap it and a plain back arrow closes it. The second tab is called Practice here only as a stand-in name.\n\nMade up for the sketch, not decided: the 340 coins, how full each memory bar is, the names in the bubbles (Storm cup, Paw mat, Salmon and so on), which thing belongs to which topic, the three food topics (bread, coffee, spices), the 24 filled-in countries, the two landmarks, the macaw, and the gold stand.\n\nWhat I think is still weak: the coffee-bean floor mat in the kitchen reads as a brown blob, the desk chair is awkward, and from the kitchen side the doorway is only a gap with a picture sign beside it. The bubble shows the thing's name but not its topic, to keep the words few; say if you want the topic there too.",
+      "parts": [
+        {
+          "id": "pan",
+          "title": "A wide room that pans",
+          "text": "A finger drags across the bedroom, taps the open door, and the view slides through the wall into the kitchen. Earned things here: flag string, bear poster, salmon toy, paw mat, storm cup, light bulb, medal, storm poster, globe, guitar. The bed, desk, bookcase, plant and lamps are the plain bought kind.",
+          "videos": ["../../stage0/room/films/pan.mp4"],
+          "images": ["../../stage0/room/shots/bedroom-left.png", "../../stage0/room/shots/bedroom-right.png"]
+        },
+        {
+          "id": "kitchen",
+          "title": "The kitchen",
+          "text": "Food topics live here: a crusty loaf for bread, a moka pot, a poster and a bean-shaped mat for coffee, spice jars and a string of chillies for spices. The fridge, counter, clock and table are bought. The second picture is the kitchen end of the doorway.",
+          "images": ["../../stage0/room/shots/kitchen.png", "../../stage0/room/shots/kitchen-door.png"]
+        },
+        {
+          "id": "touch",
+          "title": "Touching a thing",
+          "text": "The thing lifts with a small bounce and a soft light comes up behind it. A bubble shows its name and a short bar for how well you remember it: blue when strong, grey as it goes. No ring, no dotted line.",
+          "videos": ["../../stage0/room/films/touch.mp4"],
+          "images": ["../../stage0/room/shots/touch-bubble.png"]
+        },
+        {
+          "id": "fading",
+          "title": "Fading things",
+          "text": "The light bulb and the guitar belong to topics being forgotten. They have lost their colour, the bulb has gone out, and both have dust and cobwebs. Nothing marks them until you touch one; then its bubble has a short grey bar and a Review button.",
+          "images": ["../../stage0/room/shots/fading-bubble.png"]
+        },
+        {
+          "id": "globe",
+          "title": "The globe display",
+          "text": "Tapping the globe in the room zooms into it. Learned countries are filled in, the rest are dark. Two landmarks stand up, a macaw flies its round, and the stand is gold for the level. No words, until you tap a country and it says its name. You can turn it with a finger. The arrow in the corner goes back to the room.",
+          "images": ["../../stage0/room/shots/globe.png", "../../stage0/room/shots/globe-label.png"]
+        }
+      ]
+    },
+    {
+      "id": "avatar",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Pick an avatar",
+      "text": "Six candidates, none a person: three animals, three monsters. Tick any you'd keep, and comment on what's off.",
+      "why": "The avatar stands in your room and wears the hats and shirts you buy, so it is the thing you look at most. Each film is a few seconds of it standing still: breathing, blinking, a small bob.",
+      "pick": ["tuft"],
+      "details": "My pick is Tuft, the purple one. It has the clearest face at small size, a big plain body for a shirt, and it isn't any animal a topic might be about (a fox avatar beside a foxes topic would be odd). The fox is my second choice. The room pictures in this deck use Tuft.\n\nThe names Tuft, Glim and Pebble are made up. None of the six is taken from any game, film or app. Each can wear the kit's hat; pictures of all six in the hat are in the next card. The shirt is built but not shown yet: it still looks like a plain band.",
+      "items": [
+        { "id": "fox", "label": "Fox", "video": "../../stage0/room/films/avatar-fox.mp4", "text": "Animal. Pointed ears, a big tail that sways, one ear flicks." },
+        { "id": "capy", "label": "Capybara", "video": "../../stage0/room/films/avatar-capy.mp4", "text": "Animal. Calm, blocky, half-closed eyes. Can read as a bear at a glance." },
+        { "id": "axo", "label": "Axolotl", "video": "../../stage0/room/films/avatar-axo.mp4", "text": "Animal. Wide head, pink frills that sway, a small body." },
+        { "id": "tuft", "label": "Tuft", "video": "../../stage0/room/films/avatar-tuft.mp4", "text": "Monster. Tall and furry, horns, two teeth, long arms. My pick." },
+        { "id": "glim", "label": "Glim", "video": "../../stage0/room/films/avatar-glim.mp4", "text": "Monster. A jelly that wobbles, with its eyes on stalks." },
+        { "id": "pebble", "label": "Pebble", "video": "../../stage0/room/films/avatar-pebble.mp4", "text": "Monster. A rock creature with glowing eyes and fists that float." }
+      ]
+    },
+    {
+      "id": "avatar-hats",
+      "kind": "board",
+      "rarity": "common",
+      "title": "The hat on each",
+      "text": "The same six in the kit's plain knitted hat. Tick the ones it suits, and comment where it sits wrong.",
+      "why": "Hats and shirts are bought in the shop and must fit whichever avatar you choose. This checks that one hat can sit on six very different heads.",
+      "pick": ["tuft", "fox", "pebble"],
+      "items": [
+        { "id": "fox", "label": "Fox", "image": "../../stage0/room/shots/avatar-fox-hat.png" },
+        { "id": "capy", "label": "Capybara", "image": "../../stage0/room/shots/avatar-capy-hat.png" },
+        { "id": "axo", "label": "Axolotl", "image": "../../stage0/room/shots/avatar-axo-hat.png" },
+        { "id": "tuft", "label": "Tuft", "image": "../../stage0/room/shots/avatar-tuft-hat.png" },
+        { "id": "glim", "label": "Glim", "image": "../../stage0/room/shots/avatar-glim-hat.png" },
+        { "id": "pebble", "label": "Pebble", "image": "../../stage0/room/shots/avatar-pebble-hat.png" }
+      ]
+    },
+    {
+      "id": "room-change",
+      "kind": "options",
+      "rarity": "uncommon",
+      "title": "Changing rooms",
+      "text": "How should you get from the bedroom to the kitchen? The pictures show each way.",
+      "why": "You suggested doors or arrows. A door is part of the room and needs no button, but you have to drag to the end of the room to reach it. An arrow is always one tap away, but it floats over the room and can sit on top of a thing you want to touch.",
+      "pick": "doors",
+      "details": "I'd pick doors. The room stays free of buttons, which fits \"words only when you touch\", and the next room already peeks in at the edge so you can see where the door leads. If there are ever five or six rooms, dragging to the far end each time will get slow, and a quicker way can be added then.\n\nIn the sketch the rooms sit side by side and the view slides through the wall, whichever way you choose.",
+      "options": [
+        { "id": "doors", "label": "Doors", "text": "Tap the open door at the end of a room. A round picture sign shows where it leads.", "image": "../../stage0/room/shots/bedroom-right.png" },
+        { "id": "arrows", "label": "Arrows", "text": "A small arrow at the edge of the screen, always there.", "image": "../../stage0/room/shots/arrows.png" },
+        { "id": "both", "label": "Both", "text": "The door works, and the arrow is there as a shortcut.", "image": "../../stage0/room/shots/arrows-kitchen.png" }
+      ]
+    }
+  ]
+}
