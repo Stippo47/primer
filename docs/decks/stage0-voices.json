@@ -1,0 +1,39 @@
+{
+  "title": "Voices",
+  "topic": "stage0",
+  "order": 3,
+  "cards": [
+    {
+      "id": "narrator",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Narrator voice",
+      "text": "Five voices read the same five lines, about 20 seconds each. Tap one to hear it, and tick the ones you'd keep.",
+      "why": "This needs your ear. A machine checked that every clip says the right words, but nobody has heard how natural they sound. My pick below is on reliability alone.",
+      "pick": ["heart"],
+      "details": "The lines: three from the hurricane scene, one with numbers (\"In 2005, Hurricane Katrina reached 280 kilometres an hour, and killed more than 1,800 people\"), and one with hard words (Reykjavík, merci beaucoup). The last line is the one to listen to for pronunciation.\n\nThe first three voices come from Kokoro. It is small, gives exactly the same sound every time for the same words, and makes a line in under a tenth of a second. All of its clips were right first time.\n\nThe last two come from Chatterbox. It can sound more expressive, but 5 of its 12 clips came out wrong on the first take (an extra word, a mangled ending) and had to be redone, so every line would need checking by machine. A line takes about 3 seconds. Its makers stopped updating it in August.\n\nA third engine, Higgs Audio 3, couldn't be tried: it needs far more graphics memory than this PC has.\n\nThis is the first board in Riffle that plays sound. If a tile says \"No sound played\", say so in a comment: that is the iPhone sound bug the phone tests are looking for.",
+      "items": [
+        { "id": "heart", "label": "Heart", "audio": "../../stage0/voice/board/kokoro-af_heart.m4a", "text": "Kokoro. American, female." },
+        { "id": "michael", "label": "Michael", "audio": "../../stage0/voice/board/kokoro-am_michael.m4a", "text": "Kokoro. American, male." },
+        { "id": "emma", "label": "Emma", "audio": "../../stage0/voice/board/kokoro-bf_emma.m4a", "text": "Kokoro. British, female." },
+        { "id": "cb-a", "label": "Chatterbox A", "audio": "../../stage0/voice/board/chatterbox-default.m4a", "text": "Chatterbox, its built-in voice." },
+        { "id": "cb-b", "label": "Chatterbox B", "audio": "../../stage0/voice/board/chatterbox-en_f1.m4a", "text": "Chatterbox, its English demo voice." }
+      ]
+    },
+    {
+      "id": "french",
+      "kind": "board",
+      "rarity": "common",
+      "title": "A French voice",
+      "text": "Three voices say \"Merci beaucoup, à demain.\" Tick any that sound right to you.",
+      "why": "A language course would lean on this. It's a first listen only, to hear whether free voices are close enough to a real speaker for pronunciation to be trusted.",
+      "pick": ["siwis"],
+      "details": "Kokoro's English voices can't speak French, so it uses a separate French voice. Chatterbox uses the same model for both languages. On its first tries Chatterbox said \"Adema\" for \"à demain\", which was caught and redone.",
+      "items": [
+        { "id": "siwis", "label": "Siwis", "audio": "../../stage0/voice/clips/kokoro-ff_siwis-6.m4a", "text": "Kokoro's French voice." },
+        { "id": "cb-fr-a", "label": "Chatterbox A", "audio": "../../stage0/voice/clips/chatterbox-default-6.m4a", "text": "Chatterbox, built-in voice, in French." },
+        { "id": "cb-fr-b", "label": "Chatterbox B", "audio": "../../stage0/voice/clips/chatterbox-fr_f1-6.m4a", "text": "Chatterbox, its French demo voice." }
+      ]
+    }
+  ]
+}
