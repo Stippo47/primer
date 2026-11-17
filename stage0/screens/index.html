@@ -4,12 +4,12 @@
   decisions, not app code. Nothing here is tappable.
 
     index.html                      a list of every sketch
-    index.html?screen=home&tabs=A   one sketch, 414 x 896
-      screen: learn | topics | review | strengths | home | shop | profile | playground | displays | tabs
-      tabs:   A (five tabs) | B (six tabs) | B2 (five tabs, Shop inside Home)
+    index.html?screen=learn         one sketch, 414 x 896 (add &live to watch the path move)
+      screen: learn | topics | practice | review | part | shop | profile | knowledge | art (every drawn thing, page=1..3)
+      Round 2. Round 1 pictures are kept in shots/; its Home sketch still draws with screen=home.
 
   Modules and the map file need http, so serve the stage0 folder (any static server).
-  tools/shoot.mjs does that itself and writes the pictures in shots/.
+  tools/shoot.mjs does that itself and writes the pictures and the film in shots2/.
 -->
 <html lang="en">
 <head>

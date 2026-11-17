@@ -1,27 +1,38 @@
-// Takes a picture of every sketch in a headless browser. Never opens a window.
+// Takes a picture of every round 2 sketch in a headless browser. Never opens a window.
 //
-//   node tools/shoot.mjs                  every sketch -> shots/<name>.png, 828 x 1792
-//   node tools/shoot.mjs --only home-A,shop
+//   node tools/shoot.mjs                  every sketch -> shots2/<name>.png, 828 x 1792, and the film shots2/learn-path.mp4
+//   node tools/shoot.mjs --only learn,shop
+//   node tools/shoot.mjs --no-film        stills only
+//   node tools/shoot.mjs --film-only      just shots2/learn-path.mp4 (needs ffmpeg on PATH, or --ffmpeg <path>)
 //   node tools/shoot.mjs --out <folder>   write somewhere else
+//   node tools/shoot.mjs --page "screen=art&page=1" --as art-1    one picture of any address, saved as <name>.png
 //   node tools/shoot.mjs --list <file>    also save a picture of the list page (it is always checked)
-//   node tools/shoot.mjs --browser <path to Edge or Chrome>
+//   node tools/shoot.mjs --browser <path to Edge or Chrome> --port 8812 --debug-port 9332
 //
+// Round 1's pictures stay in shots/ as they were; this no longer writes there.
 // Needs Node 22 or newer (it uses the built-in WebSocket). No packages to install.
 
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const args = Object.fromEntries(process.argv.slice(2).join(' ').split('--').filter(Boolean)
-  .map(a => { const [k, ...v] = a.trim().split(' '); return [k, v.join(' ') || true]; }));
+const args = {};
+{
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    if (!argv[i].startsWith('--')) continue;
+    const key = argv[i].slice(2);
+    args[key] = argv[i + 1] !== undefined && !argv[i + 1].startsWith('--') ? argv[++i] : true;
+  }
+}
 const SCREENS = fileURLToPath(new URL('..', import.meta.url));
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // stage0, so ../scene/vendor resolves
-const OUT = args.out || join(SCREENS, 'shots');
-const W = 414, H = 896, SCALE = 2;
+const OUT = args.out || join(SCREENS, 'shots2');
+const W = 414, H = 896, SCALE = 2, FPS = 30;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
@@ -39,7 +50,7 @@ const server = createServer(async (req, res) => {
     res.end('not found');
   }
 });
-await new Promise(r => server.listen(0, '127.0.0.1', r));
+await new Promise(r => server.listen(Number(args.port) || 0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}/screens/index.html`;
 
 function findBrowser() {
@@ -58,7 +69,7 @@ function findBrowser() {
   throw new Error('No browser found. Pass --browser <path>.');
 }
 
-const debugPort = 9400 + Math.floor(Math.random() * 400);
+const debugPort = Number(args['debug-port']) || 9400 + Math.floor(Math.random() * 400);
 const profile = mkdtempSync(join(tmpdir(), 'primer-shots-'));
 const browser = spawn(findBrowser(), ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--mute-audio',
   `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check',
@@ -92,48 +103,81 @@ const send = (method, params = {}) => new Promise((res, rej) => {
   ws.send(JSON.stringify({ id, method, params }));
 });
 const ev = async expression => (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result?.value;
+const snap = async () => Buffer.from((await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false })).data, 'base64');
+
+async function open(query, name) {
+  await send('Page.navigate', { url: `${base}?${query}` });
+  let ready = false;
+  for (let i = 0; i < 80 && !ready; i++) {
+    await sleep(150);
+    if (pageErrors.length) throw new Error(`${name}: ${pageErrors.join('\n')}`);
+    try { ready = (await ev('window.ready === true && document.readyState === "complete"')) === true; } catch { /* still loading */ }
+  }
+  if (!ready) throw new Error(`${name}: the page never became ready`);
+  await sleep(120);
+}
+
+async function still(query, name) {
+  await open(query, name);
+  // anything that sticks out of its box is worth knowing about
+  const spill = await ev(`[...document.querySelectorAll('#phone *')].filter(e => !e.closest('svg') && e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).display !== 'inline').map(e => (e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 30)).slice(0, 8).join(' | ')`);
+  writeFileSync(join(OUT, `${name}.png`), await snap());
+  console.log(`${name}.png${spill ? `   spills: ${spill}` : ''}`);
+}
+
+// The Learn path's small loop, one exact frame at a time (the page poses itself with window.seek).
+async function film() {
+  await open('screen=learn', 'learn-path');
+  const length = await ev('window.filmLength');
+  const file = join(OUT, 'learn-path.mp4');
+  const ff = spawn(args.ffmpeg || 'ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
+    '-an', '-c:v', 'libx264', '-preset', 'veryslow', '-tune', 'animation', '-crf', String(Number(args.crf) || 22), '-pix_fmt', 'yuv420p',
+    '-profile:v', 'high', '-movflags', '+faststart', '-r', String(FPS), file], { stdio: ['pipe', 'inherit', 'inherit'] });
+  const done = new Promise((res, rej) => ff.on('close', code => (code === 0 ? res() : rej(new Error(`ffmpeg exited with ${code}`)))));
+  const total = Math.round(length * FPS);
+  for (let i = 0; i < total; i++) {
+    await ev(`window.seek(${i / FPS})`);
+    const png = await snap();
+    if (!ff.stdin.write(png)) await new Promise(r => ff.stdin.once('drain', r));
+  }
+  ff.stdin.end();
+  await done;
+  if (pageErrors.length) throw new Error(pageErrors.join('\n'));
+  console.log(`learn-path.mp4   ${total} frames, ${(statSync(file).size / 1e6).toFixed(2)} MB`);
+}
 
 let failed = false;
 try {
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: SCALE, mobile: true });
-
-  // the list of pictures lives in js/main.js; read it from there so the two never drift
-  const source = await readFile(join(SCREENS, 'js', 'main.js'), 'utf8');
-  const shots = [...source.matchAll(/\['([\w-]+)', '(\w+)', '(\w+)', '[^']*'\]/g)].map(m => ({ file: m[1], screen: m[2], tabs: m[3] }));
-  const only = args.only ? String(args.only).split(',') : null;
   mkdirSync(OUT, { recursive: true });
 
-  for (const shot of shots) {
-    if (only && !only.includes(shot.file)) continue;
-    await send('Page.navigate', { url: `${base}?screen=${shot.screen}&tabs=${shot.tabs}` });
-    let ready = false;
-    for (let i = 0; i < 80 && !ready; i++) {
-      await sleep(150);
-      if (pageErrors.length) throw new Error(`${shot.file}: ${pageErrors.join('\n')}`);
-      try { ready = (await ev('window.ready === true && document.readyState === "complete"')) === true; } catch { /* still loading */ }
+  if (args.page) {
+    await still(String(args.page), String(args.as || 'page'));
+  } else {
+    // the list of pictures lives in js/main.js; read it from there so the two never drift
+    const source = await readFile(join(SCREENS, 'js', 'main.js'), 'utf8');
+    const shots = [...source.matchAll(/\['([\w-]+)', '(\w+)', '[^']*'\]/g)].map(m => ({ file: m[1], screen: m[2] }));
+    const only = args.only ? String(args.only).split(',') : null;
+    if (!args['film-only']) for (const shot of shots) {
+      if (only && !only.includes(shot.file)) continue;
+      await still(`screen=${shot.screen}`, shot.file);
     }
-    if (!ready) throw new Error(`${shot.file}: the page never became ready`);
-    await sleep(120);
-    // anything that sticks out of its box is worth knowing about
-    const spill = await ev(`[...document.querySelectorAll('#phone *')].filter(e => !e.closest('svg') && e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).display !== 'inline').map(e => (e.className || e.tagName) + ': ' + e.textContent.trim().slice(0, 30)).slice(0, 8).join(' | ')`);
-    const r = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
-    writeFileSync(join(OUT, `${shot.file}.png`), Buffer.from(r.data, 'base64'));
-    console.log(`${shot.file}.png${spill ? `   spills: ${spill}` : ''}`);
-  }
+    if (args['film-only'] || (!only && !args['no-film'])) await film();
 
-  // the list page should load too, with every picture found
-  if (!only) {
-    await send('Page.navigate', { url: base });
-    let state = null;
-    for (let i = 0; i < 60 && !state; i++) {
-      await sleep(150);
-      try { if (await ev('window.ready === true && document.readyState === "complete"')) state = await ev(`(() => { const im = [...document.images]; return im.filter(i => i.naturalWidth > 0).length + ' of ' + im.length; })()`); } catch { /* still loading */ }
+    // the list page should load too, with every picture found
+    if (!only && !args['film-only']) {
+      await send('Page.navigate', { url: base });
+      let state = null;
+      for (let i = 0; i < 60 && !state; i++) {
+        await sleep(150);
+        try { if (await ev('window.ready === true && document.readyState === "complete"')) state = await ev(`(() => { const im = [...document.images]; return im.filter(i => i.naturalWidth > 0).length + ' of ' + im.length; })()`); } catch { /* still loading */ }
+      }
+      if (pageErrors.length) throw new Error(`list: ${pageErrors.join('\n')}`);
+      console.log(`list page: ${state || 'never became ready'} pictures loaded`);
+      if (args.list) writeFileSync(String(args.list), await snap());
     }
-    if (pageErrors.length) throw new Error(`list: ${pageErrors.join('\n')}`);
-    console.log(`list page: ${state || 'never became ready'} pictures loaded`);
-    if (args.list) writeFileSync(String(args.list), Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
   }
 } catch (e) {
   failed = true;

@@ -1,0 +1,133 @@
+{
+  "title": "The screens, second go",
+  "topic": "stage0",
+  "order": 6,
+  "cards": [
+    {
+      "id": "screens-2",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The screens, second go",
+      "text": "Learn, the joined tab, Shop and Profile, redrawn from your comments. Mark any part that's still off.",
+      "why": "These are still sketches to react to, not the app. Each part says what changed, so you can check your comments landed and point at any that didn't. Home, the avatar and the globe are being redone separately.",
+      "details": "Made up, and not decided by you: every price and number, the best combo of 23, the dates, the lesson names (A bear's menu, First circuit, On and off, Ohm's law, What light is), the parts in the Playground and the pieces on the circuit bench, and which things each topic gives. Ignore those; react to the layout and the drawing.\n\nThe joined tab is called Practice here only as a stand-in. The next card asks for its name.\n\nTwo things I added that you didn't ask for: the tab bar is hidden while a review run or a part is open (its own card asks about that), and in the Shop a small badge shows which topic a thing comes from.\n\nKnown weak spots: the scarf still reads a little like a ring, the String part could be taken for a bow, the outlines in the Shop are of quick stand-in shapes, and the tab bar's own icons were not redrawn.",
+      "parts": [
+        {
+          "id": "learn",
+          "title": "Learn: the path",
+          "text": "Raised buttons with a different mark for each kind of step: a narrated scene, a lesson, a playground step, a check, the unit test. A ring shows how far through the current step you are. Chests sit on the way, the topic's bear plush sits beside the path, and the exam's trophy stands at the end. The only words are on the step you tapped. The film shows the plush idling and the button being pressed.",
+          "images": [
+            "../../stage0/screens/shots2/learn.png"
+          ],
+          "videos": [
+            "../../stage0/screens/shots2/learn-path.mp4"
+          ]
+        },
+        {
+          "id": "topics",
+          "title": "Learn: the topic list",
+          "text": "One level word per topic (Glance, Tour, Solid, Deep) with four dots showing where it sits. A bar shows how far through you are, and a cup means the topic is finished. The explaining lines are gone.",
+          "images": [
+            "../../stage0/screens/shots2/learn-topics.png"
+          ]
+        },
+        {
+          "id": "practice",
+          "title": "The joined tab",
+          "text": "Review on top, with your best combo under a crown and one Start button. The Playground's parts are below. Every part is the same card and says which lesson it comes from; one you haven't bought shows its price with a coin, and nothing covers its picture.",
+          "images": [
+            "../../stage0/screens/shots2/practice.png"
+          ]
+        },
+        {
+          "id": "review",
+          "title": "Review: a question",
+          "text": "Stripped to the picture, the question, the answers and the combo. No labels on anything, no strong-and-weak strip, and no \"I'm sure\" button.",
+          "images": [
+            "../../stage0/screens/shots2/review.png"
+          ]
+        },
+        {
+          "id": "part",
+          "title": "Playground: a part opened",
+          "text": "The circuit bench: a battery, a switch and a lit bulb, with dots running along the wire. Its pieces are listed underneath in the same way as the parts: each says its lesson, and the one not bought yet shows a price.",
+          "images": [
+            "../../stage0/screens/shots2/playground-part.png"
+          ]
+        },
+        {
+          "id": "shop",
+          "title": "Shop",
+          "text": "A topic's own things are only an outline until their lesson is done. After that they show in full with a price. Plain things are always for sale. A tick means you own it. No trophies, and nothing says what a thing is for.",
+          "images": [
+            "../../stage0/screens/shots2/shop.png"
+          ]
+        },
+        {
+          "id": "profile",
+          "title": "Profile",
+          "text": "Knowledge by topic: the bar and the number run from blue to grey, with a warning mark on the low ones and no \"fading\" word. No streak. Voice, effects and music each have their own switch.",
+          "images": [
+            "../../stage0/screens/shots2/profile.png"
+          ]
+        },
+        {
+          "id": "profile-detail",
+          "title": "Profile: a mark tapped",
+          "text": "The sheet that opens: the day the topic was last studied, how many facts are due, one dot per fact from blue to grey, and a button to review just that topic.",
+          "images": [
+            "../../stage0/screens/shots2/profile-detail.png"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "joined-tab-name",
+      "kind": "options",
+      "rarity": "uncommon",
+      "title": "Name the joined tab",
+      "text": "Review and the Playground now share one tab. What should it be called? Or comment with your own.",
+      "why": "It's one of five words at the bottom of every screen, and it has to cover both a quiz run and free play.",
+      "pick": "play",
+      "details": "I lean to Play because it's true of both halves, it's the shortest, and it sits well beside Learn: one tab for new things, one for using what you know. Practice is accurate for Review but sounds like homework and fits free play less well. Lab fits the Playground but not a quiz run. Arcade fits the combo run but not the parts.\n\nThe sketches say Practice only as a stand-in.",
+      "images": [
+        "../../stage0/screens/shots2/practice.png"
+      ],
+      "options": [
+        {
+          "id": "practice",
+          "label": "Practice",
+          "text": "Accurate for Review. A bit like homework."
+        },
+        {
+          "id": "lab",
+          "label": "Lab",
+          "text": "Fits the parts. Says less about Review."
+        },
+        {
+          "id": "play",
+          "label": "Play",
+          "text": "Covers both. Pairs with Learn."
+        },
+        {
+          "id": "arcade",
+          "label": "Arcade",
+          "text": "Fits the combo run. Fits the parts less."
+        }
+      ]
+    },
+    {
+      "id": "run-hides-tabs",
+      "kind": "question",
+      "rarity": "common",
+      "title": "Tab bar during a run",
+      "text": "While a review run or a Playground part is open, should the tab bar at the bottom be hidden?",
+      "why": "Hiding it gives the question and the bench the whole screen and stops a stray tap leaving mid-run. The cost is one more tap to get to another tab: the cross or the arrow in the top left first.",
+      "pick": "Yes, hide it. A cross (in a run) or a back arrow (in a part) in the top left takes you back to the tab.",
+      "images": [
+        "../../stage0/screens/shots2/review.png",
+        "../../stage0/screens/shots2/playground-part.png"
+      ]
+    }
+  ]
+}

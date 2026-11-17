@@ -54,6 +54,8 @@ export const icon = {
   bolt: s => I(`<path d="M16 3L6 16h6.5L11 25l11-14h-7z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>`, s),
   flag: s => I(`<path d="M7 4v21" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M8.5 5.5h13l-3.5 5 3.5 5h-13z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>`, s),
   strings: s => I(`<g stroke="currentColor" stroke-linecap="round" fill="none"><path d="M4 7h20" stroke-width="1.5"/><path d="M4 12q5-4 10 0t10 0" stroke-width="2.2"/><path d="M4 17h20" stroke-width="2.8"/><path d="M4 22h20" stroke-width="3.4"/></g>`, s),
+  practice: s => I(`<circle cx="14" cy="14" r="10.4" fill="none" stroke="currentColor" stroke-width="3.2"/><circle cx="14" cy="14" r="4.6" fill="currentColor"/>`, s),
+  close: s => I(`<path d="M7 7l14 14M21 7L7 21" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round"/>`, s),
   tap: s => I(`<path d="M11 13V6.5a2.3 2.3 0 0 1 4.6 0V12l5 1.2a2.5 2.5 0 0 1 1.9 2.9l-1 5.4a3 3 0 0 1-3 2.5h-5a3 3 0 0 1-2.4-1.2L6.5 17a2 2 0 0 1 3-2.6z" fill="#fff" stroke="#c5d0ff" stroke-width="1.2"/>`, s),
 };
 
@@ -64,8 +66,12 @@ export const sketchLabel = text => `<div class="sketch">${text}</div>`;
 const TABS = {
   learn: ['Learn', icon.learn], review: ['Review', icon.review], home: ['Home', icon.home],
   shop: ['Shop', icon.shop], profile: ['Profile', icon.profile], play: ['Playground', icon.play],
+  practice: ['Practice', icon.practice],
 };
+// R2 is the ruling of 2026-11-17: Review and the Playground share one tab. A, B and B2 are round 1's options,
+// kept only so round 1's Home sketch still draws.
 export const VARIANTS = {
+  R2: { tabs: ['learn', 'practice', 'home', 'shop', 'profile'], name: 'R2', note: 'five tabs, Review and Playground joined' },
   A: { tabs: ['learn', 'review', 'home', 'shop', 'profile'], name: 'A', note: 'five tabs, Playground inside Home' },
   B: { tabs: ['learn', 'review', 'play', 'home', 'shop', 'profile'], name: 'B', note: 'six tabs' },
   B2: { tabs: ['learn', 'play', 'home', 'review', 'profile'], name: 'B2', note: 'five tabs, Shop inside Home' },
@@ -84,6 +90,6 @@ export function tabbar(variant, active, inline = false) {
 
 // Which tab is lit for a screen, given the variant (a screen with no tab of its own sits under Home).
 export function activeTab(screen, variant) {
-  const want = { learn: 'learn', topics: 'learn', review: 'review', strengths: 'review', home: 'home', displays: 'home', shop: 'shop', profile: 'profile', playground: 'play' }[screen];
+  const want = { learn: 'learn', topics: 'learn', practice: 'practice', home: 'home', displays: 'home', shop: 'shop', profile: 'profile', knowledge: 'profile' }[screen];
   return VARIANTS[variant].tabs.includes(want) ? want : 'home';
 }
