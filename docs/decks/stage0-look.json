@@ -1,0 +1,47 @@
+{
+  "title": "The look",
+  "topic": "stage0",
+  "order": 2,
+  "cards": [
+    {
+      "id": "looks",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Four looks, one scene",
+      "text": "The same 20-second scene in four looks. Tick the ones you'd build on, and comment on what's off in any of them.",
+      "why": "This tests whether drawing with code can have charm. The scene's code is identical in all four; only colours, shapes, type and bounce change. There's no sound yet.",
+      "pick": ["mix"],
+      "details": "What happens: warm water colours in, a 26 degree marker drops, air rises. Then it's \"your turn\": a ghost hand drags the storm onto the equator, which is the wrong answer, and the scene shows why. The storm then forms at 12 degrees north, spins up and curves away.\n\nHonest notes. Night and Mix share the same art and differ in the controls, framing and type, so there are really three art styles here. Bright came out weakest: green land on a rainbow sea reads like a weather map. Paper is the clearest diagram and the least charming.\n\nThe sea temperatures are a simplified picture, not real data. Nothing here has run on your phone yet, and the map may need lighter coastlines to stay smooth there.",
+      "items": [
+        { "id": "mix", "label": "Mix", "video": "../../stage0/scene/films/mix.mp4", "text": "The Night art inside chunky Duolingo-style controls, with medium bounce. This is the one you asked for." },
+        { "id": "night", "label": "Night", "video": "../../stage0/scene/films/night.mp4", "text": "Kurzgesagt-like: navy edge to edge, soft glows, slim controls, gentle bounce." },
+        { "id": "bright", "label": "Bright", "video": "../../stage0/scene/films/bright.mp4", "text": "Duolingo-like: light ground, chunky shapes, bold colour, big bounce." },
+        { "id": "paper", "label": "Paper", "video": "../../stage0/scene/films/paper.mp4", "text": "Brilliant-like: thin lines, restrained colour, serif type, no bounce." }
+      ]
+    },
+    {
+      "id": "charm",
+      "kind": "question",
+      "rarity": "rare",
+      "title": "Good enough to build on?",
+      "text": "Is this level of art enough to carry lessons, with polish still to come?",
+      "why": "Everything in those films is drawn by rule, with no hand illustration. Characters and hand-drawn warmth are what this way of working can't do. If it isn't enough, it's far better to know now than after the kit is built on it.",
+      "pick": "Yes. Go on with the Mix look, and refine it as the pilot lessons need."
+    },
+    {
+      "id": "bounce",
+      "kind": "options",
+      "rarity": "common",
+      "title": "How much bounce",
+      "text": "How lively should things move? Each film uses a different amount, so you can compare.",
+      "why": "It sets how playful every button, chip and shape feels across the whole app.",
+      "pick": "medium",
+      "options": [
+        { "id": "none", "label": "None", "text": "As in Paper. Things glide and stop." },
+        { "id": "gentle", "label": "Gentle", "text": "As in Night. A small overshoot." },
+        { "id": "medium", "label": "Medium", "text": "As in Mix. A clear pop." },
+        { "id": "heavy", "label": "Heavy", "text": "As in Bright. Squash and stretch." }
+      ]
+    }
+  ]
+}
