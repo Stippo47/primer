@@ -195,3 +195,31 @@ The shell ran on the real phone: installed, connected to the private repo, playe
 ### Avatar
 
 - **The person: Blob and Noodle** were the shape styles picked. **The monster: none** of the ten.
+
+## 2026-11-18: stage 2 starts, and notes on 0.2
+
+### Stage 2: go, with a standing rule
+
+- **Stage 2 starts.**
+- **Build it modular, every time.** Reusable parts; remaking a lesson from scratch should be straightforward; the workflow kept as efficient as possible. Where one part can serve several uses with a tweak, it does. Their example: a flat map is the globe with a different projection, so everything the globe can do also works on the flat map, without starting over, and the look stays unified. This applies to every part, not just maps.
+
+### Notes on 0.2
+
+- **Buttons:** no jiggle. A button animates pressed in, and has no shadow under it.
+- **The chest's look** isn't liked yet.
+- **Sliders:** still too much empty space; space the step out.
+- **Globe settings:** the style choice on its own line.
+- **Sound and music:** good now.
+- **Slivers:** couldn't be checked, since the answer forms left the Playground. The sliders and the order step in the first lesson are drags to check them on.
+- The path and the longer topic were marked good.
+
+### Answer forms
+
+- **Variety is wanted.** Several forms of each kind can live side by side; a lesson uses whichever suits.
+- **Number:** Dial (fun; the palm tree needs work) and Pile (simple, easy to read). Tower "looks weird".
+- **Match:** String and Sort. Snap "isn't bad" but its puzzle piece doesn't line up.
+- **Spot:** all three "meh". Pin had overlapping text, arrows snapping harshly and poor contrast; Regions had overlapping corners and odd shading, and the anatomy wasn't clear; Lasso invites odd edge cases and fiddly control. Redone when a lesson needs one.
+
+### Avatar
+
+- **The problem is the face: everyone is too happy.** And no style offered a side view. Next round: calmer faces with a range of expressions, and side-view characters.
