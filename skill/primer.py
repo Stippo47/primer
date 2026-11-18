@@ -127,13 +127,24 @@ def data_dir(given=None):
     return p
 
 
+def preset_of(base, name, preset):
+    """A preset's description, exactly as js/parts.js makes it: the part's own, under the preset's name, with
+    the preset's defaults. Its settings, calls, events and state are the part's."""
+    settings = {k: ({**spec, 'default': preset['settings'][k]} if k in preset.get('settings', {}) else spec) for k, spec in base.get('settings', {}).items()}
+    return {**base, 'name': name, 'title': preset.get('title') or base.get('title'), 'about': preset.get('about') or base.get('about'), 'settings': settings, 'of': base['name']}
+
+
 class Kit:
-    """The parts' descriptions, read from the app, and the names a globe knows."""
+    """The parts' descriptions, read from the app (presets made from their parts), and the names a map knows."""
 
     def __init__(self, app):
         self.app = app
-        names = load_json(app / 'parts' / 'parts.json')['parts']
-        self.parts = {n: load_json(app / 'parts' / n / 'part.json') for n in names}
+        listed = load_json(app / 'parts' / 'parts.json')
+        self.parts = {n: load_json(app / 'parts' / n / 'part.json') for n in listed['parts']}
+        self.presets = listed.get('presets') or {}
+        for name, preset in self.presets.items():
+            if preset.get('of') in self.parts:
+                self.parts[name] = preset_of(self.parts[preset['of']], name, preset)
         self._countries = None
 
     @property
@@ -320,9 +331,16 @@ def check_value(spec, v, where, rep, kit, base):
     elif t == 'place':
         if isinstance(v, str):
             if v not in kit.countries:
-                rep.err(where, f'"{v}" isn\'t a country the globe knows (names as in Natural Earth, like "United States of America")')
+                rep.err(where, f'"{v}" isn\'t a country the map knows (names as in Natural Earth, like "United States of America")')
         else:
             check_value({'type': 'lonlat'}, v, where, rep, kit, base)
+    elif t == 'place-or-level':
+        if _num(v) is not None:
+            check_value({'type': 'number', **{k: spec[k] for k in ('min', 'max') if k in spec}}, v, where, rep, kit, base)
+        else:
+            check_value({'type': 'place'}, v, where, rep, kit, base)
+    elif t == 'table':
+        check_table(spec, v, where, rep, kit)
     elif t == 'colour':
         if not (isinstance(v, str) and (v in spec.get('colours', []) or re.fullmatch(r'#[0-9a-fA-F]{6}', v))):
             rep.err(where, f'"{v}" isn\'t a colour: one of {", ".join(spec.get("colours", []))}, or #rrggbb')
@@ -352,15 +370,47 @@ def check_value(spec, v, where, rep, kit, base):
                         check_value({'type': t}, item[k], f'{where}[{i}].{k}', rep, kit, base)
             if len(set(ids)) != len(ids):
                 rep.err(where, 'has the same id twice')
-        elif of == 'country':
-            for x in v:
-                check_value({'type': 'place'}, x, where, rep, kit, base)
+        elif of in ('country', 'place'):
+            for i, x in enumerate(v):
+                check_value({'type': 'place'}, x, f'{where}[{i}]' if of == 'place' else where, rep, kit, base)
+        elif of == 'number':
+            for i, x in enumerate(v):
+                if _num(x) is None:
+                    rep.err(f'{where}[{i}]', 'is a number')
         elif of == 'text':
             for i, x in enumerate(v):
                 if not isinstance(x, str):
                     rep.err(f'{where}[{i}]', 'is words')
                 elif spec.get('maxText') and len(x) > spec['maxText']:
                     rep.warn(f'{where}[{i}]', f'keep it under {spec["maxText"]} characters')
+
+
+def check_table(spec, v, where, rep, kit):
+    """A table to colour a map by: { country: value } or [[from, to, value], ...] for bands of latitude.
+    A value is a number (coloured along a ramp) or a colour."""
+    colours = spec.get('colours', [])
+
+    def value_ok(x, w):
+        if _num(x) is None and not (isinstance(x, str) and (x in colours or re.fullmatch(r'#[0-9a-fA-F]{6}', x))):
+            rep.err(w, f'{json.dumps(x, ensure_ascii=False)} is neither a number nor a colour (one of {", ".join(colours)}, or #rrggbb)')
+    if isinstance(v, dict):
+        if not v:
+            rep.err(where, 'the table is empty')
+        for name, x in v.items():
+            if name not in kit.countries:
+                rep.err(where, f'"{name}" isn\'t a country the map knows (names as in Natural Earth, like "United States of America")')
+            value_ok(x, f'{where}["{name}"]')
+    elif isinstance(v, list):
+        if not v:
+            rep.err(where, 'the table is empty')
+        for i, row in enumerate(v):
+            w = f'{where}[{i}]'
+            if not (isinstance(row, list) and len(row) == 3 and all(_num(x) is not None and -90 <= x <= 90 for x in row[:2]) and row[0] != row[1]):
+                rep.err(w, 'a band is [from, to, value]: two different latitudes from -90 to 90 (south negative), and its value')
+                continue
+            value_ok(row[2], w)
+    else:
+        rep.err(where, 'a table is { "Country": value, ... } for countries, or [[from, to, value], ...] for bands of latitude')
 
 
 def media_exists(rel, base):
@@ -1106,12 +1156,28 @@ def print_report(rep):
 
 # ---------- commands
 
+def arg_type(x):
+    """An argument's type in a few words: place, choice ring|pin|storm, list of place."""
+    if x['type'] == 'choice':
+        return 'choice ' + '|'.join(map(str, x['options']))
+    if x['type'] == 'list' and isinstance(x.get('of'), str):
+        return f'list of {x["of"]}'
+    return x['type']
+
+
 def cmd_parts(a):
     kit = Kit(app_dir(a.app))
     if a.json:
         print(json.dumps(kit.parts, ensure_ascii=False, indent=1))
         return
     for name, d in kit.parts.items():
+        if d.get('of'):
+            changed = ', '.join(f'{k} {json.dumps(v, ensure_ascii=False)}' for k, v in kit.presets[name].get('settings', {}).items())
+            print(f'{name}: {d["title"]} (a preset: the {d["of"]} part with {changed} by default)')
+            print(f'  {d["about"]}')
+            print(f'  Every setting, call, event and state of {d["of"]}, listed under it, works here too.')
+            print()
+            continue
         print(f'{name}: {d["title"]}')
         print(f'  {d["about"]}')
         print('  settings:')
@@ -1121,7 +1187,7 @@ def cmd_parts(a):
             print(f'    {k} ({s["type"]}{rng}; default {json.dumps(s.get("default"), ensure_ascii=False)}){forms}: {s.get("about", "")}')
         print('  calls:')
         for k, c in d.get('calls', {}).items():
-            args = ', '.join(f'{x["name"]}{"?" if x.get("optional") else ""}: {x["type"]}' for x in c['args'])
+            args = ', '.join(f'{x["name"]}{"?" if x.get("optional") else ""}: {arg_type(x)}' for x in c['args'])
             print(f'    {k}({args}): {c.get("about", "")}')
         if d.get('events'):
             print('  events: ' + '; '.join(f'{k} {e.get("gives", "")}' for k, e in d['events'].items()))

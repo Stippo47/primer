@@ -13,7 +13,7 @@ function firstLessonWith(topics, name) {
   for (const t of topics) for (const l of t.lessons) {
     for (const s of l.steps) {
       const used = [s.figure && s.figure.part, s.play && s.play.part, s.kind === 'check' ? 'inputs' : null];
-      if (used.includes(name)) return l.title;
+      if (used.map(parts.partOf).includes(name)) return l.title;   // a preset (the globe) counts as its part
     }
   }
   return null;
@@ -91,7 +91,8 @@ export async function partScreen(app, name, back) {
       if (spec.type === 'choice') ctl = `<div class="seg">${spec.options.map(o => `<button class="${val(k) === o ? 'on' : ''}" data-set="${esc(k)}" data-v="${esc(o)}" data-sound="select">${esc(o)}</button>`).join('')}</div>`;
       if (spec.type === 'bool') ctl = `<button class="toggle" data-set="${esc(k)}" data-bool aria-pressed="${!!val(k)}" aria-label="${esc(k)}" data-sound="${val(k) ? 'off' : 'on'}"></button>`;
       if (spec.type === 'number') ctl = `<input type="range" min="${spec.min}" max="${spec.max}" step="${spec.step || 1}" value="${val(k)}" data-set="${esc(k)}" aria-label="${esc(k)}">`;
-      return `<div class="setrow${spec.type === 'choice' && spec.options.length > 3 ? ' wide' : ''}"><p>${esc(k)}</p>${ctl}</div>`;
+      // a setting marked wide (like the map's style) gets a line of its own, its choices across the width
+      return `<div class="setrow${spec.wide || (spec.type === 'choice' && spec.options.length > 3) ? ' wide' : ''}"><p>${esc(k)}</p>${ctl}</div>`;
     }).join('');
     const tryList = isInputs
       ? [{ label: 'Answer', call: ['reveal', '$answer'] }, { label: 'Again', call: ['reset'] }]

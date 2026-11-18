@@ -1,5 +1,6 @@
-// The kit of parts. Each part is a folder in parts/ with a description (part.json) and one module. This
-// file reads the descriptions, fills in settings from them, checks calls against them and mounts parts.
+// The kit of parts. Each part is a folder in parts/ with a description (part.json) and one module; a
+// preset is a part under another name with some defaults changed (parts.json). This file reads the
+// descriptions, fills in settings from them, checks calls against them and mounts parts.
 // The `primer` skill reads the very same descriptions, so the writer, the Playground and the tests can
 // never drift apart.
 import { track } from './gesture.js';
@@ -7,24 +8,49 @@ import * as feel from './feel.js';
 
 const BASE = new URL('../parts/', import.meta.url);
 const descs = new Map();
-let listP = null;
+let kitP = null, presetsNow = {};
+
+// parts.json: the parts, by folder name, and the presets (a part under another name, with some of its
+// defaults changed, like the globe: the map with projection globe).
+function kit() {
+  if (!kitP) {
+    kitP = fetch(new URL('parts.json', BASE)).then(r => r.json()).then(j => { presetsNow = j.presets || {}; return j; }).catch(e => { kitP = null; throw e; });
+  }
+  return kitP;
+}
 
 export function listParts() {
-  if (!listP) listP = fetch(new URL('parts.json', BASE)).then(r => r.json()).then(j => j.parts).catch(e => { listP = null; throw e; });
-  return listP;
+  return kit().then(j => j.parts);
+}
+
+// The part a name stands for: itself, or the part a preset is made from. Known once the kit is listed.
+export const partOf = name => (presetsNow[name] && presetsNow[name].of) || name;
+
+// A preset's description: the part's own, under the preset's name, with the preset's defaults. Everything
+// else (settings, calls, events, state) is the part's, so the two can never drift apart.
+export function presetOf(base, name, preset) {
+  const settings = {};
+  for (const [k, spec] of Object.entries(base.settings || {})) {
+    settings[k] = k in (preset.settings || {}) ? { ...spec, default: preset.settings[k] } : spec;
+  }
+  return { ...base, name, title: preset.title || base.title, about: preset.about || base.about, settings, of: base.name };
 }
 
 export function describe(name) {
   if (!descs.has(name)) {
-    descs.set(name, fetch(new URL(`${name}/part.json`, BASE)).then(r => {
-      if (!r.ok) throw new Error(`no part called ${name}`);
-      return r.json();
+    descs.set(name, kit().catch(() => ({})).then(j => {
+      const preset = (j.presets || {})[name];
+      if (preset) return describe(preset.of).then(base => presetOf(base, name, preset));
+      return fetch(new URL(`${name}/part.json`, BASE)).then(r => {
+        if (!r.ok) throw new Error(`no part called ${name}`);
+        return r.json();
+      });
     }).catch(e => { descs.delete(name); throw e; }));
   }
   return descs.get(name);
 }
 
-export const thumbUrl = (name, desc) => new URL(`${name}/${desc.thumb || 'thumb.svg'}`, BASE).href;
+export const thumbUrl = (name, desc) => new URL(`${desc.of || name}/${desc.thumb || 'thumb.svg'}`, BASE).href;
 
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 
@@ -73,7 +99,7 @@ export function callProblem(desc, call) {
 // way to turn a media path into an address. Returns the part's handle, with run(call) added.
 export async function mount(name, el, given = {}, { media } = {}) {
   const desc = await describe(name);
-  const mod = await import(new URL(`${name}/${desc.module}`, BASE).href);
+  const mod = await import(new URL(`${desc.of || name}/${desc.module}`, BASE).href);
   const { settings, problems } = settle(desc, given);
   for (const p of problems) console.warn(`part ${p}`);
   const ctx = { feel: { sound: feel.sound, tick: feel.tick, pop: feel.pop, spring: feel.spring }, track, media: media || (p => p) };

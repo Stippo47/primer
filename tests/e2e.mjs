@@ -663,7 +663,7 @@ try {
   await f.tap('.tab[data-tab=practice]');
   await sleep(500);
   const cards = await ev(`[...document.querySelectorAll('.pcard')].map(c=>c.innerText.replace(/\\s+/g,' ').trim())`);
-  ok(cards.length === 1 && cards[0].startsWith('Globe') && cards[0].includes('from Every kind of step'), 'the Playground lists the tools (the globe), saying which lesson first uses each', cards);
+  ok(cards.length === 1 && cards[0].startsWith('Map') && cards[0].includes('from Every kind of step'), 'the Playground lists the tools: one Map, saying which lesson first uses it (a lesson\'s globe counts)', cards);
   ok(!(await ev(`!!document.querySelector('.pcard[data-part=inputs]')`)) && (await ev('__primer.parts.listParts()')).includes('inputs'), "Inputs, an answer form, isn't in the list, but is still in the kit for lessons");
   const row = await ev(`(()=>{const r=document.querySelector('.formsrow'),c=document.querySelector('.pcard');if(!r||!c)return null;const a=r.getBoundingClientRect(),b=c.getBoundingClientRect();return {text:r.innerText.trim(),below:a.top>b.bottom,h:a.height,cardH:b.height,quiet:getComputedStyle(r).backgroundColor==='rgba(0, 0, 0, 0)'}})()`);
   ok(row && row.text === 'Answer forms' && row.below && row.h < row.cardH / 2 && row.quiet, 'a small, quiet "Answer forms" row sits after the tools', row);
@@ -709,11 +709,14 @@ try {
   await f.tap('[data-go=back]');
   await sleep(400);
   ok(await ev(`document.querySelector('.review .btn').disabled`), "Review's Start is off until stage 2");
-  await f.tap('.pcard[data-part=globe]');
+  await f.tap('.pcard[data-part=map]');
   await waitFor(`document.querySelector('.partstage canvas')`);
   ok(await bare(), 'an opened part hides the tab bar');
   const rows = await ev(`[...document.querySelectorAll('.setrow p')].map(p=>p.textContent)`);
-  ok(['spin', 'labels', 'style', 'tap', 'zoom', 'equator', 'borders'].every(k => rows.includes(k)), "its panel is built from the part's description, the new borders switch with it", rows);
+  ok(['projection', 'style', 'spin', 'labels', 'tap', 'zoom', 'pinch', 'equator', 'borders'].every(k => rows.includes(k)), "its panel is built from the part's description: projection is a setting like any other", rows);
+  const ownLine = await ev(`(()=>{const r=[...document.querySelectorAll('.setrow')].find(r=>r.querySelector('p').textContent==='style'),s=r.querySelector('.seg').getBoundingClientRect(),p=r.querySelector('p').getBoundingClientRect(),rr=r.getBoundingClientRect();
+    return {wide:r.classList.contains('wide'),below:s.top>=p.bottom-1,across:s.width>=rr.width-2,oneLine:new Set([...r.querySelectorAll('.seg button')].map(b=>Math.round(b.getBoundingClientRect().top))).size===1}})()`);
+  ok(ownLine.wide && ownLine.below && ownLine.across && ownLine.oneLine, 'the style choice has a line of its own, its choices across the panel', ownLine);
   await f.tap('[data-set=style][data-v=warmth]');
   await sleep(600);
   ok((await ev('__primer.app.partNow.settings.style')) === 'warmth', 'changing a setting redraws the part with it');
@@ -727,6 +730,16 @@ try {
   await sleep(600);
   ok((await ev('__primer.app.partNow.settings.borders')) === false, 'and borders can be switched off');
   await shot('17b-part-globe-no-borders');
+  await f.tap('[data-set=projection][data-v=equal-earth]');
+  await sleep(700);
+  ok((await ev('__primer.app.partNow.settings.projection')) === 'equal-earth' && (await ev('__primer.app.partNow.debug().projection')) === 'equal-earth'
+    && (await ev('__primer.app.partNow.settings.style')) === 'political', 'the same part turns into a flat map, keeping its style', await ev('__primer.app.partNow.settings'));
+  for (const label of ['Track', 'Flight', 'Storm']) await f.tap(`[data-try="${await ev(`__primer.app.partNow.desc.try.findIndex(t=>t.label===${JSON.stringify(label)})`)}"]`);
+  await sleep(4400);
+  ok((await ev('__primer.app.partNow.debug().routes.length')) === 2, "the panel's tries work on the flat map: a track and a flight", await ev('__primer.app.partNow.debug().routes'));
+  await ev(`document.querySelectorAll('*').forEach(e=>{if(e.scrollTop)e.scrollTop=0})`);
+  await sleep(200);
+  await shot('17c-part-map-flat');
   await f.tap('[data-try="2"]');
   await sleep(400);
   await f.tap('[data-go=back]');
@@ -819,31 +832,36 @@ try {
     return [];
   };
   const parts = await ev('__primer.parts.listParts()');
+  ok(JSON.stringify(parts) === JSON.stringify(['map', 'inputs']), 'the kit is the map and the inputs: the globe is a preset of the map, not a part of its own', parts);
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
     const cases = [];
     const forms = name === 'inputs' ? desc.settings.form.options : [null];
+    // the map: every setting at its extremes on every projection
+    const projections = name === 'map' ? desc.settings.projection.options : [null];
     for (const form of forms) {
-      const example = name === 'inputs' ? desc.example[form].settings : desc.example.settings;
-      for (const [k, spec] of Object.entries(desc.settings)) {
-        if (k === 'form') continue;
-        if (form && spec.forms && !spec.forms.includes(form)) continue;
-        for (const val of extremes(spec, example[k])) cases.push({ form, k, val, settings: { ...example, [k]: val } });
+      for (const projection of projections) {
+        const example = name === 'inputs' ? desc.example[form].settings : { ...desc.example.settings, ...(projection ? { projection } : {}) };
+        for (const [k, spec] of Object.entries(desc.settings)) {
+          if (k === 'form' || k === 'projection') continue;
+          if (form && spec.forms && !spec.forms.includes(form)) continue;
+          for (const val of extremes(spec, example[k])) cases.push({ form, projection, k, val, settings: { ...example, [k]: val } });
+        }
       }
     }
     let drew = 0, touched = 0, cleaned = 0, problems = [];
     for (const c of cases) {
-      const label = `${name}${c.form ? `/${c.form}` : ''} ${c.k}=${JSON.stringify(c.val).slice(0, 30)}`;
+      const label = `${name}${c.form ? `/${c.form}` : ''}${c.projection ? `/${c.projection}` : ''} ${c.k}=${JSON.stringify(c.val).slice(0, 30)}`;
       await ev(`(async()=>{const el=document.getElementById('bench');el.innerHTML='';window.__h=await __primer.parts.mount(${JSON.stringify(name)},el,${JSON.stringify(c.settings)},{media:p=>'/primer/../__gh/__none/'+p});})()`);
-      await sleep(name === 'globe' ? 250 : 80);
+      await sleep(name === 'map' ? 250 : 80);
       // it draws
-      const drawn = await ev(name === 'globe'
+      const drawn = await ev(name === 'map'
         ? `(()=>{const c=document.querySelector('#bench canvas');const g=c.getContext('2d');const d=g.getImageData(c.width/2-20,c.height/2-20,40,40).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>0)n++;return n>100})()`
         : `(()=>{const r=document.querySelector('#bench .pi');return !!r&&r.getBoundingClientRect().height>30&&r.children.length>0})()`);
       if (drawn) drew++; else problems.push(`${label}: drew nothing`);
       // it answers a finger
       let moved = false;
-      if (name === 'globe') {
+      if (name === 'map') {
         const c = await f.rect('#bench canvas');
         await f.tapAt(c.x, c.y);
         moved = !!(await ev('__h.state().tapped'));
@@ -879,62 +897,212 @@ try {
       const left = await ev(`document.getElementById('bench').children.length === 0 && (!__h.busy || !__h.busy())`);
       if (left) cleaned++; else problems.push(`${label}: left something behind`);
     }
-    ok(drew === cases.length, `${name}: draws with each of ${cases.length} settings at its extremes`, problems.filter(p => p.includes('drew')));
+    ok(drew === cases.length, `${name}: draws with each of ${cases.length} settings at its extremes${name === 'map' ? ', on every projection' : ''}`, problems.filter(p => p.includes('drew')));
     ok(touched === cases.length, `${name}: answers a finger with each`, problems.filter(p => p.includes('finger')));
     ok(cleaned === cases.length, `${name}: cleans up after each`, problems.filter(p => p.includes('behind')));
   }
   await ev(`document.getElementById('bench').remove()`);
+  // Every call in each description, with real arguments; the map's on every projection.
+  const callArgs = {
+    spinTo: [[10, 20], 0.2], zoomTo: [2, 0.2], highlight: [['Brazil', 'France'], 'pink'], colourBy: [{ Brazil: 3, France: 1, Chad: 2 }, 'green'], band: [5, 20],
+    point: [[0, 0], 'Here'], marker: [[-40, 15], 'storm', 'Storm'], arc: [[-0.1, 51.5], [-118.2, 34]], track: [[[-25, 12], [-45, 15], [-62, 21]], 0.5, 'storm', 0.3],
+    clear: [], reveal: [26.5], mark: ['right'], lock: [], reset: [],
+  };
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
     if (!desc.calls) continue;
-    await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px';document.body.append(d);window.__h=await __primer.parts.mount(${JSON.stringify(name)},d,${JSON.stringify(name === 'inputs' ? desc.example.slider.settings : desc.example.settings)});})()`);
-    const res = await ev(`(()=>{const out=[];const ex={spinTo:[[10,20],0.2],highlight:[['Brazil','France'],'pink'],band:[5,20],point:[[0,0],'Here'],marker:[[-40,15],'storm','Storm'],clear:[],reveal:[26.5],mark:['right'],lock:[],reset:[]};for(const c of Object.keys(__h.desc.calls)){try{__h.run([c,...(ex[c]||[])]);out.push(c)}catch(e){out.push(c+': '+e.message)}}return out})()`);
-    ok(res.every(x => !x.includes(':')), `${name}: every call in its description works`, res);
-    await sleep(200);
-    await ev(`__h.remove();document.getElementById('bench').remove()`);
+    const missing = Object.keys(desc.calls).filter(c => !(c in callArgs));
+    ok(missing.length === 0, `${name}: the test has arguments for every call`, missing);
+    for (const projection of name === 'map' ? desc.settings.projection.options : [null]) {
+      const settings = name === 'inputs' ? desc.example.slider.settings : { ...desc.example.settings, projection };
+      await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px';document.body.append(d);window.__h=await __primer.parts.mount(${JSON.stringify(name)},d,${JSON.stringify(settings)});})()`);
+      const res = await ev(`(()=>{const out=[];const ex=${JSON.stringify(callArgs)};for(const c of Object.keys(__h.desc.calls)){try{__h.run([c,...(ex[c]||[])]);out.push(c)}catch(e){out.push(c+': '+e.message)}}return out})()`);
+      await sleep(400);
+      ok(res.every(x => !x.includes(':')), `${name}${projection ? ` (${projection})` : ''}: every call in its description works`, res);
+      await ev(`__h.remove();document.getElementById('bench').remove()`);
+    }
   }
 
-  console.log('The globe: steady names, lines over the land, borders and four colours');
-  const bench = settings => ev(`(async()=>{document.getElementById('bench')?.remove();const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50;background:#141a3c';document.body.append(d);window.__h=await __primer.parts.mount('globe',d,${JSON.stringify(settings)});return true})()`);
-  // Names, sampled every 60 ms while the globe turns by itself: none may go off and come back on.
-  await bench({ style: 'day', spin: 'auto', labels: 'countries', view: [0, 25] });
-  await sleep(900);
-  const seen = new Map();
-  for (let i = 0; i < 50; i++) {
-    for (const l of await ev('__h.debug().labels')) { const s = seen.get(l.name) || []; s.push(l.on ? 1 : 0); seen.set(l.name, s); }
-    await sleep(60);
+  // A bench for the map, as a lesson would put it on screen: by the part's name (map, or the globe preset).
+  const mountOn = (part, settings) => ev(`(async()=>{document.getElementById('bench')?.remove();const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50;background:#141a3c';document.body.append(d);window.__h=await __primer.parts.mount(${JSON.stringify(part)},d,${JSON.stringify(settings)});window.__ev=[];for(const k of ['tapped','settled','zoomed','turned'])__h.on(k,v=>__ev.push([k,v]));return true})()`);
+  const events = () => ev('__ev.map(e=>e[0])');
+  const pixelAt = place => ev(`(()=>{const c=document.querySelector('#bench canvas'),b=c.getBoundingClientRect(),k=c.width/b.width,p=__h.where(${JSON.stringify(place)});const d=c.getContext('2d').getImageData(Math.round((p.x-b.left)*k),Math.round((p.y-b.top)*k),1,1).data;return [d[0],d[1],d[2]]})()`);
+  const near = (rgb, hex, tol = 30) => [1, 3, 5].every((i, n) => Math.abs(parseInt(hex.slice(i, i + 2), 16) - rgb[n]) <= tol);
+
+  console.log('The map: steady names, lines over the land, borders and four colours, on the globe and on a flat map');
+  for (const [part, extra] of [['globe', {}], ['map', { projection: 'equal-earth' }]]) {
+    const on = part === 'globe' ? 'globe' : 'flat map';
+    const bench = settings => mountOn(part, { ...settings, ...extra });
+    // Names, sampled every 60 ms while it turns by itself: none may go off and come back on.
+    await bench({ style: 'day', spin: 'auto', labels: 'countries', view: [0, 25], zoom: part === 'globe' ? 1 : 2 });
+    await sleep(900);
+    const seen = new Map();
+    for (let i = 0; i < 50; i++) {
+      for (const l of await ev('__h.debug().labels')) { const s = seen.get(l.name) || []; s.push(l.on ? 1 : 0); seen.set(l.name, s); }
+      await sleep(60);
+    }
+    // a blink: off for under about a third of a second between two spells on
+    const blinks = [...seen].filter(([, s]) => /1(0{1,5})1/.test(s.join('')));
+    ok(seen.size >= 8 && blinks.length === 0, `${on}: while it turns, names stay put: none blinks off and back on (${seen.size} names watched)`, blinks.map(([n, s]) => `${n}:${s.join('')}`));
+    // A dotted line where it crosses Africa: the equator and a band's edge show over the land, not under it.
+    await bench({ style: 'day', spin: 'locked', tap: 'none', equator: true, view: [20, 8], zoom: part === 'globe' ? 1 : 2 });
+    await ev(`__h.run(['band', 5, 20])`);
+    await sleep(500);
+    const over = await ev(`(()=>{const c=document.querySelector('#bench canvas'),g=c.getContext('2d'),k=c.width/c.getBoundingClientRect().width,b=c.getBoundingClientRect();
+      const count=(lat,test)=>{let n=0;for(let lon=12;lon<=30;lon+=0.25){const p=__h.where([lon,lat]);const x=Math.round((p.x-b.left)*k),y=Math.round((p.y-b.top)*k);const d=g.getImageData(x-2,y-2,5,5).data;for(let i=0;i<d.length;i+=4)if(test(d[i],d[i+1],d[i+2]))n++;}return n};
+      return {equator:count(0,(r,g2,bl)=>r>215&&g2>215&&bl>215),band:count(20,(r,g2,bl)=>r>220&&g2>170&&bl<120)}})()`);
+    ok(over.equator > 0 && over.band > 0, `${on}: dotted lines (the equator, a band's edge) are drawn over the land too`, over);
+    // Borders off, and the four colours.
+    const pixelsOf = () => ev(`(()=>{const c=document.querySelector('#bench canvas');return Array.from(c.getContext('2d').getImageData(0,0,c.width,c.height).data.filter((_,i)=>i%16===0)).join(',')})()`);
+    await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2 });
+    await sleep(500);
+    const withBorders = await pixelsOf();
+    await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2, borders: false });
+    await sleep(500);
+    ok((await pixelsOf()) !== withBorders, `${on}: with borders off, the borders are gone`);
+    await bench({ style: 'political', spin: 'locked', view: [15, 30], zoom: 1.4 });
+    await sleep(500);
+    const four = await ev(`(()=>{const c=document.querySelector('#bench canvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;const want=['#3fcfae','#ffd062','#f27ba3','#a58cf2'].map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));const n=[0,0,0,0];for(let i=0;i<d.length;i+=16)want.forEach((w,k)=>{if(Math.abs(d[i]-w[0])+Math.abs(d[i+1]-w[1])+Math.abs(d[i+2]-w[2])<12)n[k]++});return {n,clashes:__h.debug().clashes}})()`);
+    ok(four.n.every(x => x > 50) && four.clashes === 0, `${on}: the political style uses all four colours, and no two neighbours share one`, four);
+    // Still, it costs nothing.
+    await bench({ style: 'warmth', spin: 'locked', labels: 'countries', equator: true, view: [-40, 15] });
+    await ev(`__h.run(['band', 5, 20])`);
+    await ev(`__h.run(['arc', [-0.1, 51.5], [-74, 40.7]])`);
+    await ev(`__h.run(['track', [[-25, 12], [-45, 15], [-62, 21]], 0.6])`);
+    await sleep(1200);
+    const r0 = await ev('__h.debug().redraws');
+    await sleep(600);
+    ok(!(await ev('__h.busy()')) && (await ev('__h.debug().redraws')) === r0, `${on}: still, it asks for no frames and redraws nothing, its names, band, arc and track included`);
   }
-  // a blink: off for under about a third of a second between two spells on
-  const blinks = [...seen].filter(([, s]) => /1(0{1,5})1/.test(s.join('')));
-  ok(seen.size >= 8 && blinks.length === 0, `while it turns, names stay put: none blinks off and back on (${seen.size} names watched)`, blinks.map(([n, s]) => `${n}:${s.join('')}`));
-  // A dotted line where it crosses Africa: the equator and a band's edge show over the land, not under it.
-  await bench({ style: 'day', spin: 'locked', tap: 'none', equator: true, view: [20, 8] });
-  await ev(`__h.run(['band', 5, 20])`);
+
+  console.log('The map: one part, every projection');
+  const lessonGlobe = await ev(`__primer.parts.describe('globe')`);
+  ok(lessonGlobe.of === 'map' && lessonGlobe.settings.projection.default === 'globe' && lessonGlobe.settings.pinch.default === false && JSON.stringify(Object.keys(lessonGlobe.calls)) === JSON.stringify(Object.keys((await ev(`__primer.parts.describe('map')`)).calls)),
+    "a lesson's globe is the map under another name: projection globe, no finger zooming, every call the map has", { of: lessonGlobe.of, projection: lessonGlobe.settings.projection.default });
+  await mountOn('globe', { style: 'day', tap: 'country' });
+  ok((await ev('__h.debug().projection')) === 'globe' && (await ev('__h.name')) === 'globe', 'mounted as globe, it draws a globe');
+  for (const projection of ['globe', 'equal-earth', 'natural-earth', 'mercator']) {
+    const flat = projection !== 'globe';
+    await mountOn('map', { projection, style: 'day', tap: 'country', labels: 'countries', view: [-30, 0] });
+    await sleep(500);
+    // taps land on the right country, and on the sea
+    const hits = [];
+    for (const [place, want] of [[[-50, -10], 'Brazil'], [[2.5, 46.5], 'France'], [[-100, 40], 'United States of America'], [[-30, 0], null]]) {
+      const p = await ev(`__h.where(${JSON.stringify(place)})`);
+      await f.tapAt(p.x, p.y);
+      await sleep(380);
+      const st = await ev('__h.state()');
+      hits.push(`${want}:${st.tapped && st.tapped.country}`);
+      if ((st.tapped && st.tapped.country) !== want || st.selected !== want || (want === null && st.tapped.land !== false)) hits.push('WRONG');
+    }
+    ok(!hits.includes('WRONG') && (await events()).filter(e => e === 'tapped').length === 4, `${projection}: a tap picks the country under the finger (Brazil, France, the USA), and the sea is sea`, hits);
+    await shot(`19-map-${projection}-tapped`);
+    // drag: sideways turns the globe, or rolls the flat world round; it settles once let go
+    await mountOn('map', { projection, style: 'day', view: [0, 0] });
+    await sleep(300);
+    // a whole flat world sits in the middle of the box: its middle latitude is where it rests (0, or higher
+    // on Mercator, which stops short of Antarctica)
+    const level = (await ev('__h.state()')).centre[1];
+    const c = await f.rect('#bench canvas');
+    await f.drag(c.x, c.y, -120, 0, { ms: 400, steps: 12 });
+    await sleep(1600);
+    const after = await ev('__h.state()');
+    ok(after.centre[0] > 10 && Math.abs(after.centre[1] - level) < 3 && (await events()).includes('settled'), `${projection}: dragging left brings the east into view, and it settles`, after);
+    // up and down: the globe tips; a whole flat world can't move up or down, a zoomed one can
+    await f.drag(c.x, c.y, 0, 120, { ms: 400, steps: 12 });
+    await sleep(1600);
+    const tipped = await ev('__h.state()');
+    ok(flat ? Math.abs(tipped.centre[1] - level) < 0.5 : tipped.centre[1] > 10, `${projection}: dragging down ${flat ? "leaves a whole flat world where it is (there's nothing above it)" : 'tips the globe to show the north'}`, tipped);
+    if (flat) {
+      await ev(`__h.run(['zoomTo', 3, 0])`);
+      await f.drag(c.x, c.y, 0, 120, { ms: 400, steps: 12 });
+      await sleep(1600);
+      const panned = await ev('__h.state()');
+      ok(panned.centre[1] > 5 && panned.zoom === 3, `${projection}: zoomed in, dragging down pans to the north, like paper`, panned);
+      await f.drag(c.x, c.y, 0, 3000, { ms: 400, steps: 12 });
+      await sleep(1800);
+      const top = await ev(`(()=>{const c=document.querySelector('#bench canvas'),g=c.getContext('2d');const d=g.getImageData(c.width/2,4,1,1).data;return {state:__h.state(),edge:d[3]}})()`);
+      ok(top.edge === 255 && top.state.centre[1] < 89, `${projection}: and it stops at the map's top edge, with no empty space above it`, top);
+    }
+    // pinch to zoom, and tap twice
+    await mountOn('map', { projection, style: 'day', view: [10, 20], tap: 'pin' });
+    await sleep(300);
+    await f.touch('touchStart', [[c.x - 30, c.y], [c.x + 30, c.y]]);
+    for (let i = 1; i <= 10; i++) { await sleep(25); await f.touch('touchMove', [[c.x - 30 - i * 3, c.y], [c.x + 30 + i * 3, c.y]]); }
+    await f.touch('touchEnd', []);
+    await sleep(400);
+    const pinched = await ev('__h.state()');
+    ok(pinched.zoom > 1.6 && pinched.zoom < 2.4 && (await events()).includes('zoomed'), `${projection}: pinching apart zooms in, about the fingers, and says so`, { zoom: pinched.zoom, events: await events() });
+    await f.tapAt(c.x, c.y);
+    await f.tapAt(c.x, c.y);
+    await sleep(700);
+    const doubled = await ev('__h.state()');
+    ok(Math.abs(doubled.zoom - pinched.zoom * 2) < 0.05, `${projection}: tapping twice zooms in twice as close`, doubled);
+    await mountOn('globe', { projection, view: [10, 20], tap: 'pin' });
+    await sleep(300);
+    await f.tapAt(c.x, c.y);
+    await f.tapAt(c.x, c.y);
+    await sleep(700);
+    ok((await ev('__h.state()')).zoom === 1 && (await events()).filter(e => e === 'tapped').length === 2, `${projection}, as the lesson's globe: two quick taps stay two taps (no finger zooming)`, await events());
+    // the calls: turning or panning, zooming, and the events they give
+    await mountOn('map', { projection, style: 'day', view: [0, 0] });
+    await ev(`__h.run(['spinTo', [100, 30], 0])`);
+    const turned = await ev('__h.state()');
+    ok(turned.centre[0] === 100 && (flat ? Math.abs(turned.centre[1] - level) < 0.5 : turned.centre[1] === 30), `${projection}: spinTo ${flat ? 'pans' : 'turns'} to the place${flat ? ' (a whole flat world stays level)' : ''}`, turned);
+    await ev(`__h.run(['zoomTo', 'France', 0])`);
+    const fr = await ev('__h.state()');
+    const frAt = await ev(`__h.where('France')`);
+    const box = await f.rect('#bench canvas');
+    ok(fr.zoom > 3 && Math.abs(frAt.x - box.x) < 30 && Math.abs(frAt.y - box.y) < 30, `${projection}: zoomTo a country fills the view with it`, { zoom: fr.zoom, at: [Math.round(frAt.x - box.x), Math.round(frAt.y - box.y)] });
+    await ev(`__h.run(['zoomTo', 1, 0.3])`);
+    await sleep(700);
+    ok((await ev('__h.state()')).zoom === 1 && (await events()).filter(e => e === 'zoomed').length >= 2 && (await events()).includes('settled'), `${projection}: zoomTo a level glides there, and says zoomed and settled`, await events());
+    await ev(`__h.run(['zoomTo', [-60, 15], 0])`);
+    ok((await ev('__h.state()')).zoom === 3, `${projection}: zoomTo a place centres on it at level 3`, await ev('__h.state()'));
+    // arcs and tracks: drawn along great circles, as far as they've got
+    await mountOn('map', { projection, style: 'day', view: [-45, 35], zoom: 2, spin: 'locked', tap: 'none' });
+    await ev(`__h.run(['arc', [-0.1, 51.5], [-74, 40.7]])`);
+    await sleep(1300);
+    const mid = await ev(`(async()=>{const {geoInterpolate}=await import('d3-geo');return geoInterpolate([-0.1,51.5],[-74,40.7])(0.5)})()`);
+    const straight = [(-0.1 - 74) / 2, (51.5 + 40.7) / 2];
+    const onArc = await pixelAt(mid), offArc = await pixelAt(straight);
+    ok(near(onArc, '#ffc83d', 40) && !near(offArc, '#ffc83d', 40), `${projection}: an arc follows the great circle, north of the straight line between London and New York`, { onArc, offArc, mid });
+    await ev(`__h.run(['track', [[-25, 12], [-45, 15], [-62, 21], [-73, 30]], 0.5, 'ring'])`);
+    await ev(`__h.run(['track', [[-25, 12], [-45, 15], [-62, 21], [-73, 30]], 0.75, 'pin', 0.4])`);
+    await sleep(900);
+    const rt = await ev('__h.debug().routes');
+    ok(rt.length === 2 && Math.abs(rt[1].progress - 0.75) < 1e-6 && rt[1].rider === 'pin', `${projection}: calling track again with the same path moves that track on, rather than adding one`, rt);
+    const drawnTo = await pixelAt([-45, 15]), notYet = await pixelAt([-73, 30]);
+    ok(drawnTo.every(x => x > 200) && !notYet.every(x => x > 200), `${projection}: a track is drawn as far as its progress, and no further`, { drawnTo, notYet });
+    // colouring from a table: countries, then bands of latitude
+    await ev(`__h.run(['spinTo', [-30, -10], 0])`);
+    await ev(`__h.run(['zoomTo', 1, 0])`);
+    await ev(`__h.run(['colourBy', { Brazil: 10, Argentina: 0, Chad: 'pink' }, 'heat'])`);
+    await sleep(200);
+    const [brazil, argentina, chad] = [await pixelAt([-50, -10]), await pixelAt([-65, -35]), await pixelAt([18.5, 15.5])];
+    ok(near(brazil, '#ffd062', 20) && near(argentina, '#1b2a80', 20) && near(chad, '#ee4b7a', 20), `${projection}: colourBy colours countries from a table: highest and lowest at the ramp's ends, a colour as given`, { brazil, argentina, chad });
+    await ev(`__h.run(['colourBy', [[10, 30, 1], [-30, -10, 0]], 'blue'])`);
+    await sleep(200);
+    const [northSea, southSea] = [await pixelAt([-40, 20]), await pixelAt([-20, -20])];
+    ok(near(northSea, '#b8ecff', 24) && near(southSea, '#2a2f66', 24) && (await ev('__h.debug().table')), `${projection}: and bands of latitude, over the sea`, { northSea, southSea });
+    await ev(`__h.run(['clear'])`);
+    await sleep(200);
+    ok((await ev('__h.debug().routes.length')) === 0 && !(await ev('__h.debug().table')), `${projection}: clear takes it all away`);
+    await shot(`19-map-${projection}-after`);
+  }
+  // Panning a flat map, at the phone's pixel ratio: how long the map itself takes to redraw for each frame.
+  await b.size(W, H, 2);
+  await mountOn('map', { projection: 'equal-earth', style: 'political', labels: 'countries', view: [10, 30] });
   await sleep(500);
-  const over = await ev(`(()=>{const c=document.querySelector('#bench canvas'),g=c.getContext('2d'),k=c.width/c.getBoundingClientRect().width,b=c.getBoundingClientRect();
-    const count=(lat,test)=>{let n=0;for(let lon=12;lon<=30;lon+=0.25){const p=__h.where([lon,lat]);const x=Math.round((p.x-b.left)*k),y=Math.round((p.y-b.top)*k);const d=g.getImageData(x-2,y-2,5,5).data;for(let i=0;i<d.length;i+=4)if(test(d[i],d[i+1],d[i+2]))n++;}return n};
-    return {equator:count(0,(r,g2,bl)=>r>215&&g2>215&&bl>215),band:count(20,(r,g2,bl)=>r>220&&g2>170&&bl<120)}})()`);
-  ok(over.equator > 0 && over.band > 0, 'dotted lines (the equator, a band\'s edge) are drawn over the land too', over);
-  // Borders off, and the four colours.
-  const pixelsOf = () => ev(`(()=>{const c=document.querySelector('#bench canvas');return Array.from(c.getContext('2d').getImageData(0,0,c.width,c.height).data.filter((_,i)=>i%16===0)).join(',')})()`);
-  await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2 });
-  await sleep(500);
-  const withBorders = await pixelsOf();
-  await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2, borders: false });
-  await sleep(500);
-  ok((await pixelsOf()) !== withBorders, 'with borders off, the borders are gone');
-  await bench({ style: 'political', spin: 'locked', view: [15, 30], zoom: 1.4 });
-  await sleep(500);
-  const four = await ev(`(()=>{const c=document.querySelector('#bench canvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;const want=['#3fcfae','#ffd062','#f27ba3','#a58cf2'].map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));const n=[0,0,0,0];for(let i=0;i<d.length;i+=16)want.forEach((w,k)=>{if(Math.abs(d[i]-w[0])+Math.abs(d[i+1]-w[1])+Math.abs(d[i+2]-w[2])<12)n[k]++});return {n,clashes:__h.debug().clashes}})()`);
-  ok(four.n.every(x => x > 50) && four.clashes === 0, 'the political style uses all four colours, and no two neighbours share one', four);
-  // Still, it costs nothing; turned, it redraws the ball and nothing else.
-  await bench({ style: 'warmth', spin: 'locked', labels: 'countries', equator: true, view: [-40, 15] });
-  await ev(`__h.run(['band', 5, 20])`);
-  await sleep(900);
-  const r0 = await ev('__h.debug().redraws');
+  const pc = await f.rect('#bench canvas');
+  await ev(`window.__bm=new Map();(function loop(){const d=__h.debug();window.__bm.set(d.redraws,d.baseMs);if(window.__bm.size<200&&!window.__bmStop)requestAnimationFrame(loop)})()`);
+  await f.drag(pc.x + 100, pc.y, -200, 30, { ms: 1200, steps: 40 });
   await sleep(600);
-  ok(!(await ev('__h.busy()')) && (await ev('__h.debug().redraws')) === r0, 'a still globe asks for no frames and redraws nothing, its names and band included');
-  await ev(`document.getElementById('bench').remove()`);
+  const costs = await ev(`(()=>{window.__bmStop=true;const s=[...window.__bm.values()].slice(1).sort((a,b)=>a-b);return {median:+s[s.length>>1].toFixed(1),p90:+s[Math.floor(s.length*0.9)].toFixed(1),redraws:s.length}})()`);
+  console.log(`  (a flat political map with names, panned at 2x: the map redraws in ${costs.median} ms, 9 in 10 under ${costs.p90} ms, on this PC)`);
+  ok(costs.median < 12 && costs.redraws > 10, 'a panned flat map redraws itself well inside a frame on this PC, even with four colours and names', costs);
+  await b.size(W, H, 1);
+  await ev(`__h.remove();document.getElementById('bench').remove()`);
 
   if (PILOT && existsSync(join(PILOT, 'topics'))) {
     console.log('The pilot: its path, each lesson and the test played wrong and then right, and its chest');
@@ -1012,6 +1180,16 @@ try {
         ok(await ev(`document.querySelector('.node[data-node=${node.id}]').classList.contains('done')`), `${node.id}: done, and the path goes on`);
         played++;
         asked += file.lines.filter(x => x.wait).length;
+        continue;
+      }
+      if (node.kind === 'review') {
+        // visited, as any review or animation node is for now
+        await f.tap(`.node[data-node=${node.id}]`);
+        await sleep(300);
+        await f.tap('.callout [data-go=start]');
+        await sleep(700);
+        ok(await bare(), `the pilot's ${node.kind}, ${node.id}, opens`);
+        await press();
         continue;
       }
       const file = JSON.parse(readFileSync(join(dir, `${node.id}.json`), 'utf8'));

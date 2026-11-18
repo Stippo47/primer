@@ -236,8 +236,8 @@ html.bare .sheet { padding-bottom: calc(var(--sab) + 18px); }
 .setrow .seg { overflow-x: auto; max-width: 70%; }
 .seg button { flex: none; }
 .setrow.wide { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px 0 12px; }
-.setrow.wide .seg { max-width: 100%; height: auto; flex-wrap: wrap; }
-.setrow.wide .seg button { height: 28px; }
+.setrow.wide .seg { max-width: 100%; height: auto; flex-wrap: wrap; align-self: stretch; }
+.setrow.wide .seg button { height: 28px; flex: 1 1 auto; }
 .setrow input[type=range] { width: 52%; accent-color: var(--cyan); }
 .tries { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; }
 

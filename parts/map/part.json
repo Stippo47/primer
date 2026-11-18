@@ -1,0 +1,63 @@
+{
+  "name": "map",
+  "title": "Map",
+  "about": "The world, drawn from Natural Earth's country shapes in the house style: a globe or a flat map, with every tool working on both. Drag to turn the globe or to pan the map (sideways, the flat world rolls round without end), pinch or tap twice to zoom. It can colour the sea by warmth, colour countries or bands of latitude from a table, light up countries, and show points, markers (a turning hurricane among them), great-circle routes and tracks that draw themselves along. A tap reports the place, whether it is land, and which country. The preset globe is this part with projection globe and no finger zooming.",
+  "module": "map.js",
+  "thumb": "thumb.svg",
+  "settings": {
+    "projection": { "type": "choice", "options": ["globe", "equal-earth", "natural-earth", "mercator"], "default": "equal-earth", "wide": true, "about": "How the world is laid out. globe: a ball, turned by dragging. equal-earth: a flat map where every country keeps its true size (the default flat map). natural-earth: a flat map with rounder corners, sizes nearly true. mercator: the familiar web map, from 60 S to 84 N, which swells countries toward the poles (Greenland looks as big as Africa)." },
+    "style": { "type": "choice", "options": ["day", "warmth", "muted", "political"], "default": "day", "wide": true, "about": "day: blue sea, green land. warmth: the sea coloured by surface temperature, warmest near the equator (a simplified northern late summer). muted: grey, for a map that isn't the point. political: every country in one of four colours, no two neighbours the same, like a political map." },
+    "spin": { "type": "choice", "options": ["free", "auto", "locked"], "default": "free", "about": "free: drag to turn the globe or pan the map, and it carries on a little when let go. auto: turns slowly by itself (a flat map rolls sideways), and can still be dragged. locked: stays where it is put, with no dragging or zooming by finger; taps still work." },
+    "labels": { "type": "choice", "options": ["none", "countries"], "default": "none", "about": "countries: the names of the bigger countries in view, and the name of a tapped country." },
+    "tap": { "type": "choice", "options": ["country", "pin", "none"], "default": "country", "about": "What a tap does. country: lifts the country tapped. pin: drops a pin where the finger lands. none: nothing shows, though the tap is still reported." },
+    "view": { "type": "lonlat", "default": [-40, 15], "about": "Where it faces at the start: [longitude, latitude]. On a flat map the longitude runs down the middle, and the latitude counts once zoomed in." },
+    "zoom": { "type": "number", "min": 1, "max": 8, "step": 0.1, "default": 1, "about": "How close it starts. 1 shows the whole globe, or the whole flat world; 8 is close in." },
+    "pinch": { "type": "bool", "default": true, "about": "Pinch, or tap twice, to zoom in and out (up to 8 times). Off, two quick taps are just two taps." },
+    "equator": { "type": "bool", "default": false, "about": "Draws the equator as a dotted line, with its name. Dotted lines (the equator, a band's edges) are always drawn over the sea and the land." },
+    "borders": { "type": "bool", "default": true, "about": "Draws the borders between countries. Off, the land is one piece (in political, the colours alone tell the countries apart)." }
+  },
+  "calls": {
+    "spinTo": { "args": [{ "name": "place", "type": "place" }, { "name": "seconds", "type": "number", "min": 0, "max": 5, "optional": true }], "about": "Turns to face a place: [longitude, latitude] or a country's name. On a flat map it pans there. Takes about a second unless told; 0 is at once." },
+    "zoomTo": { "args": [{ "name": "to", "type": "place-or-level", "min": 1, "max": 8 }, { "name": "seconds", "type": "number", "min": 0, "max": 5, "optional": true }], "about": "Zooms: to a level (1 the whole world, 8 close in), to a country (it fills about half the view), or to [longitude, latitude] (centred there, at level 3)." },
+    "highlight": { "args": [{ "name": "countries", "type": "list", "of": "country" }, { "name": "colour", "type": "colour", "optional": true }], "about": "Fills these countries with a colour (gold unless told)." },
+    "colourBy": { "args": [{ "name": "data", "type": "table" }, { "name": "ramp", "type": "choice", "options": ["heat", "green", "blue"], "optional": true }, { "name": "range", "type": "list", "of": "number", "minItems": 2, "maxItems": 2, "optional": true }], "about": "Colours the map from a table. Countries: { \"Brazil\": 59, \"France\": 31 }. Bands of latitude, south negative: [[0, 10, 28], [10, 20, 27]], drawn over the sea. Numbers run along the ramp (heat: the sea warmth's navy to orange; green; blue) from the lowest to the highest, or across range [low, high] when given, so a series of tables can share one scale; a colour's name or #rrggbb is used as it is. A new table replaces the last." },
+    "band": { "args": [{ "name": "from", "type": "number", "min": 0, "max": 90 }, { "name": "to", "type": "number", "min": 0, "max": 90 }, { "name": "colour", "type": "colour", "optional": true }], "about": "Shades the sea at the latitudes from..to degrees, north and south of the equator both, with dotted edges drawn over the land too." },
+    "point": { "args": [{ "name": "place", "type": "place" }, { "name": "label", "type": "text", "optional": true, "maxLength": 28 }], "about": "A dot at a place, with a label if given." },
+    "marker": { "args": [{ "name": "place", "type": "place" }, { "name": "kind", "type": "choice", "options": ["ring", "pin", "storm"] }, { "name": "label", "type": "text", "optional": true, "maxLength": 28 }], "about": "A ring, a pin, or a hurricane (the Disc drawing) turning the way it would there: counterclockwise north of the equator, clockwise south of it." },
+    "arc": { "args": [{ "name": "from", "type": "place" }, { "name": "to", "type": "place" }, { "name": "colour", "type": "colour", "optional": true }], "about": "A route along the great circle between two places, the shortest way over the Earth, drawing itself in (gold unless told). It bends the way it should on the globe and on every flat map." },
+    "track": { "args": [{ "name": "path", "type": "list", "of": "place", "minItems": 2 }, { "name": "progress", "type": "number", "min": 0, "max": 1, "optional": true }, { "name": "rider", "type": "choice", "options": ["none", "storm", "ring", "pin"], "optional": true }, { "name": "seconds", "type": "number", "min": 0, "max": 30, "optional": true }], "about": "A path through places, drawn from its start as far as progress (0 to 1, all of it unless told), with a marker riding its head if given: a storm moving along its track. Called again with the same path, it moves that track on, gliding over seconds if given, so a scene can move one storm along by steps." },
+    "clear": { "args": [], "about": "Takes away every highlight, table, band, point, marker, route, track and pin, and lets go of the selected country. Where it faces and how close stay as they are." }
+  },
+  "colours": ["gold", "pink", "cyan", "teal", "purple", "orange", "white"],
+  "events": {
+    "tapped": { "gives": "{ lon, lat, land, country }", "about": "A tap on the map. country is null on the sea." },
+    "settled": { "gives": "{ centre, zoom }", "about": "It came to rest after being dragged, flicked, pinched, turned by spinTo or zoomed by zoomTo." },
+    "zoomed": { "gives": "{ zoom }", "about": "Its zoom changed, once the change is done." },
+    "turned": { "gives": "{ centre, zoom }", "about": "The same moment as settled, under the name the stage 1 globe used." }
+  },
+  "state": {
+    "selected": { "type": "text", "about": "The country tapped last, with tap set to country; null if none." },
+    "tapped": { "type": "{ lon, lat, land, country }", "about": "Where the last tap landed, whatever tap is set to; null before any." },
+    "centre": { "type": "lonlat", "about": "The [longitude, latitude] in the middle: facing you on a globe." },
+    "zoom": { "type": "number", "about": "How close it is: 1 is the whole world." }
+  },
+  "needs": {
+    "data": ["vendor/countries-110m.json", "vendor/d3-geo.min.mjs", "vendor/d3-array.min.mjs", "vendor/topojson-client.min.js"],
+    "weight": "About 170 KB of shapes and scripts, kept on the phone, and six small modules. One canvas; the map itself is drawn onto a picture kept aside and redrawn only while it turns, pans or zooms, with each shape projected once per view. A turning hurricane or a moving track redraws only itself. Shapes for bands, warmth, tables and the four colours are made once, never per frame."
+  },
+  "example": {
+    "settings": { "projection": "globe", "style": "warmth", "spin": "free", "tap": "pin", "equator": true, "view": [-40, 15] },
+    "calls": [["band", 5, 20], ["marker", [-45, 14], "storm"]],
+    "state": { "tapped": { "lon": -40, "lat": 12, "land": false, "country": null }, "selected": null, "centre": [-40, 15], "zoom": 1 }
+  },
+  "try": [
+    { "label": "Atlantic", "call": ["spinTo", [-40, 18]] },
+    { "label": "France", "call": ["zoomTo", "France"] },
+    { "label": "Whole", "call": ["zoomTo", 1] },
+    { "label": "Storm", "call": ["marker", [-45, 14], "storm"] },
+    { "label": "Track", "call": ["track", [[-25, 12], [-45, 15], [-62, 21], [-73, 30], [-66, 39]], 1, "storm", 4] },
+    { "label": "Flight", "call": ["arc", [-0.1, 51.5], [-118.2, 34]] },
+    { "label": "Brazil", "call": ["highlight", ["Brazil"]] },
+    { "label": "Clear", "call": ["clear"] }
+  ]
+}
