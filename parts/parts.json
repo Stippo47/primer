@@ -1,4 +1,12 @@
 {
-  "about": "Every part in the kit, by folder name. Each folder holds part.json (its description) and the module it names.",
-  "parts": ["globe", "inputs"]
+  "about": "Every part in the kit, by folder name. Each folder holds part.json (its description) and the module it names. A preset is a part under another name with some of its defaults changed; a lesson uses it exactly like a part, and can still set anything the part has.",
+  "parts": ["map", "inputs"],
+  "presets": {
+    "globe": {
+      "of": "map",
+      "title": "Globe",
+      "about": "The map as a globe, the way stage 1 had it: projection globe, and no zooming by finger, so two quick taps on a pin step stay two taps. Every setting, call, event and state of the map works on it.",
+      "settings": { "projection": "globe", "pinch": false }
+    }
+  }
 }

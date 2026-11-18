@@ -9,8 +9,9 @@ export const TUNE = {
 };
 
 // Follows one finger as a drag and two as a pinch. Handlers: blocked, start, move, release, cancel, tap,
-// pinchStart, pinch(scale), pinchEnd(scale). move and release get dx, dy from where the finger landed,
-// and release also the finger's speed (vx, vy, in pixels per millisecond). Returns a function that stops it.
+// pinchStart(mid), pinch(scale, mid), pinchEnd(scale). move and release get dx, dy from where the finger
+// landed, and release also the finger's speed (vx, vy, in pixels per millisecond). mid is the point
+// halfway between the two fingers, { x, y } on the page. Returns a function that stops it.
 export function track(el, h) {
   const pts = new Map();
   let drag = null, pinch = null, ignore = false, samples = [], spread0 = 1;
@@ -19,15 +20,19 @@ export function track(el, h) {
     const [a, b] = [...pts.values()];
     return Math.hypot(a.x - b.x, a.y - b.y) || 1;
   };
+  const mid = () => {
+    const [a, b] = [...pts.values()];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
   const pinchUpdate = scale => {
     if (!pinch) {
       if (drag && drag.moved) h.cancel && h.cancel();
       drag = null;
       pinch = { scale: 1 };
-      h.pinchStart && h.pinchStart();
+      h.pinchStart && h.pinchStart(mid());
     }
     pinch.scale = scale;
-    h.pinch && h.pinch(scale);
+    h.pinch && h.pinch(scale, mid());
   };
   const pinchEnd = () => {
     if (!pinch) return;

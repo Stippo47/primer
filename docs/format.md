@@ -91,7 +91,7 @@ A test or an exam is a file of exactly this shape, played the same way; its end 
 
 Words: `*like this*` stresses a word (drawn gold). A line break stays a line break. Keep `text` and `ask` under about 300 characters; `primer fit` says what really fits.
 
-**A figure or a part on screen** is `{ "part": "<name>", "settings": { … }, "calls": [ [ "<call>", arg, … ], … ] }`, or for a picture `{ "image": "media/x.png", "alt": "…" }`. Every setting and call must be in the part's description (`primer parts` lists them). Media paths are relative to the topic's folder; one starting `topics/` points into another topic, so topics can share pictures.
+**A figure or a part on screen** is `{ "part": "<name>", "settings": { … }, "calls": [ [ "<call>", arg, … ], … ] }`, or for a picture `{ "image": "media/x.png", "alt": "…" }`. Every setting and call must be in the part's description (`primer parts` lists them). `<name>` is a part or a preset: `globe` is the `map` part with projection `globe`, and any map setting, `projection` included, works on it. Media paths are relative to the topic's folder; one starting `topics/` points into another topic, so topics can share pictures.
 
 **After marking**, `then` runs calls on the figure (a check) or the part (a play), whether right or wrong: `"then": [["band", 5, 20]]` shades the zone once the guess is in.
 

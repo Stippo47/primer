@@ -65,14 +65,25 @@ def step(lesson, sid):
 class Parts(unittest.TestCase):
     def test_lists_every_part_from_its_description(self):
         out = run('parts', check=True).stdout
-        for word in ('globe: Globe', 'inputs: Inputs', 'spinTo(place: place', 'band(from: number', 'reveal(answer: answer)', 'spin (choice free, auto, locked', 'events: tapped', 'state: selected',
-                     'picture (choice none, warmth, depth', 'start (number', 'borders (bool', 'style (choice day, warmth, muted, political'):
+        for word in ('map: Map', 'inputs: Inputs', 'spinTo(place: place', 'band(from: number', 'reveal(answer: answer)', 'spin (choice free, auto, locked', 'events: tapped', 'state: selected',
+                     'picture (choice none, warmth, depth', 'start (number', 'borders (bool', 'style (choice day, warmth, muted, political',
+                     'projection (choice globe, equal-earth, natural-earth, mercator', 'zoomTo(to: place-or-level', 'colourBy(data: table, ramp?: choice heat|green|blue',
+                     'arc(from: place, to: place', 'track(path: list of place, progress?: number, rider?: choice none|storm|ring|pin', 'settled { centre, zoom }', 'zoom: How close'):
             self.assertIn(word, out)
+
+    def test_the_globe_is_a_preset_of_the_map(self):
+        out = run('parts', check=True).stdout
+        self.assertIn('globe: Globe (a preset: the map part with projection "globe", pinch false by default)', out)
 
     def test_json(self):
         parts = json.loads(run('parts', '--json', check=True).stdout)
-        self.assertEqual(sorted(parts), ['globe', 'inputs'])
+        self.assertEqual(sorted(parts), ['globe', 'inputs', 'map'])
         self.assertIn('marking', parts['inputs'])
+        globe, flat = parts['globe'], parts['map']
+        self.assertEqual((globe['of'], globe['settings']['projection']['default'], globe['settings']['pinch']['default']), ('map', 'globe', False))
+        self.assertEqual(flat['settings']['projection']['default'], 'equal-earth')
+        self.assertEqual(globe['calls'], flat['calls'])
+        self.assertEqual(globe['state'], flat['state'])
 
 
 class Check(Work):
@@ -134,7 +145,7 @@ class Check(Work):
             fig['settings']['colourBy'] = 'heat'
             fig['calls'] = [['fly', 1], ['highlight', ['Atlantis']], ['band', 5]]
         out = self.errors(change)
-        for words in ('"sideways" isn\'t one of free, auto, locked', '9 is outside 1 to 3', 'no setting "colourBy"', 'no call "fly"', '"Atlantis" isn\'t a country', 'band needs from, to'):
+        for words in ('"sideways" isn\'t one of free, auto, locked', '9 is outside 1 to 8','no setting "colourBy"', 'no call "fly"', '"Atlantis" isn\'t a country', 'band needs from, to'):
             self.assertIn(words, out)
 
     def test_inputs_settings_are_checked_too(self):
@@ -157,7 +168,36 @@ class Check(Work):
 
     def test_a_rule_can_only_read_what_the_part_has(self):
         out = self.errors(lambda L: step(L, 'brazil').update(goal={'read': 'zoomLevel', 'is': 2}))
-        self.assertIn("the part's state has only centre, selected, tapped", out)
+        self.assertIn("the part's state has only centre, selected, tapped, zoom", out)
+
+    def test_a_lesson_can_use_the_map_flat_or_the_globe_with_any_map_setting(self):
+        def change(L):
+            fig = step(L, 'read-globe')['figure']
+            fig['part'] = 'map'
+            fig['settings'].update(projection='natural-earth', zoom=6, pinch=True)
+            fig['calls'] = [['zoomTo', 'France'], ['zoomTo', 2.5, 0.5], ['zoomTo', [2.35, 48.85]], ['arc', [-0.1, 51.5], 'Japan', 'cyan'],
+                            ['track', [[-25, 12], [-45, 15], 'Cuba'], 0.4, 'storm', 3], ['colourBy', {'Brazil': 59, 'Chad': 'pink'}, 'green', [0, 100]],
+                            ['colourBy', [[-10, 10, 29], [10, 25, '#ffa23a']]], ['clear']]
+            play = step(L, 'brazil')
+            play['play']['settings'].update(projection='mercator')
+            play['goal'] = {'all': [play['goal'], {'read': 'zoom', 'between': [1, 8]}]}
+            for t in play['tries']:
+                t['state']['zoom'] = 1
+        r = run('check', self.topic(change))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_the_maps_new_calls_are_checked(self):
+        def change(L):
+            step(L, 'read-globe')['figure']['calls'] = [
+                ['zoomTo', 'Atlantis'], ['zoomTo', 12], ['arc', [-0.1, 51.5]], ['arc', [0, 0], [500, 0]], ['track', [[0, 0]]], ['track', [[0, 0], 'Narnia'], 2, 'boat'],
+                ['colourBy', {'Brazil': 1, 'Atlantis': 2, 'Chad': 'plaid'}], ['colourBy', [[10, 10, 1], [0, 20]]], ['colourBy', 'heat'], ['colourBy', {'Chad': 1}, 'red', [0]]]
+        out = self.errors(change)
+        for words in ('zoomTo(to): "Atlantis" isn\'t a country', 'zoomTo(to): 12 is outside 1 to 8', 'arc needs from, to', 'arc(to): is [longitude, latitude]',
+                      'track(path): has 1; it needs at least 2', 'track(path)[1]: "Narnia" isn\'t a country', 'track(progress): 2 is outside 0 to 1',
+                      'track(rider): "boat" isn\'t one of none, storm, ring, pin', '"Atlantis" isn\'t a country the map knows',
+                      'colourBy(data)["Chad"]: "plaid" is neither a number nor a colour', 'colourBy(data)[0]: a band is [from, to, value]', 'colourBy(data)[1]: a band is',
+                      'a table is { "Country": value', 'colourBy(ramp): "red" isn\'t one of heat, green, blue', 'colourBy(range): has 1; it needs at least 2'):
+            self.assertIn(words, out)
 
     def test_sources(self):
         out = self.errors(lambda L: step(L, 'pick').update(src=['nowhere']))

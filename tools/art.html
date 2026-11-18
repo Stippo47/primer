@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Draws the app's icon and the Globe part's card picture, for tools/make-art.mjs. Not part of the app. -->
+<!-- Draws the app's icon and the Map part's card picture, for tools/make-art.mjs. Not part of the app. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -10,31 +10,39 @@
 <body>
 <div id="out"></div>
 <script type="module">
-import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo';
+import { geoOrthographic, geoEqualEarth, geoPath, geoGraticule } from 'd3-geo';
 import { stepButton } from '../js/art.js';
 
 const world = await fetch('../vendor/countries-110m.json').then(r => r.json());
 const { feature } = globalThis.topojson;
 
-// The mini globe on the Globe part's card: the stage 0 sketch's globe, small, with its glow.
-function globeThumb() {
-  const cx = 85, cy = 48, r = 38;
-  const proj = geoOrthographic().scale(r).translate([cx, cy]).rotate([50, -22, 0]).clipAngle(90).precision(0.4);
-  const path = geoPath(proj);
-  const land = feature(world, world.objects.land);
+// The Map part's card: the same world as a small globe and as a flat map side by side, in the stage 0
+// sketch's look, the globe with its glow and the flat map on its slab.
+function mapThumb() {
+  const land = feature(world, world.objects.land), grat = geoGraticule().step([30, 30])();
   // to half a pixel, without points that land on the one before: a card this small needs no more
   const short = s => s.replace(/-?\d+\.\d+/g, m => String(Math.round(parseFloat(m) * 2) / 2))
     .replace(/L(-?[\d.]+),(-?[\d.]+)(?=L\1,\2)/g, '');
-  const d = short(path(land));
+  const cx = 44, cy = 48, r = 33;
+  const ball = geoPath(geoOrthographic().scale(r).translate([cx, cy]).rotate([50, -22, 0]).clipAngle(90).precision(0.4));
+  const flatP = geoEqualEarth().rotate([-15, 0]).precision(0.4).fitExtent([[86, 26], [164, 70]], { type: 'Sphere' });
+  const flat = geoPath(flatP), outline = short(flat({ type: 'Sphere' }));
+  const ballLand = short(ball(land)), flatLand = short(flat(land));
   return `<svg xmlns="http://www.w3.org/2000/svg" width="170" height="96" viewBox="0 0 170 96">
-  <defs><clipPath id="c"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
+  <defs><clipPath id="c"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath><clipPath id="f"><path d="${outline}"/></clipPath>
+  <path id="bl" d="${ballLand}"/><path id="fl" d="${flatLand}"/>
   <radialGradient id="s" cx="0.36" cy="0.3" r="0.8"><stop offset="0.55" stop-color="#070a2e" stop-opacity="0"/><stop offset="1" stop-color="#070a2e" stop-opacity="0.55"/></radialGradient>
   <radialGradient id="g"><stop offset="0.78" stop-color="#4f7cff" stop-opacity="0.55"/><stop offset="1" stop-color="#4f7cff" stop-opacity="0"/></radialGradient></defs>
   <circle cx="${cx}" cy="${cy}" r="${r * 1.22}" fill="url(#g)"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#1b2a80"/>
-  <g clip-path="url(#c)"><path d="${short(path(geoGraticule().step([30, 30])()))}" fill="none" stroke="#fff" stroke-opacity="0.06"/>
-  <path d="${d}" fill="#127a85" transform="translate(0 2)"/><path d="${d}" fill="#2bc4a4"/>
+  <g clip-path="url(#c)"><path d="${short(ball(grat))}" fill="none" stroke="#fff" stroke-opacity="0.06"/>
+  <use href="#bl" fill="#127a85" transform="translate(0 2)"/><use href="#bl" fill="#2bc4a4"/>
   <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#s)"/></g>
   <circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="none" stroke="#7fb0ff" stroke-opacity="0.5" stroke-width="1.5"/>
+  <path d="${outline}" fill="none" stroke="#4f7cff" stroke-opacity="0.12" stroke-width="7" stroke-linejoin="round"/>
+  <path d="${outline}" fill="#0b1140" transform="translate(0 2.5)"/><path d="${outline}" fill="#1b2a80"/>
+  <g clip-path="url(#f)"><path d="${short(flat(grat))}" fill="none" stroke="#fff" stroke-opacity="0.06"/>
+  <use href="#fl" fill="#127a85" transform="translate(0 1.5)"/><use href="#fl" fill="#2bc4a4"/></g>
+  <path d="${outline}" fill="none" stroke="#7fb0ff" stroke-opacity="0.5" stroke-width="1.2" stroke-linejoin="round"/>
 </svg>`;
 }
 
@@ -50,7 +58,7 @@ function appIcon(size) {
 </svg>`;
 }
 
-window.globeThumb = globeThumb;
+window.mapThumb = mapThumb;
 window.appIcon = appIcon;
 window.show = svg => { document.getElementById('out').innerHTML = svg; };
 window.ready = true;

@@ -36,7 +36,7 @@ Write a topic as a folder: `topic.json` with its `path`, one file per lesson, te
 
 A part knows nothing about lessons. A lesson says which part, its settings, the calls to make, and what to read from it. `primer parts` lists everything; a lesson may only use what's listed there. **Never write one-off code into a lesson.** If a lesson needs something the kit can't do, say so and what it would cost; the kit grows with a general part or setting, not a widget for one lesson.
 
-Today's kit: **Inputs** (every way of answering; a slider starts at a real value, `start`, and can drive a picture, `picture`: `warmth` for temperature, `depth` for how deep) and **Globe** (spin, labels, styles including sea warmth and a four-colour political map, borders on or off, highlights, latitude bands, points, a turning hurricane; reports taps with place, land and country).
+Today's kit: **Inputs** (every way of answering; a slider starts at a real value, `start`, and can drive a picture, `picture`: `warmth` for temperature, `depth` for how deep) and **Map** (the world as a globe or a flat map, `projection`, with every tool on both: spin or pan, pinch zoom, `spinTo`, `zoomTo`, labels, styles including sea warmth and a four-colour political map, borders on or off, highlights, `colourBy` a table of countries or latitude bands, bands, points, markers with a turning hurricane, great-circle `arc`s, and `track`s drawn as far as they've got with a storm riding them; reports taps with place, land and country). **`globe` is a preset**: the map with projection `globe` and no finger zooming; every map setting and call works on it. Use `"part": "map"` with a `projection` for a flat map.
 
 ## Getting it realistically wrong
 
