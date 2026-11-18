@@ -151,4 +151,7 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 ### Still open
 
 - The avatar, after a third round.
-- What the "profs" are.
+
+### Profs (answered the same day)
+
+- **Voices only.** Each subject has its own narrator voice from the four kept; no teacher characters for now. Any subject's voice can be overridden in settings.
