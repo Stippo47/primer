@@ -1,0 +1,43 @@
+{
+  "title": "Avatars, third go",
+  "topic": "stage0",
+  "order": 9,
+  "cards": [
+    {
+      "id": "avatar-3",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Avatars, third go",
+      "text": "Six new ones, from most like Kurzgesagt (1) to most like Duolingo (6). Tick any you'd keep.",
+      "why": "You said none of the last six worked, and to learn from how Kurzgesagt and Duolingo draw. These show the range between the two styles, so you can say where the avatar should sit. Once you pick one, I'll make variations of it.",
+      "pick": ["raccoon"],
+      "details": "What I took from Kurzgesagt: a creature is one big shape, with the small parts sticking out of it. Faces are small and calm: dark dots for eyes, or one big white eye on a bird. Colours are strong, and shadows lean towards violet. Each shape has a light side and a broad shadow side split by a hard edge, and a thin line of light runs along the edge that faces the lamp.\n\nWhat I took from Duolingo: few shapes, about fourteen for a whole character, all simple blocks. A big head, big white eyes set close together, a nose that hangs, thick brows that do the acting, and feet that float a little apart from the legs. Flat colour and almost no shading.\n\nWhat went wrong last time: the six were built like ordinary cartoon clip art. Too many small pieces, soft lumpy outlines, little dot eyes, and the same thin edge of shading on everything.\n\nMy pick is the raccoon (4). It has Duolingo's big, clear face, which matters when it has to look pleased or sleepy at room size, and a touch of Kurzgesagt's shading, so it sits with the room's art. It also wears a hat and shirt the most naturally. The frog (3) is my second.\n\nStill weak: the tall person (2) is stiff and its face gets small at room size; the puffin shows only one eye, so there's less face to read; the toucan's body is a plain tube; the frog's hat is small, tucked between its eyes.\n\nNone is copied from either studio: no owl, and nothing like Kurzgesagt's own duck-like bird. The names are only for this card. The picture on the front shows all six at the size they'd stand in the room.",
+      "images": ["../../stage0/avatar/shots/lineup.png"],
+      "items": [
+        { "id": "puffin", "label": "1 Puffin", "video": "../../stage0/avatar/films/puffin.mp4", "text": "The Kurzgesagt end. One round body, a calm dot eye, broad violet shadows and a line of light on its edge." },
+        { "id": "tall", "label": "2 Tall person", "video": "../../stage0/avatar/films/tall.mp4", "text": "A person the Kurzgesagt way: four heads tall, pink skin, dot eyes with no white, hair as one shape." },
+        { "id": "frog", "label": "3 Frog", "video": "../../stage0/avatar/films/frog.mp4", "text": "The middle. Duolingo's build and big eyes, Kurzgesagt's colours and shadow. Its throat puffs as it breathes." },
+        { "id": "raccoon", "label": "4 Raccoon", "video": "../../stage0/avatar/films/raccoon.mp4", "text": "Duolingo's build: a big head, eyes inside the mask, floating feet. Just a faint shadow. My pick." },
+        { "id": "toucan", "label": "5 Toucan", "video": "../../stage0/avatar/films/toucan.mp4", "text": "A bird the Duolingo way: one tall block, big eyes, heavy brows, a huge beak. Flat colour." },
+        { "id": "round", "label": "6 Round person", "video": "../../stage0/avatar/films/round.mp4", "text": "The Duolingo end. A big head, eyes almost touching, a nose that hangs, stick legs, flat colour." }
+      ]
+    },
+    {
+      "id": "avatar-3-dressed",
+      "kind": "board",
+      "rarity": "common",
+      "title": "In the hat and shirt",
+      "text": "The same six in the shop's plain hat and shirt. Tick the ones they suit, and comment where they sit wrong.",
+      "why": "Hats and shirts are bought in the shop and have to fit whichever avatar you choose. Each one is shaded in its own avatar's way, so the clothes match the body they're on.",
+      "pick": ["raccoon", "toucan", "puffin"],
+      "items": [
+        { "id": "puffin", "label": "1 Puffin", "image": "../../stage0/avatar/shots/puffin-dressed.png" },
+        { "id": "tall", "label": "2 Tall person", "image": "../../stage0/avatar/shots/tall-dressed.png" },
+        { "id": "frog", "label": "3 Frog", "image": "../../stage0/avatar/shots/frog-dressed.png" },
+        { "id": "raccoon", "label": "4 Raccoon", "image": "../../stage0/avatar/shots/raccoon-dressed.png" },
+        { "id": "toucan", "label": "5 Toucan", "image": "../../stage0/avatar/shots/toucan-dressed.png" },
+        { "id": "round", "label": "6 Round person", "image": "../../stage0/avatar/shots/round-dressed.png" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+<!doctype html>
+<!--
+  Primer: avatar candidates, third round. A sketch to react to, not app code.
+  Six characters drawn by code, set out from the Kurzgesagt end of the spectrum to the Duolingo end.
+
+    index.html?who=puffin            one candidate idling: puffin, tall, frog, raccoon, toucan, round
+    index.html?who=frog&dressed=1    the same in the shop's hat and shirt
+    index.html?lineup=1              all six in a row at room size
+    index.html?sheet=1               all six large on one page
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/ and films/. The style rules are in STYLE-NOTES.md.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatars, third round</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
