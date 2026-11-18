@@ -1,0 +1,24 @@
+{
+  "title": "Your phone notes, fixed",
+  "topic": "stage1",
+  "order": 3,
+  "cards": [
+    {
+      "id": "fixes",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your phone notes, fixed",
+      "text": "Primer 0.2 is up with your notes acted on, and a longer hurricane topic. Open the app to update, then mark each part.",
+      "why": "Some of these can only be checked on your phone: whether music now keeps playing, whether the slivers are gone, and how the new pictures look on the real screen.",
+      "details": "If the app still looks the same, close it fully and open it again; it updates the next time it starts. The Profile tab shows the version at the bottom.\n\nYour first run of the old one-lesson pilot is still recorded. The topic now starts afresh with new lessons, so its progress begins at zero.\n\nThe number, match and spot answer forms are left out of these lessons until you pick from the Answer forms deck.",
+      "parts": [
+        { "id": "path", "title": "The path", "text": "Each node is now a whole thing: a lesson, a test, a chest, and later a review, an exam or an animation, each with its own mark. A lesson's steps show only on its bar at the top.", "images": ["../stage1/shots-0.2/01-path.png"] },
+        { "id": "pilot", "title": "A longer topic", "text": "Where hurricanes form is now two lessons of 9 and 10 steps (what fuels a storm; the spin and where storms go), then a chest, then a 5-question test. Every fact has its source in the lesson file. It says counterclockwise.", "images": ["../stage1/shots-0.2/spin-and-paths-03-where-c-checked.png", "../stage1/shots-0.2/chest-b-open.png"] },
+        { "id": "slider", "title": "Sliders with a picture", "text": "A slider starts at a real value with its fill showing, and drives a picture: a ball going from snowflake to fire for warmth, and a cut-away of the sea for depth.", "images": ["../stage1/shots-0.2/warm-water-02-how-warm-b-moved.png", "../stage1/shots-0.2/warm-water-05-how-deep-b-moved.png"] },
+        { "id": "globe", "title": "The globe", "text": "Labels hold still and fade in and out instead of flickering. Dotted lines are always drawn on top of the land. New settings in Practice, Globe: borders on or off, and a political style where no two neighbours share a colour.", "images": ["../stage1/shots-0.2/globe-political.png", "../stage1/shots-0.2/globe-political-no-borders.png"] },
+        { "id": "sound", "title": "Sound and music", "text": "Press sounds are off. Opening Primer and pressing things should no longer stop your music. Please check with music playing." },
+        { "id": "slivers", "title": "Dragging", "text": "Sliders and the order list now move in a way that shouldn't leave slivers behind. They never showed on the PC, so only your phone can say if they're gone." }
+      ]
+    }
+  ]
+}
