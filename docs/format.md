@@ -209,7 +209,7 @@ A test or exam can draw its questions instead of listing them: `"draw": { "from"
 
 ### What the app does with them
 
-- **The memory.** Every fact met has a card in FSRS, the open spaced-repetition scheduler (`vendor/ts-fsrs.mjs`, default weights, intervals in whole days): right is Good, close Hard, wrong Again. A lesson's finish introduces every fact it declares (met, not yet asked). From the cards come each fact's chance of being remembered now and when it's due.
+- **The memory.** Every fact met has a card in FSRS, the open spaced-repetition scheduler (`vendor/ts-fsrs.mjs`, default weights, intervals in whole days): right is Good, close Hard, wrong Again. A lesson's finish introduces every fact it declares (met, not yet asked); a lesson finished before its facts were written meets them when they come down, as of when it was finished. From the cards come each fact's chance of being remembered now and when it's due.
 - **Review** (Practice) asks the facts due, the most slipped first, every topic mixed, each a way it wasn't asked last time; then the ones closest to slipping. A miss comes back three questions later. A review on a path asks the facts of the lessons before it.
 - **Profile** shows how much of what's been asked in a topic you'd recall now (the mean recall of its asked facts), a dot per fact, and how many are due; the room will fade a topic's things by the same number.
 

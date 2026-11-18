@@ -79,7 +79,22 @@ export async function library() {
   }
   factsByTopic = Object.fromEntries(topics.map(t => [t.id, t.facts]));
   libraryNow = topics;
+  meetFinished(topics);
   return topics;
+}
+
+// A lesson finished before its facts were written meets them now, as of when it was finished: what
+// replaying its finish would do (memory.js, applyEvent), so a phone rebuilt later comes out the same.
+function meetFinished(topics) {
+  let met = 0;
+  for (const t of topics) {
+    for (const [lid, ids] of Object.entries((t.facts && t.facts.lessons) || {})) {
+      const done = lessonState(t.id, lid).finished;
+      if (!done) continue;
+      for (const f of ids) if (!memory.has(factKey(t.id, f))) { memory.introduce(factKey(t.id, f), done); met++; }
+    }
+  }
+  if (met) saveMemory();
 }
 let libraryNow = [];
 export const topicsNow = () => libraryNow;

@@ -1624,6 +1624,12 @@ try {
     await sleep(400);
     ok(await ev(`document.querySelector('.node[data-node=look-back]').classList.contains('done')`), 'Learn shows it');
     ok((await ev(`__primer.store.get('rebuilt')`)).events > 0 && (await sent()).length > 0, 'once rebuilt, it isn\'t done again over what the phone now has');
+    // facts written after their lessons were finished: the lessons done meet them as the library loads
+    await ev(`__primer.store.del('memory').then(() => __primer.data.loadMemory()).then(() => true)`);
+    await reloadLibrary();
+    const met = await ev(`(() => { const c = __primer.data.memoryNow().toJSON().cards, p = __primer.data.progressNow().lessons;
+      return { n: Object.keys(c).length, asked: Object.values(c).filter(x => x.n > 0).length, atFinish: Date.parse(p['storms/fuel'].finished) === c['storms/warm'].due } })()`);
+    ok(met.n === 12 && met.asked === 0 && met.atFinish, 'facts that come down after their lessons were finished are met, as of when each was finished', met);
 
     await ev(`__primer.clock.shift(0); true`);
     await api('/__reset?data=fixtures');
