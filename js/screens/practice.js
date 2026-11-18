@@ -86,13 +86,15 @@ export async function partScreen(app, name, back) {
   function drawPanel() {
     const rows = Object.entries(desc.settings).filter(([k, spec]) => simple(spec) && (!spec.forms || !isInputs || spec.forms.includes(chosen.form)));
     const val = k => (k in chosen ? chosen[k] : handle.settings[k]);
+    // a choice offers what the chosen form has of it (byForm), less what's resting (hidden: Spot, until it's redone)
+    const offered = spec => ((isInputs && spec.byForm && spec.byForm[chosen.form]) || spec.options).filter(o => !(spec.hidden || []).includes(o));
     panel.innerHTML = rows.map(([k, spec]) => {
       let ctl = '';
-      if (spec.type === 'choice') ctl = `<div class="seg">${spec.options.map(o => `<button class="${val(k) === o ? 'on' : ''}" data-set="${esc(k)}" data-v="${esc(o)}" data-sound="select">${esc(o)}</button>`).join('')}</div>`;
+      if (spec.type === 'choice') ctl = `<div class="seg">${offered(spec).map(o => `<button class="${val(k) === o ? 'on' : ''}" data-set="${esc(k)}" data-v="${esc(o)}" data-sound="select">${esc(o)}</button>`).join('')}</div>`;
       if (spec.type === 'bool') ctl = `<button class="toggle" data-set="${esc(k)}" data-bool aria-pressed="${!!val(k)}" aria-label="${esc(k)}" data-sound="${val(k) ? 'off' : 'on'}"></button>`;
       if (spec.type === 'number') ctl = `<input type="range" min="${spec.min}" max="${spec.max}" step="${spec.step || 1}" value="${val(k)}" data-set="${esc(k)}" aria-label="${esc(k)}">`;
       // a setting marked wide (like the map's style) gets a line of its own, its choices across the width
-      return `<div class="setrow${spec.wide || (spec.type === 'choice' && spec.options.length > 3) ? ' wide' : ''}"><p>${esc(k)}</p>${ctl}</div>`;
+      return `<div class="setrow${spec.wide || (spec.type === 'choice' && offered(spec).length > 3) ? ' wide' : ''}"><p>${esc(k)}</p>${ctl}</div>`;
     }).join('');
     const tryList = isInputs
       ? [{ label: 'Answer', call: ['reveal', '$answer'] }, { label: 'Again', call: ['reset'] }]

@@ -105,6 +105,11 @@ const reloadLibrary = () => ev(`__primer.data.library().then(t => { __primer.app
 // scenes
 const scene = () => ev('__primer.run && __primer.run.scene ? __primer.run.scene.debug() : null');
 const sceneState = (s, ms = 15000) => waitFor(`__primer.run && __primer.run.scene && __primer.run.scene.state === ${JSON.stringify(s)}`, ms);
+// A slider's handle runs along a line in its track (across, up or down): the point a fraction p along it,
+// in the page, for the slider in `scope` whose handle is `h` (a lesson's input, by default).
+const runPoint = (p, scope = '.lbody', h = '__primer.run.input') => ev(`(()=>{const g=${h}.debug().run,r=document.querySelector(${JSON.stringify(scope + ' .pi-track')}).getBoundingClientRect();return {x:r.left+g.x0+(g.x1-g.x0)*${p},y:r.top+g.y0+(g.y1-g.y0)*${p}}})()`);
+// The answer forms' one clock, for holding still while two screenshots are compared.
+const clock = js => ev(`import('/primer/parts/inputs/clock.js').then(m=>{${js}})`);
 const openNode = async id => {
   await f.tap(`.node[data-node=${id}]`);
   await sleep(300);
@@ -403,22 +408,26 @@ try {
   await press();
   await waitFor(`__primer.run.step.id === 'q-warm' && __primer.run.input`);
   await sleep(200);
-  const sliderNow = () => ev(`(()=>{const r=document.querySelector('.pi.form-slider'),q=s=>r.querySelector(s),th=q('.pi-thumb');return {chip:q('.pi-chip').textContent,fill:q('.pi-fill').getBoundingClientRect().width,
-    pic:q('.pi-pic svg') ? q('.pi-pic svg').getAttribute('class') : null,body:(q('.pi-pic .body')||{getAttribute:()=>null}).getAttribute('fill'),snow:Number((q('.pi-pic .snow')||{getAttribute:()=>0}).getAttribute('opacity')),
-    flame:Number((q('.pi-pic .flame')||{getAttribute:()=>0}).getAttribute('opacity')),warm:Number((q('.pi-pic .w1')||{getAttribute:()=>0}).getAttribute('height')),
+  const sliderNow = () => ev(`(()=>{const r=document.querySelector('.lbody .pi.form-slider'),q=s=>r.querySelector(s),th=q('.pi-thumb'),d=__primer.run.input.debug(),at=(s,a)=>Number((q(s)||{getAttribute:()=>0}).getAttribute(a)),tb=q('.pi-track').getBoundingClientRect(),hb=th.getBoundingClientRect();
+    return {chip:q('.pi-chip').textContent,look:d.look,dir:d.direction,pic:q('.pi-pic svg') ? q('.pi-pic svg').getAttribute('class') : null,body:(q('.pi-pic .body')||{getAttribute:()=>null}).getAttribute('fill'),
+    snow:at('.pi-pic .snow','opacity'),flame:at('.pi-pic .flame','opacity'),liquid:at('.pi-look .col','width'),liquidColour:(q('.pi-look .col')||{getAttribute:()=>null}).getAttribute('fill'),
+    warm:at('.pi-look .w1','height'),warmEnd:tb.top+at('.pi-look .w1','y')+at('.pi-look .w1','height'),thumbY:hb.top+hb.height/2,picLeft:q('.pi-pic svg') ? q('.pi-pic svg').getBoundingClientRect().left : null,trackRight:tb.left+d.run.x0,
     state:__primer.run.input.state(),awake:!document.querySelector('.lfoot .btn').disabled,left:th.style.left,transform:th.style.transform,willChange:getComputedStyle(th).willChange}})()`);
   let sl = await sliderNow();
-  ok(sl.chip === '5°C' && sl.fill > 10 && sl.state.value === 5 && sl.state.answered && sl.awake, 'a slider starts at a real value with its fill showing, and Check awake: never "?"', sl);
-  ok(sl.pic === 'pic-warmth' && sl.snow > 0.95 && sl.flame < 0.05, 'its picture is there: at 5 °C, a snowflake in an icy ball', sl);
+  ok(sl.chip === '5°C' && sl.liquid > 10 && sl.state.value === 5 && sl.state.answered && sl.awake, 'a slider starts at a real value with its fill showing, and Check awake: never "?"', sl);
+  ok(sl.look === 'thermometer' && sl.dir === 'up' && sl.pic === 'pic-warmth' && sl.picLeft > sl.trackRight, 'with the warmth picture and nothing else said, the slider is a thermometer standing up, the picture beside it', sl);
+  ok(sl.snow > 0.95 && sl.flame < 0.05, 'its picture is there: at 5 °C, a snowflake in an icy ball', sl);
   await shot('14a-slider-start');
-  const tr = await f.rect('.pi-track');
-  await f.drag(tr.left + tr.w * (5 / 40), tr.y, tr.w * (28 / 40), 0, { steps: 16, ms: 420 });
+  const a5 = await runPoint(5 / 40), a31 = await runPoint(31 / 40);
+  await f.drag(a5.x, a5.y, a31.x - a5.x, a31.y - a5.y, { steps: 16, ms: 420 });
   await sleep(200);
   const hot = await sliderNow();
-  ok(hot.state.value >= 31 && hot.snow < 0.05 && hot.flame > 0.5 && hot.body !== sl.body, 'dragged up to the hot end, the snowflake has gone and a fire has come', hot);
+  ok(hot.state.value >= 29 && hot.snow < 0.05 && hot.flame > 0.5 && hot.body !== sl.body, 'dragged up the tube to the hot end, the snowflake has gone and a fire has come', hot);
+  ok(hot.liquid > sl.liquid + 100 && hot.liquidColour !== sl.liquidColour && hot.thumbY < sl.thumbY - 100, 'the liquid has risen with the handle and turned from blue to red', { sl, hot });
   ok(hot.left === '' && /translate3d/.test(hot.transform) && hot.willChange === 'transform', 'the thumb moves by transform on its own layer, so nothing under it is repainted', hot);
   await shot('14b-slider-hot');
-  await f.tapAt(tr.left + tr.w * (30 / 40), tr.y);
+  const a30 = await runPoint(30 / 40);
+  await f.tapAt(a30.x, a30.y);
   await sleep(150);
   await press();
   ok((await verdict()).verdict === 'Right', 'and it marks the value it was set to');
@@ -426,12 +435,13 @@ try {
   await waitFor(`__primer.run.step.id === 'q-deep' && __primer.run.input`);
   await sleep(200);
   sl = await sliderNow();
-  ok(sl.pic === 'pic-depth' && sl.chip === '2 m' && sl.warm < 20, 'another picture, the same setting: the depth one starts with a thin warm layer', sl);
-  const tr2 = await f.rect('.pi-track');
-  await f.tapAt(tr2.left + tr2.w * (2 / 3), tr2.y);
+  ok(sl.look === 'sea' && sl.dir === 'down' && sl.pic === null && sl.chip === '2 m' && sl.warm < 60, 'with the depth picture, the slider is the sea itself, running down: it starts with a thin warm layer', sl);
+  const deepAt = await runPoint(2 / 3);
+  await f.tapAt(deepAt.x, deepAt.y);
   await sleep(150);
   const deep = await sliderNow();
-  ok(deep.state.value === 100 && deep.warm > sl.warm + 30, 'set deeper on its stretched scale, the warm layer goes deeper', deep);
+  ok(deep.state.value === 100 && deep.warm > sl.warm + 60 && deep.thumbY > sl.thumbY + 60, 'set deeper on its stretched scale, the handle goes down and the warm layer with it', deep);
+  ok(Math.abs(deep.warmEnd - deep.thumbY) < 2, 'the warm layer ends where the handle hangs', deep);
   await shot('14c-slider-depth');
   await press();
   await press();
@@ -480,6 +490,7 @@ try {
       await f.touch('touchEnd', []);
       await sleep(260);
     };
+    const digitsFor = (v, n) => String(Math.round(v)).padStart(n, '0').split('').map(Number);
     const dialAt = (v, inp) => ev(`(()=>{const r=document.querySelector('.pi-dialbox').getBoundingClientRect(),s=Math.min(r.width,r.height)/300,a=Math.PI*0.75+(${v}-${inp.min})/(${inp.max}-${inp.min})*Math.PI*1.5;return {x:r.left+r.width/2+Math.cos(a)*106*s,y:r.top+r.height/2+Math.sin(a)*106*s}})()`);
     // Gives an answer the way a finger would: turns the dial round its ring, drags the pile's level, draws
     // the strings, carries things into bins and pieces into sockets, taps the slider's track.
@@ -493,8 +504,44 @@ try {
         const y = await ev(`(()=>{const r=[...document.querySelectorAll('.pi-row')].map(e=>e.getBoundingClientRect().top),rowH=r[0]-r[1];return r[0]+rowH-rowH*${value}/${inp.per || 5}})()`);
         await f.drag(h.x, h.y, 0, y - h.y, { steps: 14, ms: 380 });
       } else if (inp.form === 'slider') {
-        const t = await f.rect('.pi-track');
-        await f.tapAt(t.left + ((value - inp.min) / (inp.max - inp.min)) * t.w, t.y);
+        const pt = await runPoint((value - inp.min) / (inp.max - inp.min));
+        await f.tapAt(pt.x, pt.y);
+      } else if (inp.form === 'number' && (inp.look || 'keys') === 'keys') {
+        for (const ch of String(value)) await f.tap(`.lbody .pi-key[data-k="${ch}"]`);
+      } else if (inp.form === 'number' && inp.look === 'wheels') {
+        // the top drum rolled by finger, the others by their arrows
+        const want = digitsFor(value, (await ev('__primer.run.input.debug()')).digits.length);
+        for (let i = 0; i < want.length; i++) {
+          const now = (await ev('__primer.run.input.debug()')).digits[i], by = (want[i] - now + 10) % 10;
+          if (i === 0 && by) {
+            const w = await f.rect(`.lbody .pi-drum[data-i="0"] .pi-dwin`);
+            await f.drag(w.x, w.y, 0, -52 * by, { steps: 8 * by, ms: 160 * by, hold: 120 });
+            await sleep(300);
+          } else for (let k = 0; k < by; k++) await f.tap(`.lbody .pi-drum[data-i="${i}"] .pi-roll[data-d="1"]`);
+        }
+      } else if (inp.form === 'number' && inp.look === 'tape') {
+        // dragged most of the way, a little at a time, then the mark tapped
+        const px = (await ev('__primer.run.input.debug()')).px, band = await f.rect('.lbody .pi-tband');
+        for (let k = 0; k < 6; k++) {
+          const left = -((value - (await ev('__primer.run.input.state()')).value) / inp.step) * px;
+          if (Math.abs(left) < px * 2) break;
+          await f.drag(band.x, band.y, Math.max(-140, Math.min(140, left)), 0, { steps: 12, ms: 360, hold: 220 });
+          await sleep(700);
+        }
+        for (let k = 0; k < 3; k++) {
+          const now = (await ev('__primer.run.input.state()')).value;
+          if (now === value) break;
+          await f.tapAt(band.x + ((value - now) / inp.step) * px, band.y);
+          await sleep(700);
+        }
+      } else if (inp.form === 'number' && inp.look === 'abacus') {
+        const want = digitsFor(value, (await ev('__primer.run.input.debug()')).digits.length);
+        for (let i = 0; i < want.length; i++) {
+          const now = (await ev('__primer.run.input.debug()')).digits[i];
+          if (now === want[i]) continue;
+          await f.tap(`.lbody .pi-rod[data-i="${i}"] .pi-bead[data-b="${want[i] > now ? want[i] - 1 : want[i]}"]`);
+          await sleep(320);
+        }
       } else if (inp.form === 'string') {
         for (const [l, r] of Object.entries(value)) {
           const a = await f.rect(`.pi-end2[data-side=l][data-id="${l}"]`), z = await f.rect(`.pi-end2[data-side=r][data-id="${r}"]`);
@@ -523,6 +570,7 @@ try {
       sort: { wrong: `document.querySelectorAll('.pi-sorttile.truth').length === 1 && document.querySelectorAll('.pi-sorttile.right').length === 3`, right: `document.querySelectorAll('.pi-sorttile.right').length === 4` },
       snap: { wrong: `document.querySelectorAll('.pi-piece.truth').length === 2 && document.querySelectorAll('.pi-card.wrong').length === 2 && document.querySelectorAll('.pi-piece.docked').length === 3`, right: `document.querySelectorAll('.pi-card.right').length === 3` },
       slider: { wrong: `!document.querySelector('.pi-chip.truth').hidden`, right: `!document.querySelector('.pi-chip.truth').hidden` },
+      number: { wrong: `!document.querySelector('.pi-truthline').hidden && !!document.querySelector('.pi-truthline .pi-read.truth') && !!document.querySelector('.form-number .wrong')`, right: `!!document.querySelector('.form-number .right')` },
     };
     await f.tap('[data-go=topics]');
     await sleep(400);
@@ -541,7 +589,14 @@ try {
         const value = pass === 'right' ? s.answer : s.tries.find(t => t.marked === 'wrong').state.value;
         await answerBy(s.input, value);
         const st = await ev('__primer.run.input.state()');
-        ok(st.answered && JSON.stringify(st.value) === JSON.stringify(value), `${s.id} (${s.input.form}): answered ${pass} by touch`, st);
+        ok(st.answered && JSON.stringify(st.value) === JSON.stringify(value), `${s.id} (${s.input.form}${s.input.look ? `, ${s.input.look}` : ''}${s.input.direction ? `, ${s.input.direction}` : ''}): answered ${pass} by touch`, st);
+        if (s.id === 'dial-wind' && pass === 'wrong') {
+          // the wind blows by itself: the picture changes while nothing is touched (it once stood still)
+          const a = await ev(`document.querySelector('.lbody svg.pic-wind').innerHTML`);
+          await sleep(500);
+          const z = await ev(`document.querySelector('.lbody svg.pic-wind').innerHTML`);
+          ok(a !== z && JSON.stringify((await ev('__primer.run.input.state()')).value) === JSON.stringify(value), 'the dial\'s wind moves on its own in a lesson, while the value stays put');
+        }
         await shot(`30-${s.id}-${pass}-a`);
         await press();
         const vd = await verdict();
@@ -556,7 +611,7 @@ try {
       await press();
     }
     const tried = (await everyEvent()).filter(e => e.type === 'attempt' && e.topic === 'answer-forms');
-    ok(['dial', 'pile', 'string', 'sort', 'snap'].every(form => tried.filter(e => e.form === form).length >= 2), 'every attempt with the newer forms is recorded, with the form', tried.map(e => e.form));
+    ok(['dial', 'pile', 'string', 'sort', 'snap', 'number', 'slider'].every(form => tried.filter(e => e.form === form).length >= 2), 'every attempt with the newer forms and looks is recorded, with the form', tried.map(e => e.form));
     ok(tried.some(e => e.form === 'sort' && e.value && e.value.tropics === 'cold' && e.right === false), 'a sort attempt holds where each thing was put');
   }
 
@@ -671,13 +726,85 @@ try {
   await f.tap('.formsrow');
   await waitFor(`!!document.querySelector('.partstage .pi')`);
   const formsOffered = await ev(`[...document.querySelectorAll('[data-set=form]')].map(b=>b.dataset.v)`);
-  ok(await bare() && ['choice', 'slider', 'dial', 'number', 'pile', 'order', 'string', 'sort', 'snap', 'match', 'spot'].every(x => formsOffered.includes(x)), 'it opens every answer form, with its settings', formsOffered);
+  ok(await bare() && ['choice', 'slider', 'dial', 'number', 'pile', 'order', 'string', 'sort', 'snap', 'match'].every(x => formsOffered.includes(x)), 'it opens every answer form, with its settings', formsOffered);
+  ok(!formsOffered.includes('spot') && (await ev('__primer.parts.describe("inputs")')).settings.form.options.includes('spot'), 'Spot is out of the row until it\'s redone, though its code stays in the kit', formsOffered);
   for (const form of ['dial', 'pile', 'string', 'sort', 'snap']) {
     await f.tap(`[data-set=form][data-v=${form}]`);
     await sleep(500);
     ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `${form} opens there, to try by hand`);
     await shot(`17c-forms-${form}`);
   }
+  // the slider's looks and the number's, each a setting of the one form, offered for the form that has it
+  await f.tap('[data-set=form][data-v=slider]'); await sleep(500);
+  const lookRow = await ev(`[...document.querySelectorAll('[data-set=look]')].map(b=>b.dataset.v)`);
+  ok(JSON.stringify(lookRow) === JSON.stringify(['auto', 'plain', 'thermometer', 'sea']) && await ev(`!!document.querySelector('[data-set=direction][data-v=down]')`), "a slider's panel offers its looks and its directions", lookRow);
+  ok((await ev('__primer.app.partNow.debug()')).look === 'thermometer', 'and with the warmth picture it is a thermometer, by itself');
+  for (const [look, dir] of [['sea', 'down'], ['plain', 'up'], ['thermometer', 'right']]) {
+    await f.tap(`[data-set=look][data-v=${look}]`); await sleep(400);
+    if (dir !== 'down') { await f.tap(`[data-set=direction][data-v=${dir}]`); await sleep(400); }
+    const d = await ev('__primer.app.partNow.debug()');
+    ok(d.look === look && d.direction === dir && await ev(`!!document.querySelector('.partstage .pi-track[data-look=${look}][data-dir=${dir}]')`), `the slider as ${look}, running ${dir}`, d);
+    await shot(`17d-slider-${look}-${dir}`);
+    await f.tap('[data-set=direction][data-v=auto]'); await sleep(300);
+  }
+  await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
+  await f.tap('[data-set=form][data-v=number]'); await sleep(500);
+  const numberLooks = await ev(`[...document.querySelectorAll('[data-set=look]')].map(b=>b.dataset.v)`);
+  ok(JSON.stringify(numberLooks) === JSON.stringify(['auto', 'keys', 'wheels', 'tape', 'abacus']), "a number's panel offers its four looks", numberLooks);
+  for (const look of ['keys', 'wheels', 'tape', 'abacus']) {
+    await f.tap(`[data-set=look][data-v=${look}]`); await sleep(500);
+    const d = await ev('__primer.app.partNow.debug()');
+    ok(d.look === look && await ev(`!!document.querySelector('.partstage .form-number.look-${look}')`), `the number as ${look}`, d);
+    await shot(`17e-number-${look}`);
+  }
+  await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
+  // Pile: the count is in the handle, and every thing added or taken away is a tick
+  await f.tap('[data-set=form][data-v=pile]'); await sleep(500);
+  const pileNow = () => ev(`(()=>{const d=__primer.app.partNow.debug();return {count:d.count,inHandle:document.querySelector('.partstage .pi-handle .n').textContent,ticks:__primer.feel.tickCount(),chip:!!document.querySelector('.partstage .pi-count:not(.truth)')}})()`);
+  const pl0 = await pileNow();
+  ok(pl0.inHandle === String(pl0.count) && !pl0.chip, 'the pile\'s count is written in its handle, between the arrows, with no chip of its own', pl0);
+  const rowH = await ev(`(()=>{const r=[...document.querySelectorAll('.partstage .pi-row')].map(e=>e.getBoundingClientRect().top);return r[0]-r[1]})()`);
+  const hp = await f.rect('.partstage .pi-handle');
+  const per = 5, up = 7;
+  await f.drag(hp.x, hp.y, 0, -rowH * (up + 0.4) / per, { steps: 40, ms: 1200 });
+  const pl1 = await pileNow();
+  ok(pl1.count >= pl0.count + up - 1 && pl1.inHandle === String(pl1.count) && pl1.ticks - pl0.ticks >= pl1.count - pl0.count, 'dragging it up, each thing added is a tick under the thumb, and the handle keeps count', { pl0, pl1 });
+  const pbox = await f.rect('.partstage .pi-pilebox');
+  await f.tapAt(pbox.x, pbox.bottom - 30);
+  await sleep(200);
+  const pl2 = await pileNow();
+  ok(pl2.count < pl1.count && pl2.ticks > pl1.ticks && pl2.inHandle === String(pl2.count), 'and a tap that takes things away ticks too', { pl1, pl2 });
+  await shot('17f-pile-count-in-handle');
+  // Pictures move on their own, on one clock: the wind, the warmth ball, the sea (the wind once stood still)
+  const moving = async (sel, what) => {
+    const before = await ev(`(()=>{const e=document.querySelector(${JSON.stringify(sel)});return e?e.innerHTML:null})()`), v0 = JSON.stringify(await ev('__primer.app.partNow.state()'));
+    await sleep(450);
+    const after = await ev(`(()=>{const e=document.querySelector(${JSON.stringify(sel)});return e?e.innerHTML:null})()`);
+    ok(before && after && before !== after && JSON.stringify(await ev('__primer.app.partNow.state()')) === v0, `${what} moves on its own, the value untouched`);
+  };
+  await f.tap('[data-set=form][data-v=dial]'); await sleep(500);
+  const c0 = (await ev('__primer.app.partNow.debug()')).clock;
+  await moving('.partstage svg.pic-wind', "the dial's wind");
+  const c1 = (await ev('__primer.app.partNow.debug()')).clock;
+  ok(c1.running && c1.moving === 1 && c1.frames - c0.frames >= 8, 'on the one clock, at a calm 30 frames a second or so', { c0, c1 });
+  await clock('m.hold(true)');
+  const held1 = await ev(`document.querySelector('.partstage svg.pic-wind').innerHTML`);
+  await sleep(300);
+  ok(held1 === (await ev(`document.querySelector('.partstage svg.pic-wind').innerHTML`)), 'held, the clock stops everything at once');
+  await clock('m.hold(false)');
+  await f.tap('[data-set=picture][data-v=warmth]'); await sleep(500);
+  await moving('.partstage svg.pic-warmth', 'the warmth ball in the dial');
+  await f.tap('[data-set=form][data-v=slider]'); await sleep(500);
+  await moving('.partstage .pi-pic svg.pic-warmth', "the thermometer's warmth ball");
+  await f.tap('[data-set=look][data-v=sea]'); await sleep(500);
+  await moving('.partstage .pi-look', 'the sea');
+  await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
+  await f.tap('[data-set=form][data-v=dial]'); await sleep(300);
+  await f.tap('[data-set=picture][data-v=wind]'); await sleep(300);
+  await ev(`__primer.app.partNow.remove()`);
+  await sleep(200);
+  ok((await ev('__primer.app.partNow.debug()')).clock.moving === 0, 'and a part taken off the page leaves nothing on the clock');
+  await f.tap('[data-set=form][data-v=dial]'); await sleep(500);
   // Every carrying form also answers to taps: tap a thing, then where it goes.
   const pv = () => ev('__primer.app.partNow.state().value');
   await f.tap('[data-set=form][data-v=sort]'); await sleep(500);
@@ -752,18 +879,42 @@ try {
   // Chromium, so this guards the fix rather than proving the phone's bug.)
   await ev(`__primer.app.openPart('inputs')`);
   await sleep(600);
-  for (const form of ['slider', 'order', 'match', 'number', 'spot']) {
+  for (const form of ['slider', 'order', 'match', 'number']) {
     await f.tap(`[data-set=form][data-v=${form}]`);
     await sleep(300);
-    ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `Inputs still opens as ${form} (number, match and spot unchanged)`);
+    ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `Inputs still opens as ${form}`);
   }
-  for (const form of ['slider', 'order', 'dial', 'pile', 'string', 'sort', 'snap']) {
+  const looks = { 'slider/sea': { look: 'sea' }, 'slider/plain': { look: 'plain', direction: 'right' }, 'number/wheels': { look: 'wheels' }, 'number/tape': { look: 'tape' }, 'number/abacus': { look: 'abacus' } };
+  for (const which of ['slider', 'slider/sea', 'slider/plain', 'number/wheels', 'number/tape', 'number/abacus', 'order', 'dial', 'pile', 'string', 'sort', 'snap']) {
+    const form = which.split('/')[0];
     await f.tap(`[data-set=form][data-v=${form}]`);
     await sleep(400);
+    // pictures move on their own: held still from here to the two shots, so only the drag paints
+    for (const [k, v] of Object.entries(looks[which] || (form === 'slider' || form === 'number' ? { look: 'auto', direction: 'auto' } : {}))) {
+      if (await ev(`!!document.querySelector('[data-set=${k}][data-v=${v}]')`)) { await f.tap(`[data-set=${k}][data-v=${v}]`); await sleep(400); }
+    }
+    await clock('m.hold(true)');
     if (form === 'slider') {
-      const t = await f.rect('.pi-track');
-      await f.drag(t.left + 10, t.y, t.w * 0.8, 0, { steps: 20, ms: 500 });
-      await f.drag(t.left + t.w * 0.8, t.y, -t.w * 0.6, 6, { steps: 25, ms: 600 });
+      // along the run, whichever way it goes, there and back
+      const h = '__primer.app.partNow', a = await runPoint(0.05, '.partstage', h), z = await runPoint(0.85, '.partstage', h), m = await runPoint(0.3, '.partstage', h);
+      await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 20, ms: 500 });
+      await f.drag(z.x, z.y, m.x - z.x + 3, m.y - z.y + 3, { steps: 25, ms: 600 });
+    } else if (which === 'number/wheels') {
+      const w = await f.rect('.partstage .pi-drum[data-i="1"] .pi-dwin');
+      await f.drag(w.x, w.y, 0, -150, { steps: 20, ms: 500 });
+      await f.drag(w.x, w.y, 0, 90, { steps: 20, ms: 500 });
+      ok((await ev('__primer.app.partNow.debug()')).digits[1] !== 0 && await ev(`[...document.querySelectorAll('.partstage .pi-dstrip')].every(s=>getComputedStyle(s).willChange==='transform')`), 'a drum rolls by finger, its digits moving on their own layer');
+    } else if (which === 'number/tape') {
+      const t = await f.rect('.partstage .pi-tband');
+      await f.drag(t.x + 100, t.y, -200, 0, { steps: 20, ms: 400 });
+      await sleep(900);
+      await f.drag(t.x - 100, t.y, 120, 3, { steps: 20, ms: 500, hold: 200 });
+      ok((await ev('__primer.app.partNow.state()')).value > 0, 'the tape slides by finger');
+    } else if (which === 'number/abacus') {
+      const r = await f.rect('.partstage .pi-rod:last-child .pi-rodbox');
+      await f.drag(r.x, r.top + 10, 0, r.h * 0.7, { steps: 20, ms: 500 });
+      await f.drag(r.x, r.top + r.h * 0.7, 0, -r.h * 0.4, { steps: 20, ms: 500 });
+      ok((await ev('__primer.app.partNow.debug()')).digits.at(-1) > 0 && await ev(`[...document.querySelectorAll('.partstage .pi-bead')].every(s=>getComputedStyle(s).willChange==='transform')`), 'beads are pulled up a rod by finger, moving on their own layers');
     } else if (form === 'order') {
       const a = await f.rect('.pi-item');
       await f.drag(a.x, a.y, 0, 130, { steps: 20, ms: 500 });
@@ -808,17 +959,19 @@ try {
     const before = await b.send('Page.captureScreenshot', { format: 'png' });
     await ev(`(async()=>{document.body.style.opacity='0.99';await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.style.opacity='';await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return 1})()`);
     const after = await b.send('Page.captureScreenshot', { format: 'png' });
+    await clock('m.hold(false)');
     const diff = differing(before.data, after.data);
-    ok(diff === 0, `${form}: after dragging back and forth, nothing is left behind (${diff} pixels differ from a full repaint)`);
+    ok(diff === 0, `${which}: after dragging back and forth, nothing is left behind (${diff} pixels differ from a full repaint)`);
   }
+  for (const k of ['look', 'direction']) if (await ev(`!!document.querySelector('[data-set=${k}][data-v=auto]')`)) await f.tap(`[data-set=${k}][data-v=auto]`);
   ok(!(await ev(`[...document.styleSheets].flatMap(s=>{try{return [...s.cssRules].map(r=>r.cssText)}catch{return []}}).some(t=>/pi-item\\.lift/.test(t)&&/box-shadow:[^;]*\\d+px \\d+px [1-9]/.test(t))`)), 'a lifted item has no blurred shadow');
   await f.tap('[data-go=back]');
   await sleep(300);
 
   console.log('Every part, with every setting at its extremes');
   await ev(`(()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50;background:#141a3c';document.body.append(d)})()`);
-  const extremes = (spec, example) => {
-    if (spec.type === 'choice') return spec.options;
+  const extremes = (spec, example, form) => {
+    if (spec.type === 'choice') return (form && spec.byForm && spec.byForm[form]) || spec.options;
     if (spec.type === 'bool') return [true, false];
     if (spec.type === 'number') return [spec.min, spec.max];
     if (spec.type === 'lonlat') return [[-180, -75], [180, 75]];
@@ -845,7 +998,7 @@ try {
         for (const [k, spec] of Object.entries(desc.settings)) {
           if (k === 'form' || k === 'projection') continue;
           if (form && spec.forms && !spec.forms.includes(form)) continue;
-          for (const val of extremes(spec, example[k])) cases.push({ form, projection, k, val, settings: { ...example, [k]: val } });
+          for (const val of extremes(spec, example[k], form)) cases.push({ form, projection, k, val, settings: { ...example, [k]: val } });
         }
       }
     }
@@ -869,8 +1022,14 @@ try {
         const form = c.form;
         const before = JSON.stringify(await ev('__h.state()'));
         if (form === 'choice') await f.tap('#bench .pi-opt');
-        if (form === 'slider') { const t = await f.rect('#bench .pi-track'); await f.tapAt(t.left + t.w * 0.7, t.y); }
-        if (form === 'number') await f.tap('#bench .pi-key[data-k="7"]');
+        if (form === 'slider') { const pt = await runPoint(0.8, '#bench', '__h'); await f.tapAt(pt.x, pt.y); }
+        if (form === 'number') {
+          const look = (await ev('__h.debug()')).look;
+          if (look === 'keys') await f.tap('#bench .pi-key[data-k="7"]');
+          if (look === 'wheels') await f.tap('#bench .pi-drum:last-child .pi-roll[data-d="1"]');
+          if (look === 'tape') { const t = await f.rect('#bench .pi-tband'); await f.tapAt(t.x + 70, t.y); await sleep(500); }
+          if (look === 'abacus') await f.tap('#bench .pi-rod:last-of-type .pi-bead[data-b="2"]');
+        }
         if (form === 'order') { const r = await f.rect('#bench .pi-item'); const r2 = await f.rect('#bench .pi-item:last-child'); await f.drag(r.x, r.y, 0, r2.y - r.y, { steps: 12, ms: 300 }); }
         if (form === 'match') { await f.tap('#bench .pi-cell[data-side=l]'); await f.tap('#bench .pi-cell[data-side=r]'); }
         if (form === 'spot') { const r = await f.rect('#bench .pi-spot'); await f.tapAt(r.x, r.y); }
@@ -1217,10 +1376,10 @@ try {
             } else if (inp.form === 'slider') {
               const sv = await ev('__primer.run.input.state()');
               ok(sv.answered && sv.value === inp.start, `${s.id}: the slider starts at ${inp.start}, a real value`, sv);
-              const r = await f.rect('.pi-track');
               const log = inp.scale === 'log';
               const pos = right ? (log ? Math.log(s.answer / inp.min) / Math.log(inp.max / inp.min) : (s.answer - inp.min) / (inp.max - inp.min)) : 0.95;
-              await f.tapAt(r.left + pos * r.w, r.y);
+              const pt = await runPoint(pos);
+              await f.tapAt(pt.x, pt.y);
             } else if (inp.form === 'order') {
               // wrong: it starts out of order, so check it as it is; right: drag it into order
               for (let k = 0; right && k < 6; k++) {

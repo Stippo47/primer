@@ -1,9 +1,11 @@
 // Pile: a count you can see at a glance. Drag the level up and things pile into the box, a row at a time
-// (`per`, five unless the lesson says), so a number reads as rows of fives. What's piled is a setting
-// (`thing`), or any picture from the topic (`thingImage`). On reveal a gold line comes in at the true count:
-// things above it fade, and the ones left out show as gold rings. It starts at a real count (`start`, or
-// the bottom of its range), as the slider does. The level and its handle ride on their own layers and move
-// by transform; things only pop in and out where they stand.
+// (`per`, five unless the lesson says), so a number reads as rows of fives. The count is written in the
+// handle, between its arrows, and every thing added or taken away gives a tick under the thumb. What's
+// piled is a setting (`thing`), or any picture from the topic (`thingImage`). On reveal a gold line comes
+// in at the true count, its number at the line's far end: things above it fade, and the ones left out show
+// as gold rings. It starts at a real count (`start`, or the bottom of its range), as the slider does. The
+// level and its handle ride on their own layers and move by transform; things only pop in and out where
+// they stand.
 import { esc, devicePx, numberScale } from '../kit.js';
 
 // The things to pile, each drawn about 0,0 in a 40 x 40 box: one form, three tones, one highlight, lit
@@ -45,19 +47,17 @@ export const css = `
 .pi-thing.miss > b::after { content: ""; position: absolute; inset: 8%; border-radius: 50%; border: 3px solid #ffc83d; background: rgba(255, 200, 61, 0.22); }
 .pi-level { height: 3px; margin-top: -1.5px; border-radius: 2px; background: rgba(255, 255, 255, 0.75); will-change: transform; backface-visibility: hidden; }
 .pi-level.truth { background: #ffc83d; height: 4px; margin-top: -2px; will-change: auto; }
-.pi-handle { width: 34px; height: 44px; margin: -22px 0 0 -17px; border-radius: 16px; background: #fff; box-shadow: 0 4px 0 #b9c2ee;
-  will-change: transform; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; }
-.pi-handle svg { width: 18px; height: 26px; }
+.pi-handle { width: 46px; height: 76px; margin: -38px 0 0 -23px; border-radius: 18px; background: #fff; box-shadow: 0 4px 0 #b9c2ee; color: #1b1f5e;
+  will-change: transform; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 8px 0 7px; }
+.pi-handle svg { width: 16px; height: 9px; flex: none; opacity: 0.55; }
+.pi-handle b { font-size: 22px; line-height: 1; font-weight: 900; letter-spacing: -0.02em; }
 .pi.held .pi-handle { background: #e8f8ff; }
 .pi-handle.right { background: #2bc4a4; box-shadow: 0 4px 0 #127a85; color: #fff; }
+.pi-handle.right svg, .pi-handle.wrong svg { opacity: 0.8; }
 .pi-handle.close { background: #ffc83d; box-shadow: 0 4px 0 #c98a00; }
 .pi-handle.wrong { background: #ee4b7a; box-shadow: 0 4px 0 #8f1f44; color: #fff; }
-.pi-count { padding: 5px 10px; border-radius: 12px; background: #fff; color: #1b1f5e; box-shadow: 0 3px 0 #b9c2ee; font-size: 18px; white-space: nowrap;
-  will-change: transform; backface-visibility: hidden; }
-.pi-count.truth { background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; will-change: auto; }
-.pi-count.right { background: #2bc4a4; color: #fff; box-shadow: 0 3px 0 #127a85; }
-.pi-count.close { background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; }
-.pi-count.wrong { background: #ee4b7a; color: #fff; box-shadow: 0 3px 0 #8f1f44; }
+.pi-count.truth { padding: 4px 8px; border-radius: 11px; background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; font-size: 17px; white-space: nowrap; z-index: 2; }
+.pi-pilebox.revealed .pi-row b { visibility: hidden; }
 `;
 
 export function mount(f) {
@@ -66,17 +66,17 @@ export function mount(f) {
   const sc = numberScale({ min: lo, max: hi, step: 1, start: S.start }, { middle: false });
   const per = Math.max(2, Math.min(10, Math.round(S.per) || 5)), rows = Math.ceil(hi / per);
   const art = S.thingImage ? `<img alt="" draggable="false" data-src="${esc(S.thingImage)}">` : `<svg viewBox="-20 -20 40 40">${THINGS[S.thing] || THINGS.dot}</svg>`;
-  const chevrons = '<svg viewBox="0 0 18 26"><path d="M3 9l6-6 6 6M3 17l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const arrow = d => `<svg viewBox="0 0 16 9"><path d="${d}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   root.innerHTML = `<div class="pi-pilebox" data-grow="120" style="--pile-h:${Math.round(Math.max(130, Math.min(250, rows * 34)) + 50)}px">
     ${Array.from({ length: rows }, (_, r) => `<i class="pi-row"><b>${(r + 1) * per}</b></i>`).join('')}
     ${Array.from({ length: hi }, () => `<i class="pi-thing"><b>${art}</b></i>`).join('')}
     <i class="pi-level"></i><i class="pi-level truth" hidden></i>
-    <i class="pi-handle" style="color:#1b1f5e">${chevrons}</i><span class="pi-count"></span><span class="pi-count truth" hidden></span></div>`;
+    <i class="pi-handle">${arrow('M2 7.5l6-6 6 6')}<b class="n"></b>${arrow('M2 1.5l6 6 6-6')}</i><span class="pi-count truth" hidden></span></div>`;
   const box = root.querySelector('.pi-pilebox');
   for (const img of box.querySelectorAll('img[data-src]')) Promise.resolve(f.media(img.dataset.src)).then(u => { if (u) img.src = u; }).catch(() => {});
   const things = [...box.querySelectorAll('.pi-thing')], rowEls = [...box.querySelectorAll('.pi-row')];
   const level = box.querySelector('.pi-level'), truthLine = box.querySelector('.pi-level.truth'), handle = box.querySelector('.pi-handle');
-  const chip = box.querySelector('.pi-count'), truthChip = box.querySelector('.pi-count.truth');
+  const num = handle.querySelector('.n'), truthChip = box.querySelector('.pi-count.truth');
   const PAD_L = 34, PAD_R = 62, PAD_T = 26, PAD_B = 24;
   let G = null, count = null;
   const geo = () => {
@@ -98,10 +98,10 @@ export function mount(f) {
     count = n;
     const y = devicePx(levelY(n)), hx = G.W - PAD_R / 2 - 2;
     level.style.transform = `translate3d(${PAD_L - 4}px,${y}px,0)`;
-    handle.style.transform = `translate3d(${devicePx(hx)}px,${y}px,0)`;
-    chip.textContent = String(n);
-    const cw = chip.offsetWidth || 30, above = y - 62 > 2;
-    chip.style.transform = `translate3d(${devicePx(hx - cw / 2)}px,${devicePx(above ? y - 62 : y + 30)}px,0)`;
+    // the handle rides the level, held inside the box at the ends so its count is never cut off
+    const hy = Math.min(G.H - 40, Math.max(40, y));
+    handle.style.transform = `translate3d(${devicePx(hx)}px,${devicePx(hy)}px,0)`;
+    num.textContent = String(n);
     things.forEach((el, i) => el.classList.toggle('on', i < n));
   };
   const ro = new ResizeObserver(() => layout());
@@ -111,18 +111,28 @@ export function mount(f) {
     const r = box.getBoundingClientRect();
     return sc.snap((G.bottom - (clientY - r.top)) / G.rowH * per);
   };
+  // every thing added or taken away is a tick under the thumb, by tap or by drag (a jump of several, a few)
   const to = n => {
     if (f.locked() || n === count) return;
+    const by = Math.abs(n - (count ?? n));
     show(n);
     f.set(n, true);
-    feel.tick();
+    for (let i = 0; i < Math.min(3, Math.max(1, by)); i++) feel.tick();
   };
   const begin = () => { layout(); show(sc.start); f.set(sc.start, true); };
   begin();
+  // Held by the handle, the count follows the finger from where it was, so taking hold never jumps it (the
+  // handle can sit a little off the level at the ends); anywhere else in the box, it goes where the finger is.
+  let grab = null;
   f.cleanup(f.ctx.track(box, {
     blocked: () => f.locked(),
-    start: e => { root.classList.add('held'); to(fromY(e.clientY)); },
-    move: ({ y }) => to(fromY(y)),
+    start: e => {
+      root.classList.add('held');
+      const h = handle.getBoundingClientRect();
+      grab = e.clientX >= h.left - 8 && e.clientX <= h.right + 8 && e.clientY >= h.top - 8 && e.clientY <= h.bottom + 8 ? { y: e.clientY, n: count } : null;
+      if (!grab) to(fromY(e.clientY));
+    },
+    move: ({ y }) => to(grab ? sc.snap(grab.n + ((grab.y - y) / G.rowH) * per) : fromY(y)),
     release: () => { root.classList.remove('held'); feel.sound('select'); },
     cancel: () => root.classList.remove('held'),
     tap: e => { root.classList.remove('held'); to(fromY(e.clientY)); feel.sound('select'); },
@@ -132,22 +142,24 @@ export function mount(f) {
       const n = count, t = Math.max(lo, Math.min(hi, Math.round(answer)));
       things.forEach((el, i) => { el.classList.toggle('over', i >= t && i < n); el.classList.toggle('miss', i < t && i >= n); });
       if (t !== n) {
-        const y = devicePx(levelY(t)), hx = G.W - PAD_R / 2 - 2;
+        const y = devicePx(levelY(t));
+        box.classList.add('revealed');
         truthLine.hidden = false;
         truthLine.style.transform = `translate3d(${PAD_L - 4}px,${y}px,0)`;
         if (feel.spring) feel.spring(truthLine, v => `translate3d(${PAD_L - 4}px,${y}px,0) scaleX(${v})`, 0, 1, { ms: 420 });
+        // the true count at the far end of its line from the handle, where the row numbers were
         truthChip.hidden = false;
         truthChip.textContent = String(t);
-        // the truth's chip sits on the far side of its line from the count given, so the two never meet
-        const cw = truthChip.offsetWidth || 30, place = `translate3d(${devicePx(hx - cw / 2)}px,${devicePx(t < n ? y + 28 : y - 62)}px,0)`;
+        const place = `translate3d(4px,${devicePx(y - truthChip.offsetHeight / 2)}px,0)`;
         truthChip.style.transform = place;
-        if (t > n) chip.style.transform = `translate3d(${devicePx(hx - (chip.offsetWidth || 30) / 2)}px,${devicePx(levelY(n) + 28)}px,0)`;
         if (feel.spring) feel.spring(truthChip, v => `${place} scale(${v})`, 0.6, 1, { ms: 480 });
       }
     },
-    mark(kind) { handle.classList.add(kind); chip.classList.add(kind); },
+    mark(kind) { handle.classList.add(kind); },
+    debug: () => ({ count, inHandle: num.textContent }),
     reset() {
-      handle.className = 'pi-handle'; chip.className = 'pi-count';
+      handle.className = 'pi-handle';
+      box.classList.remove('revealed');
       truthLine.hidden = true; truthChip.hidden = true;
       things.forEach(el => el.classList.remove('over', 'miss'));
       count = null;
