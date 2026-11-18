@@ -36,9 +36,9 @@ NODE_FIELDS = {'kind', 'id', 'title', 'unit'}
 QUESTIONS_AT_LEAST = {'test': 3, 'exam': 5}
 LESSON_FIELDS = {'v', 'title', 'version', 'minutes', 'steps', 'sources', 'facts', 'families', 'draw'}
 STEP_FIELDS = {
-    'explain': {'id', 'kind', 'title', 'text', 'figure', 'src', 'fact'},
-    'check': {'id', 'kind', 'title', 'ask', 'figure', 'input', 'answer', 'within', 'close', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
-    'play': {'id', 'kind', 'title', 'ask', 'play', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
+    'explain': {'id', 'kind', 'title', 'text', 'say', 'figure', 'src', 'fact'},
+    'check': {'id', 'kind', 'title', 'ask', 'say', 'figure', 'input', 'answer', 'within', 'close', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
+    'play': {'id', 'kind', 'title', 'ask', 'say', 'play', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
     'scene': {'id', 'kind', 'title', 'parts', 'lines', 'src'},
 }
 # Facts (docs/format.md, "Facts"): what a lesson says is worth knowing afterward, each with two or more asks.
@@ -46,11 +46,14 @@ FACT_FIELDS = {'id', 'text', 'src', 'asks'}
 FAMILY_FIELDS = {'id', 'about', 'rows', 'fact', 'asks'}
 FACT_TEXT_LIMIT = 180
 DRAW_FROM = ('unit', 'topic')
-# Scenes: an animation's file, or a scene step in a lesson (docs/format.md, "A scene").
+# The words of a step that are read aloud, with Voice on: its text or its question, and whichever line of
+# feedback is shown after an answer. `say` on a step gives any of them its own spoken wording.
+SPOKEN_FIELDS = {'explain': ('text',), 'check': ('ask', 'right', 'why'), 'play': ('ask', 'right', 'why')}
+# Scenes: an animation's file, or a scene step in a lesson (docs/format.md, "A scene"). An animation plays
+# through like a video: nothing in it waits for an answer.
 SCENE_FILE_FIELDS = {'v', 'title', 'version', 'minutes', 'parts', 'lines', 'sources'}
-LINE_FIELDS = {'id', 'text', 'say', 'do', 'wait', 'hold'}
+LINE_FIELDS = {'id', 'text', 'say', 'do', 'hold'}
 ACTION_FIELDS = {'call', 'at', 'from', 'to'}
-WAIT_FIELDS = {'on', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries'}
 LINE_LIMIT = 200          # characters in a caption
 LINES_RANGE = (2, 30)
 SYMBOLS = re.compile(r'[°%/&+=<>@#~^]')   # read aloud in ways no one can be sure of: say how, with "say"
@@ -65,12 +68,15 @@ NARRATORS = {
 }
 DEFAULT_NARRATOR = 'heart'
 ENVIRONMENTS = {'kokoro': 'kokoro', 'chatterbox': 'chatterbox', 'hear': 'check'}   # engine -> its Python environment's folder
-VOICE_PIPELINE = 1        # raise to remake every clip
-ENCODE = {'lufs': -16.0, 'floor': 20.0, 'gap': 1.2, 'rate': 24000, 'bitrate': '64k'}
+VOICE_PIPELINE = 2        # raise to remake every clip
+# How a clip is encoded: about -13 LUFS integrated, true peaks under -1 dB. The limiter works on the sound
+# made four times finer (so it catches the peaks between samples) with a gentle 3 ms look-ahead and 60 ms
+# release; at 96 kbps the AAC encoder adds almost nothing on top (at 64 kbps it added up to 2 dB).
+ENCODE = {'lufs': -13.0, 'peak': -1.0, 'ceiling': -1.5, 'floor': 20.0, 'gap': 1.2, 'rate': 24000, 'bitrate': '96k'}
 MAX_TAKES = 4
 LONG_TAIL = 1.0           # seconds of sound after the last word heard that make a take wrong
 SOURCE_FIELDS = {'id', 'by', 'title', 'url', 'year', 'checked', 'says'}
-OPTION_WRITER_FIELDS = {'right', 'why', 'tempting'}
+OPTION_WRITER_FIELDS = {'right', 'why', 'tempting', 'say'}
 NO_TELLS = re.compile(r'\b(all|none|both|neither) of (the )?(above|these|them|those)\b', re.I)
 TEXT_LIMIT = {'text': 320, 'ask': 220, 'title': 40, 'why': 260, 'right': 200}
 STEPS_RANGE = (3, 15)
@@ -681,7 +687,7 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
         return
     if not LINES_RANGE[0] <= len(lines) <= LINES_RANGE[1]:
         rep.warn(where, f'{len(lines)} lines: a scene is usually {LINES_RANGE[0]} to {LINES_RANGE[1]}; split a long one into steps')
-    seen, unvoiced, changed = set(), [], []
+    seen = set()
     for n, line in enumerate(lines):
         lid = line.get('id') if isinstance(line, dict) else None
         w = f'{where} line {n + 1}' + (f' ({lid})' if lid else '')
@@ -694,7 +700,10 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
             rep.err(w, 'the same id as an earlier line')
         seen.add(lid)
         for k in set(line) - LINE_FIELDS:
-            rep.err(w, f'no field "{k}" on a line')
+            if k == 'wait':
+                rep.err(w, 'no "wait": a scene plays through like a video, with nothing to answer. Ask it in the lesson that follows')
+            else:
+                rep.err(w, f'no field "{k}" on a line')
         text = line.get('text')
         if not isinstance(text, str) or not text.strip():
             rep.err(w, 'a line needs "text": what is said, shown as its caption')
@@ -726,20 +735,92 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
                     if got == -1:
                         rep.err(aw, f'"{k}": "{act[k]}" isn\'t in what\'s said: "{said}"')
             check_scene_call(act['call'], aw, rep, kit, base, descs, names, span)
-        if 'wait' in line:
-            check_wait(line['wait'], f'{w}.wait', rep, kit, base, descs, names)
-        if voice is not None and lid:
-            mine = ((voice.get('lines') or {}).get(lid) or {}).get(narrator or DEFAULT_NARRATOR)
-            if not mine:
-                unvoiced.append(lid)
-            elif str(mine.get('said', '')).replace('*', '') != said.replace('*', ''):
-                changed.append(lid)
-            elif mine.get('check') == 'flag':
-                rep.warn(w, f'its clip was heard as "{mine.get("heard")}": listen to it, or reword the line and voice it again')
-    if unvoiced:
-        rep.warn(where, f'{"isn" if len(unvoiced) == len(lines) else "has lines that aren"}\'t voiced yet ({", ".join(unvoiced)}): run primer voice. Until then they play from their captions')
+    if voice is not None:
+        warn_voice([x for x in lines if isinstance(x, dict) and x.get('id') and isinstance(x.get('text'), str)], voice, narrator, where, rep,
+                   'play from their captions')
+
+
+def warn_voice(lines, voice, narrator, where, rep, until):
+    """Warnings for lines not voiced yet in the topic's narrator, changed since they were, or still heard wrong.
+    `until` says how they play meanwhile."""
+    unvoiced, changed = [], []
+    for line in lines:
+        lid, said = line['id'], said_of(line)
+        mine = ((voice.get('lines') or {}).get(lid) or {}).get(narrator or DEFAULT_NARRATOR)
+        if not mine:
+            unvoiced.append(lid)
+        elif str(mine.get('said', '')).replace('*', '') != said.replace('*', ''):
+            changed.append(lid)
+        elif mine.get('check') == 'flag':
+            rep.warn(f'{where} line {lid}', f'its clip was heard as "{mine.get("heard")}": listen to it, or reword the line and voice it again')
+    if unvoiced and len(unvoiced) == len(lines):
+        listed = f' ({", ".join(unvoiced)})' if len(unvoiced) <= 12 else f' ({len(unvoiced)} lines)'
+        rep.warn(where, f'isn\'t voiced yet{listed}: run primer voice. Until then they {until}')
+    elif unvoiced:
+        rep.warn(where, f'has lines that aren\'t voiced yet ({", ".join(unvoiced)}): run primer voice. Until then they {until}')
     if changed:
-        rep.warn(where, f'lines changed since they were voiced ({", ".join(changed)}): run primer voice. Until then they play from their captions')
+        rep.warn(where, f'lines changed since they were voiced ({", ".join(changed)}): run primer voice. Until then they {until}')
+
+
+def step_say(step, field):
+    """A step's own spoken wording for one of its fields: `say` as a string is its text or question; as an
+    object, it is keyed by field."""
+    say = step.get('say')
+    if isinstance(say, str):
+        return say if field == SPOKEN_FIELDS.get(step.get('kind'), ('',))[0] else None
+    return say.get(field) if isinstance(say, dict) else None
+
+
+def spoken_lines(lesson):
+    """What a lesson, test or exam reads aloud, as lines like a scene's ({ id, text, say }), in step order.
+    An id is <step>.<what>: text or ask (shown as the step opens), right, why, miss-<n> (the nth of its misses,
+    from 1) and option-<id> (a wrong choice's why): each line of feedback, read once it's shown. The phone
+    finds them by the same ids (js/lesson.js, mark)."""
+    out = []
+    for s in (lesson.get('steps') or []) if isinstance(lesson, dict) else []:
+        if not isinstance(s, dict) or not isinstance(s.get('id'), str) or s.get('kind') not in SPOKEN_FIELDS:
+            continue
+        sid = s['id']
+        for field in SPOKEN_FIELDS[s['kind']]:
+            if isinstance(s.get(field), str) and s[field].strip():
+                out.append({'id': f'{sid}.{field}', 'text': s[field], **({'say': step_say(s, field)} if step_say(s, field) else {})})
+        for n, m in enumerate(s.get('misses') or [], 1):
+            if isinstance(m, dict) and isinstance(m.get('why'), str) and m['why'].strip():
+                out.append({'id': f'{sid}.miss-{n}', 'text': m['why'], **({'say': m['say']} if isinstance(m.get('say'), str) else {})})
+        if s['kind'] == 'check' and (s.get('input') or {}).get('form') == 'choice':
+            for o in (s['input'].get('options') or []):
+                if isinstance(o, dict) and isinstance(o.get('why'), str) and o['why'].strip() and o.get('id'):
+                    out.append({'id': f'{sid}.option-{o["id"]}', 'text': o['why'], **({'say': o['say']} if isinstance(o.get('say'), str) else {})})
+    return out
+
+
+def check_spoken(lesson, where, rep, base, key, narrator):
+    """A lesson's spoken words: each `say` is words, symbols are read as the writer says, and it's voiced."""
+    lines = spoken_lines(lesson)
+    for s in lesson.get('steps') or []:
+        if not isinstance(s, dict) or 'say' not in s:
+            continue
+        w = f'{where} step {s.get("id")}'
+        say, fields = s['say'], SPOKEN_FIELDS.get(s.get('kind'), ())
+        if isinstance(say, str):
+            if not say.strip():
+                rep.err(w, '"say" is the words as read aloud')
+        elif isinstance(say, dict):
+            for k, v in say.items():
+                if k not in fields:
+                    rep.err(w, f'"say" speaks for {", ".join(fields) or "nothing on this step"}; not "{k}"')
+                elif not (isinstance(v, str) and v.strip()):
+                    rep.err(w, f'"say.{k}" is the words as read aloud')
+                elif not s.get(k):
+                    rep.err(w, f'"say.{k}" speaks for "{k}", which this step hasn\'t got')
+        else:
+            rep.err(w, '"say" is the step\'s words as read aloud, or { "ask": ..., "right": ..., "why": ... }')
+    for line in lines:
+        text = line['text']
+        if 'say' not in line and SYMBOLS.search(text):
+            rep.warn(f'{where} {line["id"]}', f'has {", ".join(sorted(set(SYMBOLS.findall(text))))}: give "say", the words as they should be read aloud ("27 degrees Celsius"), so the voice doesn\'t guess')
+    if lines and base is not None:
+        warn_voice(lines, scene_voice(base, key) or {}, narrator, where, rep, 'show silently, as text')
 
 
 def check_scene_call(call, where, rep, kit, base, descs, names, span):
@@ -764,49 +845,6 @@ def check_scene_call(call, where, rep, kit, base, descs, names, span):
                 rep.err(where, f'"$p" is a number from 0 to 1, but {name}\'s {a["name"]} is {a["type"]}')
     check_call(desc, [name, *[0.5 if a == '$p' else a for a in args]], where, rep, kit, base)
     return desc
-
-
-def check_wait(wait, where, rep, kit, base, descs, names):
-    """A line that waits for the person: marked like a play step, on one of the scene's parts."""
-    if not isinstance(wait, dict):
-        rep.err(where, 'a wait is { "goal": rule, "tries": [...], "right", "why", "misses", "then" }')
-        return
-    for k in set(wait) - WAIT_FIELDS:
-        rep.err(where, f'no field "{k}" on a wait')
-    on = wait.get('on') or (names[0] if len(names) == 1 else None)
-    if on is None:
-        rep.err(where, f'"on": which part it waits on ({", ".join(names)})')
-        return
-    desc = descs.get(on)
-    if not desc:
-        if on not in names:
-            rep.err(where, f'no part "{on}" in this scene')
-        return
-    state_names = set(desc.get('state', {}))
-    if not wait.get('goal'):
-        rep.err(where, 'a wait needs a "goal": a rule over the part\'s state, as a play step\'s')
-        return
-    for k in ('goal', 'closeGoal', 'ready'):
-        if k in wait:
-            for p in rule_problems(wait[k], state_names, f'{where}.{k}'):
-                rep.err(where, p)
-    for i, m in enumerate(wait.get('misses') or []):
-        if not isinstance(m, dict) or 'when' not in m or not m.get('why'):
-            rep.err(f'{where}.misses[{i}]', 'a miss is { "when": rule, "why": "..." }')
-        else:
-            for p in rule_problems(m['when'], state_names, f'{where}.misses[{i}].when'):
-                rep.err(where, p)
-    for i, c in enumerate(wait.get('then') or []):
-        check_call(desc, c, f'{where}.then[{i}]', rep, kit, base)
-    step = {'kind': 'play', **{k: wait[k] for k in ('goal', 'closeGoal', 'tries') if k in wait}}
-    if not wait.get('tries'):
-        rep.err(where, 'a wait needs "tries", as a play step does: plausible inputs and what each is marked, a realistic wrong one among them')
-    else:
-        marks = check_tries(step, desc, {}, where, rep)
-        if marks and 'wrong' not in marks:
-            rep.err(where, 'none of its tries is wrong: give a plausible wrong input, so it\'s shown to be possible to fail')
-    if not wait.get('why') and not wait.get('misses'):
-        rep.warn(where, 'no "why" or "misses": a wrong answer would be shown nothing to learn from')
 
 
 def scene_voice(base, key):
@@ -1015,6 +1053,7 @@ def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None
         check_step(step, w, rep, kit, base, ctx)
     if node_kind == 'lesson':
         check_facts(lesson, where, rep, kit, base, ctx)
+    check_spoken(lesson, where, rep, base, ctx['node'], narrator)
     for s in source_ids - ctx['cited'] if not only_draws else []:
         rep.warn(where, f'the source "{s}" isn\'t cited by any step or fact')
     if ctx['forms'] and all(f == 'choice' for f in ctx['forms']) and not any(isinstance(s, dict) and s.get('kind') == 'play' for s in steps):
@@ -1479,6 +1518,19 @@ def scenes_of(folder, topic):
     return out
 
 
+def voiced_of(folder, topic):
+    """Everything in a topic that is read aloud, as (key, { "lines": [...] }, where): every scene (scenes_of),
+    and every lesson, test and exam's own words (spoken_lines), keyed by its id. One voice file each, made
+    and kept the same way."""
+    out = scenes_of(folder, topic)
+    for n in topic.get('path') or []:
+        if isinstance(n, dict) and n.get('kind') in PLAYED and isinstance(n.get('id'), str) and (folder / f'{n["id"]}.json').exists():
+            lines = spoken_lines(load_json(folder / f'{n["id"]}.json'))
+            if lines:
+                out.append((n['id'], {'lines': lines}, f'{n["id"]}.json'))
+    return out
+
+
 def path_words(topic):
     """The path in a few words, for a commit message: 2 lessons, a chest and a test."""
     counts = {}
@@ -1692,7 +1744,7 @@ def cmd_fit(a):
 def voice_files(folder, topic):
     """The voice files a topic sends: each scene's timing file and every clip it names, as paths in the folder."""
     out = set()
-    for key, _scene, _where in scenes_of(folder, topic):
+    for key, _scene, _where in voiced_of(folder, topic):
         vf = folder / 'voice' / f'{key}.json'
         if not vf.exists():
             continue
@@ -1705,8 +1757,9 @@ def voice_files(folder, topic):
 
 
 def spoken(said):
-    """What's said, as the engine is given it: the stress marks go (they're for the caption)."""
-    return said.replace('*', '')
+    """What's said, as the engine is given it: the stress marks go (they're for the caption), and a line
+    break is a space."""
+    return ' '.join(said.replace('*', '').split())
 
 
 def clip_key(narrator, said):
@@ -1771,9 +1824,12 @@ def seconds_of(ffprobe, path):
 
 
 def encode_clip(wav, out, ffmpeg='ffmpeg', ffprobe='ffprobe'):
-    """A wav master into the clip the phone plays (stage 0's encoder, stage0/voice/tools/encode.py): trimmed
-    to its sound, one fixed gain to about -16 LUFS, soft fades, a peak limiter, then AAC-LC, mono, 64 kbps,
-    24 kHz. A fixed gain, not loudnorm's second pass, which pumps on a 2-second line."""
+    """A wav master into the clip the phone plays: trimmed to its sound, one fixed gain to about -13 LUFS, soft
+    fades, a gentle true-peak limiter, then AAC-LC, mono, 24 kHz, 96 kbps. A fixed gain, not loudnorm's second
+    pass, which pumps on a 2-second line. The limiter runs at 96 kHz, so it sees the peaks between samples,
+    with a 3 ms look-ahead (its delay taken back out) and a 60 ms release: on the pilot's narration it takes
+    at most about 3.5 dB off a peak, and more than 3 dB on under 1% of the speech. Tried again with more gain
+    until the loudness is within 0.3 dB, and with a lower ceiling if a true peak still passes -1 dB."""
     raw, _ = loudness(ffmpeg, wav)
     floor = f'{raw - ENCODE["floor"]:.1f}dB'
     trim = (f'silenceremove=start_periods=1:start_threshold={floor}:start_silence=0.06:stop_periods=1:stop_duration={ENCODE["gap"]}'
@@ -1782,17 +1838,18 @@ def encode_clip(wav, out, ffmpeg='ffmpeg', ffprobe='ffprobe'):
     ff(ffmpeg, '-y', '-i', wav, '-af', trim, '-ac', '1', trimmed)
     length = seconds_of(ffprobe, trimmed)
     loud, _ = loudness(ffmpeg, trimmed)
-    gain, ceiling = ENCODE['lufs'] - loud, -3.0
+    gain, ceiling = ENCODE['lufs'] - loud, ENCODE['ceiling']
     for _ in range(8):
         fades = f'afade=t=in:d=0.01,afade=t=out:st={max(length - 0.05, 0):.3f}:d=0.05'
-        ff(ffmpeg, '-y', '-i', trimmed, '-af', f'volume={gain:.2f}dB,{fades},alimiter=limit={ceiling:.1f}dB:level=false:attack=2:release=40',
+        limiter = f'aresample=96000,alimiter=limit={ceiling:.2f}dB:attack=3:release=60:level=false:latency=1,aresample={ENCODE["rate"]}'
+        ff(ffmpeg, '-y', '-i', trimmed, '-af', f'volume={gain:.2f}dB,{fades},{limiter}',
            '-ar', ENCODE['rate'], '-ac', '1', '-c:a', 'aac', '-b:a', ENCODE['bitrate'], '-movflags', '+faststart', '-map_metadata', '-1', out)
         got, peak = loudness(ffmpeg, out)
-        if abs(got - ENCODE['lufs']) <= 0.3 and peak <= -1.0:
+        if abs(got - ENCODE['lufs']) <= 0.3 and peak <= ENCODE['peak']:
             break
         gain += ENCODE['lufs'] - got
-        if peak > -1.0:
-            ceiling -= peak + 1.5
+        if peak > ENCODE['peak']:
+            ceiling -= peak - ENCODE['peak'] + 0.2
     trimmed.unlink()
     return {'lufs': round(got, 2), 'peak': round(peak, 2)}
 
@@ -1809,8 +1866,10 @@ def take_good(res):
 
 
 def cmd_voice(a):
-    """Voices every scene in a topic: a clip per line per narrator, each heard back and aligned, and a timing
-    file per scene. Only clips whose words, narrator or making changed are made again."""
+    """Voices everything in a topic that is read aloud: every scene's lines, and every lesson, test and exam's
+    own words (spoken_lines). A clip per line per narrator, each heard back and aligned, and a timing file per
+    scene or lesson. Only clips whose words, narrator or making changed are made again: a clip is found by its
+    key wherever it was, so a line that moved, or the same words twice, is made once."""
     kind, folder = resolve_target(a.topic, pathlib.Path(a.data) if a.data else None)
     if kind != 'topic':
         die('voice takes a topic folder.')
@@ -1819,52 +1878,100 @@ def cmd_voice(a):
     for n in narrators:
         if n not in NARRATORS:
             die(f'No narrator "{n}": one of {", ".join(NARRATORS)}, "all" or "topic".')
-    scenes = scenes_of(folder, topic)
+    scenes = voiced_of(folder, topic)
     if not scenes:
-        print('No scenes in this topic: nothing to voice.')
+        print('Nothing in this topic is read aloud: nothing to voice.')
         return
     ffmpeg, ffprobe = a.ffmpeg or 'ffmpeg', a.ffprobe or 'ffprobe'
     if not shutil.which(ffmpeg) and not pathlib.Path(ffmpeg).exists():
         die('voice needs ffmpeg (and ffprobe) on PATH, or --ffmpeg and --ffprobe.')
     tts = None if a.python else tts_dir(a.tts)
 
-    # What there is, and what has to be made.
-    plans, jobs = {}, []
+    # Every clip there is, by its key: a clip is the same clip wherever its words are said.
+    have = {}
+    for key, _scene, _where in scenes:
+        for byn in ((scene_voice(folder, key) or {}).get('lines') or {}).values():
+            for e in (byn or {}).values():
+                if isinstance(e, dict) and e.get('key') and e.get('clip') and (folder / e['clip']).is_file():
+                    have.setdefault(e['key'], e)
+
+    # What there is, and what has to be made: one job per clip to make, however many lines say it.
+    plans, jobs, wanted = {}, [], {}
     for key, scene, where in scenes:
-        old = scene_voice(folder, key) or {}
-        old_lines = old.get('lines') or {}
         keep = {}
         for line in scene.get('lines') or []:
             if not isinstance(line, dict) or not line.get('id') or not str(line.get('text', '')).strip():
                 continue
             said = said_of(line)
             for n in NARRATORS:
-                prev = (old_lines.get(line['id']) or {}).get(n)
                 k = clip_key(n, said)
-                fresh = bool(prev) and prev.get('key') == k and bool(prev.get('clip')) and (folder / prev['clip']).is_file() and not a.again
-                if fresh:
+                prev = None if a.again else have.get(k)
+                retry = bool(prev) and a.retry and prev.get('check') == 'flag'
+                if prev and not retry:
                     keep.setdefault(line['id'], {})[n] = {**prev, 'said': said}  # a stress mark moved: the same clip
                 elif n in narrators:
-                    jobs.append({'id': f'j{len(jobs)}', 'scene': key, 'line': line['id'], 'narrator': n, 'text': spoken(said), 'said': said, 'key': k,
-                                 'engine': NARRATORS[n]['engine'], 'voice': NARRATORS[n]['voice'], 'settings': NARRATORS[n].get('settings', {})})
+                    if k not in wanted:
+                        # a clip still heard wrong, tried again: its takes carry on from the last, with new seeds and speeds
+                        jobs.append({'id': f'j{len(jobs)}', 'scene': key, 'line': line['id'], 'narrator': n, 'text': spoken(said), 'said': said, 'key': k,
+                                     'first': int(prev.get('takes') or 0) if retry else 0,
+                                     'engine': NARRATORS[n]['engine'], 'voice': NARRATORS[n]['voice'], 'settings': NARRATORS[n].get('settings', {})})
+                    wanted.setdefault(k, []).append((key, line['id'], n, said))
         plans[key] = keep
     kept = sum(len(v) for p in plans.values() for v in p.values())
-    print(f'{len(scenes)} scene(s), {sum(len(s.get("lines") or []) for _, s, _ in scenes)} line(s), narrators {", ".join(narrators)}: '
-          f'{len(jobs)} clip(s) to make, {kept} kept as they were.')
+    lines_n = sum(len(s.get('lines') or []) for _, s, _ in scenes)
+    print(f'{len(scenes)} scene(s) and lesson(s), {lines_n} line(s), narrators {", ".join(narrators)}: '
+          f'{len(jobs)} clip(s) to make, {kept} kept as they were.', flush=True)
 
-    # Make, hear and retake, a round per take: every engine's jobs in one go, so each model loads once.
-    best = {}
-    if jobs:
+    def write_timings(final=False):
+        """A timing file per scene or lesson, each clip named for its line (voice/<key>/<line>.<narrator>.<key8>.m4a);
+        once all is made, nothing is left in voice/ that no timing file names."""
+        names = set()
+        for key, scene, where in scenes:
+            order = [x.get('id') for x in scene.get('lines') or [] if isinstance(x, dict)]
+            lines = {}
+            for lid in order:
+                for n in NARRATORS:
+                    e = plans[key].get(lid, {}).get(n)
+                    if not e:
+                        continue
+                    rel = f'voice/{key}/{lid}.{n}.{e["key"][:8]}.m4a'
+                    if e['clip'] != rel and (folder / e['clip']).is_file():
+                        (folder / rel).parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(folder / e['clip'], folder / rel)  # found under another line: copied to its own name
+                        e = plans[key][lid][n] = {**e, 'clip': rel}
+                    lines.setdefault(lid, {})[n] = e
+            timing = {'v': 1, 'scene': key, 'units': 'seconds from the start of each clip; words are [word as said, start, end]',
+                      'how': 'Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; '
+                             'words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 96 kbps at about -13 LUFS, true peaks under -1 dB.',
+                      'lines': lines}
+            save_timing(folder / 'voice' / f'{key}.json', timing)
+            names.add(f'voice/{key}.json')
+            names |= {e['clip'] for byn in lines.values() for e in byn.values()}
+        if final and (folder / 'voice').exists():
+            for f in sorted((folder / 'voice').rglob('*'), reverse=True):
+                rel = f.relative_to(folder).as_posix()
+                if f.is_file() and rel not in names:
+                    f.unlink()
+                elif f.is_dir() and not any(f.iterdir()):
+                    f.rmdir()
+
+    # Make, hear and retake, a round per take: every engine's jobs in one go, so each model loads once. A long
+    # list goes in batches, each saved as it's done, so a run that stops part way keeps what it made.
+    best, batch = {}, max(1, int(os.environ.get('PRIMER_VOICE_BATCH') or 120))
+    for at in range(0, len(jobs), batch):
+        some = jobs[at:at + batch]
+        if len(jobs) > batch:
+            print(f'  clips {at + 1} to {at + len(some)} of {len(jobs)}', flush=True)
         work = pathlib.Path(tempfile.mkdtemp(prefix='primer-voice-'))
         try:
-            todo = list(jobs)
+            todo = list(some)
             for take in range(1, MAX_TAKES + 1):
                 if not todo:
                     break
                 wav, clips = work / f'wav{take}', work / f'm4a{take}'
                 clips.mkdir(parents=True, exist_ok=True)
                 for engine in ('kokoro', 'chatterbox'):
-                    mine = [{**j, 'take': take} for j in todo if j['engine'] == engine]
+                    mine = [{**j, 'take': j.get('first', 0) + take} for j in todo if j['engine'] == engine]
                     if not mine:
                         continue
                     jf = work / f'{engine}{take}.json'
@@ -1883,49 +1990,33 @@ def cmd_voice(a):
                     res = heard.get(j['id'])
                     if j['id'] not in best or take_score(res) < take_score(best[j['id']]['res']):
                         best[j['id']] = {'res': res, 'file': clips / f'{j["id"]}.m4a', 'take': take}
-                    best[j['id']]['takes'] = take
+                    best[j['id']]['takes'] = j.get('first', 0) + take
                     if not take_good(res):
                         left.append(j)
                 if left and take < MAX_TAKES:
-                    print(f'  {len(left)} clip(s) heard wrong; another take: ' + '; '.join(f'{j["line"]} ({j["narrator"]}): "{(heard.get(j["id"]) or {}).get("heard", "")}"' for j in left[:4]))
+                    print(f'  {len(left)} clip(s) heard wrong; another take: ' + '; '.join(f'{j["line"]} ({j["narrator"]}): "{(heard.get(j["id"]) or {}).get("heard", "")}"' for j in left[:4]), flush=True)
                 todo = left
-            # Into the topic's folder: voice/<scene>/<line>.<narrator>.<key>.m4a
-            for j in jobs:
+            # Into the topic's folder, for every line that says it: voice/<scene>/<line>.<narrator>.<key>.m4a
+            for j in some:
                 b = best.get(j['id'])
                 if not b or not b['res'] or not b['res'].get('words'):
                     print(f'  warning: {j["scene"]} line {j["line"]} ({j["narrator"]}) couldn\'t be voiced; it plays from its caption.')
                     continue
-                rel = f'voice/{j["scene"]}/{j["line"]}.{j["narrator"]}.{j["key"][:8]}.m4a'
-                (folder / rel).parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(b['file'], folder / rel)
                 res = b['res']
-                plans[j['scene']].setdefault(j['line'], {})[j['narrator']] = {
-                    'clip': rel, 'key': j['key'], 'said': j['said'], 'seconds': round(seconds_of(ffprobe, folder / rel), 3),
-                    'words': res['words'], 'check': 'ok' if take_good(res) else 'flag', 'heard': res.get('heard', ''), 'takes': b['takes']}
+                for scene_key, lid, n, said in wanted[j['key']]:
+                    rel = f'voice/{scene_key}/{lid}.{n}.{j["key"][:8]}.m4a'
+                    (folder / rel).parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(b['file'], folder / rel)
+                    plans[scene_key].setdefault(lid, {})[n] = {
+                        'clip': rel, 'key': j['key'], 'said': said, 'seconds': round(seconds_of(ffprobe, folder / rel), 3),
+                        'words': res['words'], 'check': 'ok' if take_good(res) else 'flag', 'heard': res.get('heard', ''), 'takes': b['takes']}
                 if not take_good(res):
                     print(f'  warning: after {b["takes"]} takes, {j["scene"]} line {j["line"]} ({j["narrator"]}) is still heard as "{res.get("heard")}": listen to it, or reword the line.')
         finally:
             shutil.rmtree(work, ignore_errors=True)
+        write_timings()
 
-    # A timing file per scene, and nothing left in voice/ that no timing file names.
-    names = set()
-    for key, scene, where in scenes:
-        order = [x.get('id') for x in scene.get('lines') or [] if isinstance(x, dict)]
-        lines = {lid: {n: plans[key][lid][n] for n in NARRATORS if n in plans[key].get(lid, {})} for lid in order if lid in plans[key]}
-        timing = {'v': 1, 'scene': key, 'units': 'seconds from the start of each clip; words are [word as written, start, end]',
-                  'how': 'Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; '
-                         'words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 64 kbps at about -16 LUFS.',
-                  'lines': lines}
-        save_timing(folder / 'voice' / f'{key}.json', timing)
-        names.add(f'voice/{key}.json')
-        names |= {e['clip'] for byn in lines.values() for e in byn.values()}
-    if (folder / 'voice').exists():
-        for f in sorted((folder / 'voice').rglob('*'), reverse=True):
-            rel = f.relative_to(folder).as_posix()
-            if f.is_file() and rel not in names:
-                f.unlink()
-            elif f.is_dir() and not any(f.iterdir()):
-                f.rmdir()
+    write_timings(final=True)
     made = sum(1 for j in jobs if j['id'] in best)
     retakes = sum(1 for b in best.values() if b['takes'] > 1)
     flagged = sum(1 for b in best.values() if not take_good(b['res']))
@@ -2237,6 +2328,7 @@ def main():
     s.add_argument('topic', help='the topic\'s folder')
     s.add_argument('--narrators', default='all', help='all (the default, so any can be chosen on the phone), topic (its own only), or a list: heart,george')
     s.add_argument('--again', action='store_true', help='make every clip again, even those whose words haven\'t changed')
+    s.add_argument('--retry', action='store_true', help='try again the clips still heard wrong, with fresh takes')
     s.add_argument('--tts', help='the folder holding the voice environments: kokoro, chatterbox and check')
     s.add_argument('--python', help=argparse.SUPPRESS)  # one Python for every engine: the tests, with PRIMER_VOICE_FAKE=1
     s.add_argument('--ffmpeg', help='ffmpeg, if it isn\'t on PATH')

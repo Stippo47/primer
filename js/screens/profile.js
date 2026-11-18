@@ -55,7 +55,7 @@ export function profileScreen(app) {
     ${app.topics.length ? `<p class="over">Knowledge</p><div class="plate know">${rows}</div>` : ''}
     <p class="over">Settings</p>
     <div class="plate settings">
-      ${toggle('voice', 'Voice')}${toggle('effects', 'Effects')}${toggle('music', 'Music')}
+      ${toggle('voice', 'Voice')}${toggle('captions', 'Captions')}${toggle('effects', 'Effects')}${toggle('music', 'Music')}
       <div class="srow"><p>Text size</p><div class="seg" role="group" aria-label="Text size">${['s', 'm', 'l'].map((s, i) => `<button class="${prefs.text === s ? 'on' : ''}" data-size="${s}" data-sound="select" style="font-size:${[11, 13.5, 16][i]}px" aria-label="${['Small', 'Middle', 'Large'][i]} text">A</button>`).join('')}</div></div>
     </div>
     ${narrators ? `<p class="over">Narrators</p><div class="plate settings" id="narrators">${narrators}</div>` : ''}

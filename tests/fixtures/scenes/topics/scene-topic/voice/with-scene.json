@@ -1,0 +1,198 @@
+{
+ "v": 1,
+ "scene": "with-scene",
+ "units": "seconds from the start of each clip; words are [word as said, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 96 kbps at about -13 LUFS, true peaks under -1 dB.",
+ "lines": {
+  "before.text": {
+   "george": {
+    "clip": "voice/with-scene/before.text.george.2136891e.m4a",
+    "key": "2136891e1c329ed9b960970387e0b84e2ef9c4e4",
+    "said": "A made-up step before the scene, read aloud at twenty-seven degrees Celsius and lit word by word as it goes.",
+    "seconds": 6.123,
+    "words": [
+     ["A", 0.15, 0.381],
+     ["made-up", 0.439, 0.67],
+     ["step", 0.727, 0.958],
+     ["before", 1.016, 1.247],
+     ["the", 1.305, 1.536],
+     ["scene,", 1.593, 1.824],
+     ["read", 1.882, 2.113],
+     ["aloud", 2.171, 2.402],
+     ["at", 2.459, 2.69],
+     ["twenty-seven", 2.748, 2.979],
+     ["degrees", 3.037, 3.268],
+     ["Celsius", 3.325, 3.556],
+     ["and", 3.614, 3.845],
+     ["lit", 3.903, 4.134],
+     ["word", 4.191, 4.422],
+     ["by", 4.48, 4.711],
+     ["word", 4.769, 5.0],
+     ["as", 5.057, 5.288],
+     ["it", 5.346, 5.577],
+     ["goes.", 5.635, 5.866]
+    ],
+    "check": "ok",
+    "heard": "A made-up step before the scene, read aloud at twenty-seven degrees Celsius and lit word by word as it goes.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene/before.text.bella.39410ebc.m4a",
+    "key": "39410ebc323e514a55ad0ce32c0a720e7d098ed5",
+    "said": "A made-up step before the scene, read aloud at twenty-seven degrees Celsius and lit word by word as it goes.",
+    "seconds": 6.123,
+    "words": [
+     ["A", 0.15, 0.381],
+     ["made-up", 0.439, 0.67],
+     ["step", 0.727, 0.958],
+     ["before", 1.016, 1.247],
+     ["the", 1.305, 1.536],
+     ["scene,", 1.593, 1.824],
+     ["read", 1.882, 2.113],
+     ["aloud", 2.171, 2.402],
+     ["at", 2.459, 2.69],
+     ["twenty-seven", 2.748, 2.979],
+     ["degrees", 3.037, 3.268],
+     ["Celsius", 3.325, 3.556],
+     ["and", 3.614, 3.845],
+     ["lit", 3.903, 4.134],
+     ["word", 4.191, 4.422],
+     ["by", 4.48, 4.711],
+     ["word", 4.769, 5.0],
+     ["as", 5.057, 5.288],
+     ["it", 5.346, 5.577],
+     ["goes.", 5.635, 5.866]
+    ],
+    "check": "ok",
+    "heard": "A made-up step before the scene, read aloud at twenty-seven degrees Celsius and lit word by word as it goes.",
+    "takes": 1
+   }
+  },
+  "after.ask": {
+   "george": {
+    "clip": "voice/with-scene/after.ask.george.06d06e94.m4a",
+    "key": "06d06e940f568a2f1dccdc20ba1fa8f539296e15",
+    "said": "Which was lit up first, of the two countries the scene showed?",
+    "seconds": 3.723,
+    "words": [
+     ["Which", 0.15, 0.375],
+     ["was", 0.431, 0.656],
+     ["lit", 0.712, 0.937],
+     ["up", 0.993, 1.218],
+     ["first,", 1.274, 1.499],
+     ["of", 1.556, 1.78],
+     ["the", 1.837, 2.062],
+     ["two", 2.118, 2.343],
+     ["countries", 2.399, 2.624],
+     ["the", 2.68, 2.905],
+     ["scene", 2.961, 3.186],
+     ["showed?", 3.242, 3.467]
+    ],
+    "check": "ok",
+    "heard": "Which was lit up first, of the two countries the scene showed?",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene/after.ask.bella.c337a728.m4a",
+    "key": "c337a728ec7c8aedbe159c8c4a81e6f26f1c4ea4",
+    "said": "Which was lit up first, of the two countries the scene showed?",
+    "seconds": 3.723,
+    "words": [
+     ["Which", 0.15, 0.375],
+     ["was", 0.431, 0.656],
+     ["lit", 0.712, 0.937],
+     ["up", 0.993, 1.218],
+     ["first,", 1.274, 1.499],
+     ["of", 1.556, 1.78],
+     ["the", 1.837, 2.062],
+     ["two", 2.118, 2.343],
+     ["countries", 2.399, 2.624],
+     ["the", 2.68, 2.905],
+     ["scene", 2.961, 3.186],
+     ["showed?", 3.242, 3.467]
+    ],
+    "check": "ok",
+    "heard": "Which was lit up first, of the two countries the scene showed?",
+    "takes": 1
+   }
+  },
+  "after.right": {
+   "george": {
+    "clip": "voice/with-scene/after.right.george.d15b45b2.m4a",
+    "key": "d15b45b24892b428871f85bdb7cdad46b3773a26",
+    "said": "Yes: France came first.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["France", 0.393, 0.588],
+     ["came", 0.637, 0.832],
+     ["first.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: France came first.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene/after.right.bella.8759c130.m4a",
+    "key": "8759c130e0f1426d895d2f03cff931a2142ac63b",
+    "said": "Yes: France came first.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["France", 0.393, 0.588],
+     ["came", 0.637, 0.832],
+     ["first.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: France came first.",
+    "takes": 1
+   }
+  },
+  "after.option-peru": {
+   "george": {
+    "clip": "voice/with-scene/after.option-peru.george.8dbce636.m4a",
+    "key": "8dbce6367bb13a97286ce61691c3041bae5836eb",
+    "said": "Peru came second, after France had been lit up in pink.",
+    "seconds": 3.424,
+    "words": [
+     ["Peru", 0.15, 0.374],
+     ["came", 0.429, 0.653],
+     ["second,", 0.709, 0.932],
+     ["after", 0.988, 1.212],
+     ["France", 1.268, 1.491],
+     ["had", 1.547, 1.771],
+     ["been", 1.826, 2.05],
+     ["lit", 2.106, 2.329],
+     ["up", 2.385, 2.609],
+     ["in", 2.665, 2.888],
+     ["pink.", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "Peru came second, after France had been lit up in pink.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene/after.option-peru.bella.90ea7958.m4a",
+    "key": "90ea795853e3c851e7c94f04049107c08431bbe1",
+    "said": "Peru came second, after France had been lit up in pink.",
+    "seconds": 3.424,
+    "words": [
+     ["Peru", 0.15, 0.374],
+     ["came", 0.429, 0.653],
+     ["second,", 0.709, 0.932],
+     ["after", 0.988, 1.212],
+     ["France", 1.268, 1.491],
+     ["had", 1.547, 1.771],
+     ["been", 1.826, 2.05],
+     ["lit", 2.106, 2.329],
+     ["up", 2.385, 2.609],
+     ["in", 2.665, 2.888],
+     ["pink.", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "Peru came second, after France had been lit up in pink.",
+    "takes": 1
+   }
+  }
+ }
+}

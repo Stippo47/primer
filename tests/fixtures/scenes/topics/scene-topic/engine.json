@@ -1,25 +1,17 @@
 {
  "v": 1,
  "title": "A made-up scene",
- "version": 1,
+ "version": 2,
  "parts": {
-  "globe": { "part": "globe", "settings": { "style": "warmth", "spin": "locked", "tap": "pin", "view": [-40, 10] } }
+  "globe": { "part": "globe", "settings": { "style": "warmth", "spin": "locked", "tap": "none", "view": [-40, 10] } }
  },
  "lines": [
   { "id": "turn", "text": "First the globe turns to *Brazil*, and then it lights up.",
     "do": [ { "at": "Brazil", "call": ["spinTo", "Brazil", 0.6] }, { "at": "lights", "call": ["highlight", ["Brazil"]] } ] },
   { "id": "storm", "text": "A storm appears over the open sea.",
     "do": [ { "at": "storm", "call": ["marker", [-40, 15], "storm"] }, { "at": "sea", "call": ["point", [-30, 5], "Sea"] } ] },
-  { "id": "tap", "text": "Now tap anywhere on the sea.",
-    "wait": {
-     "goal": { "read": "tapped.land", "is": false },
-     "right": "Yes: that's the sea.",
-     "why": "That's land: tap the sea.",
-     "then": [["band", 5, 20]],
-     "tries": [
-      { "state": { "tapped": { "lon": -30, "lat": 10, "land": false, "country": null } }, "marked": "right" },
-      { "state": { "tapped": { "lon": -50, "lat": -10, "land": true, "country": "Brazil" } }, "marked": "wrong" }
-     ] } },
+  { "id": "track", "text": "Then it moves along its track, slowly and surely, all the way to the end.",
+    "do": [ { "from": "moves", "to": "end", "call": ["track", [[-30, 5], [-45, 12], [-60, 20]], "$p", "storm"] } ] },
   { "id": "end", "text": "And that is the end of the made-up scene.",
     "do": [ { "at": "end", "call": ["spinTo", [-40, 10], 0.8] } ] }
  ],

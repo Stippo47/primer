@@ -366,7 +366,9 @@ class Forms(Work):
     def test_the_forms_topic_passes_with_nothing_to_say(self):
         r = run('check', FORMS)
         self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn('All good', r.stdout)
+        # nothing but its voice: made-up test data has no clips, and "°C" and "km/h" would want their spoken words
+        warnings = [x for x in r.stdout.splitlines() if x.strip().startswith('warning:')]
+        self.assertTrue(all("isn't voiced yet" in x or 'give "say"' in x for x in warnings), r.stdout)
 
     def test_a_dial_is_checked_like_a_slider(self):
         out = self.errors(lambda L: step(L, 'dial-wind').update(answer=300))
@@ -518,15 +520,14 @@ class SceneCheck(SceneWork):
         r = run('check', self.scene_topic(lambda S: line(S, 'turn')['do'].append({'from': 'globe', 'to': '$end', 'call': ['spinTo', 'Brazil', '$p']})))
         self.assertEqual(r.returncode, 0, r.stdout)
 
-    def test_a_wait_is_marked_like_a_play_step(self):
-        out = self.errors(lambda S: line(S, 'tap')['wait'].pop('tries'))
-        self.assertIn('a wait needs "tries"', out)
-        out = self.errors(lambda S: line(S, 'tap')['wait'].update(tries=[line(S, 'tap')['wait']['tries'][0]]))
-        self.assertIn('none of its tries is wrong', out)
-        out = self.errors(lambda S: line(S, 'tap')['wait']['tries'][1].update(marked='right'))
-        self.assertIn('should be marked right, but the goal marks it wrong', out)
-        out = self.errors(lambda S: line(S, 'tap')['wait'].update(goal={'read': 'zoomLevel', 'is': 2}))
-        self.assertIn("the part's state has only centre, selected, tapped", out)
+    def test_waits_are_refused(self):
+        """An animation plays through like a video: a line can't wait for an answer any more."""
+        wait = {'goal': {'read': 'tapped.land', 'is': False}, 'right': 'Yes.', 'why': 'No.',
+                'tries': [{'state': {'tapped': {'lon': 0, 'lat': 0, 'land': False, 'country': None}}, 'marked': 'right'}]}
+        out = self.errors(lambda S: line(S, 'storm').update(wait=wait))
+        self.assertIn('no "wait": a scene plays through like a video', out)
+        out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][0].update(wait=wait))
+        self.assertIn('no "wait"', out)
 
     def test_ids_and_fields(self):
         def change(S):
@@ -550,7 +551,45 @@ class SceneCheck(SceneWork):
         r = run('check', self.scene_topic(lambda S: line(S, 'storm').update(text='A *storm* appears over the open sea.')))
         self.assertNotIn('changed since', r.stdout)
         r = run('check', self.scene_topic(voice=False))
-        self.assertIn("isn't voiced yet (turn, storm, tap, end)", r.stdout)
+        self.assertIn("isn't voiced yet (turn, storm, track, end)", r.stdout)
+
+    def test_lesson_words_not_voiced_or_changed_since_are_warned_about(self):
+        r = run('check', self.scene_topic(lesson_change=lambda L: L['steps'][2].update(ask='Which of the two was lit up first?')))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('with-scene.json: lines changed since they were voiced (after.ask): run primer voice. Until then they show silently, as text', r.stdout)
+        r = run('check', self.scene_topic(voice=False))
+        self.assertIn("with-scene.json: isn't voiced yet (before.text, after.ask, after.right, after.option-peru)", r.stdout)
+
+    def test_a_steps_say_speaks_for_its_own_words(self):
+        r = run('check', self.scene_topic(lesson_change=lambda L: L['steps'][2]['input']['options'][1].update(say='Peru came second.')))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('lines changed since they were voiced (after.option-peru)', r.stdout)  # what's said changed
+        out = self.errors(lesson_change=lambda L: L['steps'][2].update(say={'ask': 'Which first?', 'text': 'Nothing here.'}))
+        self.assertIn('"say" speaks for ask, right, why; not "text"', out)
+        out = self.errors(lesson_change=lambda L: (L['steps'][2].pop('right'), L['steps'][2].update(say={'right': 'Yes.'})))
+        self.assertIn('"say.right" speaks for "right", which this step hasn\'t got', out)
+        r = run('check', self.scene_topic(lesson_change=lambda L: L['steps'][2].update(right='Yes: at 10 °C.')))
+        self.assertIn('after.right: has °: give "say"', r.stdout)
+
+    def test_python_and_javascript_read_the_same_lines_aloud(self):
+        """The ids a lesson's words are voiced by (spoken_lines) and the ids the phone reads them by (spokenLines)."""
+        sys.path.insert(0, str(PRIMER.parent))
+        import primer  # noqa: E402
+        lessons = [json.loads(f.read_text(encoding='utf-8')) for f in sorted((ROOT / 'tests' / 'fixtures').glob('*/topics/*/*.json'))
+                   if f.name != 'topic.json' and 'steps' in json.loads(f.read_text(encoding='utf-8'))]
+        lessons.append({'steps': [{'id': 'x', 'kind': 'check', 'ask': 'A?', 'say': {'ask': 'Ay?', 'why': 'Because.'}, 'why': 'B.', 'right': 'C.',
+                                   'misses': [{'when': {}, 'why': 'D.', 'say': 'Dee.'}], 'input': {'form': 'slider'}},
+                                  {'id': 'y', 'kind': 'explain', 'text': 'E.', 'say': 'Ee.'}]})
+        py = [[(x['id'], primer.said_of(x)) for x in primer.spoken_lines(L)] for L in lessons]
+        script = ("import { spokenLines } from " + json.dumps((ROOT / 'js' / 'narration.js').as_uri()) + ";"
+                  "import { saidOf } from " + json.dumps((ROOT / 'js' / 'readalong.js').as_uri()) + ";"
+                  "import { readFileSync } from 'node:fs';"
+                  "console.log(JSON.stringify(JSON.parse(readFileSync(0, 'utf8')).map(L => spokenLines(L).map(x => [x.id, saidOf(x)]))));")
+        js = subprocess.run(['node', '--input-type=module', '-e', script], input=json.dumps(lessons), capture_output=True, text=True, encoding='utf-8')
+        self.assertEqual(js.returncode, 0, js.stderr)
+        self.assertEqual([[list(x) for x in L] for L in py], json.loads(js.stdout))
+        self.assertEqual(py[-1], [('x.ask', 'Ay?'), ('x.right', 'C.'), ('x.why', 'Because.'), ('x.miss-1', 'Dee.'), ('y.text', 'Ee.')])
+        self.assertGreater(sum(len(L) for L in py), 20)
 
     def test_a_scene_step_in_a_lesson_is_checked_too(self):
         out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][0]['do'][0].update(call=['globe.highlight', ['France'], 'mauve']))
@@ -604,7 +643,7 @@ class Voice(SceneWork):
     def test_voice_makes_checks_times_and_redoes_only_what_changed(self):
         dest = self.scene_topic(voice=False)
         out = self.voice(dest, '--narrators', 'bella,george')
-        self.assertIn('12 clip(s) to make, 0 kept', out)
+        self.assertIn('20 clip(s) to make, 0 kept', out)
         t = self.timing(dest)
         entry = t['lines']['turn']['bella']
         self.assertEqual(len(entry['words']), 11)
@@ -614,7 +653,7 @@ class Voice(SceneWork):
         self.assertEqual(run('check', dest).returncode, 0)
         self.assertNotIn('voiced', run('check', dest).stdout)
         # again: nothing to make
-        self.assertIn('0 clip(s) to make, 12 kept', self.voice(dest, '--narrators', 'bella,george'))
+        self.assertIn('0 clip(s) to make, 20 kept', self.voice(dest, '--narrators', 'bella,george'))
         # one line's words change: only its clips, in each narrator, are made again; the old ones go
         old = entry['clip']
         body = json.loads((dest / 'engine.json').read_text(encoding='utf-8'))
@@ -623,7 +662,7 @@ class Voice(SceneWork):
         line(body, 'storm')['text'] = 'A *storm* appears over the open sea.'  # a stress mark only: the same clip
         (dest / 'engine.json').write_text(json.dumps(body), encoding='utf-8')
         out = self.voice(dest, '--narrators', 'bella,george')
-        self.assertIn('2 clip(s) to make, 10 kept', out)
+        self.assertIn('2 clip(s) to make, 18 kept', out)
         self.assertFalse((dest / old).exists())
         t2 = self.timing(dest)
         self.assertEqual(len(t2['lines']['turn']['bella']['words']), 12)
@@ -656,6 +695,69 @@ class Voice(SceneWork):
         self.assertNotIn('storm', self.timing(dest)['lines'])
         self.assertFalse(list((dest / 'voice').glob('engine/storm.*')))
         self.assertFalse((dest / 'voice' / 'with-scene.tour.json').exists() or (dest / 'voice' / 'with-scene.tour').exists())
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_a_lessons_words_are_voiced_too_and_only_what_changed_is_made_again(self):
+        dest = self.scene_topic(voice=False)
+        self.voice(dest, '--narrators', 'topic')
+        t = self.timing(dest, 'with-scene')
+        self.assertEqual(list(t['lines']), ['before.text', 'after.ask', 'after.right', 'after.option-peru'])
+        entry = t['lines']['before.text']['bella']
+        lesson = json.loads((dest / 'with-scene.json').read_text(encoding='utf-8'))
+        self.assertEqual(entry['said'], lesson['steps'][0]['say'])      # its spoken wording, "27 °C" as words
+        self.assertEqual(len(entry['words']), len(lesson['steps'][0]['say'].split()))
+        self.assertTrue(entry['clip'].startswith('voice/with-scene/before.text.bella.') and (dest / entry['clip']).exists())
+        self.assertNotIn('voiced', run('check', dest).stdout)
+        # one line of feedback changes: only its clip is made again, and the old one goes
+        old = t['lines']['after.right']['bella']['clip']
+        lesson['steps'][2]['right'] = 'Yes: France was lit up first.'
+        (dest / 'with-scene.json').write_text(json.dumps(lesson), encoding='utf-8')
+        self.assertIn('1 clip(s) to make, 9 kept', self.voice(dest, '--narrators', 'topic'))
+        self.assertFalse((dest / old).exists())
+        self.assertEqual(self.timing(dest, 'with-scene')['lines']['after.ask']['bella']['clip'], t['lines']['after.ask']['bella']['clip'])
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_a_clip_still_heard_wrong_can_be_tried_again(self):
+        dest = self.scene_topic(voice=False)
+        self.voice(dest, '--narrators', 'topic')
+        t = self.timing(dest, 'with-scene')
+        t['lines']['after.ask']['bella'].update(check='flag', takes=4)   # as if every take had come out wrong
+        (dest / 'voice' / 'with-scene.json').write_text(json.dumps(t), encoding='utf-8')
+        self.assertIn('0 clip(s) to make', self.voice(dest, '--narrators', 'topic'))
+        self.assertIn('1 clip(s) to make, 9 kept', self.voice(dest, '--narrators', 'topic', '--retry'))
+        entry = self.timing(dest, 'with-scene')['lines']['after.ask']['bella']
+        self.assertEqual((entry['check'], entry['takes']), ('ok', 5))
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_the_same_words_twice_are_made_once(self):
+        dest = self.scene_topic(lesson_change=lambda L: L['steps'][2].update(why=L['steps'][2]['input']['options'][1]['why']), voice=False)
+        out = self.voice(dest, '--narrators', 'topic')
+        self.assertIn('10 clip(s) to make', out)   # 11 lines, two of them the same words
+        lines = self.timing(dest, 'with-scene')['lines']
+        a, b = lines['after.why']['bella'], lines['after.option-peru']['bella']
+        self.assertEqual(a['key'], b['key'])
+        self.assertNotEqual(a['clip'], b['clip'])
+        self.assertTrue((dest / a['clip']).exists() and (dest / b['clip']).exists())
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_clips_are_made_loud_with_their_peaks_held_down(self):
+        """About -13 LUFS integrated, true peaks under -1 dB, AAC at 96 kbps."""
+        sys.path.insert(0, str(PRIMER.parent))
+        import primer  # noqa: E402
+        self.assertEqual((primer.ENCODE['lufs'], primer.ENCODE['peak'], primer.ENCODE['bitrate']), (-13.0, -1.0, '96k'))
+        dest = self.scene_topic(voice=False)
+        self.voice(dest, '--narrators', 'topic')
+        for clip in sorted((dest / 'voice').rglob('*.m4a'))[:4]:
+            lufs, peak = primer.loudness('ffmpeg', clip)
+            self.assertLess(abs(lufs - -13.0), 0.5, clip.name)
+            self.assertLessEqual(peak, -1.0, clip.name)
+        # a loud master, peaking well over full scale, comes out at the same level with its peaks held down
+        wav = self.tmp / 'loud.wav'
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=frequency=220:duration=2.5', '-af',
+                        'volume=24dB,apulsator=hz=3:amount=0.6', '-ar', '24000', '-c:a', 'pcm_f32le', str(wav)], check=True)
+        res = primer.encode_clip(wav, self.tmp / 'loud.m4a')
+        self.assertLess(abs(res['lufs'] - -13.0), 0.35)
+        self.assertLessEqual(res['peak'], -1.0)
 
     def test_voice_says_where_the_engines_are_wanted(self):
         r = subprocess.run([sys.executable, str(PRIMER), 'voice', str(self.scene_topic()), '--tts', str(self.tmp / 'nowhere')],
@@ -980,7 +1082,8 @@ class SendAndProgress(Work):
         self.assertIn('engine.json', sent)
         self.assertIn('voice/engine.json', sent)
         self.assertIn('voice/with-scene.tour.json', sent)
-        self.assertEqual(len([p for p in sent if p.endswith('.m4a')]), 12)
+        self.assertIn('voice/with-scene.json', sent)   # the lesson's own words, read aloud
+        self.assertEqual(len([p for p in sent if p.endswith('.m4a')]), 20)
         self.assertNotIn('voice/stray.m4a', sent)
         self.assertIn('voice:', r.stdout)
         # a line voiced again: the old clip goes from the repo, the new one comes

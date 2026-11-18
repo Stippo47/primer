@@ -20,9 +20,10 @@ import { practiceScreen, partScreen } from './screens/practice.js';
 import { homeScreen, shopScreen } from './screens/home.js';
 import { profileScreen, connectScreen } from './screens/profile.js';
 import { visitNode } from './screens/node.js';
+import { playVideo } from './screens/video.js';
 import { DEFAULT_NARRATOR } from './scene.js';
 
-const VERSION = '0.4.1'; // keep in step with sw.js
+const VERSION = '0.5.0'; // keep in step with sw.js
 const root = document.getElementById('app');
 const view = document.getElementById('view');
 const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
@@ -56,7 +57,8 @@ const app = {
   topics: [],
   // Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen).
   // narrators: the narrator chosen for a subject, overriding its topics' own: { "Earth science": "george" }.
-  prefs: { v: 2, voice: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn', narrators: {} },
+  // captions: an animation's captions, on or off (with no voice they're always on).
+  prefs: { v: 2, voice: true, captions: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn', narrators: {} },
   tab: 'learn',
   partNow: null,
   mustInstall: isIOS && !isInstalled,
@@ -100,17 +102,49 @@ const app = {
       record,
       media: path => sync.mediaUrl(data.mediaPath(topic.id, path)),
       onLeave: () => { run = null; app.go('learn'); },
-      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic) },
+      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic),
+        captions: () => app.prefs.captions !== false, setCaptions: on => app.setPref('captions', on) },
     });
     await run.open();
     return run;
   },
 
-  // A node on the path: a lesson, test, exam or animation plays from `start`; a chest opens; a review goes
-  // over the facts of the lessons before it (a placeholder if they teach none); an animation without its
-  // scene file is a placeholder.
+  // An animation, played like a video, full screen. Next goes on to the node after it on the path.
+  async openVideo(topic, node) {
+    if (run) return null;
+    paintTabs();
+    const at = topic.path.findIndex(n => n.id === node.id);
+    const next = at >= 0 ? topic.path[at + 1] || null : null;
+    const opening = playVideo(app, topic, node, {
+      next, record,
+      media: path => sync.mediaUrl(data.mediaPath(topic.id, path)),
+      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic) },
+      captions: { on: () => app.prefs.captions !== false, set: on => app.setPref('captions', on) },
+      onLeave: () => { run = null; app.go('learn'); },
+      onNext: () => { run = null; app.openAfter(topic, node); },
+    });
+    run = { scene: null, opening, remove() {} };
+    const v = await opening;
+    if (run && run.opening === opening) run = v;
+    return v;
+  },
+
+  // The node after this one on the path, opened as the path would open it; back to the path if there's none
+  // or it can't be started.
+  openAfter(topic, node) {
+    const path = data.pathOf(topic);
+    const at = path.nodes.findIndex(x => x.node.id === node.id);
+    const x = at >= 0 ? path.nodes[at + 1] : null;
+    if (!x || x.broken) { app.go('learn'); return null; }
+    return app.openNode(topic, x.node, x.done ? 0 : x.resume);
+  },
+
+  // A node on the path: a lesson, test or exam plays from `start`; an animation plays as a video; a chest
+  // opens; a review goes over the facts of the lessons before it (a placeholder if they teach none); an
+  // animation without its scene file is a placeholder.
   openNode(topic, node, start = 0) {
     if (run) return null;
+    if (node.kind === 'animation' && node.file) return app.openVideo(topic, node);
     if (data.isPlayed(node)) return node.file ? app.openLesson(topic, node.file, start) : null;
     if (node.kind === 'review' && review.poolFor({ node: { topic, node } }).length) return app.openReview({ node: { topic, node } });
     return visitNode(app, topic, node, { record, onLeave: () => app.go('learn') });
@@ -275,6 +309,15 @@ if (isLocalHost) {
       await run.open();
       await new Promise(r => setTimeout(r, 120));
       return run.measure();
+    },
+    // Draws an animation full screen, still, without saving anything: for `primer fit`.
+    async fitVideo(topic, file, media = p => p) {
+      if (run) { run.remove(); run = null; }
+      const node = { kind: 'animation', id: file.id, title: file.title, file: data.sceneLesson(file, file.id, topic.id) };
+      run = await playVideo(app, { ...topic, path: [node] }, node, { record: () => {}, media, voice: { on: () => false }, onLeave: () => { run = null; }, onNext: () => { run = null; } });
+      run.scene.still(0);
+      await new Promise(r => setTimeout(r, 120));
+      return run.scene.measure();
     },
     esc,
   };

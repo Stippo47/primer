@@ -22,8 +22,9 @@ const lesson = JSON.parse(readFileSync(args.lesson, 'utf8'));
 const topic = { ...JSON.parse(readFileSync(join(TOPIC, 'topic.json'), 'utf8')), id: basename(TOPIC) };
 lesson.id = basename(args.lesson, '.json');
 lesson.topic = topic.id;
-// An animation's file is a scene: it plays as a lesson of that one step.
-if (!lesson.steps && Array.isArray(lesson.lines)) {
+// An animation's file is a scene: it plays full screen, like a video, and what matters is each caption.
+const video = !lesson.steps && Array.isArray(lesson.lines) ? { ...lesson } : null;
+if (video) {
   Object.assign(lesson, { kind: 'animation', steps: [{ id: lesson.id, kind: 'scene', title: lesson.title, parts: lesson.parts, lines: lesson.lines }] });
 }
 // A lesson's facts are asked in review and in tests, each ask a step of its own: they're drawn too, after the
@@ -58,6 +59,7 @@ const server = createServer(async (req, res) => {
 await new Promise(r => server.listen(Number(args.port) || 0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
+const CAPTION_LINES = 4;   // as js/scene.js
 const SCREENS = [{ name: 'small', w: 375, h: 667, insets: '20,0' }, { name: 'big', w: 414, h: 896, insets: '48,34' }];
 // The longest line of feedback a step can show, so the measure with feedback is the worst case.
 function longestWhy(s) {
@@ -75,25 +77,24 @@ try {
     await b.ev(`window.__fitMedia = p => (p.startsWith('topics/') ? '/__data/' : '/__topic/') + p; true`);
     for (let i = 0; i < lesson.steps.length; i++) {
       const s = lesson.steps[i];
-      let plain = await b.ev(`__primer.fit(${JSON.stringify(topic)}, ${JSON.stringify(lesson)}, ${i}, __fitMedia)`);
+      let plain = video
+        ? await b.ev(`__primer.fitVideo(${JSON.stringify(topic)}, ${JSON.stringify(video)}, __fitMedia)`)
+        : await b.ev(`__primer.fit(${JSON.stringify(topic)}, ${JSON.stringify(lesson)}, ${i}, __fitMedia)`);
       let fed = null;
       if (s.kind === 'scene') {
-        // a scene: every line's caption in its turn, and a wait's longest feedback; the worst is the step's
+        // a scene: every line's caption in its turn, over the picture; the worst is the step's. In a lesson,
+        // the step itself must fit too.
+        plain = { over: -1 };
         for (let j = 0; j < s.lines.length; j++) {
           await b.ev(`__primer.run.scene.still(${j}); true`);
           await sleep(60);
-          const m = await b.ev('__primer.run.measure()');
-          if (m.over >= plain.over) plain = { ...m, line: s.lines[j].id };
-          if (s.lines[j].wait) {
-            await b.ev(`__primer.run.preview('wrong', ${JSON.stringify(longestWhy(s.lines[j].wait))}); true`);
-            await sleep(60);
-            const mf = await b.ev('__primer.run.measure()');
-            if (!fed || mf.over > fed.over) fed = mf;
-            await b.ev(`__primer.run.foot.className = 'lfoot'; __primer.run.foot.querySelector('.lfeed').hidden = true; true`);
-          }
+          const cap = await b.ev('__primer.run.scene.measure()');
+          const step = video ? { over: 0 } : await b.ev('__primer.run.measure()');
+          const m = { over: Math.max(cap.over, step.over), stage: cap.stage, lines: cap.lines, line: s.lines[j].id };
+          if (m.over > plain.over || (m.over === plain.over && m.lines > (plain.lines || 0))) plain = m;
           if (args.shots && sc.name === 'small') await b.shot(join(args.shots, `${String(i + 1).padStart(2, '0')}-${s.id}-${String(j + 1).padStart(2, '0')}-${s.lines[j].id}.png`));
         }
-        results[i][sc.name] = { over: plain.over, stage: plain.stage, overWithFeedback: fed ? fed.over : 0, line: plain.line };
+        results[i][sc.name] = { over: plain.over, stage: plain.stage, overWithFeedback: 0, line: plain.line, lines: plain.lines };
         continue;
       }
       if (s.kind !== 'explain') {
@@ -108,10 +109,13 @@ try {
   for (const r of results) {
     const sm = r.small, bg = r.big;
     let verdict = 'fits', words = 'fits';
-    if (sm.over > 0 || bg.over > 0) {
+    if (r.kind === 'scene' && (sm.over > 0 || bg.over > 0)) {
       verdict = 'scrolls';
-      const where = r.kind === 'scene' ? ` at line ${(sm.over > 0 ? sm : bg).line}` : '';
-      words = `doesn't fit${where}: it scrolls by ${Math.max(sm.over, bg.over)} px on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}. Cut words, or use a smaller form`;
+      const w = sm.over > 0 ? sm : bg;
+      words = `doesn't fit at line ${w.line}: its caption takes ${w.lines} lines on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}, over the picture; a caption reads best in ${CAPTION_LINES} or fewer. Split the line`;
+    } else if (sm.over > 0 || bg.over > 0) {
+      verdict = 'scrolls';
+      words = `doesn't fit: it scrolls by ${Math.max(sm.over, bg.over)} px on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}. Cut words, or use a smaller form`;
     } else if (sm.overWithFeedback > 0 || bg.overWithFeedback > 0) {
       verdict = 'tight';
       words = `fits, but with its longest feedback showing it scrolls by ${Math.max(sm.overWithFeedback, bg.overWithFeedback)} px on the smallest iPhone: shorten that line`;

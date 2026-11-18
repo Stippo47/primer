@@ -1,19 +1,24 @@
 // The lesson player, for every node that's played step by step: a lesson, a test or an exam (`kind` on
-// the file the library hands it), and an animation, which is a lesson of one scene step. Review
-// (js/review.js) is this player too, with its own top row and its steps chosen as it goes, and so is a
-// look back at one step from review (`peek`). Each is a run of steps, one screen each:
+// the file the library hands it). Review (js/review.js) is this player too, with its own top row and its
+// steps chosen as it goes, and so is a look back at one step from review (`peek`). Animations play as
+// videos (js/screens/video.js). Each is a run of steps, one screen each:
 //   explain  a short paragraph and a figure
 //   check    a quick question, answered with the Inputs part
 //   play     a part with a goal, marked by reading the part's state
-//   scene    a narrated animation on parts (js/scene.js), which can wait for a goal like a play step
+//   scene    a narrated animation on parts (js/scene.js), played through like a video
 // A thin bar and a cross on top; a Check button that becomes Continue; plain feedback: right, close, or
 // wrong with the one line of why for the answer given. Being wrong costs nothing. Every attempt is handed
 // to `record`, which saves it and queues it to go up.
+// With Voice on, a step's words are read aloud as it opens, and the line of feedback once it's shown, each
+// lit word by word (js/readalong.js) in the subject's narrator. Moving on stops it; tapping the words reads
+// them again; nothing ever waits for it.
 import * as parts from './parts.js';
 import * as feel from './feel.js';
 import { holds, read, subst } from './rules.js';
 import { icon, medallion } from './art.js';
 import { Scene, DEFAULT_NARRATOR } from './scene.js';
+import { ReadAlong, markup } from './readalong.js';
+import { Reader, spokenLines } from './narration.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // *words* are stressed, as in the scene scripts; a line break stays a line break.
@@ -45,21 +50,22 @@ export function rulesOf(step, inputsDesc) {
   };
 }
 
-// Marks a step on a part's state: { right, close, why }.
+// Marks a step on a part's state: { right, close, why, line }. `line` names the line of feedback shown, as
+// its voice is named (right, why, miss-<n>, option-<id>: narration.js, spokenLines).
 export function mark(step, state, inputsDesc) {
   const { goal, close } = rulesOf(step, inputsDesc);
   const right = !!goal && holds(goal, state);
   const near = !right && !!close && holds(close, state);
-  let why = '';
-  if (right) why = step.right || '';
+  let why = '', line = '';
+  if (right) { why = step.right || ''; line = 'right'; }
   else if (step.kind === 'check' && step.input.form === 'choice') {
     const o = (step.input.options || []).find(x => x.id === state.value);
-    why = (o && o.why) || step.why || '';
+    if (o && o.why) { why = o.why; line = `option-${o.id}`; } else { why = step.why || ''; line = 'why'; }
   } else {
-    const miss = (step.misses || []).find(m => holds(m.when, state));
-    why = miss ? miss.why : step.why || '';
+    const n = (step.misses || []).findIndex(m => holds(m.when, state));
+    if (n >= 0) { why = step.misses[n].why; line = `miss-${n + 1}`; } else { why = step.why || ''; line = 'why'; }
   }
-  return { right, close: near, why };
+  return { right, close: near, why, line };
 }
 
 // Whether there's enough of an answer to check. Check steps ask the part; play steps look for the value
@@ -87,6 +93,23 @@ export class Run {
     this.mounted = [];
     this.results = {};
     this.state = 'idle'; // idle | ready | marked | ended
+    // its words read aloud: the lesson's voice file (timing), in the chosen narrator, else the topic's
+    this.spoken = new Map(spokenLines(lesson).map(l => [l.id, l]));
+    this.reader = new Reader({ timing: lesson.timing || null, order: [voice.narrator, topic.narrator], media, on: () => (voice.on ? voice.on() : true) });
+  }
+
+  // The line of the step that is read as it opens: its text, or its question.
+  mainLine(i) {
+    const s = this.lesson.steps[i];
+    return s ? this.spoken.get(`${s.id}.${s.kind === 'explain' ? 'text' : 'ask'}`) || null : null;
+  }
+
+  // Reads one of the step's lines into its words on screen: the text or question, or the feedback's why.
+  speak(which) {
+    const s = this.step;
+    const line = which === 'main' ? this.mainLine(this.i) : this.spoken.get(`${s.id}.${this.whyLine}`);
+    const ra = which === 'main' ? this.textRa : this.whyRa;
+    if (line && ra) this.reader.read(line, ra);
   }
 
   // The row along the top: a cross, and a thin bar that fills as the steps go by.
@@ -108,11 +131,15 @@ export class Run {
     this.btn = this.root.querySelector('[data-go=go]');
     this.bar = this.root.querySelector('.lbar b');
     this.onClick = e => {
+      // a tap on words that are read aloud reads them again
+      if (e.target.closest('.ltext.ra')) { this.speak('main'); return; }
+      if (e.target.closest('.lwhy.ra')) { this.speak('why'); return; }
       const b = e.target.closest('[data-go]');
       if (!b || b.disabled) return;
       this.clicked(b.dataset.go, b);
     };
     this.root.addEventListener('click', this.onClick);
+    this.reader.warm([...this.spoken.values()]);
     this.begin();
     await this.show(this.i);
     return this;
@@ -142,7 +169,8 @@ export class Run {
     for (const p of this.mounted) try { p.remove(); } catch { /* already gone */ }
     this.mounted = [];
     if (this.scene) this.scene.remove();
-    this.figure = this.input = this.play = this.scene = null;
+    this.reader.stop();
+    this.figure = this.input = this.play = this.scene = this.textRa = this.whyRa = null;
   }
 
   // Mounts a part described by a step ({ part, settings, calls }) into el.
@@ -166,9 +194,12 @@ export class Run {
     const fig = s.kind === 'play' ? s.play : s.figure;
     const small = s.kind === 'check' && s.input && s.input.form !== 'slider';
     this.body.innerHTML = `${fig ? `<div class="lstage stage${fig.image ? ' image' : ''}${small ? ' small' : ''}"></div>` : ''}
-      <p class="ltext${s.kind === 'explain' && String(text || '').length > 150 ? ' long' : ''}">${rich(text)}</p>
+      <p class="ltext${s.kind === 'explain' && String(text || '').length > 150 ? ' long' : ''}"></p>
       ${s.kind === 'check' ? '<div class="linput"></div>' : ''}`;
     this.body.scrollTop = 0;
+    // the words, as a read-along part: read aloud as the step opens, with Voice on
+    this.textRa = new ReadAlong(this.body.querySelector('.ltext'), text);
+    this.speak('main');
     const stage = this.body.querySelector('.lstage');
     const jobs = [];
     if (fig && fig.image) {
@@ -194,33 +225,23 @@ export class Run {
     this.view.dispatchEvent(new CustomEvent('stepshown', { detail: { i, id: s.id } }));
   }
 
-  // A scene step: the scene drives the big button (Check during a wait, Continue once it has ended) and
-  // the feedback, exactly as a play step's. An animation on the path is a lesson of this one step, and its
-  // scene fills the thin bar as it goes.
+  // A scene step: the same player as an animation (js/scene.js), inside the step. It plays through like a
+  // video, and Continue wakes once it has reached its end.
   async showScene(i) {
     const s = this.step;
     this.body.innerHTML = '<div class="lscene"></div>';
     this.body.scrollTop = 0;
     this.setButton('continue', false);
-    const ids = { topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id };
-    const host = {
-      // null while it plays: Continue, asleep until the scene has once reached its end
-      button: (kind, enabled = false, colour = '') => {
-        this.setButton(kind || 'continue', kind ? enabled : !!(this.scene && this.scene.seenEnd));
-        if (colour) this.btn.className = `btn ${colour}`;
-      },
-      feedback: (kind, why) => this.feedback(kind, why),
-      clearFeedback: () => { this.foot.className = 'lfoot'; this.foot.querySelector('.lfeed').hidden = true; },
-      attempt: a => this.record({ type: 'attempt', ...ids, kind: 'scene', line: a.line, form: a.form, value: a.value, right: a.right, close: a.close, why: a.why }, { right: a.right, close: a.close }),
-      progress: this.lesson.steps.length === 1 ? share => { this.share = share; this.bar.style.transform = `scaleX(${share})`; } : null,
-      ended: () => { this.state = 'ready'; },
-    };
+    const host = { ended: () => { this.state = 'ready'; this.setButton(this.i + 1 < this.lesson.steps.length ? 'continue' : 'finish', true); } };
     const scene = new Scene(this.body.querySelector('.lscene'), s, host, {
+      mode: 'step',
       timing: s.timing || null,
       narrator: this.voice.narrator || this.topic.narrator || DEFAULT_NARRATOR,
       fallback: this.topic.narrator || DEFAULT_NARRATOR,
       voice: () => (this.voice.on ? this.voice.on() : true),
       setVoice: on => this.voice.set && this.voice.set(on),
+      captions: () => (this.voice.captions ? this.voice.captions() : true),
+      setCaptions: on => this.voice.setCaptions && this.voice.setCaptions(on),
       media: this.media,
     });
     this.scene = scene;
@@ -233,7 +254,9 @@ export class Run {
   feedback(kind, why) {
     const feed = this.foot.querySelector('.lfeed');
     feed.innerHTML = `<div class="badge">${kind === 'right' ? icon.check(22) : kind === 'close' ? icon.star(20) : icon.close(18)}</div>
-      <div><p class="lverdict">${{ right: 'Right', close: 'Close', wrong: 'Not quite' }[kind]}</p>${why ? `<p class="lwhy">${rich(why)}</p>` : ''}</div>`;
+      <div><p class="lverdict">${{ right: 'Right', close: 'Close', wrong: 'Not quite' }[kind]}</p>${why ? `<p class="lwhy">${markup(why)}</p>` : ''}</div>`;
+    const w = feed.querySelector('.lwhy');
+    this.whyRa = w ? new ReadAlong(w, why) : null;
     feed.hidden = false;
     this.foot.className = `lfoot ${kind}`;
     feel.glide(this.foot, v => `translateY(${v}px)`, 60, 0);
@@ -268,13 +291,11 @@ export class Run {
   }
 
   go() {
-    // during a scene's wait, the button is the scene's: Check, then Continue to carry the scene on
-    if (this.scene && (this.scene.state === 'wait' || this.scene.state === 'marked')) {
-      if (this.btn.dataset.kind !== 'check') feel.press(this.btn, 'tap');
-      return this.scene.button();
-    }
     if (this.btn.dataset.kind === 'check') return this.check();
     feel.press(this.btn, 'tap');
+    this.reader.stop();
+    // still inside the tap: the next step's words get their player now, so they can be read as it opens
+    this.reader.prime(this.mainLine(this.i + 1));
     const s = this.step;
     if (s.kind === 'explain' || s.kind === 'scene') {
       this.results[s.id] = { seen: true };
@@ -319,6 +340,11 @@ export class Run {
     feel.sound(kind);
     feel.tick();
     this.feedback(kind, res.why);
+    // the line of why is read aloud, in place of the question: answering never waits for the voice
+    this.whyLine = res.line;
+    this.reader.stop();
+    if (this.textRa) this.textRa.finish();
+    this.speak('why');
     // The feedback takes room from the step: keep the answer and the truth beside it in view.
     if (this.input) requestAnimationFrame(() => this.body.scrollTo({ top: this.body.scrollHeight, behavior: 'smooth' }));
     this.setButton(this.i + 1 < this.lesson.steps.length ? 'continue' : 'finish', true);
@@ -367,6 +393,7 @@ export class Run {
 
   remove() {
     this.clearParts();
+    this.reader.remove();
     if (this.root) this.root.removeEventListener('click', this.onClick);
     this.view.innerHTML = '';
     if (!this.peek) document.documentElement.classList.remove('bare');   // a peek returns to a review, still bare

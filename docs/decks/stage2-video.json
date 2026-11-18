@@ -1,0 +1,24 @@
+{
+  "title": "Animations as videos, and voice",
+  "topic": "stage2",
+  "order": 4,
+  "cards": [
+    {
+      "id": "video",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Animations as videos",
+      "text": "Animations now play like a video, lessons are read aloud, and the voice is louder. Mark each part.",
+      "why": "This was your biggest note on 0.3. Whether it starts by itself, how loud it is and what it does to your music can only be judged on your phone.",
+      "details": "To update: close Primer fully and open it again; Profile shows 0.5.0 at the bottom. The first time, it brings down the new voice clips for the hurricane topic, about 30 MB, so open it on Wi-Fi.\n\nThe hurricane topic is reordered as you asked: an animation introduces each idea, a lesson goes over it and further, and the test tests it. So it's the storm's engine, the warm water lesson, the spin, the spin and paths lesson, the chest, then the test.\n\nNot in yet: the review questions aren't read aloud. That comes next.",
+      "parts": [
+        { "id": "player", "title": "The player", "text": "Full screen, no buttons until you tap. A tap shows pause, the line before and after, a bar you can drag to any moment, captions and voice switches, and a close button; they fade after 3 seconds. At the end: Watch again, or Next.", "images": ["../stage2/shots-video/02-animation-overlay.png", "../stage2/shots-video/04-animation-end.png"], "videos": ["../stage2/shots-video/the-spin-playing.mp4"] },
+        { "id": "captions", "title": "Captions that light up", "text": "Each word lights as it's said. The captions button on the player turns them off, and it's remembered (also in Profile). With Voice off they stay on and it plays through at reading pace.", "images": ["../stage2/shots-video/01-animation-playing-caption-lit.png"] },
+        { "id": "longer", "title": "Two longer animations", "text": "The storm's engine (about 75 seconds: warm water, evaporation, cloud, why late summer, a storm moving along its track) and the spin (about 70 seconds: which way they turn, why none at the equator, a storm's path from Africa curving west then back east).", "images": ["../stage2/shots-video/00-path.png", "../stage2/shots-video/05-the-spin-track.png", "../stage2/shots-video/06-the-spin-ashore.png"] },
+        { "id": "lessons", "title": "Lessons read aloud", "text": "With Voice on, a step's text or question is read as it opens, the words lighting as they're said, and the explanation after Check is read too. Tap the words to hear them again. Continue stops it; you never wait for it to answer.", "images": ["../stage2/shots-video/07-lesson-read-aloud.png", "../stage2/shots-video/08-lesson-why-read-aloud.png"] },
+        { "id": "louder", "title": "Louder", "text": "The voice is about 3 dB louder, close to the level YouTube plays at, with peaks kept clean. Is it loud enough at your usual volume, and does it pause, lower or play over your music?" },
+        { "id": "starting", "title": "Starting by itself", "text": "An animation should start with its voice straight from Start; if the phone won't allow sound without a tap, it waits on its first picture with Play showing. Does it start by itself? And is a lesson's first step read without a tap?" }
+      ]
+    }
+  ]
+}
