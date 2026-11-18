@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  Primer: the avatar, fifth round. A sketch to react to, not app code.
+  One person and one monster, each drawn in the same ten shape styles, as stills: no animation, no clothes.
+  Within a set the character stays the same (colours, features, pose, expression); only the shapes change.
+
+    index.html?set=person&style=blob      one picture. set: person or monster. style: blob, circles, noodle,
+                                          pills, squat, tall, blocks, cutout, facets, spiky
+    index.html?set=monster&lineup=1       all ten in a row at room size, numbered: one scale for the whole set,
+                                          the middle of the ten 160 points tall, so squat stands shorter, tall taller
+    index.html?set=both&lineup=1          both rows, one above the other, to compare style by style
+    index.html?set=person&sheet=1         all ten at one scale, five to a row, for checking
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/. The style rules are in ../avatar/STYLE-NOTES.md.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, ten shapes each</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

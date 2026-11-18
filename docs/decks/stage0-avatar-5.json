@@ -1,0 +1,53 @@
+{
+  "title": "Ten shapes each",
+  "topic": "stage0",
+  "order": 12,
+  "cards": [
+    {
+      "id": "person-shapes",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "A person, ten shapes",
+      "text": "One person drawn in ten shape styles, softest to sharpest. Tick the styles you like.",
+      "why": "The style you pick sets how every character and object in the app is built: the avatar, the furniture, the prizes. Only the shapes change here. The colours, hair, wave and smile stay the same, so you can judge the shapes alone.",
+      "pick": ["pills"],
+      "details": "What stays the same in all ten: brown skin, copper hair with a fringe swept down to the left and a high ponytail flicking out to the right, a plain yellow body (a base for clothes later), indigo legs, dark shoes, a wave with one hand, big eyes and an open smile. Even the face follows the style: round eyes in Circles, square ones in Blocks, gem-cut ones in Facets.\n\nWhat changes is the shape language, from soft to sharp: one soft mass (Blob), circles (Circles), bendy limbs (Noodle), capsules (Pills), short and wide (Squat), stretched tall (Tall), boxes (Blocks), half circles and straight cuts (Cut-out), flat-sided gems (Facets), and sharp points (Spiky). All ten keep the room's look: flat colour, one hard-edged shadow, no outlines. In Cut-out, Facets and Spiky the shadow is a straight cut rather than a band along the edge.\n\nThe picture on the front shows all ten at the size they'd stand in the room, at one shared scale, so Squat stands shorter and Tall taller, as they would there.\n\nMy pick is Pills (4). Its face reads best at room size, it carries on from the raccoon, frog and hippo you liked, and capsules build furniture, prizes and any animal as easily as a person. If you'd rather the app had a look more its own, my second is Cut-out (8), the boldest of the ten.\n\nStill weak: Spiky is the busiest and its face the least friendly; Tall's face gets small at room size; Blocks looks a little like a building-block video game; in Blob, the line where the face meets the yellow can read as a hood.\n\nThe monster board has the same ten styles in the same order, so the two can be compared style by style. None is copied from any studio's character. The ten animals from the last round are kept.",
+      "images": ["../../stage0/avatar5/shots/person-lineup.png"],
+      "items": [
+        { "id": "blob", "label": "1 Blob", "image": "../../stage0/avatar5/shots/person-blob.png", "text": "One soft gumdrop: head and body in one, arms melting out of it, no corners anywhere." },
+        { "id": "circles", "label": "2 Circles", "image": "../../stage0/avatar5/shots/person-circles.png", "text": "Every part a circle. No arms or legs: the hands and feet float." },
+        { "id": "noodle", "label": "3 Noodle", "image": "../../stage0/avatar5/shots/person-noodle.png", "text": "A small round body, long bendy arms and legs, a curly ponytail." },
+        { "id": "pills", "label": "4 Pills", "image": "../../stage0/avatar5/shots/person-pills.png", "text": "Every part a capsule: straight sides, round ends. My pick." },
+        { "id": "squat", "label": "5 Squat", "image": "../../stage0/avatar5/shots/person-squat.png", "text": "Short and wide, soft boxes stacked low on stubby legs." },
+        { "id": "tall", "label": "6 Tall", "image": "../../stage0/avatar5/shots/person-tall.png", "text": "Stretched thin and tall, long tapering limbs. The face gets small." },
+        { "id": "blocks", "label": "7 Blocks", "image": "../../stage0/avatar5/shots/person-blocks.png", "text": "Boxes with small rounded corners. The waving arm bends square." },
+        { "id": "cutout", "label": "8 Cut-out", "image": "../../stage0/avatar5/shots/person-cutout.png", "text": "Half circles and straight cuts, like cut paper. The fringe is one straight cut. My second." },
+        { "id": "facets", "label": "9 Facets", "image": "../../stage0/avatar5/shots/person-facets.png", "text": "Flat-sided gem shapes with no curves. The shadow is one facet." },
+        { "id": "spiky", "label": "10 Spiky", "image": "../../stage0/avatar5/shots/person-spiky.png", "text": "Sharp points and narrow wedges. The busiest of the ten." }
+      ]
+    },
+    {
+      "id": "monster-shapes",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "A monster, ten shapes",
+      "text": "One monster drawn in the same ten shape styles, softest to sharpest. Tick the styles you like.",
+      "why": "The style you pick sets how every character and object in the app is built. These are the same ten styles as the person, in the same order. Only the shapes change: the colours, three eyes, crest and grin stay the same.",
+      "pick": ["pills"],
+      "details": "What stays the same in all ten: a mint body that is head and body in one, a pale belly, a coral crest of three pieces on top with the middle one tallest, three eyes with the middle one higher and bigger, a wide grin with two fangs and a pink tongue, dark teal feet, and both hands up in a playful \"boo\". It isn't the purple horned furry one you didn't like: no horns, no fur, no purple.\n\nWhat changes is the shape language, from soft to sharp: a gumdrop that slumps wide at the bottom (Blob), a ball with three balls on top (Circles), a bean on bendy legs with a crest of curls (Noodle), one tall capsule (Pills), very wide and low (Squat), a tall egg on long legs (Tall), a box (Blocks), an arch with a crest of fans (Cut-out), a cut gem with crystal shards (Facets), and pointed shoulders with spikes and claws (Spiky). All keep the room's look: flat colour, one hard-edged shadow, no outlines.\n\nThe picture on the front shows all ten at the size they'd stand in the room, at one shared scale, so Squat stands shorter and Tall taller.\n\nMy pick is Pills (4), the same as for the person, so the two would be built the same way. It reads clearly at room size, and its crest, arms and legs are all one kind of piece. My second is Cut-out (8), again as for the person. Blob (1) also suits the monster well, more than it suits the person.\n\nStill weak: Tall's eyes get small at room size; Blocks looks like a robot; Noodle's curly crest can read as an insect's feelers; Spiky's claws make it the least cuddly.\n\nNone is copied from any studio's character or mascot.",
+      "images": ["../../stage0/avatar5/shots/monster-lineup.png"],
+      "items": [
+        { "id": "blob", "label": "1 Blob", "image": "../../stage0/avatar5/shots/monster-blob.png", "text": "A soft gumdrop slumping wide at the bottom. The crest is three soft dollops." },
+        { "id": "circles", "label": "2 Circles", "image": "../../stage0/avatar5/shots/monster-circles.png", "text": "A ball with three balls on top. The hands and feet float." },
+        { "id": "noodle", "label": "3 Noodle", "image": "../../stage0/avatar5/shots/monster-noodle.png", "text": "A bean on bendy legs, bendy arms, and a crest of three curls." },
+        { "id": "pills", "label": "4 Pills", "image": "../../stage0/avatar5/shots/monster-pills.png", "text": "One tall capsule, with capsules for the crest, arms and legs. My pick." },
+        { "id": "squat", "label": "5 Squat", "image": "../../stage0/avatar5/shots/monster-squat.png", "text": "Very wide and low on tiny legs. The crest is three low bumps." },
+        { "id": "tall", "label": "6 Tall", "image": "../../stage0/avatar5/shots/monster-tall.png", "text": "A tall egg on long thin legs, a crest of plumes. The face gets small." },
+        { "id": "blocks", "label": "7 Blocks", "image": "../../stage0/avatar5/shots/monster-blocks.png", "text": "One box, a stepped crest, arms bent square. A bit like a robot." },
+        { "id": "cutout", "label": "8 Cut-out", "image": "../../stage0/avatar5/shots/monster-cutout.png", "text": "An arch shape, a crest of three fans, thin straight limbs. My second." },
+        { "id": "facets", "label": "9 Facets", "image": "../../stage0/avatar5/shots/monster-facets.png", "text": "A cut gem with three crystal shards on top." },
+        { "id": "spiky", "label": "10 Spiky", "image": "../../stage0/avatar5/shots/monster-spiky.png", "text": "Pointed shoulders, three spikes, claws and pointed feet." }
+      ]
+    }
+  ]
+}
