@@ -1,6 +1,7 @@
 // Drives the app in headless Edge with real touch, against tests/serve.mjs and its stand-in for GitHub.
 //   node tests/e2e.mjs [--shots <folder>] [--pilot <primer-data folder>]
-// Starts the test server itself if nothing answers on its port. Uses debugging port 9341 and server port 8821.
+// Starts the test server itself if nothing answers on its port. Uses debugging port 9341 and server port 8821,
+// or PRIMER_TEST_DEBUG and PRIMER_TEST_PORT, so several copies can run at once.
 // --pilot (or PRIMER_DATA) also plays the pilot topic from the data repo's working tree: each lesson and the
 // test wrong and then right, and its chest.
 // Runs at device scale 1: at scale 2 a screenshot can re-send a held touch at half its coordinates.
@@ -18,7 +19,7 @@ const args = {};
   for (let i = 0; i < a.length; i++) if (a[i].startsWith('--')) args[a[i].slice(2)] = a[i + 1] && !a[i + 1].startsWith('--') ? a[++i] : true;
 }
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const PORT = 8821, DEBUG = 9341, W = 414, H = 896, SAT = 48, SAB = 34;
+const PORT = Number(process.env.PRIMER_TEST_PORT) || 8821, DEBUG = Number(process.env.PRIMER_TEST_DEBUG) || 9341, W = 414, H = 896, SAT = 48, SAB = 34;
 const BASE = `http://127.0.0.1:${PORT}`;
 const API = `${BASE}/__gh`;
 const APP = `${BASE}/primer/?api=${API}&insets=${SAT},${SAB}`;

@@ -288,7 +288,7 @@ class Fit(Work):
             L['steps'] = L['steps'][:3]
             step(L, 'read-picture')['text'] = 'Far too many words for one screen. ' * 30
         dest = self.topic(change)
-        r = run('fit', dest / 'every-kind.json', '--json', '--debug-port', '9341')
+        r = run('fit', dest / 'every-kind.json', '--json', '--debug-port', os.environ.get('PRIMER_TEST_DEBUG', '9341'))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         res = json.loads(r.stdout.strip().splitlines()[-1])['every-kind']['steps']
         by = {s['step']: s for s in res}
