@@ -1,6 +1,7 @@
 // The lesson player, for every node that's played step by step: a lesson, a test or an exam (`kind` on
-// the file the library hands it), and an animation, which is a lesson of one scene step. Each is a run of
-// steps, one screen each:
+// the file the library hands it), and an animation, which is a lesson of one scene step. Review
+// (js/review.js) is this player too, with its own top row and its steps chosen as it goes, and so is a
+// look back at one step from review (`peek`). Each is a run of steps, one screen each:
 //   explain  a short paragraph and a figure
 //   check    a quick question, answered with the Inputs part
 //   play     a part with a goal, marked by reading the part's state

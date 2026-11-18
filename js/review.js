@@ -38,7 +38,6 @@ export class Review extends Run {
     this.retried = new Set();    // on a path, facts already given their second go
     this.last = null;            // the fact asked last
     this.byKey = new Map(pool.map(x => [x.key, x]));
-    this.notes = 0;
     if (node) {
       // a set run: the least well remembered first, at most NODE_MOST
       const mem = data.memoryNow(), now = clock.now();
@@ -49,7 +48,7 @@ export class Review extends Run {
 
   topRow() {
     return `<header class="ltop rtop"><button class="round mute" data-go="leave" aria-label="Close" data-sound="off">${icon.close(20)}</button>
-      <div class="combo" aria-label="Right in a row">×<b>0</b></div>
+      <div class="combo" aria-label="Right in a row"><span>×<b>0</b></span></div>
       <div class="cpips">${'<i></i>'.repeat(PIPS)}</div></header>`;
   }
 

@@ -8,7 +8,11 @@ import * as data from '../data.js';
 import * as feel from '../feel.js';
 import { NARRATORS } from '../scene.js';
 
-export const LOW = 50;
+// Under this a topic gets the warning mark. From the memory model it's 70: FSRS aims to review a fact when its
+// recall falls to 90%, and its forgetting has a long tail (a fact learned well still reads 60% months on),
+// so 70 is well slipped. A topic without facts keeps the old figure's 50.
+export const LOW = 50, LOW_MEMORY = 70;
+const low = k => k.tried && k.pct < (k.facts ? LOW_MEMORY : LOW);
 // well remembered is blue; forgotten is grey
 export function knowColour(pct) {
   const t = Math.min(1, Math.max(0, (95 - pct) / 55));
@@ -36,7 +40,7 @@ export function profileScreen(app) {
     const k = data.knowledge(t), col = knowColour(k.pct);
     return `<button class="krow" data-topic="${esc(t.id)}" data-sound="select">${medallion(t, 28)}<p class="nm">${esc(t.title)}</p>
       <div class="kb"><b style="width:${k.pct}%;background:${col}"></b></div><p class="pc" style="color:${col}">${k.pct}%</p>
-      <div class="wn">${k.tried && k.pct < LOW ? svg(22, 22, hazard()) : ''}</div></button>`;
+      <div class="wn">${low(k) ? svg(22, 22, hazard()) : ''}</div></button>`;
   }).join('');
   const toggle = (key, label) => `<div class="srow"><p>${label}</p><button class="toggle" data-pref="${key}" aria-pressed="${!!prefs[key]}" aria-label="${label}" data-sound="${prefs[key] ? 'off' : 'on'}"></button></div>`;
   // Each subject has its own narrator, named by its topics; one chosen here speaks for the whole subject.
@@ -143,7 +147,7 @@ function topicDetail(app, topic) {
   const canReview = k.facts && k.learned > 0;
   const s = sheet(app.root, `
     <div style="display:flex;align-items:center;gap:12px">${medallion(topic, 46)}<p style="font-size:23px;flex:1">${esc(topic.title)}</p>
-      ${k.tried && k.pct < LOW ? svg(26, 24, `<g transform="scale(1.15)">${hazard()}</g>`) : ''}<p style="font-size:26px;color:${col}">${k.pct}%</p></div>
+      ${low(k) ? svg(26, 24, `<g transform="scale(1.15)">${hazard()}</g>`) : ''}<p style="font-size:26px;color:${col}">${k.pct}%</p></div>
     <div class="facts">${fact(calendar, k.lastAt ? when(k.lastAt) : 'Not yet', 'last studied')}${second}</div>
     <div class="dots">${k.dots.map(dot).join('')}</div>
     ${canReview ? `<button class="btn" data-go="review" style="margin-top:18px">Review ${esc(topic.title)}</button><button class="linkrow" data-go="learn">Its path${icon.right(14)}</button>`

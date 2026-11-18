@@ -149,15 +149,17 @@ export function askStep(fact, ask) {
   return { ...ask, id: askKey(fact.id, ask.id), fact: fact.id, askId: ask.id, topic: fact.topic, title: ask.title || fact.text, src: ask.src || fact.src || [] };
 }
 
-// Which way to ask a fact this time: never the way it was asked last (`last`, an ask id), and, given
-// `avoid` (ways its lesson used), not one of those either when there's another.
+// Which way to ask a fact this time. Given `avoid` (ways its lesson used, for a test), never one of those
+// when it has another; then, of what's left, not the way it was asked last (`last`, an ask id) when there's
+// another.
 export function chooseAsk(fact, { last = null, avoid = [], rand = Math.random } = {}) {
-  let pool = fact.asks.filter(a => a.id !== last);
-  if (!pool.length) pool = fact.asks.slice();
+  let pool = fact.asks.slice();
   if (avoid.length) {
     const fresh = pool.filter(a => !avoid.includes(wayOf(a)));
     if (fresh.length) pool = fresh;
   }
+  const other = pool.filter(a => a.id !== last);
+  if (other.length) pool = other;
   return pool.length ? pool[Math.floor(rand() * pool.length)] : null;
 }
 

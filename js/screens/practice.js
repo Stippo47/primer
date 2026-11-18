@@ -18,7 +18,7 @@ function reviewSide() {
   const best = data.memoryNow().best;
   const chip = best ? `<div class="crownchip">${svg(24, 20, `<g transform="scale(0.8)">${crown()}</g>`)}<span>×${best}</span></div>` : '';
   if (!met.length) return `<p>Review</p><span class="soon">After a lesson</span><button class="btn" disabled data-sound="none">Start</button>`;
-  if (!due) return `<p>Review</p><span class="soon nothing">Nothing due</span><button class="btn anyway" data-go="review" data-anyway="1">Review anyway</button>`;
+  if (!due) return `<p>Review</p>${chip}<span class="soon nothing">Nothing due</span><button class="btn anyway" data-go="review" data-anyway="1">Review anyway</button>`;
   return `<p>Review</p>${chip}<button class="btn" data-go="review">Start</button>`;
 }
 

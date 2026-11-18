@@ -3,7 +3,8 @@
 // Starts the test server itself if nothing answers on its port. Uses debugging port 9341 and server port 8821,
 // or PRIMER_TEST_DEBUG and PRIMER_TEST_PORT, so several copies can run at once.
 // --pilot (or PRIMER_DATA) also plays the pilot topic from the data repo's working tree: each lesson and the
-// test wrong and then right, and its chest.
+// test wrong and then right, and its chest. Facts and review are played on tests/fixtures/facts, with the
+// app's clock moved on (__primer.clock.shift) to let days pass; their pictures are taken at 2x, as PNGs.
 // Runs at device scale 1: at scale 2 a screenshot can re-send a held touch at half its coordinates.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync } from 'node:fs';
@@ -110,6 +111,87 @@ const openNode = async id => {
   await sleep(300);
   await f.tap('.callout [data-go=start]');
   await sceneState('ready');
+};
+// answer forms, by touch
+const along = async (pts, ms = 480) => {
+  await f.touch('touchStart', [[pts[0].x, pts[0].y]]);
+  for (const p of pts.slice(1)) { await sleep(ms / pts.length); await f.touch('touchMove', [[p.x, p.y]]); }
+  await sleep(60);
+  await f.touch('touchEnd', []);
+  await sleep(260);
+};
+const dialAt = (v, inp) => ev(`(()=>{const r=document.querySelector('.pi-dialbox').getBoundingClientRect(),s=Math.min(r.width,r.height)/300,a=Math.PI*0.75+(${v}-${inp.min})/(${inp.max}-${inp.min})*Math.PI*1.5;return {x:r.left+r.width/2+Math.cos(a)*106*s,y:r.top+r.height/2+Math.sin(a)*106*s}})()`);
+// Gives an answer the way a finger would: turns the dial round its ring, drags the pile's level, draws
+// the strings, carries things into bins and pieces into sockets, taps the slider's track.
+const answerBy = async (inp, value) => {
+  if (inp.form === 'dial') {
+    const from = (await ev('__primer.run.input.state()')).value, pts = [];
+    for (let k = 0; k <= 16; k++) pts.push(await dialAt(from + ((value - from) * k) / 16, inp));
+    await along(pts);
+  } else if (inp.form === 'pile') {
+    const h = await f.rect('.pi-handle');
+    const y = await ev(`(()=>{const r=[...document.querySelectorAll('.pi-row')].map(e=>e.getBoundingClientRect().top),rowH=r[0]-r[1];return r[0]+rowH-rowH*${value}/${inp.per || 5}})()`);
+    await f.drag(h.x, h.y, 0, y - h.y, { steps: 14, ms: 380 });
+  } else if (inp.form === 'slider') {
+    const t = await f.rect('.pi-track');
+    const pos = inp.scale === 'log' ? Math.log(value / inp.min) / Math.log(inp.max / inp.min) : (value - inp.min) / (inp.max - inp.min);
+    await f.tapAt(t.left + pos * t.w, t.y);
+  } else if (inp.form === 'string') {
+    for (const [l, r] of Object.entries(value)) {
+      const a = await f.rect(`.pi-end2[data-side=l][data-id="${l}"]`), z = await f.rect(`.pi-end2[data-side=r][data-id="${r}"]`);
+      await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
+    }
+  } else if (inp.form === 'sort') {
+    for (const [item, bin] of Object.entries(value)) {
+      const a = await f.rect(`.pi-sorttile[data-id="${item}"]`), z = await f.rect(`.pi-bin[data-bin="${bin}"]`);
+      await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
+      await sleep(300);
+    }
+  } else if (inp.form === 'snap') {
+    for (const [card, piece] of Object.entries(value)) {
+      const c = await f.rect(`.pi-card[data-id="${card}"]`), p = await f.rect(`.pi-piece[data-id="${piece}"]`);
+      await f.drag(p.x, p.y, c.right - p.left, c.y - p.y, { steps: 14, ms: 360 });
+      await sleep(350);
+    }
+  } else if (inp.form === 'choice') {
+    await f.tap(`.pi-opt[data-id="${value}"]`);
+  } else if (inp.form === 'order') {
+    for (let k = 0; k < 6; k++) {
+      const now = (await ev('__primer.run.input.state()')).value;
+      if (JSON.stringify(now) === JSON.stringify(value)) break;
+      const i = now.findIndex((id, n) => id !== value[n]);
+      const from = now.indexOf(value[i]);
+      const a = await f.rect(`.pi-item[data-id="${value[i]}"]`);
+      const rowH = (await f.rect('.pi-item:nth-child(2)')).y - (await f.rect('.pi-item:nth-child(1)')).y;
+      await f.drag(a.x, a.y, 0, (i - from) * rowH, { steps: 14, ms: 360 });
+      await sleep(300);
+    }
+  }
+  await sleep(250);
+};
+// Answers whatever step is up, right or wrong, by touch: a check by its answer (or a wrong try, or a wrong
+// option); a play step by tapping where its tries say, the globe or map first turned to face the place.
+const answerStep = async right => {
+  const s = await ev('__primer.run.step');
+  if (s.kind === 'play') {
+    const t = (s.tries || []).find(x => x.marked === (right ? 'right' : 'wrong'));
+    const { lon, lat } = t.state.tapped;
+    await ev(`__primer.run.play.run(['spinTo', [${lon}, ${lat}], 0])`);
+    await sleep(300);
+    const p = await ev(`__primer.run.play.where([${lon},${lat}])`);
+    await f.tapAt(p.x, p.y);
+    await sleep(250);
+    return s;
+  }
+  const inp = s.input;
+  const answer = s.answer ?? (inp.options || []).find(o => o.right)?.id;
+  let value = answer;
+  if (!right) {
+    const tr = (s.tries || []).find(x => x.marked === 'wrong');
+    value = inp.form === 'choice' ? inp.options.find(o => o.id !== answer).id : tr ? tr.state.value : inp.max;
+  }
+  await answerBy(inp, value);
+  return s;
 };
 
 try {
@@ -439,13 +521,13 @@ try {
   await press();
   ok(await ev(`document.querySelector('.node[data-node=quick-test]').classList.contains('done') && document.querySelector('.node[data-node=look-back]').classList.contains('now')`), 'the test is gold, and the review after it is next');
 
-  console.log('A review and an animation, for now');
-  for (const [node, words] of [['look-back', 'Review'], ['a-scene', 'A made-up scene']]) {
+  console.log('A review with nothing to go over, and an animation without its scene');
+  for (const [node, words, says] of [['look-back', 'Review', 'Nothing to go over'], ['a-scene', 'A made-up scene', 'Soon']]) {
     await f.tap(`.node[data-node=${node}]`);
     await sleep(300);
     await f.tap('.callout [data-go=start]');
     await sleep(500);
-    ok(await bare() && (await text()).includes(words) && (await text()).includes('Soon'), `${words}: a placeholder says it comes later`, await text());
+    ok(await bare() && (await text()).includes(words) && (await text()).includes(says), `${words}: a placeholder says ${node === 'look-back' ? 'so (the lessons before it teach no facts)' : 'it comes later'}`, await text());
     await shot(`15-${node}`);
     await press();
     ok(await ev(`document.querySelector('.node[data-node=${node}]').classList.contains('done')`), `${words}: visiting it lets the path go on`);
@@ -473,48 +555,6 @@ try {
   console.log('Every newer answer form, played wrong and then right by touch');
   {
     const L = JSON.parse(readFileSync(join(ROOT, 'tests', 'fixtures', 'data', 'topics', 'answer-forms', 'every-form.json'), 'utf8'));
-    const along = async (pts, ms = 480) => {
-      await f.touch('touchStart', [[pts[0].x, pts[0].y]]);
-      for (const p of pts.slice(1)) { await sleep(ms / pts.length); await f.touch('touchMove', [[p.x, p.y]]); }
-      await sleep(60);
-      await f.touch('touchEnd', []);
-      await sleep(260);
-    };
-    const dialAt = (v, inp) => ev(`(()=>{const r=document.querySelector('.pi-dialbox').getBoundingClientRect(),s=Math.min(r.width,r.height)/300,a=Math.PI*0.75+(${v}-${inp.min})/(${inp.max}-${inp.min})*Math.PI*1.5;return {x:r.left+r.width/2+Math.cos(a)*106*s,y:r.top+r.height/2+Math.sin(a)*106*s}})()`);
-    // Gives an answer the way a finger would: turns the dial round its ring, drags the pile's level, draws
-    // the strings, carries things into bins and pieces into sockets, taps the slider's track.
-    const answerBy = async (inp, value) => {
-      if (inp.form === 'dial') {
-        const from = (await ev('__primer.run.input.state()')).value, pts = [];
-        for (let k = 0; k <= 16; k++) pts.push(await dialAt(from + ((value - from) * k) / 16, inp));
-        await along(pts);
-      } else if (inp.form === 'pile') {
-        const h = await f.rect('.pi-handle');
-        const y = await ev(`(()=>{const r=[...document.querySelectorAll('.pi-row')].map(e=>e.getBoundingClientRect().top),rowH=r[0]-r[1];return r[0]+rowH-rowH*${value}/${inp.per || 5}})()`);
-        await f.drag(h.x, h.y, 0, y - h.y, { steps: 14, ms: 380 });
-      } else if (inp.form === 'slider') {
-        const t = await f.rect('.pi-track');
-        await f.tapAt(t.left + ((value - inp.min) / (inp.max - inp.min)) * t.w, t.y);
-      } else if (inp.form === 'string') {
-        for (const [l, r] of Object.entries(value)) {
-          const a = await f.rect(`.pi-end2[data-side=l][data-id="${l}"]`), z = await f.rect(`.pi-end2[data-side=r][data-id="${r}"]`);
-          await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
-        }
-      } else if (inp.form === 'sort') {
-        for (const [item, bin] of Object.entries(value)) {
-          const a = await f.rect(`.pi-sorttile[data-id="${item}"]`), z = await f.rect(`.pi-bin[data-bin="${bin}"]`);
-          await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
-          await sleep(300);
-        }
-      } else if (inp.form === 'snap') {
-        for (const [card, piece] of Object.entries(value)) {
-          const c = await f.rect(`.pi-card[data-id="${card}"]`), p = await f.rect(`.pi-piece[data-id="${piece}"]`);
-          await f.drag(p.x, p.y, c.right - p.left, c.y - p.y, { steps: 14, ms: 360 });
-          await sleep(350);
-        }
-      }
-      await sleep(250);
-    };
     // what the truth looks like once checked, by form
     const REVEAL = {
       dial: { wrong: `!document.querySelector('.pi-dialbox .truth').hasAttribute('hidden') && !!document.querySelector('.pi-read.truth') && !!document.querySelector('.pi-knob.wrong')`, right: `document.querySelector('.pi-dialbox').classList.contains('right')` },
@@ -708,7 +748,7 @@ try {
   ok(await ev(`!document.querySelector('.partstage .pi').classList.contains('locked') && !document.querySelector('.partstage .pi-piece.truth')`), 'and Again starts it afresh');
   await f.tap('[data-go=back]');
   await sleep(400);
-  ok(await ev(`document.querySelector('.review .btn').disabled`), "Review's Start is off until stage 2");
+  ok(await ev(`document.querySelector('.review .btn').disabled && document.querySelector('.review .side').innerText.includes('After a lesson')`), "with no facts met yet (these lessons declare none), Review's Start is off");
   await f.tap('.pcard[data-part=map]');
   await waitFor(`document.querySelector('.partstage canvas')`);
   ok(await bare(), 'an opened part hides the tab bar');
@@ -1170,10 +1210,17 @@ try {
           const f0 = fired.find(y => y.line === x.id && y.n === n);
           const ws = timing.lines[x.id][topicFile.narrator || 'heart'].words;
           const words = (x.say || x.text).split(/\s+/).map(w => w.replace(/[*’]/g, m => (m === '’' ? "'" : '')).toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''));
-          const k = words.indexOf(String(a.at).toLowerCase().split(/\s+/)[0]);
+          // an action hangs on a word (at), or runs across a stretch (from .. to) and starts on its first word
+          const k = words.indexOf(String(a.at ?? a.from).toLowerCase().split(/\s+/)[0]);
           return f0 && k >= 0 && Math.abs(f0.want - ws[k][1]) < 0.001;
         }));
-        ok(said, `${node.id}: each at the time its word is said in the clip, by the timing file`);
+        ok(said, `${node.id}: each at the time its word is said in the clip, by the timing file (a stretch from its first word)`);
+        // a stretch carries its call across to its last word: the storm that formed on "cloud" has moved along its track by the end
+        const stretches = file.lines.flatMap(x => (x.do || []).filter(a => a.from !== undefined).map(a => a.call));
+        if (stretches.length) {
+          const routes = await ev(`__primer.run && __primer.run.scene ? __primer.run.scene.handles.globe.debug().routes : []`);
+          ok(routes.some(r => r.rider === 'storm' && r.progress > 0.99), `${node.id}: the storm rode its track to the end of its stretch`, routes);
+        }
         await shot(`21-pilot-${node.id}-end`);
         await press();
         await sleep(400);
@@ -1259,9 +1306,330 @@ try {
     await shot('23-pilot-done');
     const pilotEvents = (await everyEvent()).filter(e => e.topic === 'where-hurricanes-form');
     ok(pilotEvents.filter(e => e.type === 'attempt').length === asked && pilotEvents.filter(e => e.type === 'finish').length === played && pilotEvents.some(e => e.type === 'open' && e.kind === 'chest'), `every run went into the queue to go up (${asked} answers, ${played} finishes, the chest)`, pilotEvents.map(e => e.type));
+    // The pilot's facts: every one met by the end of its lessons, the steps naming them their first answers.
+    const pilotFacts = await ev(`[...__primer.app.topics.find(t=>t.id==='where-hurricanes-form').facts.facts.keys()]`);
+    const pilotCards = await ev('__primer.data.memoryNow().toJSON().cards');
+    ok(pilotFacts.length >= 12 && pilotFacts.every(id => pilotCards[`where-hurricanes-form/${id}`]) && pilotCards['where-hurricanes-form/warm-enough'].n >= 2,
+      `the pilot declares ${pilotFacts.length} facts, all met by the end of its lessons, its steps' answers counted`, pilotFacts);
+    // and a review of them a few days on, its questions with the pictures they were taught with
+    await ev(`__primer.clock.shift(${4 * 86400000}); __primer.app.go('practice'); true`);
+    await sleep(300);
+    await f.tap('.review [data-go=review]');
+    let pictured = null;
+    for (let k = 0; k < 20 && !pictured; k++) {
+      await waitFor(`__primer.run && __primer.run.step && (!!__primer.run.input || !!__primer.run.play)`);
+      await sleep(400);
+      const s = await ev('__primer.run.step');
+      if (s.figure && s.figure.part && s.input && s.input.form === 'choice') { pictured = s; break; }
+      await answerStep(true);
+      await press();
+      await press();
+    }
+    ok(!!pictured, 'a pilot review question brings its picture: the globe turned to its ocean', pictured && pictured.id);
+    if (pictured) {
+      await sleep(900);
+      await b.size(W, H, 2); await sleep(600); await b.shot(join(SHOTS, '24-pilot-review-question.png')); await b.size(W, H, 1); await sleep(300);
+      await answerStep(false);
+      await press();
+      await sleep(400);
+      await b.size(W, H, 2); await sleep(600); await b.shot(join(SHOTS, '24b-pilot-review-wrong.png')); await b.size(W, H, 1); await sleep(300);
+      ok((await verdict()).verdict === 'Not quite' && await ev(`!!document.querySelector('.lfoot .taught')`), 'missed, it says why and links back to its lesson step');
+      await f.tap('[data-go=leave]');
+      await waitFor(`!!document.querySelector('.rend')`);
+      await press();
+    }
+    await ev(`__primer.clock.shift(0); true`);
     await api('/__reset?data=fixtures');
   } else {
     console.log('(no --pilot given: the pilot was not played)');
+  }
+
+  {
+    console.log('Facts: the steps that teach them are their first reviews');
+    const FACTS = join(ROOT, 'tests', 'fixtures', 'facts'), DAY = 86400000;
+    // a picture at the phone's own pixel ratio, for comparing with the sketches
+    const shot2 = async name => { await b.size(W, H, 2); await sleep(350); await b.shot(join(SHOTS, `${name}.png`)); await b.size(W, H, 1); await sleep(150); };
+    const cards = () => ev('__primer.data.memoryNow().toJSON().cards');
+    const dbg = () => ev('__primer.run && __primer.run.debug ? __primer.run.debug() : null');
+    const live = () => waitFor(`__primer.run && __primer.run.step && (!!__primer.run.input || !!__primer.run.play)`);
+    const playLesson = async (node, marks) => {
+      await f.tap('.tab[data-tab=learn]');
+      await sleep(300);
+      await f.tap(`.node[data-node=${node}]`);
+      await sleep(300);
+      await f.tap('.callout [data-go=start]');
+      for (let k = 0; k < 20; k++) {
+        await waitFor(`!!document.querySelector('.lend') || (__primer.run && __primer.run.step && (__primer.run.step.kind === 'explain' || !!__primer.run.input || !!__primer.run.play))`);
+        await sleep(200);
+        if (await ev(`!!document.querySelector('.lend')`)) break;
+        const s = await ev('__primer.run.step');
+        if (s.kind === 'explain') { await press(); continue; }
+        await answerStep(marks[s.id] !== 'wrong');
+        await press();
+        await press();
+      }
+      await press();
+    };
+    // a phone with nothing on it yet but its key: what earlier sections left to send goes, and the made-up facts' repo comes
+    await ev('__primer.sync.flush()');
+    await ev(`__primer.store.queueAll().then(rows => __primer.store.queueRemove(rows.map(r => r.key))).then(() => true)`);
+    await api(`/__reset?data=${encodeURIComponent(FACTS)}`);
+    await go();
+    await ev(`Promise.all([__primer.store.del('progress'), __primer.store.del('memory')]).then(() => __primer.data.loadProgress()).then(() => __primer.data.loadMemory()).then(() => true)`);
+    await ev('__primer.sync.pull()');
+    await reloadLibrary();
+    await ev(`__primer.app.setPref('topic','storms'); __primer.clock.shift(0); true`);
+    await f.tap('.tab[data-tab=practice]');
+    await sleep(400);
+    ok(await ev(`document.querySelector('.review .btn').disabled && document.querySelector('.review .side').innerText.includes('After a lesson')`), "before any lesson, Review has nothing to start");
+    await playLesson('fuel', { 'over-land': 'wrong' });
+    let c = await cards();
+    ok(c['storms/warm'] && c['storms/warm'].m === 'right' && c['storms/warm'].n === 1 && c['storms/land'].m === 'wrong', "a lesson's steps that name a fact count as answers to it: one right, one wrong", c);
+    ok(c['storms/count'] && c['storms/count'].n === 0, "a fact the lesson declares but doesn't ask is met at its end, not yet asked", c['storms/count']);
+    ok(c['storms/land'].due < c['storms/warm'].due && Math.round((c['storms/warm'].due - c['storms/warm'].lr) / DAY) === 3 && Math.round((c['storms/land'].due - c['storms/land'].lr) / DAY) === 1,
+      'the memory model has the one missed back in a day, the one got right in three', { warm: c['storms/warm'], land: c['storms/land'] });
+    const lessonTries = (await everyEvent()).filter(e => e.topic === 'storms' && e.type === 'attempt');
+    ok(lessonTries.find(e => e.step === 'how-warm').fact === 'warm' && lessonTries.find(e => e.step === 'over-land').fact === 'land', 'each attempt says which fact it was about, and goes up with it', lessonTries.map(e => `${e.step}:${e.fact}`));
+    await playLesson('spin', {});
+    await ev(`__primer.app.setPref('topic','capitals'); true`);
+    await playLesson('capitals', {});
+    c = await cards();
+    ok(Object.keys(c).length === 12 && c['capitals/capital-peru'].m === 'right' && c['storms/seas-north'].n === 0, 'three lessons met twelve facts, families\' among them, a family fact answered by the step that names it', Object.keys(c));
+
+    console.log('Review: the card, a run of mixed topics, the combo, a miss');
+    await f.tap('.tab[data-tab=practice]');
+    await sleep(400);
+    ok(await ev(`!document.querySelector('.review [data-go=review]').disabled && !document.querySelector('.review .crownchip') && document.querySelector('.review [data-go=review]').textContent === 'Start'`), "with facts due, Review's Start is on (no best combo yet, so no crown)");
+    await shot2('40-review-card-first');
+    // two days on: the fact missed in the lesson is due, the ones got right aren't yet
+    await ev(`__primer.clock.shift(${2 * DAY}); true`);
+    const dueNow = await ev(`__primer.data.metFacts().filter(x => x.due).map(x => x.key)`);
+    ok(dueNow.includes('storms/land') && !dueNow.includes('storms/warm') && !dueNow.includes('capitals/capital-peru'), 'two days on, the fact missed is due and the ones got right are not', dueNow);
+    await f.tap('.review [data-go=review]');
+    await live();
+    ok(await bare() && (await ev(`document.querySelector('.combo').innerText.trim()`)) === '×0' && (await ev(`document.querySelectorAll('.cpips i').length`)) === 5, 'a run hides the tab bar: a cross, the combo at ×0 and its five pips');
+    const asked = [];
+    for (let k = 0; k < 3; k++) {
+      await live();
+      asked.push((await dbg()).step);
+      await answerStep(true);
+      await press();
+      const vd = await verdict();
+      ok(vd.verdict === 'Right', `review question ${k + 1} (${asked.at(-1).fact}, asked by ${asked.at(-1).ask}), answered right`, vd);
+      await press();
+    }
+    await live();
+    let d = await dbg();
+    ok(d.combo === 3 && (await ev(`document.querySelector('.combo').classList.contains('on') && document.querySelector('.combo').innerText.trim() === '×3' && document.querySelectorAll('.cpips i.on').length === 3`)), 'three right in a row: the combo is gold, ×3, with three pips', d);
+    await shot2('41-review-question-combo');
+    const missed = d.step;
+    asked.push(missed);
+    await answerStep(false);
+    await press();
+    let vd = await verdict();
+    d = await dbg();
+    ok(vd.verdict === 'Not quite' && vd.why.length > 0 && d.combo === 0 && d.best === 3 && (await ev(`document.querySelector('.combo').innerText.trim()`)) === '×0', 'a miss: Not quite, its line of why, and the combo back to ×0 (the best stays 3)', { vd, d });
+    const link = await ev(`(()=>{const l=document.querySelector('.lfoot .taught');return l?l.innerText.trim():null})()`);
+    ok(!!link, 'with a link back to the lesson step that taught it', link);
+    c = await cards();
+    const now0 = await ev('__primer.clock.now()');
+    const rightKey = asked.find(x => x.key !== missed.key).key;
+    ok(Math.round((c[missed.key].due - now0) / DAY) === 1 && c[rightKey].due - now0 > 2 * DAY, 'in the memory the miss is due again in a day, sooner than one just got right', { missed: (c[missed.key].due - now0) / DAY, right: (c[rightKey].due - now0) / DAY });
+    await shot2('42-review-wrong');
+    await f.tap('.lfoot .taught');
+    await waitFor(`!!document.querySelector('.peekhost .lesson')`);
+    await sleep(500);
+    const peek = await ev(`(()=>{const r=__primer.run.peeking;return r?{id:r.step.id,lesson:r.lesson.id,text:document.querySelector('.peekhost').innerText}:null})()`);
+    const taught = await ev(`__primer.facts.taughtAt(__primer.app.topics.find(t=>t.id===${JSON.stringify(missed.topic)}).facts.facts.get(${JSON.stringify(missed.fact)}))`);
+    ok(peek && peek.id === taught.step && peek.lesson === taught.lesson, 'the link opens that lesson step over the run', { peek, taught });
+    await shot('43-review-peek');
+    await f.tap('.peekhost [data-go=leave]');
+    await sleep(400);
+    ok(!(await ev(`!!document.querySelector('.peekhost')`)) && await bare() && (await verdict()).verdict === 'Not quite', 'its cross comes back to the run, just as it was');
+    await press();
+    let back = null;
+    for (let k = 0; k < 5 && !back; k++) {
+      await live();
+      d = await dbg();
+      if (d.step.key === missed.key) { back = d.step; break; }
+      asked.push(d.step);
+      await answerStep(true);
+      await press();
+      await press();
+    }
+    ok(back && back.ask !== missed.ask, `the fact missed comes back a few questions later, asked another way (${missed.ask}, then ${back && back.ask})`, back);
+    asked.push(back);
+    await answerStep(true);
+    await press();
+    await press();
+    const topicsAsked = [...new Set(asked.map(x => x.topic))];
+    ok(topicsAsked.includes('storms') && topicsAsked.includes('capitals'), 'the run mixes topics', asked.map(x => `${x.topic}/${x.fact}`));
+    const twice = asked.filter((x, i) => asked.findIndex(y => y.key === x.key) !== i);
+    ok(twice.every(x => asked.filter(y => y.key === x.key).every((y, i, all) => i === 0 || y.ask !== all[i - 1].ask)), 'a fact asked again is asked a way it wasn\'t asked last time', asked.map(x => `${x.fact}.${x.ask}`));
+    await f.tap('[data-go=leave]');
+    await waitFor(`!!document.querySelector('.rend')`);
+    await sleep(400);
+    const sum = await ev(`document.querySelector('.rend').innerText`);
+    d = await dbg();
+    const runBest = d.best;
+    ok(runBest >= 4 && sum.includes(`${d.right} of ${d.answered} right`) && sum.includes(`×${runBest}`) && (await ev(`document.querySelectorAll('.rend .missed li').length`)) === 1,
+      'the cross ends it with a short summary: how many right, the best combo (the run after the miss went longer), what was missed', sum);
+    await shot2('44-review-summary');
+    await press();
+    ok(!(await bare()) && (await ev(`document.querySelector('.review .crownchip') ? document.querySelector('.review .crownchip').innerText.trim() : ''`)) === `×${runBest}`, `back on Practice, the crown shows the best combo, ×${runBest}`);
+    await shot2('40b-review-card-crown');
+    const reviewEvents = (await everyEvent()).filter(e => e.review || e.type === 'review');
+    const runIds = new Set(reviewEvents.filter(e => e.type === 'attempt').map(e => e.review));
+    ok(runIds.size === 1 && reviewEvents.filter(e => e.type === 'attempt').every(e => e.fact && e.ask && e.lesson && !e.step) && reviewEvents.some(e => e.type === 'review' && e.combo === runBest && e.of === d.answered),
+      'every answer went into the queue with its run, fact and ask, and the run\'s end with its best combo', reviewEvents.map(e => `${e.type}:${e.fact || ''}`));
+
+    console.log('Nothing due');
+    await f.tap('.review [data-go=review]');
+    for (let k = 0; k < 40 && (await ev(`__primer.data.metFacts().filter(x => x.due).length`)) > 0; k++) {
+      await live();
+      await answerStep(true);
+      await press();
+      await press();
+    }
+    ok((await ev(`__primer.data.metFacts().filter(x => x.due).length`)) === 0, 'answered right, everything due is done');
+    await f.tap('[data-go=leave]');
+    await waitFor(`!!document.querySelector('.rend')`);
+    await press();
+    await sleep(300);
+    ok(await ev(`document.querySelector('.review .side').innerText.includes('Nothing due') && document.querySelector('.review [data-go=review]').textContent === 'Review anyway'`), 'with nothing due, the card says so plainly and offers to review anyway', await ev(`document.querySelector('.review .side').innerText`));
+    await shot2('45-review-nothing-due');
+    await f.tap('.review [data-go=review]');
+    await live();
+    d = await dbg();
+    const closest = await ev(`__primer.data.metFacts().sort((a,b)=>a.recall-b.recall)[0].key`);
+    ok(d.step && d.step.key === closest, 'reviewing anyway starts with the fact closest to slipping', { d: d.step, closest });
+    await f.tap('[data-go=leave]');
+    await sleep(400);
+    ok(!(await bare()) && (await ev(`!!document.querySelector('.practice')`)), 'and the cross with nothing answered goes straight back');
+
+    console.log('A review on the path');
+    await ev(`__primer.app.setPref('topic','storms'); true`);
+    await f.tap('.tab[data-tab=learn]');
+    await sleep(400);
+    ok(await ev(`document.querySelector('.node[data-node=look-back]').classList.contains('now')`), 'with both lessons done, the review is next');
+    await f.tap('.node[data-node=look-back]');
+    await sleep(300);
+    await f.tap('.callout [data-go=start]');
+    await live();
+    d = await dbg();
+    ok(d.planned === 8, 'it goes over the eight facts of the lessons before it', d);
+    const nodeAsked = [];
+    for (let k = 0; k < 12 && !(await ev(`!!document.querySelector('.rend')`)); k++) {
+      await live();
+      nodeAsked.push((await dbg()).step);
+      await answerStep(true);
+      await press();
+      await press();
+      await sleep(200);
+    }
+    ok(nodeAsked.length === 8 && nodeAsked.every(x => x.topic === 'storms') && new Set(nodeAsked.map(x => x.fact)).size === 8 && (await text()).includes('Review done'), 'each fact once, all of them its own topic\'s, then Review done', nodeAsked.map(x => x.fact));
+    await press();
+    ok(await ev(`document.querySelector('.node[data-node=look-back]').classList.contains('done') && document.querySelector('.node[data-node=drawn]').classList.contains('now')`), 'and the path goes on: the review is done, the test is next');
+
+    console.log('A test drawn from facts');
+    await f.tap('.node[data-node=drawn]');
+    await sleep(300);
+    await f.tap('.callout [data-go=start]');
+    await live();
+    const drawnSteps = await ev(`__primer.run.lesson.steps.map(s => ({ id: s.id, fact: s.fact, ask: s.askId, way: __primer.facts.wayOf(s) }))`);
+    const ways = await ev(`Object.fromEntries([...__primer.app.topics.find(t=>t.id==='storms').facts.facts.values()].map(f => [f.id, f.taughtBy.map(t => t.way).filter(Boolean)]))`);
+    ok(drawnSteps.length === 4 && drawnSteps.every(s => s.fact && s.ask && s.id === `${s.fact}.${s.ask}` && !ways[s.fact].includes(s.way)), 'it draws four facts of its unit, each asked a way its lesson didn\'t use', { drawnSteps, ways });
+    for (let k = 0; k < 4; k++) {
+      await live();
+      await answerStep(true);
+      await press();
+      await press();
+    }
+    await waitFor(`!!document.querySelector('.lend')`);
+    ok((await text()).includes('Test done') && (await text()).includes('4 of 4 right'), 'and is played as a test is', await text());
+    await press();
+    const testTries = (await everyEvent()).filter(e => e.lesson === 'drawn' && e.type === 'attempt');
+    ok(testTries.length === 4 && testTries.every(e => e.fact && e.ask && e.step === `${e.fact}.${e.ask}`), "its answers name their fact and ask, so the memory hears them", testTries.map(e => e.step));
+
+    console.log('Profile follows the memory');
+    await f.tap('.tab[data-tab=profile]');
+    await sleep(400);
+    const knowRow = () => ev(`[...document.querySelectorAll('.krow')].map(r=>({id:r.dataset.topic,pct:parseInt(r.querySelector('.pc').textContent),warn:!!r.querySelector('.wn svg'),col:r.querySelector('.kb b').style.background}))`);
+    const want = () => ev(`__primer.app.topics.map(t => ({ id: t.id, m: __primer.app.memoryOf(t) }))`);
+    let rows = await knowRow(), mems = await want();
+    ok(rows.every(r => { const m = mems.find(x => x.id === r.id).m; return m !== null && r.pct === Math.round(m * 100); }) && rows.every(r => !r.warn), "each topic's figure is how much of it the memory model says you'd recall now, and none is low", { rows, mems });
+    ok((await ev(`document.querySelector('#bestcombo').innerText.trim()`)) === `×${await ev('__primer.data.memoryNow().best')}` && (await ev('__primer.data.memoryNow().best')) >= runBest, "the crown tile shows review's best combo");
+    await shot2('46-profile');
+    await ev(`__primer.clock.shift(${80 * DAY}); __primer.app.go('profile'); true`);
+    await sleep(300);
+    const later = await knowRow();
+    mems = await want();
+    ok(later.every(r => r.pct < rows.find(x => x.id === r.id).pct && r.pct === Math.round(mems.find(x => x.id === r.id).m * 100) && r.warn === r.pct < 70) && later.some(r => r.warn) && later[0].col !== rows[0].col,
+      'eighty days on, the figures have fallen with it, greyer, with the warning mark on the ones under 70%', { before: rows, later });
+    await shot2('47-profile-later');
+    await f.tap('.krow[data-topic=storms]');
+    await sleep(500);
+    const detail = await ev(`({dots:document.querySelectorAll('.sheet .dots i').length,text:document.querySelector('.sheet').innerText})`);
+    ok(detail.dots === 8 && /\d+ of 8 facts/.test(detail.text) && detail.text.includes('due again') && detail.text.toLowerCase().includes('review made-up storms'), 'its details: a dot per fact, how many are due again, and a review of just that topic', detail);
+    await shot2('48-profile-detail');
+    await f.tap('.sheet [data-go=review]');
+    await live();
+    const topicRun = [];
+    for (let k = 0; k < 3; k++) { await live(); topicRun.push((await dbg()).step.topic); await answerStep(true); await press(); await press(); }
+    ok(topicRun.every(t => t === 'storms'), 'which asks only that topic\'s facts', topicRun);
+    await f.tap('[data-go=leave]');
+    await waitFor(`!!document.querySelector('.rend')`);
+    await press();
+    ok(await ev(`!!document.querySelector('.profile')`), 'and comes back to Profile');
+
+    console.log('Offline, a review still runs and is saved');
+    await b.send('Network.enable');
+    await b.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    const waitingBefore = (await queue()).length;
+    await ev(`__primer.app.go('practice'); true`);
+    await sleep(300);
+    await f.tap('.review [data-go=review]');
+    await live();
+    const offKey = (await dbg()).step.key, offN = (await cards())[offKey].n;
+    await answerStep(true);
+    await press();
+    ok((await verdict()).verdict === 'Right' && (await cards())[offKey].n === offN + 1 && (await queue()).length > waitingBefore, 'with no signal, a review question is asked, marked, remembered and queued');
+    await press();
+    await f.tap('[data-go=leave]');
+    await waitFor(`!!document.querySelector('.rend')`);
+    await press();
+    await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+
+    console.log('A new phone gets its memory back from the repo');
+    await ev('__primer.sync.flush()');
+    await sleep(300);
+    ok((await queue()).length === 0, 'everything has gone up');
+    const snap = await ev(`({ cards: __primer.data.memoryNow().toJSON().cards, best: __primer.data.memoryNow().best,
+      done: Object.entries(__primer.data.progressNow().lessons).filter(([k, v]) => v.finished).map(([k]) => k).sort(), nodes: Object.keys(__primer.data.progressNow().nodes).sort() })`);
+    // a cleared phone: no database, no backup list, nothing kept
+    await ev(`(async () => { Object.keys(localStorage).filter(k => k.startsWith('primer')).forEach(k => localStorage.removeItem(k)); await __primer.store.testCloseConnection(); await new Promise(r => { const q = indexedDB.deleteDatabase('primer'); q.onsuccess = q.onerror = q.onblocked = () => r(); }); return true })()`);
+    await go();
+    ok((await ev(`__primer.data.memoryNow().size`)) === 0 && (await ev(`__primer.sync.status().connected`)) === false && (await text()).includes('No lessons'), 'cleared, the phone knows nothing: no lessons, no memory, not connected');
+    await ev(`__primer.sync.connect('test-good')`);
+    ok(await waitFor(`__primer.store.get('rebuilt').then(r => !!r && r.events > 0)`, 15000), 'connecting, it reads the repo\'s progress files and replays them', await ev(`__primer.store.get('rebuilt')`));
+    const rebuilt = await ev(`({ cards: __primer.data.memoryNow().toJSON().cards, best: __primer.data.memoryNow().best,
+      done: Object.entries(__primer.data.progressNow().lessons).filter(([k, v]) => v.finished).map(([k]) => k).sort(), nodes: Object.keys(__primer.data.progressNow().nodes).sort() })`);
+    const sameCards = Object.keys(snap.cards).length === Object.keys(rebuilt.cards).length && Object.entries(snap.cards).every(([k, x]) => {
+      const y = rebuilt.cards[k];
+      return y && ['due', 's', 'd', 'r', 'l', 'st', 'lr', 'ask', 'n', 'ok', 'm'].every(f2 => (typeof x[f2] === 'number' ? Math.abs(x[f2] - y[f2]) < 1e-6 : x[f2] === y[f2]));
+    });
+    ok(sameCards && rebuilt.best === snap.best, `its memory is back, card for card (${Object.keys(rebuilt.cards).length} facts, best combo ×${rebuilt.best})`, { snap: Object.keys(snap.cards), rebuilt: Object.keys(rebuilt.cards) });
+    ok(JSON.stringify(rebuilt.done) === JSON.stringify(snap.done) && JSON.stringify(rebuilt.nodes) === JSON.stringify(snap.nodes), 'and so is the path: the same lessons done, the review node gone through', { snap: snap.done, rebuilt: rebuilt.done });
+    await ev(`__primer.app.setPref('topic','storms'); __primer.app.go('learn'); true`);
+    await sleep(400);
+    ok(await ev(`document.querySelector('.node[data-node=look-back]').classList.contains('done')`), 'Learn shows it');
+    ok((await ev(`__primer.store.get('rebuilt')`)).events > 0 && (await sent()).length > 0, 'once rebuilt, it isn\'t done again over what the phone now has');
+
+    await ev(`__primer.clock.shift(0); true`);
+    await api('/__reset?data=fixtures');
+    await ev('__primer.sync.pull()');
+    await reloadLibrary();
+    await ev(`__primer.app.setPref('topic','test-topic'); true`);
   }
 
   console.log('Narrated scenes: the voice is the clock');

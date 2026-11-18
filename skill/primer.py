@@ -1228,7 +1228,7 @@ def check_facts(lesson, where, rep, kit, base, ctx):
                         rep.err(f'{w} ask {k + 1}', f'options "{kk}" names "{opts[kk]}", which isn\'t a field of the rows')
                 if not opts.get('why') or not opts.get('tempting'):
                     rep.err(f'{w} ask {k + 1}', 'options made from the table need "why" and "tempting" for the wrong ones, with {other.field} for the row each comes from')
-    seen = set()
+    seen, same_way = set(), set()
     for f in facts_of_lesson(lesson):
         fid = f['id']
         w = f'{where} fact {fid}' + (f' (family {f["family"]}, row {f["row"]})' if f.get('family') else '')
@@ -1274,8 +1274,12 @@ def check_facts(lesson, where, rep, kit, base, ctx):
             if sig in sigs:
                 rep.err(aw, f'asks it the same way as ask {sigs[sig]}: two asks are two different ways of asking')
             sigs[sig] = k + 1
-        if len({way_of(a) for a in asks if isinstance(a, dict)}) == 1 and len(asks) >= 2:
-            rep.warn(w, f'every ask is a {way_of(asks[0])}: vary the forms, so it\'s known, not one question remembered')
+        if len({way_of(a) for a in asks if isinstance(a, dict)}) == 1 and len(asks) >= 2 and f.get('family') not in same_way:
+            if f.get('family'):
+                same_way.add(f['family'])   # said once for a family, not for every row
+                rep.warn(f'{where} family {f["family"]}', f'every ask shape is a {way_of(asks[0])}: vary the forms, so its facts are known, not one question remembered')
+            else:
+                rep.warn(w, f'every ask is a {way_of(asks[0])}: vary the forms, so it\'s known, not one question remembered')
 
 
 def check_topic(folder, rep, kit):
