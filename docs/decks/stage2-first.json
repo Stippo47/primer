@@ -1,0 +1,23 @@
+{
+  "title": "Stage 2, first pieces",
+  "topic": "stage2",
+  "order": 1,
+  "cards": [
+    {
+      "id": "first-pieces",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Stage 2, first pieces",
+      "text": "Primer 0.3 has the first narrated animation, the map, five new answer forms and your 0.2 notes. Mark each part.",
+      "why": "The voice can only really be judged on your phone: whether it plays, how it sounds, and what it does to music you're playing.",
+      "details": "To update: close Primer fully and open it again. Profile shows the version at the bottom; it should say 0.3.0.\n\nThe animation is between the two hurricane lessons. Its voice is Heart; Profile, Narrators lets you pick another of your four for each subject. With Voice off it plays from the captions, a tap per line.\n\nNot in yet: review that remembers what you've learned, and the other new parts. Review comes next.",
+      "parts": [
+        { "id": "scene", "title": "The narrated animation", "text": "\"The storm's engine\": six lines read aloud while the globe moves on the words, with a moment where you tap the ocean. Tap the picture to pause; the buttons go back or skip a line. Does the voice play, and does your music pause, duck or keep going?", "images": ["../stage2/shots/scene.png"] },
+        { "id": "buttons", "title": "Buttons and the chest", "text": "Buttons sink when pressed and come back, with no jiggle and no shadow under them. The chest is redrawn: dim ahead, glinting when it's next, open once opened.", "images": ["../stage2/shots/chest-next.png", "../stage2/shots/chest-open.png"] },
+        { "id": "forms", "title": "New answer forms", "text": "Dial (with a redrawn palm), Pile, String, Sort and Snap, as you picked, all checked and revealed the same way. Try them in Practice, Answer forms, at the bottom; that's also where to check for slivers when dragging.", "images": ["../stage2/shots/dial.png", "../stage2/shots/pile.png", "../stage2/shots/string.png", "../stage2/shots/sort.png"] },
+        { "id": "map", "title": "One map, globe or flat", "text": "The globe is now one map part with the projection as a setting: globe, or three flat maps. Every tool works on all of them: names, the four styles, borders, routes that draw themselves, a storm moving along a track. Practice, Map. The flat map starts small; lessons will start it zoomed in.", "images": ["../stage2/shots/map-flat.png", "../stage2/shots/map-globe.png"] },
+        { "id": "spacing", "title": "Spacing", "text": "Steps share the screen better: the question at the top, a picture growing to fill the room, the answer in the middle of what's left. Look at the slider steps in the first lesson." }
+      ]
+    }
+  ]
+}
