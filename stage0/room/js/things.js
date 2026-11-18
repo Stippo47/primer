@@ -1,9 +1,12 @@
 // The earned things: kit templates (poster, floor mat, stuffed toy, flag, statue, trophy, medal) filled in by a topic.
 // Every one is drawn by rule from its own origin, lit from the top left, and takes a pen whose `fade`
 // drains its colour and adds dust: that is how a topic being forgotten shows.
+// They are drawn the way the room is seen (a little from above): level circles are ellipses about half
+// as tall as wide, blocks show their tops, and floor mats are drawn lying on the floor.
 
 import { rng } from './ease.js';
 import { rr, circ, ell, poly, rpoly, soft, pd, limb, capsule, star, dust, cobweb, TAU, PI } from './draw.js';
+import { cssGrad } from './view.js';
 
 function swirlPath(r) {
   const arm = pd(`M0 ${-r * 0.42} C ${r * 0.7} ${-r * 0.75} ${r * 1.25} ${-r * 0.1} ${r * 0.85} ${r * 0.8} C ${r * 0.95} ${r * 0.1} ${r * 0.5} ${-r * 0.1} 0 ${r * 0.05} Z`);
@@ -22,8 +25,10 @@ const GOLD = '#ffc83d', GOLD_D = '#d6960a', GOLD_L = '#ffe69a';
 // ---------- Hurricanes: metal trophy. origin: base centre ----------
 function stormCup(g) {
   const { ctx } = g;
-  g.shadow(0, 1, 26, 4.5);
+  g.shadow(0, 1, 28, 7);
+  g.f(rr(-20, -21, 40, 12, 4), '#8a70e6', { s: 0, l: 1, shade: false });
   g.f(rr(-20, -14, 40, 14, 4), '#5a3fb0', { s: 3.4, l: 1.5 });
+  g.flat(rr(-18, -14.6, 22, 1.2, 0.6), '#ffffff', 0.5);
   g.f(rr(-10, -10.5, 20, 6.5, 2.4), GOLD, { s: 1.4, l: 0.8 });
   g.f(pd('M-14 -14 C-14 -21 -4.5 -20 -4 -30 L4 -30 C4.5 -20 14 -21 14 -14Z'), GOLD, { s: 3.4, l: 1.4, dk: 0.36 });
   for (const k of [-1, 1]) {
@@ -67,8 +72,9 @@ function stormPoster(g) {
 // ---------- Circuits: statue. origin: base centre ----------
 function bulb(g) {
   const { ctx } = g, on = 1 - g.fade;
-  g.shadow(0, 1, 24, 4.5);
+  g.shadow(0, 1, 26, 7);
   if (on > 0.05) g.glow(0, -58, 56, 56, '#ffd75a', 0.42 * on);
+  g.f(rr(-18, -22, 36, 12, 4), '#8f74ee', { s: 0, l: 1, shade: false });
   g.f(rr(-18, -15, 36, 15, 4), '#6a45d6', { s: 3.4, l: 1.5 });
   g.f(rr(-8, -11, 16, 6, 2.2), GOLD, { s: 1.3, l: 0.7 });
   const cap = rr(-9, -34, 18, 20, 3);
@@ -152,16 +158,28 @@ function bearPoster(g) {
 }
 function union2(...ps) { const p = new Path2D(); for (const q of ps) p.addPath(q); return p; }
 
-// ---------- Bears: floor mat. origin: centre ----------
-function pawRug(g) {
-  const C = '#f0d2a4', P = '#8f5a35';
-  g.flat(ell(0, 4, 96, 25), '#0a082c', 0.32);
-  g.flat(ell(0, 3.2, 94, 24), '#b98a52');
-  g.f(ell(0, 0, 94, 24), C, { s: 2.4, l: 1.2, dk: 0.2 });
-  g.line(ell(0, 0, 84, 20), '#d9a868', 2.4, 0.9);
-  g.flat(ell(0, 6, 24, 9), P);
-  for (const [x, y, rx] of [[-33, -2, 9], [-12, -9, 10], [12, -9, 10], [33, -2, 9]]) g.flat(ell(x, y, rx, 4.8, x * 0.012), P);
-  g.flat(ell(-4, 4.6, 12, 3.4), '#a86c42', 0.9);
+// ---------- Bears: floor mat, lying on the floor. Drawn in floor units (x across, z toward us). origin: centre ----------
+function pawRug(g, e) {
+  const { ctx } = g, C = '#f0d2a4', P = '#8f5a35';
+  const body = ell(0, 0, 60, 42);
+  const [dx, dz] = e.down(2.2);                       // the mat's thickness, showing along its front edge
+  ctx.save(); ctx.translate(dx, dz); g.flat(body, '#a8774a'); ctx.restore();
+  g.flat(body, C);
+  g.clip(body, () => {
+    ctx.fillStyle = cssGrad(ctx, -60, -42, 60, 42, [[0, 'rgba(255,255,255,0.22)'], [0.45, 'rgba(255,255,255,0)'], [0.7, 'rgba(26,16,86,0)'], [1, 'rgba(26,16,86,0.16)']]);
+    ctx.fillRect(-62, -44, 124, 88);
+  });
+  g.line(ell(0, 0, 52, 35), '#d9a868', 3, 0.9);
+  // the paw: one big pad and four toes
+  const pad = pd('M0 -2 C10 -2 20 6 21 14 C22 22 13 24 0 22 C-13 24 -22 22 -21 14 C-20 6 -10 -2 0 -2Z');
+  ctx.save(); ctx.translate(0, 4); g.flat(pad, '#6e3f24'); ctx.restore();
+  g.flat(pad, P);
+  for (const [x, z, rx, rz] of [[-25, -10, 7, 9], [-9, -22, 7.5, 9.5], [9, -22, 7.5, 9.5], [25, -10, 7, 9]]) {
+    ctx.save(); ctx.translate(0, 3.4); g.flat(ell(x, z, rx, rz), '#6e3f24'); ctx.restore();
+    g.flat(ell(x, z, rx, rz), P);
+    g.flat(ell(x - 2, z - 3, rx * 0.4, rz * 0.32), '#ffffff', 0.22 * (1 - g.fade));
+  }
+  g.flat(ell(-5, 3, 9, 4), '#ffffff', 0.18 * (1 - g.fade));
 }
 
 // ---------- Flags of the world: a string of flags. origin: the left pin ----------
@@ -218,10 +236,10 @@ function medal(g) {
 const METALS = { bronze: ['#e09a5a', '#a8642e', '#ffd0a0'], gold: [GOLD, GOLD_D, GOLD_L], platinum: ['#e6ecff', '#9aa6dc', '#ffffff'] };
 function globeStand(g, e) {
   const { ctx } = g, [m, md, ml] = METALS[e.level || 'gold'], cy = -118, r = 42;
-  g.shadow(0, 2, 40, 7, 0.38);
-  g.flat(ell(0, -2, 31, 8), md);
-  g.f(ell(0, -6, 31, 8), m, { s: 2.6, l: 1.4 });
-  g.f(ell(0, -8, 17, 4.6), m, { s: 2, l: 1, dk: 0.4 });
+  g.shadow(0, 2, 42, 15, 0.38);
+  g.flat(ell(0, -2, 31, 12.5), md);
+  g.f(ell(0, -6, 31, 12.5), m, { s: 2.6, l: 1.4 });
+  g.f(ell(0, -8, 17, 7), m, { s: 2, l: 1, dk: 0.4 });
   g.f(rr(-4.5, -70, 9, 62, 2), m, { s: 2.6, l: 1.4, dk: 0.36 });
   g.f(ell(0, -68, 9, 4), m, { s: 1.6, l: 1 });
   // the arm that holds it, tilted like the Earth
@@ -286,8 +304,10 @@ function guitar(g) {
 // Bread: statue. a crusty loaf on its board. origin: counter, centre.
 function loaf(g) {
   const { ctx } = g, CR = '#d98a3e', CRD = '#a85a1e';
-  g.shadow(0, 0, 46, 5, 0.3);
+  g.shadow(14, 0, 66, 8, 0.3);
+  g.f(rr(-46, -18, 122, 14, 4), '#dba571', { s: 0, l: 1, shade: false });
   g.f(rr(-46, -6, 122, 6, 3), '#c0824f', { s: 2.4, l: 1.2 });
+  ctx.save(); ctx.translate(0, -8);
   const b = soft([[-36, -6], [-37, -20], [-26, -33], [-6, -38], [14, -35], [28, -24], [30, -6]], true, 0.95);
   g.flat(b, CR);
   g.clip(b, () => {
@@ -305,12 +325,13 @@ function loaf(g) {
   // the bread knife beside it
   g.f(rr(36, -9.4, 22, 3.4, 1.2), '#dfe5ff', { s: 1, l: 0.6, dk: 0.36 });
   g.f(rr(56, -10.4, 15, 5.2, 2.4), '#5a3fb0', { s: 1.4, l: 0.8 });
+  ctx.restore();
 }
 
 // Coffee: statue. a moka pot. origin: hob, centre.
 function moka(g, e) {
   const { ctx } = g, M = '#cfd6f2';
-  g.shadow(0, 0, 22, 4, 0.34);
+  g.shadow(0, 0, 24, 9, 0.34);
   // a wisp of steam
   const t = e?.t || 0;
   for (let i = 0; i < 2; i++) {
@@ -336,7 +357,7 @@ function spiceJars(g) {
   const jars = [['#d9442e', '#ee4b7a'], ['#f2b21c', '#ffc83d'], ['#7a9a3a', '#2bc4a4'], ['#a5622c', '#ff7a59'], ['#3a2a2a', '#8b5cf0']];
   jars.forEach(([spice, tag], i) => {
     const x = 14 + i * 27, hgt = i % 2 ? 38 : 44;
-    g.shadow(x, 0, 14, 3, 0.3);
+    g.shadow(x + 2, 0, 15, 6, 0.3);
     const jar = rr(x - 10.5, -hgt, 21, hgt, [6, 6, 3.5, 3.5]);
     g.flat(jar, '#dff0ff', 0.34);
     g.clip(jar, () => {
@@ -350,6 +371,7 @@ function spiceJars(g) {
     g.f(rr(x - 6.5, -hgt * 0.5, 13, 9, 2), '#fff7e4', { s: 1.2, l: 0, lit: false, dk: 0.16 });
     g.flat(circ(x, -hgt * 0.5 + 4.5, 2.4), tag);
     g.f(rr(x - 8.5, -hgt - 6, 17, 8, 3), '#c99a62', { s: 2, l: 1 });
+    g.f(ell(x, -hgt - 6, 8.5, 3.6), '#e0b47e', { s: 0, l: 0.8, shade: false });
   });
 }
 
@@ -371,17 +393,33 @@ function chillies(g, e) {
   ctx.restore();
 }
 
-// Coffee: floor mat, shaped like a coffee bean. origin: centre.
-function beanMat(g) {
-  const C = '#9a5c34';
-  g.flat(ell(0, 5, 88, 25), '#0a082c', 0.32);
-  g.flat(ell(0, 3.6, 86, 24), '#5a3018');
-  g.f(ell(0, 0, 86, 24), C, { s: 3.4, l: 1.6, dk: 0.3, lt: 0.3 });
-  // the crease down the middle of the bean
-  const crease = pd('M-72 1 C-40 12 -14 8 0 0 C14 -8 40 -12 72 -1');
-  g.line(crease, '#4a260f', 6);
-  g.ctx.save(); g.ctx.translate(0, 2.6); g.line(crease, '#c98a5a', 1.6, 0.8); g.ctx.restore();
-  g.flat(ell(-30, -12.5, 30, 4.2, -0.04), '#ffffff', 0.18);
+// Coffee: floor mat, lying on the floor: a cup of coffee on its saucer, seen from above. In floor units. origin: centre.
+function cupMat(g, e) {
+  const { ctx } = g;
+  const saucer = circ(0, 0, 50);
+  const [dx, dz] = e.down(2.2);
+  ctx.save(); ctx.translate(dx, dz); g.flat(saucer, '#c9a77a'); ctx.restore();
+  g.flat(saucer, '#f6ead2');
+  g.line(circ(0, 0, 43), '#e3cfa8', 2.4, 0.9);
+  // the handle, then the cup
+  g.flat(rr(28, -7, 26, 14, 7), '#d8d2ee');
+  g.flat(rr(28, -8.5, 25, 14, 7), '#ffffff');
+  g.flat(circ(0, 2, 35), '#d8d2ee');
+  g.flat(circ(0, 0, 35), '#ffffff');
+  // the coffee, with a ring of crema and a leaf poured into it
+  const coffee = circ(0, 1, 28.5);
+  g.flat(coffee, '#7a4426');
+  g.clip(coffee, () => {
+    g.line(circ(0, 1, 26.6), '#b8743e', 3.6, 0.9);
+    g.flat(pd('M0 -17 C12 -12 15 2 0 20 C-15 2 -12 -12 0 -17Z'), '#f3dcb8');
+    g.line(pd('M0 -13 L0 17'), '#b8743e', 1.6, 0.9);
+    for (const z of [-6, 2, 9]) g.line(pd(`M0 ${z} Q-6 ${z - 4} -9 ${z - 3} M0 ${z} Q6 ${z - 4} 9 ${z - 3}`), '#b8743e', 1.3, 0.8);
+    ctx.fillStyle = cssGrad(ctx, -28, -28, 28, 28, [[0, 'rgba(26,16,86,0.3)'], [0.4, 'rgba(26,16,86,0)']]); ctx.fillRect(-30, -30, 60, 60);
+  });
+  // the light along the cup's far rim
+  ctx.strokeStyle = 'rgba(190,196,236,0.9)'; ctx.lineWidth = 2.6;
+  ctx.beginPath(); ctx.arc(0, 0, 31.5, PI * 1.05, PI * 1.6); ctx.stroke();
+  g.flat(ell(-24, -27, 9, 4, -0.7), '#ffffff', 0.5 * (1 - g.fade));
 }
 
 // Coffee: poster. origin: top-left. 96 x 124
@@ -407,24 +445,27 @@ function coffeePoster(g) {
   g.f(circ(w / 2, 4, 4), '#49c6ff', { s: 1.6, l: 0.9 });
 }
 
-// Every earned thing in the house. x, y: where its origin sits in the world. hit: its touch box, around the origin.
+// Every earned thing in the house. at: where its origin is in the room, as (x, z, h).
+// layer: 'wall' (hung on the back wall), 'floor' (a mat, drawn lying down), 'on' (standing on furniture), 'stand' (on the floor).
+// hit: its touch box around the origin, in its own drawing units (floor units for a mat). The scene draws them
+// at 0.6 of the size they were drawn at, and never lets a touch area be smaller than 44 points.
 // mem: how well its topic is remembered (0 to 1). The numbers are made up for the sketch.
-const K = 1124;   // where the kitchen starts (X.kitL in shell.js)
+const K = 712;   // where the kitchen starts (X.kitL in shell.js)
 export const THINGS = [
-  { id: 'bunting', room: 'bed', name: 'Flag string', topic: 'Flags of the world', mem: 0.74, x: 268, y: 172, hit: [0, -8, 360, 84], draw: bunting, z: 1 },
-  { id: 'poster', room: 'bed', name: 'Bear poster', topic: 'Bears', mem: 0.9, x: 292, y: 296, hit: [0, 0, 108, 148], draw: bearPoster, z: 1 },
-  { id: 'salmon', room: 'bed', name: 'Salmon', topic: 'Bears', mem: 0.9, x: 196, y: 621, hit: [-44, -42, 50, 4], draw: salmon, z: 3 },
-  { id: 'rug', room: 'bed', name: 'Paw mat', topic: 'Bears', mem: 0.9, x: 342, y: 726, hit: [-96, -24, 96, 26], draw: pawRug, z: 0, flat: true },
-  { id: 'cup', room: 'bed', name: 'Storm cup', topic: 'Hurricanes', mem: 0.82, x: 572, y: 396, hit: [-30, -84, 30, 2], draw: stormCup, z: 2 },
-  { id: 'bulb', room: 'bed', name: 'Light bulb', topic: 'Circuits', mem: 0.24, fading: true, x: 662, y: 396, hit: [-26, -86, 30, 2], draw: bulb, z: 2 },
-  { id: 'medal', room: 'bed', name: 'Flags medal', topic: 'Flags of the world', mem: 0.74, x: 770, y: 262, hit: [-22, -4, 22, 80], draw: medal, z: 1 },
-  { id: 'storm-poster', room: 'bed', name: 'Storm poster', topic: 'Hurricanes', mem: 0.82, x: 826, y: 236, hit: [0, 0, 100, 128], draw: stormPoster, z: 1 },
-  { id: 'globe', room: 'bed', name: 'Globe', topic: 'Flags of the world', mem: 0.74, x: 768, y: 716, hit: [-52, -168, 52, 4], draw: globeStand, z: 3, opens: 'globe' },
-  { id: 'guitar', room: 'bed', name: 'Guitar', topic: 'Guitar', mem: 0.18, fading: true, x: 856, y: 714, hit: [-44, -232, 48, 4], draw: guitar, z: 4 },
-  { id: 'coffee-poster', room: 'kitchen', name: 'Coffee poster', topic: 'Coffee', mem: 0.86, x: K + 400, y: 196, hit: [0, 0, 96, 124], draw: coffeePoster, z: 1 },
-  { id: 'chillies', room: 'kitchen', name: 'Chilli string', topic: 'Spices', mem: 0.7, x: K + 548, y: 330, hit: [-22, -4, 22, 128], draw: chillies, z: 1 },
-  { id: 'jars', room: 'kitchen', name: 'Spice jars', topic: 'Spices', mem: 0.7, x: K + 376, y: 412, hit: [0, -54, 142, 2], draw: spiceJars, z: 2 },
-  { id: 'loaf', room: 'kitchen', name: 'Crusty loaf', topic: 'Bread', mem: 0.92, x: K + 222, y: 603, hit: [-48, -42, 78, 2], draw: loaf, z: 2 },
-  { id: 'moka', room: 'kitchen', name: 'Moka pot', topic: 'Coffee', mem: 0.86, x: K + 400, y: 600, hit: [-36, -76, 26, 2], draw: moka, z: 2 },
-  { id: 'bean', room: 'kitchen', name: 'Bean mat', topic: 'Coffee', mem: 0.86, x: K + 300, y: 726, hit: [-88, -24, 88, 26], draw: beanMat, z: 0, flat: true },
+  { id: 'bunting', room: 'bed', name: 'Flag string', topic: 'Flags of the world', mem: 0.74, at: [24, 0, 292], layer: 'wall', hit: [0, -8, 360, 84], draw: bunting },
+  { id: 'poster', room: 'bed', name: 'Bear poster', topic: 'Bears', mem: 0.9, at: [432, 0, 240], layer: 'wall', hit: [0, 0, 108, 148], draw: bearPoster },
+  { id: 'medal', room: 'bed', name: 'Flags medal', topic: 'Flags of the world', mem: 0.74, at: [522, 0, 254], layer: 'wall', hit: [-22, -4, 22, 80], draw: medal },
+  { id: 'storm-poster', room: 'bed', name: 'Storm poster', topic: 'Hurricanes', mem: 0.82, at: [552, 0, 252], layer: 'wall', hit: [0, 0, 100, 128], draw: stormPoster },
+  { id: 'rug', room: 'bed', name: 'Paw mat', topic: 'Bears', mem: 0.9, at: [300, 196, 0], layer: 'floor', hit: [-60, -42, 60, 42], draw: pawRug },
+  { id: 'salmon', room: 'bed', name: 'Salmon', topic: 'Bears', mem: 0.9, at: [96, 116, 42], layer: 'on', hit: [-44, -42, 50, 4], draw: salmon },
+  { id: 'cup', room: 'bed', name: 'Storm cup', topic: 'Hurricanes', mem: 0.82, at: [218, 7.5, 150], layer: 'on', hit: [-30, -84, 30, 2], draw: stormCup },
+  { id: 'bulb', room: 'bed', name: 'Light bulb', topic: 'Circuits', mem: 0.24, fading: true, at: [276, 7.5, 150], layer: 'on', hit: [-26, -86, 30, 2], draw: bulb },
+  { id: 'globe', room: 'bed', name: 'Globe', topic: 'Flags of the world', mem: 0.74, at: [450, 64, 0], layer: 'stand', hit: [-52, -168, 52, 4], draw: globeStand, opens: 'globe' },
+  { id: 'guitar', room: 'bed', name: 'Guitar', topic: 'Guitar', mem: 0.18, fading: true, at: [530, 48, 0], layer: 'stand', hit: [-44, -232, 48, 4], draw: guitar },
+  { id: 'coffee-poster', room: 'kitchen', name: 'Coffee poster', topic: 'Coffee', mem: 0.86, at: [K + 316, 0, 236], layer: 'wall', hit: [0, 0, 96, 124], draw: coffeePoster },
+  { id: 'chillies', room: 'kitchen', name: 'Chilli string', topic: 'Spices', mem: 0.7, at: [K + 460, 0, 266], layer: 'wall', hit: [-22, -4, 22, 128], draw: chillies },
+  { id: 'cupmat', room: 'kitchen', name: 'Cup mat', topic: 'Coffee', mem: 0.86, at: [K + 196, 198, 0], layer: 'floor', hit: [-50, -50, 54, 50], draw: cupMat },
+  { id: 'jars', room: 'kitchen', name: 'Spice jars', topic: 'Spices', mem: 0.7, at: [K + 90, 7.5, 168], layer: 'on', hit: [0, -54, 142, 2], draw: spiceJars },
+  { id: 'loaf', room: 'kitchen', name: 'Crusty loaf', topic: 'Bread', mem: 0.92, at: [K + 112, 24, 65.5], layer: 'on', hit: [-48, -50, 78, 2], draw: loaf },
+  { id: 'moka', room: 'kitchen', name: 'Moka pot', topic: 'Coffee', mem: 0.86, at: [K + 158 + 16, 31, 65.5], layer: 'on', hit: [-36, -76, 26, 2], draw: moka },
 ];

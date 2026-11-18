@@ -236,13 +236,13 @@ export function dust(g, pts, seed = 1, k = 1) {
   ctx.restore();
 }
 // a cobweb in a corner: from (x, y), fanning between two angles
-export function cobweb(g, x, y, a0, a1, R, k = 1, spokes = 5, rings = 4) {
+export function cobweb(g, x, y, a0, a1, R, k = 1, spokes = 5, rings = 4, lw = 0.75) {
   if (k <= 0) return;
   const { ctx } = g;
   ctx.save();
   ctx.globalAlpha = k;
   ctx.strokeStyle = 'rgba(226,232,255,0.62)';
-  ctx.lineWidth = 0.75; ctx.lineCap = 'round';
+  ctx.lineWidth = lw; ctx.lineCap = 'round';
   const ang = i => lerp(a0, a1, i / (spokes - 1));
   const len = i => R * (0.82 + 0.18 * Math.sin(i * 2.3 + 1));
   ctx.beginPath();

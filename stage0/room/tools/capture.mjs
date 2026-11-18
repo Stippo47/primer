@@ -5,7 +5,8 @@
 //   node tools/capture.mjs --films all              every film    -> films/<name>.mp4
 //   node tools/capture.mjs --films pan --crf 27
 //   node tools/capture.mjs --films touch --frames 1.2,3.4 --out <folder>   check frames of a film, as PNGs
-//   node tools/capture.mjs --url "sheet=things" --name sheet --out <folder> one picture of any page setting
+//   node tools/capture.mjs --url "shot=bedroom-left" --name x --out <folder>   one picture of any page setting
+//   node tools/capture.mjs --url "shot=bedroom-left" --eval "window.touchAreas(0)"   print what an expression gives on that page
 //
 // Options: --out <folder> (default: the room folder), --fps 30, --crf 26, --size 414x896,
 //          --browser <path to Edge or Chrome>, --ffmpeg <path>, --port 8811, --debug-port 9331.
@@ -126,9 +127,12 @@ try {
   if (args.url) {
     const [w, h] = args.size ? String(args.size).split('x').map(Number) : [414, 896];
     await open(String(args.url), w, h);
-    mkdirSync(OUT, { recursive: true });
-    writeFileSync(join(OUT, `${args.name || 'page'}.png`), await shot());
-    console.log(`${args.name || 'page'}.png`);
+    if (args.eval) console.log(JSON.stringify(await ev(String(args.eval))));
+    else {
+      mkdirSync(OUT, { recursive: true });
+      writeFileSync(join(OUT, `${args.name || 'page'}.png`), await shot());
+      console.log(`${args.name || 'page'}.png`);
+    }
   }
 
   if (args.stills) {

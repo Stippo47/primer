@@ -138,7 +138,7 @@ export function glasses() {
     ${lens(19)}${lens(53)}`;
 }
 
-// ---- from topics (unique things; they show as an outline until their lesson is done)
+// ---- from topics (unique things; they show as a dark imprint of their shape until their lesson is done)
 
 const FUR = ['#bd7642', '#8c4f2b', '#e09a62'], CREAM = ['#f5dcb6', '#dcb588', '#fff5e0'];
 
@@ -188,7 +188,7 @@ export function windsock() {
     <path d="M73.4 20.5l4 -1.6M73.4 23.2l4.6 0.4M73.2 25.8l3.6 2" stroke="#ffa23a" stroke-width="1.6" stroke-linecap="round"/>`;
 }
 
-// shapes only needed as outlines for now (their lessons are not done), so they stay simple
+// shapes only needed as imprints for now (their lessons are not done), so they stay simple
 export const clawLog = () => `<rect x="3" y="6" width="68" height="28" rx="14" fill="#9a6238"/><ellipse cx="66" cy="20" rx="9" ry="14" fill="#e9c9a0"/>
   <path d="M18 9l7 18M27 9l7 18M36 9l7 18" stroke="#f6e3c3" stroke-width="3.4" stroke-linecap="round"/>`;
 export const barometer = () => `<circle cx="26" cy="30" r="24" fill="#ffc83d"/><circle cx="26" cy="30" r="17" fill="#fff"/><rect x="21" y="0" width="10" height="9" rx="3" fill="#ffc83d"/>

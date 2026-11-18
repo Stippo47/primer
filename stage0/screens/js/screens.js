@@ -251,13 +251,14 @@ export function shop() {
     const [w, h] = G.SIZE[name], k = Math.min(maxW / w, maxH / h, 1.25);
     return [w * k, h * k, k];
   };
-  // a thing for sale, or owned (no price), or only an outline (its lesson is not done yet)
+  // a thing for sale, or owned (no price), or only an imprint (its lesson is not done yet):
+  // its own shape pressed dark into the card, with no outline and no price
   const item = (name, state, topic) => {
     const [w, h, k] = fit(name);
-    const pic = svg(w, h, `<g transform="scale(${k})"${state === 'outline' ? ' filter="url(#outline)"' : ''}>${G[name]()}</g>`);
-    return `<div class="plate" style="position:relative;flex:1;min-width:0;height:100px;border-radius:15px;display:flex;flex-direction:column;align-items:center;${state === 'outline' ? 'background:#171d47;border-style:dashed;box-shadow:none;' : ''}">
-      <div style="height:${state === 'outline' ? 96 : 66}px;display:flex;align-items:center;justify-content:center">${pic}</div>
-      <div style="display:flex;align-items:center;gap:6px;${state === 'outline' ? 'position:absolute;left:6px;top:6px' : ''}">${topic ? A.medallion(topic, 26) : ''}${state === 'outline' ? '' : state === 'owned' ? owned : priceChip(state)}</div>
+    const pic = svg(w, h, `<g transform="scale(${k})"${state === 'imprint' ? ' filter="url(#imprint)"' : ''}>${G[name]()}</g>`);
+    return `<div class="plate" style="position:relative;flex:1;min-width:0;height:100px;border-radius:15px;display:flex;flex-direction:column;align-items:center">
+      <div style="height:66px;display:flex;align-items:center;justify-content:center">${pic}</div>
+      <div style="display:flex;align-items:center;gap:6px">${topic ? A.medallion(topic, 26) : ''}${state === 'imprint' ? '' : state === 'owned' ? owned : priceChip(state)}</div>
     </div>`;
   };
   const section = (y, title, cards, y2, cards2) => `<p class="over" style="left:18px;top:${y}px">${title}</p>
@@ -265,18 +266,20 @@ export function shop() {
     ${cards2 ? `<div style="left:16px;right:16px;top:${y2}px;display:flex;gap:9px">${cards2.join('')}</div>` : ''}`;
   const chip = (t, on) => `<span class="tag${on ? '' : ' dim'}" style="${on ? 'background:#49c6ff;color:#0e1436;border-color:#49c6ff' : ''}">${t}</span>`;
   return `
-  <svg width="0" height="0" style="position:absolute"><defs><filter id="outline" x="-20%" y="-20%" width="140%" height="140%">
-    <feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="big"/><feComposite in="big" in2="SourceAlpha" operator="out" result="ring"/>
-    <feFlood flood-color="#7f88c8"/><feComposite in2="ring" operator="in" result="line"/>
-    <feFlood flood-color="#232b62"/><feComposite in2="SourceAlpha" operator="in" result="fill"/>
-    <feMerge><feMergeNode in="fill"/><feMergeNode in="line"/></feMerge></filter></defs></svg>
+  <svg width="0" height="0" style="position:absolute"><defs><filter id="imprint" x="-10%" y="-10%" width="120%" height="120%">
+    <feFlood flood-color="#0f1438"/><feComposite in2="SourceAlpha" operator="in" result="fill"/>
+    <feOffset in="SourceAlpha" dx="2.2" dy="2.6" result="down"/><feComposite in="SourceAlpha" in2="down" operator="out" result="upper"/>
+    <feFlood flood-color="#060820" flood-opacity="0.85"/><feComposite in2="upper" operator="in" result="shade"/>
+    <feOffset in="SourceAlpha" dx="-1.3" dy="-1.5" result="up"/><feComposite in="SourceAlpha" in2="up" operator="out" result="lower"/>
+    <feFlood flood-color="#3a4590" flood-opacity="0.55"/><feComposite in2="lower" operator="in" result="lit"/>
+    <feMerge><feMergeNode in="fill"/><feMergeNode in="shade"/><feMergeNode in="lit"/></feMerge></filter></defs></svg>
   ${head('<span class="title">Shop</span>')}
   <div style="left:16px;top:102px;display:flex;gap:6px">${chip('All', true)}${chip('Room')}${chip('Furniture')}${chip('Clothes')}${chip('Topics')}</div>
   ${section(142, 'Room', [item('wallpaper', 120), item('floorTile', 'owned'), item('lantern', 80)])}
   ${section(274, 'Furniture', [item('bed', 'owned'), item('armchair', 220), item('plant', 60)])}
   ${section(406, 'Clothes', [item('beanie', 'owned'), item('scarf', 70), item('glasses', 90)])}
-  ${section(538, 'Topics', [item('bearRug', 150, 'bears'), item('salmonPlush', 90, 'bears'), item('clawLog', 'outline', 'bears')],
-    670, [item('windsock', 140, 'hurricanes'), item('barometer', 'outline', 'hurricanes'), item('bulbLamp', 'outline', 'circuits')])}`;
+  ${section(538, 'Topics', [item('bearRug', 150, 'bears'), item('salmonPlush', 90, 'bears'), item('clawLog', 'imprint', 'bears')],
+    670, [item('windsock', 140, 'hurricanes'), item('barometer', 'imprint', 'hurricanes'), item('bulbLamp', 'imprint', 'circuits')])}`;
 }
 
 // ---------------------------------------------------------------- Profile

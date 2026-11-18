@@ -1,0 +1,59 @@
+{
+  "title": "The room, third go",
+  "topic": "stage0",
+  "order": 10,
+  "cards": [
+    {
+      "id": "room-3",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The room, third go",
+      "text": "Home zoomed out, one view angle for everything, better furniture, and a bookcase that opens like the globe.",
+      "why": "You said the room was too zoomed in, the monster had to go, and the furniture's angle was off. Now one screen holds about two thirds of a room, every piece is seen the same way, and the avatar's spot is left empty. Mark any part that's off.",
+      "details": "What changed from your notes: everything is drawn at about 60% of last time, so you see much more of each room, with the roof and the ground outside. Every piece of furniture and every earned thing is now drawn from the same angle, a little from above (the next card shows the other two angles I tried). The bed, desk, chair, bookcase, lamps, plant, fridge, counter, table and chairs were all redrawn with lit tops, shaded edges and one highlight, like the trophies and the globe. The purple monster is gone.\n\nNew: the bookcase works like the globe. Tap it and it zooms in; the arrow in the top left goes back. Each topic is a run of books in its own colour with its own small mark on every spine, and a topic gets another book at each milestone, so the runs are different lengths and empty shelf shows room to grow.\n\nMade up for the sketch, not decided: the six book topics (Philosophy, Ethics, Japanese, Rhetoric, Logic, Music theory), how many books each has, the marks on their spines, how full each memory bar is, the 340 coins, the names in the bubbles, and the cup mat.\n\nWhat I think is still weak: the roof and the ground outside are plain filler. In the room, the bookcase's empty bottom shelf is a dark gap, and the marks on the spines are too small to see until it opens. The door between the rooms is still mostly a gap seen from the front, only clearer now; the kitchen side has a frame but no door of its own. The kitchen chair is mostly hidden behind its table. While the bookcase opens, the room looks washed out for a moment as the wall fades in over it.",
+      "parts": [
+        {
+          "id": "pan",
+          "title": "Zoomed out, panning",
+          "text": "Everything is about 60% of last time's size. A finger drags across the bedroom, taps the open door, and the view goes through it into the kitchen. The avatar's spot is left empty.",
+          "videos": ["../../stage0/room/films3/pan.mp4"],
+          "images": ["../../stage0/room/shots3/bedroom-left.png", "../../stage0/room/shots3/bedroom-right.png"]
+        },
+        {
+          "id": "kitchen",
+          "title": "The kitchen",
+          "text": "Same zoom and angle. The fridge, counter (hob, sink, oven) and table were redrawn. The coffee mat is now a cup of coffee seen from above, not a brown bean. The doorway is a dark passage between two door frames. The second picture is the far end.",
+          "images": ["../../stage0/room/shots3/kitchen.png", "../../stage0/room/shots3/kitchen-right.png"]
+        },
+        {
+          "id": "bookshelf",
+          "title": "The bookcase opens",
+          "text": "Tap the bookcase and it zooms in; the arrow goes back. Each run of books is one topic. Logic is being forgotten: grey, dusty, a cobweb. Tap a run for its name, its bar, and Review if it's fading.",
+          "videos": ["../../stage0/room/films3/bookshelf.mp4"],
+          "images": ["../../stage0/room/shots3/bookshelf.png", "../../stage0/room/shots3/bookshelf-bubble.png"]
+        },
+        {
+          "id": "shop",
+          "title": "Shop: locked things",
+          "text": "A thing whose lesson isn't done is now its own shape pressed dark into the card, with no outline and no dashed border. Its topic's badge stays under it.",
+          "images": ["../../stage0/screens/shots2/shop.png"]
+        }
+      ]
+    },
+    {
+      "id": "angle",
+      "kind": "options",
+      "rarity": "rare",
+      "title": "Which view angle",
+      "text": "The same bedroom corner seen three ways. Which should every room be drawn in?",
+      "why": "It sets how all furniture and earned things are drawn from now on. Mixed angles are why the desk chair looked awkward.",
+      "pick": "b",
+      "details": "My pick is B, a little from above. You see the front and the top of everything, so mats, the bed's blanket and the desk's top read clearly, and it is how the trophies and the globe you liked were already drawn. Everything faces you square on, so nothing looks skewed as the room slides past, and the door between the rooms can be seen from both sides.\n\nC looks chunkier, but the whole room leans, the side walls hide the door, and every earned thing would need a side drawn too. A is the plainest, but the floor shrinks to a thin strip, so mats and anything lying down nearly disappear.\n\nAll three pictures are the same furniture drawn by the same rules, only seen from a different place.",
+      "options": [
+        { "id": "a", "label": "Straight on", "text": "A dollhouse with the front off. Mats nearly vanish.", "image": "../../stage0/room/shots3/angle-a.png" },
+        { "id": "b", "label": "A little from above", "text": "My pick. Fronts and tops, like the trophies and globe.", "image": "../../stage0/room/shots3/angle-b.png" },
+        { "id": "c", "label": "From above and the side", "text": "Fronts, tops and sides. Solid, but everything leans.", "image": "../../stage0/room/shots3/angle-c.png" }
+      ]
+    }
+  ]
+}
