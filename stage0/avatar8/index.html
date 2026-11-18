@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  Primer: the avatar, eighth round. A sketch to react to, not app code.
+  Stills only: no animation, no clothes.
+
+  The owner asked for one crow drawn in eight clearly different styles, all in the same cheated stance:
+  three-quarters on, turned a little to the right. Between the eight the shape language, the shading, the
+  legs and wings, and the eyes all change. The eight looks are in js/crows.js, each with a note on what it does.
+
+    index.html?pic=crow-pebble        one crow. ids: pebble, facet, stilt, chunk, blocks, scratch, paper, lantern
+    index.html?lineup=crow-lineup     the eight at room size, numbered, one shared scale
+    add &room=1 to the lineup to draw it at 1x, the size it would be on the phone
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, one crow in eight looks</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
