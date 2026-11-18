@@ -1,10 +1,12 @@
 // The feel of every press, in one place: a soft sound, a tick under the thumb and a little spring.
 //
 // Sound. Effects are made on the spot with Web Audio: rounded sine notes, like a soft mallet on wood,
-// through a gentle low-pass. Nothing square or buzzy, nothing 8-bit, nothing loud. The phone's silent
-// switch is ignored (ruled 2026-11-17): the app's own Voice, Effects and Music switches decide. The phone
-// test showed a generated tone only sounds on silent once the page says its sound is media, so the first
-// press that makes a sound sets navigator.audioSession.type to 'playback' where the phone has it.
+// through a gentle low-pass. Nothing square or buzzy, nothing 8-bit, nothing loud. They start off
+// (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear).
+// The app never claims the phone's sound for itself: it leaves navigator.audioSession alone. Saying its
+// sound was media ('playback') stopped the person's own music the moment Primer opened. The cost: a
+// generated tone follows the silent switch. Voice clips (stage 2) are plain <audio>, which the phone test
+// heard on silent without any claim.
 //
 // Tick. iPhones let a web page tick only through a switch control flipping, so a hidden one is flipped
 // (Riffle's trick, felt on the phone test). Android vibrates. Nothing may depend on it being felt.
@@ -15,7 +17,7 @@ import { spring as springAt, back } from './ease.js';
 
 export const MOTION = { bounce: 0.425, overshoot: 0.675, pop: 1.175, squash: 0.13 };
 
-const prefs = { voice: true, effects: true, music: false };
+const prefs = { voice: true, effects: false, music: false };
 export const setPrefs = p => Object.assign(prefs, p);
 export const getPrefs = () => ({ ...prefs });
 
@@ -28,9 +30,6 @@ export const soundLog = () => played.slice();
 function engine() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
-  try {
-    if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback';
-  } catch { /* an older phone: effects then follow the silent switch */ }
   try {
     if (!ctx || ctx.state === 'closed') {
       ctx = new AC();

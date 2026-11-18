@@ -1,4 +1,5 @@
-// The lesson player. A lesson is a run of steps, one screen each:
+// The lesson player, for every node that's played step by step: a lesson, a test or an exam (`kind` on
+// the file the library hands it). Each is a run of steps, one screen each:
 //   explain  a short paragraph and a figure
 //   check    a quick question, answered with the Inputs part
 //   play     a part with a goal, marked by reading the part's state
@@ -244,7 +245,8 @@ export class Run {
     this.foot.querySelector('.lfeed').hidden = true;
     const end = document.createElement('div');
     end.className = 'lend';
-    end.innerHTML = `<div class="rays"></div>${medallion(this.topic, 104)}<p class="big">Lesson done</p>
+    const done = { test: 'Test done', exam: 'Exam done' }[this.lesson.kind] || 'Lesson done';
+    end.innerHTML = `<div class="rays"></div>${medallion(this.topic, 104)}<p class="big">${done}</p>
       ${asked.length ? `<p class="tally">${right} of ${asked.length} right</p>` : ''}
       ${sources.length ? `<p class="lsrc">From ${esc([...new Set(sources)].join(', '))}</p>` : ''}`;
     this.body.replaceWith(end);

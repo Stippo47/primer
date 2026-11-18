@@ -39,3 +39,8 @@
 .lend .rays { position: absolute; inset: 0; pointer-events: none;
   background: radial-gradient(200px 200px at 50% 44%, rgba(73, 198, 255, 0.16), transparent 70%); }
 .lsrc { font-size: 12px; color: var(--muted); font-weight: 700; line-height: 1.4; max-width: 340px; }
+
+/* a chest opened, or a placeholder (review, animation) visited */
+.visit .lend .tally { font-size: 16px; color: var(--muted); max-width: 300px; line-height: 1.35; }
+.lend .rays.gold { background: radial-gradient(220px 220px at 50% 42%, rgba(255, 200, 61, 0.2), transparent 70%); }
+.chestbig { transform-origin: 50% 70%; }

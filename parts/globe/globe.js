@@ -34,6 +34,9 @@ const STYLE = {
   day: { sea: ['#2a3ea6', '#1b2a80', '#141f66'], land: '#2bc4a4', edge: '#127a85', light: '#7df0cf', border: 'rgba(12,30,90,0.5)' },
   warmth: { sea: null, land: '#2bc4a4', edge: '#127a85', light: '#7df0cf', border: 'rgba(12,30,90,0.5)' },
   muted: { sea: ['#424a7c', '#39416f', '#2e355e'], land: '#7d86b3', edge: '#4a5280', light: '#a9b0d6', border: 'rgba(40,46,90,0.6)' },
+  // like a political map: every country one of four colours, no two neighbours the same
+  political: { sea: ['#2a3ea6', '#1b2a80', '#141f66'], land: null, edge: '#10184a', light: 'rgba(255,255,255,0.55)', border: 'rgba(10,14,46,0.6)',
+    four: ['#3fcfae', '#ffd062', '#f27ba3', '#a58cf2'] },
 };
 
 // Sea surface warmth, simplified to four nested bands for a northern late summer (stage0/scene/src/script.js).
@@ -73,6 +76,9 @@ function warmBand(i) {
   }
   return { type: 'MultiPolygon', coordinates: polys };
 }
+// Made once, the first time a warmth globe is drawn, and kept: turning never rebuilds them.
+let warmBands = null;
+const warmBandsNow = () => warmBands || (warmBands = BANDS.map((_, i) => warmBand(i)));
 // A band between two latitudes, wound the way d3 wants.
 function latBand(lat0, lat1) {
   const ring = [];
@@ -84,6 +90,7 @@ function latBand(lat0, lat1) {
   return poly;
 }
 const parallel = lat => ({ type: 'LineString', coordinates: Array.from({ length: 121 }, (_, i) => [-180 + i * 3, lat]) });
+const EQUATOR = parallel(0);
 
 // ---------------------------------------------------------------- the hurricane (the Disc, approved 2026-11-17)
 
@@ -113,7 +120,7 @@ function ribbon(p, at, width, n = 44) {
 const spiral = (a0, turn, r0, r1) => s => { const r = r0 * Math.pow(r1 / r0, s), a = a0 + turn * s; return [r * Math.cos(a), r * Math.sin(a)]; };
 
 // Seen from straight above: a round deck of cloud with grooves wound into it, a thin veil below, a raised
-// wall round the eye. `angle` falling turns it anticlockwise on screen.
+// wall round the eye. `angle` falling turns it counterclockwise on screen.
 function drawStorm(ctx, x, y, R, angle) {
   const g = 1, d = STORM.depth * R / 28;
   const T = { white: STORM.fill, shade: STORM.shade, mid: mix(STORM.fill, STORM.shade, 0.5), deep: mix(STORM.tired, STORM.swirl, 0.35 + 0.65) };
@@ -172,19 +179,83 @@ function loadWorld() {
     document.head.append(s);
   });
   worldP = Promise.all([script, fetch(new URL('../../vendor/countries-110m.json', import.meta.url)).then(r => r.json())]).then(([, world]) => {
-    const { feature, mesh } = globalThis.topojson;
+    const { feature, mesh, neighbors } = globalThis.topojson;
     const countries = feature(world, world.objects.countries).features.map(f => ({
-      f, name: f.properties.name, bounds: geoBounds(f), centroid: geoCentroid(f), area: geoArea(f),
+      f, name: f.properties.name, bounds: geoBounds(f), centroid: geoCentroid(f), area: geoArea(f), labelAt: labelSpot(f),
     }));
+    // Four colours, worked out from the shared borders in the map itself.
+    const { colour, clashes } = fourColours(neighbors(world.objects.countries.geometries));
+    countries.forEach((c, i) => { c.four = colour[i]; });
+    const byColour = [0, 1, 2, 3].map(k => ({ type: 'MultiPolygon', coordinates: countries.filter(c => c.four === k).flatMap(c => (c.f.geometry.type === 'Polygon' ? [c.f.geometry.coordinates] : c.f.geometry.coordinates)) }));
     return {
       countries,
       byName: new Map(countries.map(c => [c.name, c])),
       land: feature(world, world.objects.land),
       borders: mesh(world, world.objects.countries, (a, b) => a !== b),
       grat: geoGraticule().step([30, 30])(),
+      byColour,
+      clashes,
     };
   }).catch(e => { worldP = null; throw e; });
   return worldP;
+}
+
+// Where a country's name goes: the middle of its biggest piece, so France's name sits in France and not
+// out at sea between it and French Guiana.
+function labelSpot(f) {
+  const g = f.geometry;
+  if (!g || g.type !== 'MultiPolygon') return geoCentroid(f);
+  let best = null, size = -1;
+  for (const coords of g.coordinates) {
+    const p = { type: 'Polygon', coordinates: coords };
+    const a = geoArea(p);
+    if (a > size && a < 2 * PI) { size = a; best = p; }
+  }
+  return best ? geoCentroid(best) : geoCentroid(f);
+}
+
+// Gives each country one of four colours so that no two that share a border match, the way a political
+// map is coloured. Greedy, taking the most hemmed-in country first (DSATUR); where a country's neighbours
+// already use all four, it swaps two colours along a chain of neighbours (a Kempe chain) to free one. If
+// even that fails, it takes the colour fewest neighbours have, and counts the clash.
+export function fourColours(nb) {
+  const n = nb.length, colour = new Array(n).fill(-1);
+  const used = v => new Set(nb[v].map(u => colour[u]).filter(c => c >= 0));
+  const chain = (start, a, b) => {
+    const seen = new Set([start]), list = [start];
+    for (let i = 0; i < list.length; i++) for (const u of nb[list[i]]) if (!seen.has(u) && (colour[u] === a || colour[u] === b)) { seen.add(u); list.push(u); }
+    return list;
+  };
+  for (let step = 0; step < n; step++) {
+    let v = -1, sat = -1, deg = -1;
+    for (let i = 0; i < n; i++) {
+      if (colour[i] >= 0) continue;
+      const s = used(i).size;
+      if (s > sat || (s === sat && nb[i].length > deg)) { v = i; sat = s; deg = nb[i].length; }
+    }
+    const taken = used(v);
+    const free = [0, 1, 2, 3].find(c => !taken.has(c));
+    if (free !== undefined) { colour[v] = free; continue; }
+    let done = false;
+    for (let a = 0; a < 4 && !done; a++) {
+      for (let b = 0; b < 4 && !done; b++) {
+        if (a === b) continue;
+        for (const u of nb[v].filter(x => colour[x] === a)) {
+          const list = chain(u, a, b);
+          for (const x of list) colour[x] = colour[x] === a ? b : a;
+          if (!used(v).has(a)) { colour[v] = a; done = true; break; }
+          for (const x of list) colour[x] = colour[x] === a ? b : a;   // didn't free it: put it back
+        }
+      }
+    }
+    if (!done) {
+      const count = c => nb[v].filter(u => colour[u] === c).length;
+      colour[v] = [0, 1, 2, 3].sort((p, q) => count(p) - count(q))[0];
+    }
+  }
+  let clashes = 0;
+  for (let i = 0; i < n; i++) for (const u of nb[i]) if (u > i && colour[u] === colour[i]) clashes++;
+  return { colour, clashes };
 }
 
 const inBounds = (b, [lon, lat]) => {
@@ -211,12 +282,13 @@ export async function mount(el, settings, ctx = {}) {
   const lg = layer.getContext('2d');
   const proj = geoOrthographic().clipAngle(90).precision(0.5);
 
-  let w = 0, h = 0, dpr = 1, cx = 0, cy = 0, r = 0;
+  const borders = S.borders !== false;
+  let w = 0, h = 0, dpr = 1, cx = 0, cy = 0, r = 0, glow = null;
   let centre = Array.isArray(S.view) ? [Number(S.view[0]) || 0, Number(S.view[1]) || 0] : [-40, 15];
   let vel = [0, 0], dragging = false, touchedAt = 0, spinAnim = null;
   let selected = null, selectedAt = 0, tapped = null, pin = null;
   const highlights = new Map(), bands = [], points = [], markers = [];
-  let baseKey = '', contents = 0, raf = 0, last = 0, gone = false;
+  let baseKey = '', contents = 0, raf = 0, last = 0, gone = false, redraws = 0;
   const fns = { tapped: new Set(), turned: new Set() };
   const emit = (name, v) => fns[name].forEach(fn => fn(v));
 
@@ -230,6 +302,9 @@ export async function mount(el, settings, ctx = {}) {
     for (const c of [canvas, layer]) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
     cx = w / 2; cy = h / 2;
     r = (Math.min(w, h) / 2) * 0.84 * (Number(S.zoom) || 1);
+    // the glow behind the ball, a soft gradient (no blur), made once per size rather than every frame
+    glow = g.createRadialGradient(cx, cy, r * 0.86, cx, cy, r * 1.16);
+    glow.addColorStop(0, rgba('#4f7cff', 0.6)); glow.addColorStop(0.35, rgba('#4f7cff', 0.25)); glow.addColorStop(1, rgba('#4f7cff', 0));
     baseKey = '';
     wake();
   }
@@ -239,6 +314,7 @@ export async function mount(el, settings, ctx = {}) {
     const key = `${centre[0].toFixed(3)},${centre[1].toFixed(3)},${r},${contents},${selected}`;
     if (key === baseKey) return;
     baseKey = key;
+    redraws++;
     set();
     const c = lg, k = Math.sqrt(r / 166), depth = 3.2 * k;
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -253,20 +329,17 @@ export async function mount(el, settings, ctx = {}) {
       c.fillStyle = sea; c.fillRect(cx - r, cy - r, r * 2, r * 2);
     } else {
       c.fillStyle = SST[0]; c.fillRect(cx - r, cy - r, r * 2, r * 2);
-      BANDS.forEach((_, i) => fill(warmBand(i), SST[i + 1]));
+      warmBandsNow().forEach((band, i) => fill(band, SST[i + 1]));
     }
-    for (const b of bands) {
-      const col = colourOf(b.colour);
-      for (const sgn of [1, -1]) fill(latBand(sgn * b.from, sgn * b.to), rgba(col, 0.34));
-      c.save();
-      c.setLineDash([0.1, 6 * k]); c.lineCap = 'round'; c.lineWidth = 2.2 * k; c.strokeStyle = rgba(col, 0.95);
-      for (const lat of [b.from, b.to, -b.from, -b.to]) { c.beginPath(); path(parallel(lat)); c.stroke(); }
-      c.restore();
-    }
+    // Layers, bottom to top: the sea and anything shading it (the warmth, a band's tint), the land, the
+    // borders, then every dotted line (the equator, a band's edges) over sea and land alike, so a line
+    // never runs under the land in one place and over it in another.
+    for (const b of bands) for (const geo of b.fills) fill(geo, rgba(b.col, 0.34));
     c.beginPath(); path(W.grat); c.strokeStyle = 'rgba(255,255,255,0.06)'; c.lineWidth = 1; c.stroke();
     fill(W.land, style.edge, depth);
     fill(W.land, style.light, -1.2 * k, -0.5 * k);
-    fill(W.land, style.land);
+    if (style.four) W.byColour.forEach((geo, i) => fill(geo, style.four[i]));
+    else fill(W.land, style.land);
     for (const [name, col] of highlights) {
       const f = W.byName.get(name);
       if (!f) continue;
@@ -279,13 +352,18 @@ export async function mount(el, settings, ctx = {}) {
       fill(f, '#eafff8', -up - 1.2 * k);
       fill(f, '#5fe6c4', -up);
     }
-    c.beginPath(); path(W.borders); c.strokeStyle = style.border; c.lineWidth = 0.7 * k; c.stroke();
-    if (S.equator) {
-      c.save();
-      c.setLineDash([0.1, 7 * k]); c.lineCap = 'round'; c.lineWidth = 2.2 * k; c.strokeStyle = 'rgba(255,255,255,0.9)';
-      c.beginPath(); path(parallel(0)); c.stroke();
-      c.restore();
+    if (borders) { c.beginPath(); path(W.borders); c.strokeStyle = style.border; c.lineWidth = (style.four ? 0.9 : 0.7) * k; c.stroke(); }
+    c.save();
+    c.lineCap = 'round'; c.lineWidth = 2.2 * k;
+    for (const b of bands) {
+      c.setLineDash([0.1, 6 * k]); c.strokeStyle = rgba(b.col, 0.95);
+      for (const line of b.lines) { c.beginPath(); path(line); c.stroke(); }
     }
+    if (S.equator) {
+      c.setLineDash([0.1, 7 * k]); c.strokeStyle = 'rgba(255,255,255,0.9)';
+      c.beginPath(); path(EQUATOR); c.stroke();
+    }
+    c.restore();
     // one light, top left: a flat shadow side and a thin lit edge
     const hole = (ox, oy, rr) => { const p = new Path2D(); p.arc(cx, cy, r * 1.02, 0, TAU); p.closePath(); p.moveTo(cx + ox + rr, cy + oy); p.arc(cx + ox, cy + oy, rr, 0, TAU); p.closePath(); return p; };
     c.fillStyle = 'rgba(7,10,46,0.36)'; c.fill(hole(-r * 0.2, -r * 0.22, r * 1.07), 'evenodd');
@@ -314,24 +392,56 @@ export async function mount(el, settings, ctx = {}) {
     g.fillStyle = ring; g.beginPath(); g.arc(x, y, rad, 0, TAU); g.fill();
     g.fillStyle = fillC; g.beginPath(); g.arc(x, y, rad * 0.55, 0, TAU); g.fill();
   }
-  function labels() {
-    const placed = [];
+  // Country names. They used to be placed afresh every frame, so as the ball turned, two names near each
+  // other took turns winning the same spot and each blinked on and off. Now a name that's showing keeps
+  // its place ahead of any newcomer (it only goes once it's truly crowded out or near the rim), names
+  // fade in and out rather than popping, and they fade toward the rim instead of vanishing at a line.
+  const shownNames = new Map();   // name -> { a: how visible, 0..1, on: whether it's wanted }
+  const textWidth = new Map();    // name -> its width in the label font, measured once
+  const LABEL_FONT = '800 11px "Nunito", system-ui, sans-serif';
+  function labels(dt) {
     g.save();
-    g.font = '800 11px "Nunito", system-ui, sans-serif';
+    g.font = LABEL_FONT;
+    const minArea = 0.004 / (Number(S.zoom) || 1) ** 2;
+    const near = W.countries.filter(c => c.area > minArea && c.name !== selected && geoDistance(c.labelAt, centre) < 1.3);
+    const isOn = c => !!(shownNames.get(c.name) || {}).on;
+    near.sort((a, b) => (isOn(b) - isOn(a)) || (b.area - a.area));
+    const placed = [], want = new Set(), at = new Map();
+    for (const c of near) {
+      const [x, y] = proj(c.labelAt);
+      const rim = r - Math.hypot(x - cx, y - cy);
+      at.set(c.name, [x, y, rim]);
+      if (placed.length >= 16) continue;
+      const kept = isOn(c);
+      if (rim < (kept ? 4 : 18)) continue;
+      if (!textWidth.has(c.name)) textWidth.set(c.name, g.measureText(c.name).width);
+      const pad = kept ? 0 : 5, tw = textWidth.get(c.name) + 6;
+      const box = [x - tw / 2 - pad, y - 8 - pad, x + tw / 2 + pad, y + 8 + pad];
+      if (placed.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+      placed.push([x - tw / 2, y - 8, x + tw / 2, y + 8]);
+      want.add(c.name);
+    }
+    for (const name of new Set([...shownNames.keys(), ...want])) {
+      const st = shownNames.get(name) || { a: 0, on: false };
+      st.on = want.has(name);
+      st.a = st.on ? Math.min(1, st.a + dt / 180) : Math.max(0, st.a - dt / 140);
+      if (st.a <= 0 && !st.on) shownNames.delete(name); else shownNames.set(name, st);
+    }
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = 'rgba(12,20,80,0.85)'; g.fillStyle = '#ffffff';
-    const minArea = 0.004 / (Number(S.zoom) || 1) ** 2;
-    const list = W.countries.filter(c => c.area > minArea && geoDistance(c.centroid, centre) < 1.15).sort((a, b) => b.area - a.area);
-    for (const c of list.slice(0, 40)) {
-      if (placed.length >= 16 || c.name === selected) continue;
-      const [x, y] = proj(c.centroid);
-      const tw = g.measureText(c.name).width + 6, box = [x - tw / 2, y - 8, x + tw / 2, y + 8];
-      if (placed.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
-      if (Math.hypot(x - cx, y - cy) > r - 14) continue;
-      placed.push(box);
-      g.strokeText(c.name, x, y); g.fillText(c.name, x, y);
+    let fading = false;
+    for (const [name, st] of shownNames) {
+      const p = at.get(name);
+      if (!p) { shownNames.delete(name); continue; }
+      const alpha = st.a * clamp01((p[2] - 2) / 22);
+      if (st.a < 1 && st.on) fading = true;
+      if (!st.on) fading = true;
+      if (alpha <= 0.01) continue;
+      g.globalAlpha = alpha;
+      g.strokeText(name, p[0], p[1]); g.fillText(name, p[0], p[1]);
     }
     g.restore();
+    return fading;
   }
 
   function frame(now) {
@@ -363,11 +473,9 @@ export async function mount(el, settings, ctx = {}) {
     set();
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
-    const glow = g.createRadialGradient(cx, cy, r * 0.86, cx, cy, r * 1.16);
-    glow.addColorStop(0, rgba('#4f7cff', 0.6)); glow.addColorStop(0.35, rgba('#4f7cff', 0.25)); glow.addColorStop(1, rgba('#4f7cff', 0));
     g.fillStyle = glow; g.beginPath(); g.arc(cx, cy, r * 1.16, 0, TAU); g.fill();
     g.drawImage(layer, 0, 0, w, h);
-    if (S.labels === 'countries') labels();
+    if (S.labels === 'countries' && labels(dt)) moving = true;
     if (S.equator && visible([centre[0], 0])) {
       const [x, y] = proj([centre[0], 0]);
       g.save(); g.font = '800 12px "Nunito", system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.9)'; g.textAlign = 'center'; g.textBaseline = 'top';
@@ -406,7 +514,7 @@ export async function mount(el, settings, ctx = {}) {
     }
     if (selected && S.labels === 'countries' && W.byName.has(selected)) {
       const c = W.byName.get(selected);
-      if (visible(c.centroid)) { const [x, y] = proj(c.centroid); chip(selected, x, y - 26, spring(ramp(now, selectedAt, selectedAt + 450), MOTION.bounce)); }
+      if (visible(c.labelAt)) { const [x, y] = proj(c.labelAt); chip(selected, x, y - 26, spring(ramp(now, selectedAt, selectedAt + 450), MOTION.bounce)); }
     }
     if (moving || dragging || storms || lifting) wake();
     else last = 0;
@@ -459,7 +567,7 @@ export async function mount(el, settings, ctx = {}) {
   const placeOf = place => {
     if (Array.isArray(place)) return [Number(place[0]), Number(place[1])];
     const c = W.byName.get(place);
-    return c ? c.centroid : null;
+    return c ? c.labelAt : null;
   };
 
   const ro = new ResizeObserver(() => size());
@@ -479,7 +587,13 @@ export async function mount(el, settings, ctx = {}) {
         wake();
       },
       highlight(countries, colour) { for (const n of [].concat(countries || [])) highlights.set(n, colourOf(colour)); contents++; wake(); },
-      band(from, to, colour) { bands.push({ from: Math.min(from, to), to: Math.max(from, to), colour }); contents++; wake(); },
+      band(from, to, colour) {
+        const lo = Math.min(from, to), hi = Math.max(from, to);
+        // its shapes are made once here, not on every frame it turns
+        bands.push({ from: lo, to: hi, col: colourOf(colour), fills: [latBand(lo, hi), latBand(-lo, -hi)], lines: [lo, hi, -lo, -hi].map(parallel) });
+        contents++;
+        wake();
+      },
       point(place, label) { const at = placeOf(place); if (at) points.push({ at, label }); wake(); },
       marker(place, kind = 'ring', label) { const at = placeOf(place); if (at) markers.push({ at, kind, label, t0: performance.now() }); wake(); },
       clear() { highlights.clear(); bands.length = 0; points.length = 0; markers.length = 0; pin = null; selected = null; contents++; wake(); },
@@ -496,6 +610,9 @@ export async function mount(el, settings, ctx = {}) {
     },
     // How many frames are queued: 0 once it's still. For the tests.
     busy: () => !!raf,
+    // For the tests: the names showing now and how visible each is, the four-colour clashes, and how many
+    // times the ball has been redrawn.
+    debug: () => ({ labels: [...shownNames].map(([name, st]) => ({ name, a: st.a, on: st.on })), clashes: W.clashes, redraws }),
     remove() {
       gone = true;
       if (raf) cancelAnimationFrame(raf);

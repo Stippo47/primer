@@ -65,7 +65,8 @@ def step(lesson, sid):
 class Parts(unittest.TestCase):
     def test_lists_every_part_from_its_description(self):
         out = run('parts', check=True).stdout
-        for word in ('globe: Globe', 'inputs: Inputs', 'spinTo(place: place', 'band(from: number', 'reveal(answer: answer)', 'spin (choice free, auto, locked', 'events: tapped', 'state: selected'):
+        for word in ('globe: Globe', 'inputs: Inputs', 'spinTo(place: place', 'band(from: number', 'reveal(answer: answer)', 'spin (choice free, auto, locked', 'events: tapped', 'state: selected',
+                     'picture (choice none, warmth, depth', 'start (number', 'borders (bool', 'style (choice day, warmth, muted, political'):
             self.assertIn(word, out)
 
     def test_json(self):
@@ -175,11 +176,83 @@ class Check(Work):
     def test_a_topic_file_is_checked(self):
         dest = self.topic()
         t = json.loads((dest / 'topic.json').read_text(encoding='utf-8'))
-        t.update(level='huge', colour='mauve', lessons=['every-kind', 'second', 'missing'])
+        t.update(level='huge', colour='mauve')
+        t['path'].append({'kind': 'lesson', 'id': 'missing'})
         (dest / 'topic.json').write_text(json.dumps(t), encoding='utf-8')
         out = run('check', dest).stdout
         for words in ('"level" is one of', '"colour" is one of', "missing.json isn't there"):
             self.assertIn(words, out)
+
+    def path_errors(self, path, files=None):
+        """check on a copy of the made-up topic with its path replaced (and files added: {name: lesson})."""
+        dest = self.topic()
+        t = json.loads((dest / 'topic.json').read_text(encoding='utf-8'))
+        t['path'] = path
+        (dest / 'topic.json').write_text(json.dumps(t), encoding='utf-8')
+        for name, body in (files or {}).items():
+            (dest / f'{name}.json').write_text(json.dumps(body), encoding='utf-8')
+        return run('check', dest)
+
+    def test_the_path_takes_every_kind_of_node(self):
+        r = run('check', FIXTURE)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        t = json.loads((FIXTURE / 'topic.json').read_text(encoding='utf-8'))
+        self.assertEqual([n['kind'] for n in t['path']], ['lesson', 'chest', 'lesson', 'test', 'review', 'animation', 'exam'])
+
+    def test_the_old_lessons_list_is_refused_with_the_new_form(self):
+        dest = self.topic()
+        t = json.loads((dest / 'topic.json').read_text(encoding='utf-8'))
+        t['lessons'] = ['every-kind', 'second']
+        del t['path']
+        (dest / 'topic.json').write_text(json.dumps(t), encoding='utf-8')
+        r = run('check', dest)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn('"lessons" became "path"', r.stdout)
+
+    def test_nodes_are_checked(self):
+        r = self.path_errors([
+            {'kind': 'chest', 'id': 'early-chest'},
+            {'kind': 'review', 'id': 'look-back'},
+            {'kind': 'test', 'id': 'quick-test'},
+            {'kind': 'lesson', 'id': 'every-kind'},
+            {'kind': 'lesson', 'id': 'every-kind'},
+            {'kind': 'quiz', 'id': 'what'},
+            {'kind': 'lesson', 'id': 'Bad Id'},
+            {'kind': 'chest', 'id': 'two', 'colour': 'gold'},
+            {'kind': 'lesson', 'id': 'second'},
+        ])
+        self.assertEqual(r.returncode, 1, r.stdout)
+        for words in ('a chest is a reward for reaching it', 'a test draws on the lessons before it', 'a review goes over what came before it',
+                      'the same id as an earlier node', '"kind" is one of lesson, test, exam, chest, review, animation',
+                      'lower case words joined by hyphens', 'no field "colour" on a node', 'final.json is in the folder but not on the path'):
+            self.assertIn(words, r.stdout)
+
+    def test_a_test_asks_questions(self):
+        explain_only = {'v': 1, 'title': 'No questions', 'steps': [{'id': 'read', 'kind': 'explain', 'title': 'Words', 'text': 'Words.', 'src': ['made-up']}],
+                        'sources': [{'id': 'made-up', 'by': 'Nobody', 'title': 'Made-up', 'checked': 'never'}]}
+        r = self.path_errors([{'kind': 'lesson', 'id': 'every-kind'}, {'kind': 'lesson', 'id': 'second'}, {'kind': 'test', 'id': 'no-questions'}], {'no-questions': explain_only})
+        self.assertEqual(r.returncode, 1)
+        self.assertIn('a test asks questions, and this one has none', r.stdout)
+        self.assertIn('explain steps (read) belong in a lesson', r.stdout)
+
+    def test_a_slider_must_not_start_on_its_answer(self):
+        def change(L):
+            step(L, 'slide')['input']['start'] = 100  # the answer
+        out = self.errors(change)
+        self.assertIn('already marked right: it gives the answer away', out)
+        r = run('check', self.topic(lambda L: step(L, 'slide')['input'].update(start=130)))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('already marked close', r.stdout)
+        # With no start, it starts in the middle of its scale: on this log scale, about 31.6, nowhere near 100.
+        r = run('check', self.topic(lambda L: step(L, 'slide')['input'].pop('start', None)))
+        self.assertNotIn('gives the answer away', r.stdout)
+        out = self.errors(lambda L: step(L, 'slide').update(answer=32, within=5, close=10))
+        self.assertIn('starts in the middle of its scale', out)
+
+    def test_a_sliders_picture_is_one_the_part_has(self):
+        out = self.errors(lambda L: step(L, 'slide')['input'].update(picture='thermometer', start='low'))
+        self.assertIn('"thermometer" isn\'t one of none, warmth, depth', out)
+        self.assertIn('.input.start: is a number', out)
 
 
 class Rules(unittest.TestCase):
@@ -248,14 +321,16 @@ class SendAndProgress(Work):
         (src / 'media' / 'unused.png').write_bytes(b'not sent')
         r = run('send', src, data=self.clone)
         self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn('Sent: Topic: Test topic (2 lessons)', r.stdout)
+        self.assertIn('Sent: Topic: Test topic (2 lessons, a test, an exam, a chest, a review and an animation)', r.stdout)
         dest = self.clone / 'topics' / 'test-topic'
-        self.assertTrue((dest / 'every-kind.json').exists() and (dest / 'second.json').exists() and (dest / 'media' / 'target.svg').exists())
+        for name in ('every-kind.json', 'second.json', 'quick-test.json', 'final.json', 'media/target.svg'):
+            self.assertTrue((dest / name).exists(), name)
         self.assertFalse((dest / 'media' / 'unused.png').exists())
         with Image.open(dest / 'media' / 'big.png') as im:
             self.assertEqual(max(im.size), 1600)
         index = json.loads((self.clone / 'index.json').read_text(encoding='utf-8'))
         self.assertEqual(index['topics'][0]['id'], 'test-topic')
+        self.assertEqual(index['topics'][0]['lessons'], 2)
         log = git(self.remote, 'log', '--format=%s%n%b', 'main')
         self.assertIn('Topic: Test topic', log)
         self.assertIn('Co-Authored-By', log)
@@ -299,12 +374,14 @@ class SendAndProgress(Work):
             {**base, 'eid': 'e2', 'at': '2026-11-17T20:00:02.000Z', 'type': 'attempt', 'step': 'pick', 'kind': 'check', 'form': 'choice', 'value': 'b', 'right': False, 'close': False, 'why': 'Wrong, for a made-up reason.'},
             {**base, 'eid': 'e3', 'at': '2026-11-17T20:00:03.000Z', 'type': 'attempt', 'step': 'brazil', 'kind': 'play', 'form': 'globe', 'value': {'selected': 'Peru', 'tapped': {'lon': -75, 'lat': -10, 'land': True, 'country': 'Peru'}}, 'right': False, 'close': False, 'why': 'That\'s another country.'},
             {**base, 'eid': 'e4', 'at': '2026-11-17T20:00:04.000Z', 'type': 'finish', 'right': 5, 'of': 7},
+            {'v': 1, 'eid': 'e5', 'at': '2026-11-17T20:00:05.000Z', 'type': 'open', 'topic': 'test-topic', 'node': 'first-chest', 'kind': 'chest'},
         ]
         self.phone_sends('2026-11-17T20-00-05-000Z-aaaaaa', events)
         self.phone_sends('2026-11-17T20-00-06-000Z-bbbbbb', events[1:2])  # the same batch, sent twice
         self.phone_sends('connect-check-2026-11-17T19-00-00-000Z-cccccc', [])
         out = run('progress', data=self.clone, check=True).stdout
-        self.assertIn('4 event(s)', out)  # the repeat is dropped
+        self.assertIn('5 event(s)', out)  # the repeat is dropped
+        self.assertIn('test-topic › first-chest (chest): opened 1 time(s)', out)
         self.assertIn('test-topic › Every kind of step (version 1)', out)
         self.assertIn('1 run(s) started, 1 finished; last finish 5 of 7 right', out)
         self.assertIn('pick (Pick one): wrong', out)
@@ -315,7 +392,7 @@ class SendAndProgress(Work):
         read = json.loads((self.clone / 'read.json').read_text(encoding='utf-8'))
         self.assertTrue(read['at'] and len(read['files']) == 2)
         self.assertIn('Nothing new', run('progress', data=self.clone, check=True).stdout)
-        self.assertIn('4 event(s)', run('progress', '--all', data=self.clone, check=True).stdout)
+        self.assertIn('5 event(s)', run('progress', '--all', data=self.clone, check=True).stdout)
 
 
 if __name__ == '__main__':

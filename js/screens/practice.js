@@ -1,5 +1,6 @@
-// Practice: Review (which arrives with stage 2) and the Playground, where each part opens by itself with
-// a panel of its settings to play with, built from the part's own description.
+// Practice: Review (which arrives with stage 2) and the Playground, where each tool opens by itself with
+// a panel of its settings to play with, built from the part's own description. Answer forms (Inputs)
+// aren't tools and aren't listed; partScreen can still open one, for the tests.
 import { esc, head } from '../ui.js';
 import { icon, svg, snippet } from '../art.js';
 import * as parts from '../parts.js';
@@ -30,9 +31,11 @@ export async function practiceScreen(app) {
   const names = await parts.listParts().catch(() => []);
   const descs = await Promise.all(names.map(n => parts.describe(n).catch(() => null)));
   if (app.view !== view || !view.querySelector('.practice')) return;
+  // The Playground is for tools, like the globe as an atlas. A part that's only a way of answering says
+  // "playground": false in its description and stays out of the list (lessons still use it).
   grid.innerHTML = names.map((n, i) => {
     const d = descs[i];
-    if (!d) return '';
+    if (!d || d.playground === false) return '';
     const from = firstLessonWith(app.topics, n);
     return `<button class="plate pcard" data-part="${esc(n)}"><div class="pic"><img src="${esc(parts.thumbUrl(n, d))}" alt=""></div>
       <div class="txt"><p>${esc(d.title)}</p>${from ? `<p class="muted">from ${esc(from)}</p>` : ''}</div></button>`;

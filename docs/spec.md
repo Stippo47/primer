@@ -10,9 +10,13 @@ Five, left to right: **Learn**, **Practice**, **Home** (raised, in the centre), 
 
 The top row names the topic, with its medallion. Tapping it opens the list of topics as a sheet: each with its medallion, its level as one word (Glance, Tour, Solid, Deep) with four dots, and a bar of how much of it is done, or a cup once all of it is. Tapping one shows its path.
 
-**The path.** Each lesson is a banner, with a pip for each of its steps, and its steps below it as raised buttons on a winding trail. The mark on a button says what kind of step it is: a book to read, a question, a flask to play with. Done steps are gold, the one to do next is blue with a ring round it showing how much of its lesson is done, and the rest are dim. The trail is gold as far as it's been walked. A finished lesson has a cup at its end. Pines and a few stars sit beside the trail; they're decoration.
+**The path.** Each node on the path is a whole thing, worked through from one to the next: a lesson, a test, an exam, a chest, a review of everything before it, or an animation on its own. Each is a raised button on a winding trail with its own mark, as the stage 0 sketch has them: an open book for a lesson, a star on a hexagon for a test, a cup on a larger hexagon for an exam, two arrows round for a review, a play mark with sound for an animation; a chest is drawn as the chest itself, shining when it's next, open once opened. Done nodes are gold, the one to do next is blue with a ring round it showing how much of it is done, and the rest are dim. A unit of the path is a banner with a pip for each of its nodes; a finished unit has a cup at its end. The trail is gold as far as it's been walked. Pines and a few stars sit beside the trail; they're decoration. A lesson's own steps aren't on the path: they show inside it, on its thin bar.
 
-**Tapping a step** brings up a bubble beside it, placed by script: what kind of step it is, its title and Start (or Carry on, part way through a lesson, or Again on a done step). Start plays the lesson from that step to its end. A step still ahead shows its title only, and gives a small shake.
+**Tapping a node** brings up a bubble beside it, placed by script: its kind, its title and a button. A lesson, test or exam says Start, Carry on (part way through: it carries on from the first step not yet done) or Again (done: from the top). A chest says Open, and once opened just "Opened". A review or animation says Start. A node still ahead shows its kind and title only, and gives a small shake.
+
+**A chest** opens on a screen of its own: it pops in, its lid springs open with glints, and "What's inside comes with the shop." Opening it is saved and sent up (an `open` event), and the path goes on. Currency is a later stage.
+
+**A review or an animation**, for now, is a placeholder screen that says it comes later (review with stage 2, animations with the voices). Visiting it is saved and sent up, and the path goes on past it.
 
 With no topics yet, Learn says so, with Connect if the app isn't connected.
 
@@ -23,12 +27,12 @@ A thin bar along the top fills as the steps go by, with a spring, and a cross be
 | Step | On screen | The button |
 |---|---|---|
 | Explain | A short paragraph and a figure (a part, set up, or a picture) | Continue |
-| Check | A question, sometimes a figure, and an answer to give: pick one, set a slider, type a number on the keypad, put things in order, match pairs, or tap a spot | Check, which wakes once there's an answer |
+| Check | A question, sometimes a figure, and an answer to give: pick one, set a slider (it starts at a real value, with its fill showing, and can have a picture above it that follows the value), type a number on the keypad, put things in order, match pairs, or tap a spot | Check, which wakes once there's an answer (at once for a slider or an order) |
 | Play | A goal and a part to do it with, like a globe to tap | Check, which wakes once the part has been used |
 
 **Checking** marks the answer and slides the feedback up from the bottom: **Right** in green, **Close** in gold, or **Not quite** in pink, with one line of why for the answer given. The answer stays on screen with the truth beside it: the right choice lit, the true value on the slider's scale, the right order numbered, the right partner under each wrong pair, the right spot ringed, and anything the lesson shows after an answer (the globe shades the band where hurricanes start). The button becomes Continue, in the feedback's colour. Being wrong costs nothing: there are no lives, and a wrong answer still moves the lesson on.
 
-**The end** of a lesson: its topic's medallion pops up, "Lesson done", how many of its questions were right, and where its facts came from. Continue goes back to the path.
+**The end** of a lesson: its topic's medallion pops up, "Lesson done" ("Test done", "Exam done"), how many of its questions were right, and where its facts came from. Continue goes back to the path. Tests and exams play exactly as lessons do.
 
 Every step started, read, answered and finished is saved on the phone and queued to go up: see Storage and sync.
 
@@ -36,7 +40,7 @@ Every step started, read, answered and finished is saved on the phone and queued
 
 **Review** sits on top, with a fan of cards. It arrives with stage 2, so its Start is off and it says Soon.
 
-**Playground** lists every part in the kit, each on a card with its picture, its name and the lesson that first uses it. Tapping one opens it by itself: the part, full size, a row of things to try (from the part's description), and a panel of its settings, each a row of choices, a switch or a slider. Changing a setting redraws the part at once. Everything here is built from the part's own description, the same one the writer reads.
+**Playground** lists the kit's tools, like the globe as an atlas, each on a card with its picture, its name and the lesson that first uses it. Answer forms aren't tools: Inputs says `"playground": false` in its description and isn't listed (lessons and tests still use it). Tapping a card opens the part by itself: full size, a row of things to try (from the part's description), and a panel of its settings, each a row of choices, a switch or a slider. Changing a setting redraws the part at once. Everything here is built from the part's own description, the same one the writer reads.
 
 ## Home and Shop
 
@@ -48,7 +52,7 @@ Two tiles: lessons finished, and questions answered right.
 
 **Knowledge** lists each topic with a bar and a number. Until review arrives, the number is its questions' last answers: right counts in full, close a half, wrong nothing, and each fades by half every two weeks since it was answered. The colour runs from blue (well remembered) to grey, and a topic under 50% that has been tried has a warning mark. There's no word for fading, and no streak. Tapping a topic opens its details: when it was last studied, how many were right last time, a dot for each question, and a button to its path.
 
-**Settings:** Voice, Effects and Music switches, and the text size (three sizes of A). The app ignores the phone's silent switch: these switches alone decide what plays. Voice and Music have nothing to play yet.
+**Settings:** Voice, Effects and Music switches, and the text size (three sizes of A). Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear from a board). An install from before 0.2 has Effects turned off once, since its saved settings can't tell a chosen "on" from the old default; from 0.2 on, Effects is on only if the switch was turned on. Voice and Music have nothing to play yet.
 
 **Sending:** whether it's connected, Connect or Disconnect, what's waiting to send and what has been sent, Send now and Check for lessons, any problem in plain words, and when the writer last read the progress. Then whether the phone has promised to keep Primer's data, and the version.
 
@@ -56,18 +60,27 @@ Two tiles: lessons finished, and questions answered right.
 
 One module (`js/feel.js`) gives every press the same three things:
 
-- **A soft sound.** Made on the spot as rounded sine notes, like a soft mallet on wood, through a gentle filter: no beeps, nothing square or 8-bit, nothing loud. A tap, a select, a switch on or off, two notes up for right, a softer pair for close, two notes down for wrong, and a short rising chord for a lesson's end. Effects off silences them all. The first press that sounds tells the phone the app's sound is media (`navigator.audioSession.type = 'playback'`), which the phone test showed is what lets made-up sound play with the silent switch on.
+- **A soft sound**, when Effects is on (it starts off). Made on the spot as rounded sine notes, like a soft mallet on wood, through a gentle filter: no beeps, nothing square or 8-bit, nothing loud. A tap, a select, a switch on or off, two notes up for right, a softer pair for close, two notes down for wrong, and a short rising chord for a lesson's end. Effects off silences them all.
+- **The phone's sound is left alone.** The app never sets `navigator.audioSession.type`, neither when it opens nor on a press. Saying its sound was media (`'playback'`) stopped the person's music the moment Primer opened. The cost: a made-up tone now follows the silent switch, as the phone test found, so with Effects on and the switch on silent the presses are quiet. The tick and the spring don't depend on sound.
 - **A tick.** iPhones let a page tick only when a switch control flips, so a hidden one is flipped (Riffle's trick, felt on the phone test). Android vibrates. Nothing depends on it being felt.
 - **A spring.** Buttons sink while pressed and spring back when let go; things that arrive pop in; the lesson bar fills with a spring. The bounce is the approved one, halfway between gentle and medium (`MOTION` in `js/feel.js`, from stage 0's look). Springs move transforms only.
 
-Rules from the phone test, kept everywhere: no live blur on anything that moves (the globe's glow is a soft gradient); popovers are placed by script; nothing depends on the tick.
+Rules from the phone test, kept everywhere: no live blur on anything that moves (the globe's glow is a soft gradient, a lifted order item's shadow is solid); popovers are placed by script; nothing depends on the tick. Anything dragged moves by transform on a layer of its own, at whole screen pixels, so nothing under it is repainted as it goes and nothing is left behind (the slivers seen on the phone).
+
+### Sound in stage 2: narration
+
+Voice clips will be plain `<audio>` elements, a new one made at each tap (the phone test's rule: every play gets a new player). The phone test heard such clips with the silent switch on, with the app claiming nothing (session `auto`), so narration can ignore the switch without the claim that stopped the music. Whether a speaking clip pauses the person's music, or ducks it, or plays over it, is for the phone to show: WebKit may treat a playing `<audio>` as media and interrupt other audio while it plays, and that has to be tried on the phone in stage 2 before narration leans on it. If it does pause the music, the choices then are to accept a pause while the voice speaks, or to play voice through Web Audio (which mixes, but follows the silent switch).
 
 ## Parts
 
 A part is one folder in `parts/`: a description (`part.json`) and one module. The description lists the part's settings (type, range, default), calls, events, state, what it needs and roughly how heavy it is, and how it's marked. The phone fills settings in from it, the Playground builds its panel from it, the writer's `primer parts` prints it and `primer check` checks lessons against it.
 
-- **Inputs:** choice (shuffled), slider (linear or stretched, marked by how close; shows the answer and the truth), number (its own keypad, so the phone's keyboard never covers the button), order (drag, or tap two to swap), match pairs (tap one on each side), and tap the spot on a picture.
-- **Globe:** the stage 0 globe, drawn on one canvas. Drag to turn it, and it carries on a little when let go; it can turn by itself, or stay put. Labels for the bigger countries, three looks (day, sea warmth, muted), countries lit up, bands of latitude, points, pins, and the approved Disc hurricane, turning anticlockwise north of the equator and clockwise south of it. A tap reports the place, whether it's land and which country. The ball is drawn on a layer of its own and redrawn only while it turns, so a still globe costs nothing.
+- **Inputs:** choice (shuffled), slider (linear or stretched, marked by how close; shows the answer and the truth), number (its own keypad, so the phone's keyboard never covers the button), order (drag, or tap two to swap), match pairs (tap one on each side), and tap the spot on a picture. A slider starts at a real value with its fill showing (`start`, or the middle of its scale), and can drive a named picture above it (`picture`, with `pictureFrom` and `pictureTo` for its ends): `warmth`, a ball that goes smoothly from a snowflake through to a fire, and `depth`, the sea cut away with a warm layer as deep as the value. Pictures are general: any lesson can use them, and a new one is an addition to the part. Number, match and spot are as they were; alternatives for them are being drawn on a board first.
+- **Globe:** the stage 0 globe, drawn on one canvas. Drag to turn it, and it carries on a little when let go; it can turn by itself, or stay put. Labels for the bigger countries, four looks (day, sea warmth, muted, and political: every country one of four colours, no two neighbours alike), borders on or off, countries lit up, bands of latitude, points, pins, and the approved Disc hurricane, turning counterclockwise north of the equator and clockwise south of it. A tap reports the place, whether it's land and which country.
+  - *Layers:* the sea and anything tinting it (sea warmth, a band's shade), then the land, then the borders, then every dotted line (the equator, a band's edges) over sea and land alike.
+  - *Names* hold their place: a name that's showing keeps it ahead of any newcomer and goes only when truly crowded out or at the rim; names fade in and out, and fade toward the rim, rather than popping. Each sits on its country's biggest piece (France's in France, not between it and French Guiana).
+  - *Four colours* are worked out once from the map's own shared borders: greedy, the most hemmed-in country first, with a swap of two colours along a chain of neighbours where all four are taken. On Natural Earth's 110m map no two neighbours share a colour.
+  - *Cost:* the ball is drawn on a layer of its own and redrawn only while it turns, so a still globe costs nothing; band, warmth and four-colour shapes, the glow and the names' widths are made once, never per frame. No blur.
 
 ## Storage and sync
 

@@ -50,4 +50,5 @@ export function placeBeside(pop, anchor, container, gap = 12) {
   return onLeft ? 'left' : 'right';
 }
 
-export const when = ms => new Date(ms).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+// "November 18", the North American way round.
+export const when = ms => new Date(ms).toLocaleDateString('en-CA', { day: 'numeric', month: 'long' });

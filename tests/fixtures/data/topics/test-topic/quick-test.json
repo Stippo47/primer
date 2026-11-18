@@ -1,0 +1,95 @@
+{
+ "v": 1,
+ "title": "A quick test",
+ "version": 1,
+ "minutes": 2,
+ "steps": [
+  {
+   "id": "q-pick",
+   "kind": "check",
+   "title": "Pick again",
+   "ask": "Which is the made-up right answer, again?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "q-warm",
+   "kind": "check",
+   "title": "How warm",
+   "ask": "Set the made-up warmth.",
+   "input": {
+    "form": "slider",
+    "min": 0,
+    "max": 40,
+    "step": 1,
+    "unit": "°C",
+    "start": 5,
+    "picture": "warmth",
+    "pictureFrom": 0,
+    "pictureTo": 35
+   },
+   "answer": 30,
+   "within": 2,
+   "close": 5,
+   "why": "It was 30.",
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "q-deep",
+   "kind": "check",
+   "title": "How deep",
+   "ask": "Set the made-up depth.",
+   "input": {
+    "form": "slider",
+    "min": 1,
+    "max": 1000,
+    "scale": "log",
+    "step": 1,
+    "unit": "m",
+    "start": 2,
+    "ticks": 4,
+    "picture": "depth"
+   },
+   "answer": 100,
+   "within": 20,
+   "close": 60,
+   "why": "It was 100.",
+   "src": [
+    "made-up"
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "id": "made-up",
+   "by": "Nobody",
+   "title": "Made-up test data",
+   "checked": "never"
+  }
+ ]
+}

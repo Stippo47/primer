@@ -4,6 +4,38 @@
  "level": "tour",
  "colour": "orange",
  "mark": "star",
- "about": "Made-up test data: every kind of step and every way of answering.",
- "lessons": ["every-kind", "second"]
+ "about": "Made-up test data: every kind of node, every kind of step and every way of answering.",
+ "path": [
+  {
+   "kind": "lesson",
+   "id": "every-kind",
+   "unit": "The first unit"
+  },
+  {
+   "kind": "chest",
+   "id": "first-chest"
+  },
+  {
+   "kind": "lesson",
+   "id": "second"
+  },
+  {
+   "kind": "test",
+   "id": "quick-test"
+  },
+  {
+   "kind": "review",
+   "id": "look-back",
+   "unit": "The second unit"
+  },
+  {
+   "kind": "animation",
+   "id": "a-scene",
+   "title": "A made-up scene"
+  },
+  {
+   "kind": "exam",
+   "id": "final"
+  }
+ ]
 }

@@ -8,8 +8,18 @@ export const levelRank = level => Math.max(0, LEVELS.indexOf(level)) + 1;
 
 const json = f => { try { return JSON.parse(f.data); } catch { return null; } };
 
-// The library: every topic in the index, in its order, each with its lessons in order. Files that can't
-// be read are left out, and a topic with no readable lesson still shows, with nothing to start.
+// The kinds of node on a topic's path. Lessons, tests and exams are played step by step and have a file
+// each; a chest, a review and an animation are the node alone (review and animation are placeholders
+// until stage 2).
+export const NODE_KINDS = ['lesson', 'test', 'exam', 'chest', 'review', 'animation'];
+export const PLAYED = new Set(['lesson', 'test', 'exam']);
+export const KIND_WORDS = { lesson: 'Lesson', test: 'Test', exam: 'Exam', chest: 'Chest', review: 'Review', animation: 'Animation' };
+const DEFAULT_TITLES = { chest: 'A chest', review: 'Review', animation: 'Animation' };
+
+// The library: every topic in the index, in its order. Each has its path (the nodes in order, a played
+// one carrying its file as `file`) and its lessons (every played file, in path order). A topic written
+// before the path existed lists "lessons" only, and each becomes a lesson node. Files that can't be read
+// leave their node with nothing to start, and the path goes on past it.
 export async function library() {
   const files = new Map((await store.files.words()).map(f => [f.path, f]));
   const index = files.has('index.json') ? json(files.get('index.json')) : null;
@@ -20,11 +30,17 @@ export async function library() {
   for (const id of ids) {
     const t = files.has(`topics/${id}/topic.json`) ? json(files.get(`topics/${id}/topic.json`)) : null;
     if (!t) continue;
-    const lessons = (t.lessons || []).map(lid => {
-      const l = files.has(`topics/${id}/${lid}.json`) ? json(files.get(`topics/${id}/${lid}.json`)) : null;
-      return l && Array.isArray(l.steps) ? { ...l, id: lid, topic: id } : null;
-    }).filter(Boolean);
-    topics.push({ ...t, id, lessons });
+    const given = Array.isArray(t.path) ? t.path : (t.lessons || []).map(lid => ({ kind: 'lesson', id: lid }));
+    const path = given.filter(n => n && typeof n.id === 'string' && NODE_KINDS.includes(n.kind)).map(n => {
+      let file = null;
+      if (PLAYED.has(n.kind)) {
+        const l = files.has(`topics/${id}/${n.id}.json`) ? json(files.get(`topics/${id}/${n.id}.json`)) : null;
+        file = l && Array.isArray(l.steps) && l.steps.length ? { ...l, id: n.id, topic: id, kind: n.kind } : null;
+      }
+      return { kind: n.kind, id: n.id, unit: typeof n.unit === 'string' ? n.unit : null, title: (file && file.title) || n.title || DEFAULT_TITLES[n.kind] || n.id, file };
+    });
+    const { lessons: _old, path: _given, ...rest } = t;
+    topics.push({ ...rest, id, path, lessons: path.filter(n => n.file).map(n => n.file) });
   }
   return topics;
 }
@@ -35,13 +51,15 @@ export const mediaPath = (topicId, rel) => (!rel || rel.startsWith('data:') || r
 
 // ---------------------------------------------------------------- progress on this phone
 
-// { lessons: { "topic/lesson": { steps: { stepId: { at, right, close, seen, tries } }, finished, runs } } }
+// { lessons: { "topic/lesson": { steps: { stepId: { at, right, close, seen, tries } }, finished, runs } },
+//   nodes: { "topic/node": { kind, opened } } }   (lessons holds tests and exams too: anything played)
 let progress = null;
 export async function loadProgress() {
   progress = (await store.get('progress').catch(() => null)) || { v: 1, lessons: {} };
+  if (!progress.nodes) progress.nodes = {};
   return progress;
 }
-export const progressNow = () => progress || { v: 1, lessons: {} };
+export const progressNow = () => progress || { v: 1, lessons: {}, nodes: {} };
 const save = () => store.set('progress', progress);
 const keyOf = (topic, lesson) => `${topic}/${lesson}`;
 
@@ -67,19 +85,50 @@ export function noteLesson(topic, lesson, what) {
   return save();
 }
 
-// Where a topic is: each lesson's steps as done, now or todo, and which step is the one to do next.
+export function nodeState(topic, node) {
+  return (progressNow().nodes || {})[keyOf(topic, node)] || null;
+}
+
+// A chest opened, or a placeholder (review, animation) visited: the path goes on past it.
+export function noteNode(topic, node, kind) {
+  if (!progress) progress = { v: 1, lessons: {}, nodes: {} };
+  if (!progress.nodes) progress.nodes = {};
+  const k = keyOf(topic, node);
+  progress.nodes[k] = { ...(progress.nodes[k] || {}), kind, opened: (progress.nodes[k] || {}).opened || new Date().toISOString() };
+  return save();
+}
+
+// Where a topic is: each node done, now (the next to do) or todo, grouped into units (a node with a
+// "unit" starts a new one; the first is named after the topic unless its first node names it). A played
+// node is done once it has been finished, and carries how much of it is done (`share`) and the step to
+// carry on from (`resume`). The other kinds are done once opened. A node whose file is missing can't be
+// started, and the next node after it can be.
 export function pathOf(topic) {
   let current = null;
-  const lessons = topic.lessons.map(l => {
-    const st = lessonState(topic.id, l.id);
-    const steps = l.steps.map(s => ({ step: s, done: !!st.steps[s.id] }));
-    const firstOpen = steps.findIndex(s => !s.done);
-    const out = { lesson: l, steps, done: firstOpen < 0, started: steps.some(s => s.done) };
-    if (!current && firstOpen >= 0) { current = { lesson: l.id, index: firstOpen }; steps[firstOpen].now = true; }
-    out.share = steps.filter(s => s.done).length / Math.max(1, steps.length);
+  const nodes = topic.path.map((n, i) => {
+    const out = { node: n, i, done: false, started: false, share: 0, resume: 0, broken: false };
+    if (PLAYED.has(n.kind)) {
+      if (!n.file) { out.broken = true; return out; }
+      const st = lessonState(topic.id, n.id);
+      const steps = n.file.steps;
+      const doneSteps = steps.filter(s => st.steps[s.id]).length;
+      out.done = !!st.finished;
+      out.share = doneSteps / Math.max(1, steps.length);
+      out.started = !out.done && doneSteps > 0;
+      out.resume = out.started ? Math.max(0, steps.findIndex(s => !st.steps[s.id])) : 0;
+    } else {
+      out.done = !!(nodeState(topic.id, n.id) || {}).opened;
+    }
+    if (!current && !out.done && !out.broken) { current = n.id; out.now = true; }
     return out;
   });
-  return { lessons, current };
+  const units = [];
+  for (const x of nodes) {
+    if (!units.length || x.node.unit) units.push({ title: x.node.unit || topic.title, nodes: [] });
+    units[units.length - 1].nodes.push(x);
+  }
+  for (const u of units) u.done = u.nodes.every(x => x.done || x.broken);
+  return { nodes, units, current, done: nodes.length > 0 && nodes.every(x => x.done || x.broken) };
 }
 
 // ---------------------------------------------------------------- what you know
@@ -112,8 +161,9 @@ export function knowledge(topic, now = Date.now()) {
   return { pct: qs.length ? Math.round((sum / qs.length) * 100) : 0, right, tried, total: qs.length, lastAt, dots: dots.sort((a, b) => b - a) };
 }
 
+// How many lessons have been finished, everywhere (tests and exams aren't lessons).
 export function lessonsDone(topics) {
   let n = 0;
-  for (const t of topics) for (const l of t.lessons) if (lessonState(t.id, l.id).finished) n++;
+  for (const t of topics) for (const l of t.lessons) if (l.kind === 'lesson' && lessonState(t.id, l.id).finished) n++;
   return n;
 }

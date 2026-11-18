@@ -1,13 +1,15 @@
 // Drives the app in headless Edge with real touch, against tests/serve.mjs and its stand-in for GitHub.
 //   node tests/e2e.mjs [--shots <folder>] [--pilot <primer-data folder>]
 // Starts the test server itself if nothing answers on its port. Uses debugging port 9341 and server port 8821.
-// --pilot (or PRIMER_DATA) also plays the pilot lesson from the data repo's working tree, right and wrong.
+// --pilot (or PRIMER_DATA) also plays the pilot topic from the data repo's working tree: each lesson and the
+// test wrong and then right, and its chest.
 // Runs at device scale 1: at scale 2 a screenshot can re-send a held touch at half its coordinates.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inflateSync } from 'node:zlib';
 import { launch, fingers, sleep } from '../skill/cdp.mjs';
 
 const args = {};
@@ -23,6 +25,41 @@ const APP = `${BASE}/primer/?api=${API}&insets=${SAT},${SAB}`;
 const SHOTS = args.shots || mkdtempSync(join(tmpdir(), 'primer-shots-'));
 const PILOT = args.pilot || process.env.PRIMER_DATA || null;
 mkdirSync(SHOTS, { recursive: true });
+
+// The pixels of a PNG screenshot (8-bit RGB or RGBA, as the browser makes them), to compare two shots.
+function pixels(b64) {
+  const buf = Buffer.from(b64, 'base64');
+  let p = 8, w = 0, h = 0, type = 6;
+  const idat = [];
+  while (p < buf.length) {
+    const len = buf.readUInt32BE(p), kind = buf.toString('latin1', p + 4, p + 8), data = buf.subarray(p + 8, p + 8 + len);
+    if (kind === 'IHDR') { w = data.readUInt32BE(0); h = data.readUInt32BE(4); type = data[9]; }
+    if (kind === 'IDAT') idat.push(data);
+    p += 12 + len;
+  }
+  const bpp = type === 6 ? 4 : 3, raw = inflateSync(Buffer.concat(idat)), out = Buffer.alloc(w * h * bpp), row = w * bpp;
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (row + 1)], src = y * (row + 1) + 1;
+    for (let x = 0; x < row; x++) {
+      const a = x >= bpp ? out[y * row + x - bpp] : 0, up = y ? out[(y - 1) * row + x] : 0, c = x >= bpp && y ? out[(y - 1) * row + x - bpp] : 0;
+      let v = raw[src + x];
+      if (f === 1) v += a; else if (f === 2) v += up; else if (f === 3) v += (a + up) >> 1;
+      else if (f === 4) { const pa = Math.abs(up - c), pb = Math.abs(a - c), pc = Math.abs(a + up - 2 * c); v += pa <= pb && pa <= pc ? a : pb <= pc ? up : c; }
+      out[y * row + x] = v & 255;
+    }
+  }
+  return { w, h, bpp, out };
+}
+// How many pixels differ between two shots by more than a hair (gradients can dither by a step or two).
+function differing(a, b) {
+  const A = pixels(a), B = pixels(b);
+  if (A.w !== B.w || A.h !== B.h) return Infinity;
+  let n = 0;
+  for (let i = 0; i < A.w * A.h; i++) {
+    for (let k = 0; k < 3; k++) if (Math.abs(A.out[i * A.bpp + k] - B.out[i * B.bpp + k]) > 24) { n++; break; }
+  }
+  return n;
+}
 
 let passed = 0, failed = 0;
 const ok = (cond, what, extra = '') => {
@@ -51,7 +88,12 @@ const sent = async () => {
   const names = (await api('/__files')).filter(isBatch);
   return Promise.all(names.map(async n => ({ name: n, ...JSON.parse(await (await fetch(`${API}/__file?path=${encodeURIComponent(n)}`)).text()) })));
 };
-const everyEvent = async () => [...(await sent()).flatMap(x => x.events), ...await queue()];
+// Everything sent and everything still waiting. A send can land between the two reads, so an event can be
+// seen in both: drop repeats by eid, as the format says a reader must.
+const everyEvent = async () => {
+  const seen = new Set();
+  return [...(await sent()).flatMap(x => x.events), ...await queue()].filter(e => !seen.has(e.eid) && seen.add(e.eid));
+};
 const bare = () => ev(`document.documentElement.classList.contains('bare') && getComputedStyle(document.querySelector('.tabs')).display === 'none'`);
 const btn = () => ev(`(()=>{const b=document.querySelector('.lfoot .btn');return b?{text:b.textContent,disabled:b.disabled,cls:b.className}:null})()`);
 const verdict = () => ev(`(()=>{const f=document.querySelector('.lfoot');return {cls:f.className,verdict:(f.querySelector('.lverdict')||{}).textContent||'',why:(f.querySelector('.lwhy')||{}).textContent||''}})()`);
@@ -118,24 +160,29 @@ try {
   ok((await api('/__files')).some(n => n.startsWith('progress/connect-check-')), 'connecting writes a test file under progress/');
   ok(!(await bare()) && (await text()).includes('Test topic'), 'it goes back by itself, and the pulled lessons show on Learn', await text());
 
-  console.log('The path');
+  console.log('The path: one node per whole thing');
   await f.tap('.tab[data-tab=learn]');
   await sleep(400);
-  const path = await ev(`(()=>{const n=[...document.querySelectorAll('.lesson-sec')].map(s=>[...s.querySelectorAll('.node')].map(x=>x.className.replace('node ','')));return {nodes:n,banners:[...document.querySelectorAll('.banner p')].map(p=>p.textContent),pips:[...document.querySelectorAll('.banner')].map(b=>b.querySelectorAll('.pips i').length)}})()`);
-  ok(path.nodes.length === 2 && path.nodes[0].length === 9 && path.nodes[1].length === 2, 'each lesson is a banner with a button per step', path);
-  ok(path.nodes[0][0] === 'now' && path.nodes[0].slice(1).every(x => x === 'todo') && path.nodes[1].every(x => x === 'todo'), 'the first step is the one to do; the rest are dim', path.nodes);
-  ok(JSON.stringify(path.pips) === '[9,2]', 'each banner has a pip per step', path.pips);
-  ok(await ev(`!!document.querySelector('.node.now .ring')`), 'the current step has its ring');
-  const marks = await ev(`[...document.querySelectorAll('.lesson-sec')[0].querySelectorAll('.node')].map(n=>n.getAttribute('aria-label').split(':')[0])`);
-  ok(JSON.stringify(marks) === JSON.stringify(['Read', 'Read', 'Question', 'Question', 'Question', 'Question', 'Question', 'Question', 'Play']), 'each button is marked with its kind of step', marks);
+  const path = await ev(`(()=>{const n=[...document.querySelectorAll('.unit-sec')].map(s=>[...s.querySelectorAll('.node')].map(x=>({state:x.className.split(' ')[1],kind:x.dataset.kind,label:x.getAttribute('aria-label')})));return {nodes:n,banners:[...document.querySelectorAll('.banner p')].map(p=>p.textContent),pips:[...document.querySelectorAll('.banner')].map(b=>b.querySelectorAll('.pips i').length)}})()`);
+  const kinds = path.nodes.flat().map(x => x.kind);
+  ok(JSON.stringify(kinds) === JSON.stringify(['lesson', 'chest', 'lesson', 'test', 'review', 'animation', 'exam']), 'each node on the path is a whole thing: a lesson, a chest, a test, a review, an animation, an exam', kinds);
+  ok(await ev(`document.querySelectorAll('.node').length`) === 7, "a lesson's steps aren't on the path: 7 nodes for 7 things, not a button per step");
+  ok(JSON.stringify(path.banners) === JSON.stringify(['The first unit', 'The second unit']) && JSON.stringify(path.pips) === '[4,3]', 'a unit is a banner, with a pip per node', path);
+  ok(path.nodes.flat()[0].state === 'now' && path.nodes.flat().slice(1).every(x => x.state === 'todo'), 'the first node is the one to do; the rest are dim', path.nodes);
+  ok(JSON.stringify(path.nodes.flat().map(x => x.label)) === JSON.stringify(['Lesson: Every kind of step', 'Chest: A chest', 'Lesson: A second lesson', 'Test: A quick test', 'Review: Review', 'Animation: A made-up scene', 'Exam: The final exam']), 'each node is named by its kind and title (a lesson\'s title from its file)', path.nodes.flat().map(x => x.label));
+  ok(await ev(`!!document.querySelector('.node.now .ring')`), 'the current node has its ring');
+  const marksOf = await ev(`Object.fromEntries([...document.querySelectorAll('.node.todo')].map(n=>[n.dataset.kind,n.querySelector('svg').innerHTML.replace(/a\\d+/g,'')]))`);
+  ok(new Set(Object.values(marksOf)).size === Object.keys(marksOf).length && Object.keys(marksOf).length === 6, 'each kind has its own mark', Object.keys(marksOf));
+  ok(await ev(`(()=>{const c=document.querySelector('.node[data-kind=chest] svg');return !!c.querySelector('.lid')&&!c.querySelector('circle.ring')})()`), 'a chest is drawn as a chest');
+  ok(await ev(`['test','exam'].every(k=>/<path d="M/.test(document.querySelector('.node[data-kind='+k+'] svg').innerHTML))`), 'a test and an exam are hexagons, as the sketch shows');
   await shot('04-path');
-  await f.tap('.lesson-sec:nth-child(2) .node');
+  await f.tap('.node[data-kind=test]');
   await sleep(400);
-  ok(await ev(`!!document.querySelector('.callout.dim') && !document.querySelector('.callout [data-go=start]')`), 'a step still ahead shows its title, and nothing to start');
+  ok(await ev(`!!document.querySelector('.callout.dim') && !document.querySelector('.callout [data-go=start]') && document.querySelector('.callout').innerText.includes('A quick test')`), 'a node still ahead shows its kind and title, and nothing to start');
   await f.tap('.node.now');
   await sleep(400);
   const call = await ev(`(()=>{const c=document.querySelector('.callout');const r=c.getBoundingClientRect();return {text:c.innerText,left:r.left,right:r.right}})()`);
-  ok(call.text.includes('A globe to read by') && call.text.toUpperCase().includes('START') && call.left >= 0 && call.right <= W, 'tapping the current step shows its title and Start, placed on the screen', call);
+  ok(call.text.includes('Every kind of step') && call.text.toUpperCase().includes('LESSON') && call.text.toUpperCase().includes('START') && call.left >= 0 && call.right <= W, 'tapping the current node shows its kind, its title and Start, placed on the screen', call);
   await shot('05-callout');
   await f.tap('[data-go=topics]');
   await sleep(500);
@@ -246,9 +293,26 @@ try {
   ok(await ev(`!!document.querySelector('.lend')`) && (await text()).includes('Lesson done') && (await text()).includes('of 7 right'), 'the end says how many were right', await text());
   await shot('12-end');
   await press();
-  ok(!(await bare()) && await ev(`document.querySelectorAll('.lesson-sec')[0].querySelectorAll('.node.done').length === 9`), 'back on the path, the lesson is gold');
-  ok(await ev(`document.querySelectorAll('.lesson-sec')[1].querySelector('.node').classList.contains('now')`), 'and the next lesson is the one to do');
+  ok(!(await bare()) && await ev(`document.querySelector('.node[data-node=every-kind]').classList.contains('done')`), 'back on the path, the lesson is gold');
+  ok(await ev(`document.querySelector('.node[data-node=first-chest]').classList.contains('now')`), 'and the chest after it is the next thing to reach');
   await shot('13-path-done');
+
+  console.log('A chest');
+  await f.tap('.node[data-node=first-chest]');
+  await sleep(400);
+  ok((await ev(`document.querySelector('.callout').innerText`)).toUpperCase().includes('OPEN'), 'tapping the chest offers to open it');
+  await f.tap('.callout [data-go=start]');
+  await sleep(900);
+  ok(await bare() && (await text()).includes('A chest!') && await ev(`document.querySelector('.chestbig .open').getAttribute('opacity') === '1'`), 'it opens with a small celebration, the tab bar hidden');
+  await shot('13b-chest');
+  ok((await everyEvent()).some(e => e.type === 'open' && e.node === 'first-chest' && e.kind === 'chest' && e.topic === 'test-topic'), 'opening it is recorded, and goes up with the answers');
+  await press();
+  ok(!(await bare()) && await ev(`document.querySelector('.node[data-node=first-chest]').classList.contains('done') && /rotate\\(-24/.test(document.querySelector('.node[data-node=first-chest] svg').innerHTML)`), 'back on the path the chest is open, and done');
+  ok(await ev(`document.querySelector('.node[data-node=second]').classList.contains('now')`), 'and the second lesson is next');
+  await f.tap('.node[data-node=first-chest]');
+  await sleep(300);
+  ok(await ev(`!document.querySelector('.callout [data-go=start]') && document.querySelector('.callout').innerText.includes('Opened')`), 'an opened chest says so, and opens only once');
+  await f.tap('.head');
 
   console.log('Every attempt is saved and goes up as new files');
   let all = await everyEvent();
@@ -279,8 +343,74 @@ try {
   ok(after.length === before + 1 && new Set(after.map(x => x.name)).size === after.length, 'a second batch is a new file, beside the first', after.map(x => x.name));
   ok(after.at(-1).device && after.at(-1).sentAt && after.at(-1).events.some(e => e.lesson === 'second' && e.type === 'finish'), 'each file says which phone and when');
 
-  console.log('Leaving part way');
+  console.log('A test, with sliders that start at a value and pictures that follow them');
   await press().catch(() => {});
+  await f.tap('.tab[data-tab=learn]');
+  await sleep(400);
+  ok(await ev(`document.querySelector('.node[data-node=second]').classList.contains('done') && document.querySelector('.node[data-node=quick-test]').classList.contains('now')`), 'with both lessons done, the test is next');
+  await f.tap('.node[data-node=quick-test]');
+  await sleep(300);
+  await f.tap('.callout [data-go=start]');
+  await waitFor(`__primer.run && __primer.run.step.id === 'q-pick' && __primer.run.input`);
+  await f.tap('.pi-opt[data-id=a]');
+  await press();
+  ok((await verdict()).verdict === 'Right', 'a test is played like a lesson');
+  await press();
+  await waitFor(`__primer.run.step.id === 'q-warm' && __primer.run.input`);
+  await sleep(200);
+  const sliderNow = () => ev(`(()=>{const r=document.querySelector('.pi.form-slider'),q=s=>r.querySelector(s),th=q('.pi-thumb');return {chip:q('.pi-chip').textContent,fill:q('.pi-fill').getBoundingClientRect().width,
+    pic:q('.pi-pic svg') ? q('.pi-pic svg').getAttribute('class') : null,body:(q('.pi-pic .body')||{getAttribute:()=>null}).getAttribute('fill'),snow:Number((q('.pi-pic .snow')||{getAttribute:()=>0}).getAttribute('opacity')),
+    flame:Number((q('.pi-pic .flame')||{getAttribute:()=>0}).getAttribute('opacity')),warm:Number((q('.pi-pic .w1')||{getAttribute:()=>0}).getAttribute('height')),
+    state:__primer.run.input.state(),awake:!document.querySelector('.lfoot .btn').disabled,left:th.style.left,transform:th.style.transform,willChange:getComputedStyle(th).willChange}})()`);
+  let sl = await sliderNow();
+  ok(sl.chip === '5°C' && sl.fill > 10 && sl.state.value === 5 && sl.state.answered && sl.awake, 'a slider starts at a real value with its fill showing, and Check awake: never "?"', sl);
+  ok(sl.pic === 'pic-warmth' && sl.snow > 0.95 && sl.flame < 0.05, 'its picture is there: at 5 °C, a snowflake in an icy ball', sl);
+  await shot('14a-slider-start');
+  const tr = await f.rect('.pi-track');
+  await f.drag(tr.left + tr.w * (5 / 40), tr.y, tr.w * (28 / 40), 0, { steps: 16, ms: 420 });
+  await sleep(200);
+  const hot = await sliderNow();
+  ok(hot.state.value >= 31 && hot.snow < 0.05 && hot.flame > 0.5 && hot.body !== sl.body, 'dragged up to the hot end, the snowflake has gone and a fire has come', hot);
+  ok(hot.left === '' && /translate3d/.test(hot.transform) && hot.willChange === 'transform', 'the thumb moves by transform on its own layer, so nothing under it is repainted', hot);
+  await shot('14b-slider-hot');
+  await f.tapAt(tr.left + tr.w * (30 / 40), tr.y);
+  await sleep(150);
+  await press();
+  ok((await verdict()).verdict === 'Right', 'and it marks the value it was set to');
+  await press();
+  await waitFor(`__primer.run.step.id === 'q-deep' && __primer.run.input`);
+  await sleep(200);
+  sl = await sliderNow();
+  ok(sl.pic === 'pic-depth' && sl.chip === '2 m' && sl.warm < 20, 'another picture, the same setting: the depth one starts with a thin warm layer', sl);
+  const tr2 = await f.rect('.pi-track');
+  await f.tapAt(tr2.left + tr2.w * (2 / 3), tr2.y);
+  await sleep(150);
+  const deep = await sliderNow();
+  ok(deep.state.value === 100 && deep.warm > sl.warm + 30, 'set deeper on its stretched scale, the warm layer goes deeper', deep);
+  await shot('14c-slider-depth');
+  await press();
+  await press();
+  ok((await text()).includes('Test done') && (await text()).includes('3 of 3 right'), "a test's end says Test done", await text());
+  await press();
+  ok(await ev(`document.querySelector('.node[data-node=quick-test]').classList.contains('done') && document.querySelector('.node[data-node=look-back]').classList.contains('now')`), 'the test is gold, and the review after it is next');
+
+  console.log('A review and an animation, for now');
+  for (const [node, words] of [['look-back', 'Review'], ['a-scene', 'A made-up scene']]) {
+    await f.tap(`.node[data-node=${node}]`);
+    await sleep(300);
+    await f.tap('.callout [data-go=start]');
+    await sleep(500);
+    ok(await bare() && (await text()).includes(words) && (await text()).includes('Soon'), `${words}: a placeholder says it comes later`, await text());
+    await shot(`15-${node}`);
+    await press();
+    ok(await ev(`document.querySelector('.node[data-node=${node}]').classList.contains('done')`), `${words}: visiting it lets the path go on`);
+  }
+  ok(await ev(`document.querySelector('.node[data-node=final]').classList.contains('now')`), 'and the exam is next');
+  const opened = (await everyEvent()).filter(e => e.type === 'open').map(e => `${e.node}:${e.kind}`);
+  ok(['first-chest:chest', 'look-back:review', 'a-scene:animation'].every(x => opened.includes(x)), 'each visit is recorded', opened);
+  await shot('16-path-exam-next');
+
+  console.log('Leaving part way');
   await f.tap('.tab[data-tab=learn]');
   await sleep(300);
   await f.tap('[data-go=topics]');
@@ -293,14 +423,16 @@ try {
   await f.tap('[data-go=leave]');
   await sleep(500);
   ok(!(await bare()) && (await text()).includes('Second topic'), 'the cross leaves at once, back to the path');
-  ok((await queue()).some(e => e.type === 'leave' && e.step === 'read'), 'and says where it was left');
+  ok((await everyEvent()).some(e => e.type === 'leave' && e.step === 'read' && e.topic === 'second-topic'), 'and says where it was left');
 
   console.log('Nothing typed gets lost');
   await f.tap('[data-go=topics]');
   await sleep(300);
   await f.tap('.toprow:nth-child(2)');
   await sleep(300);
-  await f.tap('.lesson-sec:nth-child(1) .node');
+  await f.tap('.node[data-node=every-kind]');
+  await sleep(200);
+  ok((await ev(`document.querySelector('.callout [data-go=start]').textContent`)) === 'Again', 'a done lesson can be played again');
   await f.tap('.callout [data-go=start]');
   await sleep(900);
   await press();
@@ -351,61 +483,112 @@ try {
   await shot('14-profile');
   await f.tap('.krow');
   await sleep(500);
-  ok((await text()).includes('last studied') && await ev(`document.querySelectorAll('.dots i').length === 8`), "tapping a topic opens its details, a dot for each question");
+  ok((await text()).includes('last studied') && await ev(`document.querySelectorAll('.dots i').length === 16`), "tapping a topic opens its details, a dot for each question in its lessons, test and exam", await ev(`document.querySelectorAll('.dots i').length`));
   await f.tap('.scrim');
   await sleep(200);
   await f.tap('[data-size=l]');
   await sleep(200);
   ok((await ev('document.documentElement.dataset.text')) === 'l', 'the text size can be set');
   await f.tap('[data-size=m]');
-  await f.tap('[data-pref=effects]');
-  await sleep(100);
-  ok((await ev(`__primer.store.get('prefs')`)).effects === false && (await ev(`__primer.feel.getPrefs()`)).effects === false, 'the Effects switch is kept');
+  ok(await ev(`document.querySelector('[data-pref=effects]').getAttribute('aria-pressed') === 'false'`) && (await ev(`__primer.feel.getPrefs()`)).effects === false, 'Effects start off');
   ok((await ev(`__primer.feel.sound('right')`)) === false, 'and with it off, no sound plays');
   await f.tap('[data-pref=effects]');
+  await sleep(100);
+  ok((await ev(`__primer.store.get('prefs')`)).effects === true && (await ev(`__primer.feel.getPrefs()`)).effects === true, 'turning Effects on is kept');
+  ok((await ev(`__primer.feel.sound('right')`)) === true, 'and then sounds play');
+  await f.tap('[data-pref=effects]');
+  await sleep(100);
+  ok((await ev(`__primer.store.get('prefs')`)).effects === false, 'and off again is kept');
 
-  console.log('The feel');
+  console.log('Sound: off by default, and the phone\'s sound left alone');
+  // Prefs saved by 0.1 always held effects: true, chosen or not: there's no telling, so it goes off.
+  await ev(`__primer.store.set('prefs', { voice: true, effects: true, music: false, text: 'm', topic: 'test-topic', tab: 'learn' })`);
+  await go(APP);
+  ok((await ev(`__primer.feel.getPrefs()`)).effects === false && (await ev(`__primer.store.get('prefs')`)).v === 2, "an older install's Effects are turned off, since it can't be told whether they were chosen");
+  await ev(`__primer.store.set('prefs', { v: 2, voice: true, effects: true, music: false, text: 'm', topic: 'test-topic', tab: 'learn' })`);
+  await go(APP);
+  ok((await ev(`__primer.feel.getPrefs()`)).effects === true, 'Effects turned on since 0.2 stay on');
   const ticks0 = await ev('__primer.feel.tickCount()');
   await f.tap('.tab[data-tab=practice]');
   await sleep(200);
   ok((await ev('__primer.feel.tickCount()')) > ticks0 && (await ev('__primer.feel.soundLog().at(-1)')) === 'tap', 'a press gives a tick and a soft sound');
+  // As on an iPhone: a page can say what its sound is, and can't vibrate. Set before the app starts.
+  await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `Object.defineProperty(navigator,'audioSession',{value:{type:'auto'},configurable:true});Object.defineProperty(Navigator.prototype,'vibrate',{value:undefined,configurable:true});` });
   await go(APP);
-  // As on an iPhone: a page can say what its sound is, and can't vibrate.
-  await ev(`Object.defineProperty(navigator,'audioSession',{value:{type:'auto'},configurable:true});Object.defineProperty(Navigator.prototype,'vibrate',{value:undefined,configurable:true});true`);
-  await f.tap('.tab[data-tab=home]');
-  await sleep(100);
-  ok((await ev('navigator.audioSession.type')) === 'playback', "the first sounding press tells the phone the app's sound is media, so it plays on silent");
+  ok((await ev('navigator.audioSession.type')) === 'auto', 'opening Primer leaves the phone\'s sound alone, so music carries on');
+  for (const tab of ['home', 'learn', 'practice']) { await f.tap(`.tab[data-tab=${tab}]`); await sleep(120); }
+  await ev(`__primer.feel.sound('right')`);
+  ok((await ev('navigator.audioSession.type')) === 'auto' && (await ev(`__primer.feel.getPrefs()`)).effects === true, 'and so do presses, even with Effects on and a sound played');
   ok(await ev(`!!document.querySelector('.hap input[switch]')`), "the tick is Riffle's hidden switch");
+  await ev(`__primer.app.setPref('effects', false)`);
   const blur = await ev(`[...document.styleSheets].flatMap(s=>{try{return [...s.cssRules].map(r=>r.cssText)}catch{return []}}).filter(t=>/blur\\(/.test(t))`);
   ok(blur.length === 0, 'no live blur anywhere in the styles', blur);
 
-  console.log('The Playground');
+  console.log('The Playground: tools only');
   await f.tap('.tab[data-tab=practice]');
   await sleep(500);
   const cards = await ev(`[...document.querySelectorAll('.pcard')].map(c=>c.innerText.replace(/\\s+/g,' ').trim())`);
-  ok(cards.length === 2 && cards[0].startsWith('Globe') && cards.some(c => c.includes('from Every kind of step')), 'each part has a card, saying which lesson first uses it', cards);
+  ok(cards.length === 1 && cards[0].startsWith('Globe') && cards[0].includes('from Every kind of step'), 'the Playground lists the tools (the globe), saying which lesson first uses each', cards);
+  ok(!(await ev(`!!document.querySelector('.pcard[data-part=inputs]')`)) && (await ev('__primer.parts.listParts()')).includes('inputs'), "Inputs, an answer form, isn't in the list, but is still in the kit for lessons");
   ok(await ev(`document.querySelector('.review .btn').disabled`), "Review's Start is off until stage 2");
   await f.tap('.pcard[data-part=globe]');
   await waitFor(`document.querySelector('.partstage canvas')`);
   ok(await bare(), 'an opened part hides the tab bar');
   const rows = await ev(`[...document.querySelectorAll('.setrow p')].map(p=>p.textContent)`);
-  ok(['spin', 'labels', 'style', 'tap', 'zoom', 'equator'].every(k => rows.includes(k)), "its panel is built from the part's description", rows);
+  ok(['spin', 'labels', 'style', 'tap', 'zoom', 'equator', 'borders'].every(k => rows.includes(k)), "its panel is built from the part's description, the new borders switch with it", rows);
   await f.tap('[data-set=style][data-v=warmth]');
   await sleep(600);
   ok((await ev('__primer.app.partNow.settings.style')) === 'warmth', 'changing a setting redraws the part with it');
+  await f.tap('[data-set=style][data-v=political]');
+  await sleep(300);
+  await f.tap('[data-set=labels][data-v=countries]');
+  await sleep(700);
+  ok((await ev('__primer.app.partNow.settings.style')) === 'political' && (await ev('__primer.app.partNow.debug().clashes')) === 0, 'the four-colour style is there, with no two neighbours the same colour');
+  await shot('17-part-globe-political');
+  await f.tap('[data-set=borders]');
+  await sleep(600);
+  ok((await ev('__primer.app.partNow.settings.borders')) === false, 'and borders can be switched off');
+  await shot('17b-part-globe-no-borders');
   await f.tap('[data-try="2"]');
   await sleep(400);
-  await shot('15-part-globe');
   await f.tap('[data-go=back]');
   await sleep(400);
   ok(!(await bare()) && (await text()).includes('Playground'), 'the back arrow leaves, and the tab bar comes back');
-  await f.tap('.pcard[data-part=inputs]');
+
+  console.log('Dragging leaves nothing behind');
+  // A screenshot after dragging, and another after making the browser repaint the whole page: any pixel
+  // that differs was left behind by the drag. (The slivers were seen on the phone; this browser is
+  // Chromium, so this guards the fix rather than proving the phone's bug.)
+  await ev(`__primer.app.openPart('inputs')`);
   await sleep(600);
   for (const form of ['slider', 'order', 'match', 'number', 'spot']) {
     await f.tap(`[data-set=form][data-v=${form}]`);
     await sleep(300);
-    ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `Inputs opens as ${form}`);
+    ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `Inputs still opens as ${form} (number, match and spot unchanged)`);
   }
+  for (const form of ['slider', 'order']) {
+    await f.tap(`[data-set=form][data-v=${form}]`);
+    await sleep(400);
+    if (form === 'slider') {
+      const t = await f.rect('.pi-track');
+      await f.drag(t.left + 10, t.y, t.w * 0.8, 0, { steps: 20, ms: 500 });
+      await f.drag(t.left + t.w * 0.8, t.y, -t.w * 0.6, 6, { steps: 25, ms: 600 });
+    } else {
+      const a = await f.rect('.pi-item');
+      await f.drag(a.x, a.y, 0, 130, { steps: 20, ms: 500 });
+      await sleep(500);
+      ok(await ev(`[...document.querySelectorAll('.pi-item')].every(i=>getComputedStyle(i).willChange==='transform')`), 'order items move on their own layers');
+      const c = await f.rect('.pi-item:last-child');
+      await f.drag(c.x, c.y, 0, -150, { steps: 20, ms: 500, hold: 0 });
+    }
+    await sleep(700);
+    const before = await b.send('Page.captureScreenshot', { format: 'png' });
+    await ev(`(async()=>{document.body.style.opacity='0.99';await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));document.body.style.opacity='';await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return 1})()`);
+    const after = await b.send('Page.captureScreenshot', { format: 'png' });
+    const diff = differing(before.data, after.data);
+    ok(diff === 0, `${form}: after dragging back and forth, nothing is left behind (${diff} pixels differ from a full repaint)`);
+  }
+  ok(!(await ev(`[...document.styleSheets].flatMap(s=>{try{return [...s.cssRules].map(r=>r.cssText)}catch{return []}}).some(t=>/pi-item\\.lift/.test(t)&&/box-shadow:[^;]*\\d+px \\d+px [1-9]/.test(t))`)), 'a lifted item has no blurred shadow');
   await f.tap('[data-go=back]');
   await sleep(300);
 
@@ -488,8 +671,50 @@ try {
     await ev(`__h.remove();document.getElementById('bench').remove()`);
   }
 
+  console.log('The globe: steady names, lines over the land, borders and four colours');
+  const bench = settings => ev(`(async()=>{document.getElementById('bench')?.remove();const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50;background:#141a3c';document.body.append(d);window.__h=await __primer.parts.mount('globe',d,${JSON.stringify(settings)});return true})()`);
+  // Names, sampled every 60 ms while the globe turns by itself: none may go off and come back on.
+  await bench({ style: 'day', spin: 'auto', labels: 'countries', view: [0, 25] });
+  await sleep(900);
+  const seen = new Map();
+  for (let i = 0; i < 50; i++) {
+    for (const l of await ev('__h.debug().labels')) { const s = seen.get(l.name) || []; s.push(l.on ? 1 : 0); seen.set(l.name, s); }
+    await sleep(60);
+  }
+  // a blink: off for under about a third of a second between two spells on
+  const blinks = [...seen].filter(([, s]) => /1(0{1,5})1/.test(s.join('')));
+  ok(seen.size >= 8 && blinks.length === 0, `while it turns, names stay put: none blinks off and back on (${seen.size} names watched)`, blinks.map(([n, s]) => `${n}:${s.join('')}`));
+  // A dotted line where it crosses Africa: the equator and a band's edge show over the land, not under it.
+  await bench({ style: 'day', spin: 'locked', tap: 'none', equator: true, view: [20, 8] });
+  await ev(`__h.run(['band', 5, 20])`);
+  await sleep(500);
+  const over = await ev(`(()=>{const c=document.querySelector('#bench canvas'),g=c.getContext('2d'),k=c.width/c.getBoundingClientRect().width,b=c.getBoundingClientRect();
+    const count=(lat,test)=>{let n=0;for(let lon=12;lon<=30;lon+=0.25){const p=__h.where([lon,lat]);const x=Math.round((p.x-b.left)*k),y=Math.round((p.y-b.top)*k);const d=g.getImageData(x-2,y-2,5,5).data;for(let i=0;i<d.length;i+=4)if(test(d[i],d[i+1],d[i+2]))n++;}return n};
+    return {equator:count(0,(r,g2,bl)=>r>215&&g2>215&&bl>215),band:count(20,(r,g2,bl)=>r>220&&g2>170&&bl<120)}})()`);
+  ok(over.equator > 0 && over.band > 0, 'dotted lines (the equator, a band\'s edge) are drawn over the land too', over);
+  // Borders off, and the four colours.
+  const pixelsOf = () => ev(`(()=>{const c=document.querySelector('#bench canvas');return Array.from(c.getContext('2d').getImageData(0,0,c.width,c.height).data.filter((_,i)=>i%16===0)).join(',')})()`);
+  await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2 });
+  await sleep(500);
+  const withBorders = await pixelsOf();
+  await bench({ style: 'day', spin: 'locked', view: [15, 48], zoom: 2, borders: false });
+  await sleep(500);
+  ok((await pixelsOf()) !== withBorders, 'with borders off, the borders are gone');
+  await bench({ style: 'political', spin: 'locked', view: [15, 30], zoom: 1.4 });
+  await sleep(500);
+  const four = await ev(`(()=>{const c=document.querySelector('#bench canvas'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;const want=['#3fcfae','#ffd062','#f27ba3','#a58cf2'].map(h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)));const n=[0,0,0,0];for(let i=0;i<d.length;i+=16)want.forEach((w,k)=>{if(Math.abs(d[i]-w[0])+Math.abs(d[i+1]-w[1])+Math.abs(d[i+2]-w[2])<12)n[k]++});return {n,clashes:__h.debug().clashes}})()`);
+  ok(four.n.every(x => x > 50) && four.clashes === 0, 'the political style uses all four colours, and no two neighbours share one', four);
+  // Still, it costs nothing; turned, it redraws the ball and nothing else.
+  await bench({ style: 'warmth', spin: 'locked', labels: 'countries', equator: true, view: [-40, 15] });
+  await ev(`__h.run(['band', 5, 20])`);
+  await sleep(900);
+  const r0 = await ev('__h.debug().redraws');
+  await sleep(600);
+  ok(!(await ev('__h.busy()')) && (await ev('__h.debug().redraws')) === r0, 'a still globe asks for no frames and redraws nothing, its names and band included');
+  await ev(`document.getElementById('bench').remove()`);
+
   if (PILOT && existsSync(join(PILOT, 'topics'))) {
-    console.log('The pilot lesson, played wrong and then right');
+    console.log('The pilot: its path, each lesson and the test played wrong and then right, and its chest');
     await api(`/__reset?data=${encodeURIComponent(PILOT)}`);
     await go();
     await ev(`__primer.store.del('progress')`);
@@ -500,61 +725,101 @@ try {
     await f.tap('.tab[data-tab=practice]');
     await f.tap('.tab[data-tab=learn]');
     await sleep(400);
-    const lessonFile = JSON.parse(readFileSync(join(PILOT, 'topics', 'where-hurricanes-form', 'warm-water-and-a-spin.json'), 'utf8'));
-    ok((await text()).includes('Where hurricanes form') && (await ev(`document.querySelectorAll('.node').length`)) === lessonFile.steps.length, 'the pilot topic shows its path');
-    const kinds = new Set(lessonFile.steps.map(s => s.kind));
-    ok(kinds.has('explain') && kinds.has('check') && kinds.has('play'), 'it has all three kinds of step');
-    for (const pass of ['wrong', 'right']) {
-      await f.tap(pass === 'wrong' ? '.node.now' : '.node');
-      await sleep(300);
-      await f.tap('.callout [data-go=start]');
-      await sleep(900);
-      const marks = [];
-      for (const s of lessonFile.steps) {
-        await waitFor(`__primer.run && __primer.run.step.id === ${JSON.stringify(s.id)} && (__primer.run.input || __primer.run.play || ${s.kind === 'explain'})`);
-        if (s.kind === 'explain') { await press(); continue; }
-        if (s.kind === 'play') {
-          const t = s.tries.find(x => x.marked === pass);
-          const p = await ev(`__primer.run.play.where([${t.state.tapped.lon},${t.state.tapped.lat}])`);
-          await f.tapAt(p.x, p.y);
-        } else {
-          const inp = s.input;
+    const dir = join(PILOT, 'topics', 'where-hurricanes-form');
+    const topicFile = JSON.parse(readFileSync(join(dir, 'topic.json'), 'utf8'));
+    const shown = await ev(`[...document.querySelectorAll('.node')].map(n=>n.dataset.kind+':'+n.dataset.node)`);
+    ok((await text()).includes('Where hurricanes form') && JSON.stringify(shown) === JSON.stringify(topicFile.path.map(n => `${n.kind}:${n.id}`)), 'the pilot shows its path, a node for each whole thing', shown);
+    ok(topicFile.level === 'tour' && topicFile.path.filter(n => n.kind === 'lesson').length === 2, 'it is a Tour: two lessons, then a chest and a test');
+    await shot('20-pilot-path');
+    let asked = 0, played = 0;
+    const tapPlace = async (lon, lat) => {
+      // turn the globe to face the place first, so the tap lands where it's meant to, not on the rim
+      await ev(`__primer.run.play.run(['spinTo', [${lon}, ${lat}], 0])`);
+      await sleep(250);
+      const p = await ev(`__primer.run.play.where([${lon},${lat}])`);
+      await f.tapAt(p.x, p.y);
+    };
+    for (const node of topicFile.path) {
+      if (node.kind === 'chest') {
+        await f.tap(`.node[data-node=${node.id}]`);
+        await sleep(300);
+        await f.tap('.callout [data-go=start]');
+        await sleep(900);
+        ok((await text()).includes('A chest!'), "the pilot's chest opens");
+        await shot('22-pilot-chest');
+        await press();
+        continue;
+      }
+      const file = JSON.parse(readFileSync(join(dir, `${node.id}.json`), 'utf8'));
+      const questions = file.steps.filter(s => s.kind !== 'explain');
+      ok(node.kind !== 'lesson' || (file.steps.length >= 8 && file.steps.length <= 10), `${node.id}: ${file.steps.length} steps`);
+      for (const pass of ['wrong', 'right']) {
+        await f.tap(`.node[data-node=${node.id}]`);
+        await sleep(300);
+        await f.tap('.callout [data-go=start]');
+        await sleep(900);
+        const marks = [];
+        for (const s of file.steps) {
+          await waitFor(`__primer.run && __primer.run.step.id === ${JSON.stringify(s.id)} && (__primer.run.input || __primer.run.play || ${s.kind === 'explain'})`);
+          await sleep(150);
+          if (s.kind === 'explain') { await press(); continue; }
           const right = pass === 'right';
-          if (inp.form === 'choice') {
-            const answer = s.answer ?? inp.options.find(o => o.right).id;
-            await f.tap(`.pi-opt[data-id="${right ? answer : inp.options.find(o => o.id !== answer).id}"]`);
-          } else if (inp.form === 'slider') {
-            const r = await f.rect('.pi-track');
-            const val = right ? s.answer : inp.max - (inp.max - inp.min) * 0.1;
-            await f.tapAt(r.left + ((val - inp.min) / (inp.max - inp.min)) * r.w, r.y);
-          } else if (inp.form === 'match') {
-            const ids = Object.keys(s.answer);
-            for (const [k, l] of ids.entries()) {
-              await f.tap(`.pi-cell[data-side=l][data-id="${l}"]`);
-              await f.tap(`.pi-cell[data-side=r][data-id="${right ? s.answer[l] : s.answer[ids[(k + 1) % ids.length]]}"]`);
+          if (s.kind === 'play') {
+            const t = s.tries.find(x => x.marked === pass);
+            await tapPlace(t.state.tapped.lon, t.state.tapped.lat);
+          } else {
+            const inp = s.input;
+            if (inp.form === 'choice') {
+              const answer = s.answer ?? inp.options.find(o => o.right).id;
+              await f.tap(`.pi-opt[data-id="${right ? answer : inp.options.find(o => o.id !== answer).id}"]`);
+            } else if (inp.form === 'slider') {
+              const sv = await ev('__primer.run.input.state()');
+              ok(sv.answered && sv.value === inp.start, `${s.id}: the slider starts at ${inp.start}, a real value`, sv);
+              const r = await f.rect('.pi-track');
+              const log = inp.scale === 'log';
+              const pos = right ? (log ? Math.log(s.answer / inp.min) / Math.log(inp.max / inp.min) : (s.answer - inp.min) / (inp.max - inp.min)) : 0.95;
+              await f.tapAt(r.left + pos * r.w, r.y);
+            } else if (inp.form === 'order') {
+              // wrong: it starts out of order, so check it as it is; right: drag it into order
+              for (let k = 0; right && k < 6; k++) {
+                const now = (await ev('__primer.run.input.state()')).value;
+                if (JSON.stringify(now) === JSON.stringify(s.answer)) break;
+                const i = now.findIndex((id, n) => id !== s.answer[n]);
+                const from = now.indexOf(s.answer[i]);
+                const a = await f.rect(`.pi-item[data-id="${s.answer[i]}"]`);
+                const rowH = (await f.rect('.pi-item:nth-child(2)')).y - (await f.rect('.pi-item:nth-child(1)')).y;
+                await f.drag(a.x, a.y, 0, (i - from) * rowH, { steps: 14, ms: 360 });
+                await sleep(300);
+              }
             }
           }
+          await sleep(250);
+          if (s.input && s.input.form === 'slider') await shot(`21-pilot-${node.id}-${s.id}-${pass}`);
+          await press();
+          const vd = await verdict();
+          marks.push(`${s.id}:${vd.verdict}`);
+          if (pass === 'wrong' && s.id === 'where') {
+            ok(vd.why.includes('equator') && vd.why.includes('spin'), 'tapping the equator, the tempting answer, is wrong, and says why', vd);
+            await shot('21-pilot-equator-wrong');
+          }
+          if (pass === 'wrong' && s.id === 'heading') ok(vd.why.includes('Canada') && vd.why.includes('west'), 'heading east, the way weather moves across Canada, is wrong, and says why', vd);
+          if (s.kind === 'play' && pass === 'right') await shot(`21-pilot-${node.id}-${s.id}-right`);
+          await press();
         }
-        await sleep(250);
+        ok(marks.every(m => m.endsWith(pass === 'right' ? 'Right' : 'Not quite')), `${node.id}, played ${pass}: every question is marked ${pass}`, marks);
+        await waitFor(`!!document.querySelector('.lend')`);
         await press();
-        const vd = await verdict();
-        marks.push(`${s.id}:${vd.verdict}`);
-        if (pass === 'wrong' && s.id === 'where') {
-          ok(vd.why.includes('equator') && vd.why.includes('spin'), 'tapping the equator, the tempting answer, is wrong, and says why', vd);
-          await shot('16-pilot-equator-wrong');
-        }
-        if (pass === 'right' && s.id === 'where') await shot('17-pilot-where-right');
-        await press();
+        asked += questions.length;
+        played++;
       }
-      ok(marks.every(m => m.endsWith(pass === 'right' ? 'Right' : 'Not quite')), `played ${pass}, every question is marked ${pass}`, marks);
-      await waitFor(`!!document.querySelector('.lend')`);
-      await press();
     }
+    ok(await ev(`[...document.querySelectorAll('.node')].every(n=>n.classList.contains('done'))`), 'the whole path is gold');
+    await shot('23-pilot-done');
     const pilotEvents = (await everyEvent()).filter(e => e.topic === 'where-hurricanes-form');
-    ok(pilotEvents.filter(e => e.type === 'attempt').length === 8 && pilotEvents.filter(e => e.type === 'finish').length === 2, 'both runs went into the queue to go up', pilotEvents.map(e => e.type));
+    ok(pilotEvents.filter(e => e.type === 'attempt').length === asked && pilotEvents.filter(e => e.type === 'finish').length === played && pilotEvents.some(e => e.type === 'open' && e.kind === 'chest'), `every run went into the queue to go up (${asked} answers, ${played} finishes, the chest)`, pilotEvents.map(e => e.type));
     await api('/__reset?data=fixtures');
   } else {
-    console.log('(no --pilot given: the pilot lesson was not played)');
+    console.log('(no --pilot given: the pilot was not played)');
   }
 
   console.log('Offline, and the service worker');

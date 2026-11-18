@@ -25,7 +25,13 @@ COLOURS = {'orange', 'cyan', 'pink', 'yellow', 'purple', 'teal'}
 MARKS = {'swirl', 'paw', 'bolt', 'flag', 'strings', 'drop', 'leaf', 'globe', 'book', 'star'}
 KINDS = {'explain', 'check', 'play'}
 SLUG = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
-TOPIC_FIELDS = {'v', 'title', 'level', 'colour', 'mark', 'about', 'lessons'}
+TOPIC_FIELDS = {'v', 'title', 'level', 'colour', 'mark', 'about', 'path'}
+# The nodes on a topic's path. Played ones (lesson, test, exam) are a file each, <id>.json; the rest are
+# the node alone. Review and animation are placeholders until stage 2.
+NODE_KINDS = ('lesson', 'test', 'exam', 'chest', 'review', 'animation')
+PLAYED = {'lesson', 'test', 'exam'}
+NODE_FIELDS = {'kind', 'id', 'title', 'unit'}
+QUESTIONS_AT_LEAST = {'test': 3, 'exam': 5}
 LESSON_FIELDS = {'v', 'title', 'version', 'minutes', 'steps', 'sources'}
 STEP_FIELDS = {
     'explain': {'id', 'kind', 'title', 'text', 'figure', 'src'},
@@ -433,6 +439,23 @@ def check_answer_shape(step, inputs_desc, where, rep):
             rep.err(where, f'the answer {ans} is off the scale ({lo} to {hi})')
         if form == 'slider' and not step.get('within'):
             rep.warn(where, 'a slider with "within" 0 is right only on the exact value: give it some room')
+        if form == 'slider':
+            # A slider starts at a real value (start, or the middle of its scale) and can be checked as it is,
+            # so where it starts must not give the answer away.
+            log = inp.get('scale') == 'log' and lo > 0 and hi > lo
+            mid = (lo * hi) ** 0.5 if log else (lo + hi) / 2
+            start = inp.get('start', mid)
+            said = 'starts' if 'start' in inp else f'starts in the middle of its scale, at {mid:g}'
+            if _num(start) is not None:
+                if not (min(lo, hi) <= start <= max(lo, hi)):
+                    rep.err(where, f'the slider\'s start, {start}, is off the scale ({lo} to {hi})')
+                else:
+                    state = {'value': start, 'answered': True}
+                    got = mark(step, state, inputs_desc)
+                    if got == 'right':
+                        rep.err(where, f'the slider {said}, which is already marked right: it gives the answer away. Set "start" well away from it')
+                    elif got == 'close':
+                        rep.warn(where, f'the slider {said}, which is already marked close: set "start" farther from the answer')
     elif form == 'order':
         ids = [i.get('id') for i in inp.get('items') or []]
         if not (isinstance(ans, list) and sorted(map(str, ans)) == sorted(map(str, ids))):
@@ -466,7 +489,8 @@ def check_tries(step, desc, inputs_desc, where, rep):
     return marks
 
 
-def check_lesson(lesson, where, rep, kit, base):
+def check_lesson(lesson, where, rep, kit, base, node_kind='lesson'):
+    """A lesson, test or exam file: the same shape, played step by step. node_kind says which it is on the path."""
     if not isinstance(lesson, dict):
         rep.err(where, 'a lesson is an object')
         return
@@ -494,7 +518,7 @@ def check_lesson(lesson, where, rep, kit, base):
         rep.err(where, 'no steps')
         return
     if not STEPS_RANGE[0] <= len(steps) <= STEPS_RANGE[1]:
-        rep.warn(where, f'{len(steps)} steps: a lesson is usually {STEPS_RANGE[0]} to {STEPS_RANGE[1]}')
+        rep.warn(where, f'{len(steps)} steps: a {node_kind} is usually {STEPS_RANGE[0]} to {STEPS_RANGE[1]}')
     inputs_desc = kit.parts.get('inputs', {})
     seen, cited, forms = set(), set(), []
     for n, step in enumerate(steps):
@@ -515,7 +539,7 @@ def check_lesson(lesson, where, rep, kit, base):
         for k in set(step) - STEP_FIELDS[kind]:
             rep.err(w, f'no field "{k}" on a {kind} step')
         if not step.get('title'):
-            rep.warn(w, 'no "title": the path shows it when the step is tapped')
+            rep.warn(w, 'no "title": progress names the step by it')
         check_words(step, w, rep)
         src = step.get('src') or []
         for s in src:
@@ -597,6 +621,15 @@ def check_lesson(lesson, where, rep, kit, base):
         rep.warn(where, f'the source "{s}" isn\'t cited by any step')
     if forms and all(f == 'choice' for f in forms) and not any(isinstance(s, dict) and s.get('kind') == 'play' for s in steps):
         rep.warn(where, 'every question is a choice: a slider, a number, an order or a placement leaves more room to be realistically wrong')
+    if node_kind in QUESTIONS_AT_LEAST:
+        asked = [s for s in steps if isinstance(s, dict) and s.get('kind') in ('check', 'play')]
+        explains = [s.get('id') for s in steps if isinstance(s, dict) and s.get('kind') == 'explain']
+        if not asked:
+            rep.err(where, f'a {node_kind} asks questions, and this one has none')
+        elif len(asked) < QUESTIONS_AT_LEAST[node_kind]:
+            rep.warn(where, f'{len(asked)} question(s): a {node_kind} usually has at least {QUESTIONS_AT_LEAST[node_kind]}')
+        if explains:
+            rep.warn(where, f'a {node_kind} is questions on what came before; explain steps ({", ".join(map(str, explains))}) belong in a lesson')
 
 
 def check_topic(folder, rep, kit):
@@ -604,7 +637,7 @@ def check_topic(folder, rep, kit):
     where = f'{folder.name}/topic.json'
     if not SLUG.match(folder.name):
         rep.err(where, f'the folder name "{folder.name}" is the topic\'s id: lower case words joined by hyphens')
-    for k in set(t) - TOPIC_FIELDS:
+    for k in set(t) - TOPIC_FIELDS - {'lessons'}:
         rep.err(where, f'no field "{k}" in a topic')
     if t.get('v') != 1:
         rep.err(where, '"v" is 1')
@@ -616,24 +649,84 @@ def check_topic(folder, rep, kit):
         rep.err(where, f'"colour" is one of {", ".join(sorted(COLOURS))}')
     if t.get('mark') not in MARKS:
         rep.err(where, f'"mark" is one of {", ".join(sorted(MARKS))}')
-    lessons = t.get('lessons') or []
-    if not lessons:
-        rep.err(where, 'no lessons')
-    lo, hi = LEVELS.get(t.get('level'), (1, 99))
-    if lessons and not lo <= len(lessons) <= hi:
-        rep.warn(where, f'{len(lessons)} lesson(s) for {t.get("level")}, which is usually {lo} to {hi}')
-    for lid in lessons:
-        f = folder / f'{lid}.json'
-        if not SLUG.match(str(lid)):
-            rep.err(where, f'lesson id "{lid}": lower case words joined by hyphens')
-        if not f.exists():
-            rep.err(where, f'lists {lid}, but {lid}.json isn\'t there')
+    if 'lessons' in t:
+        rep.err(where, '"lessons" became "path": the nodes in order, like [{"kind": "lesson", "id": "warm-water"}, {"kind": "chest", "id": "first-chest"}]')
+    path = t.get('path')
+    if not isinstance(path, list) or not path:
+        if 'lessons' not in t:
+            rep.err(where, 'no "path": the nodes in order, each {"kind": ..., "id": ...}')
+        return t
+    seen, done_before = set(), []
+    for n, node in enumerate(path):
+        w = f'{where} path[{n}]'
+        if not isinstance(node, dict):
+            rep.err(w, 'a node is {"kind": ..., "id": ...}')
             continue
-        check_lesson(load_json(f), f'{folder.name}/{lid}.json', rep, kit, folder)
-    extra = {p.stem for p in folder.glob('*.json')} - set(lessons) - {'topic'}
+        kind, nid = node.get('kind'), node.get('id')
+        w += f' ({nid})' if nid else ''
+        if kind not in NODE_KINDS:
+            rep.err(w, f'"kind" is one of {", ".join(NODE_KINDS)}')
+            continue
+        if not nid or not SLUG.match(str(nid)):
+            rep.err(w, 'needs an "id" of lower case words joined by hyphens')
+            continue
+        if nid in seen or nid == 'topic':
+            rep.err(w, 'the same id as an earlier node' if nid in seen else '"topic" is taken by topic.json')
+        seen.add(nid)
+        for k in set(node) - NODE_FIELDS:
+            rep.err(w, f'no field "{k}" on a node')
+        for k in ('title', 'unit'):
+            if k in node and (not isinstance(node[k], str) or not node[k].strip()):
+                rep.err(w, f'"{k}" is words')
+            elif isinstance(node.get(k), str) and len(node[k]) > TEXT_LIMIT['title']:
+                rep.warn(w, f'"{k}" is {len(node[k])} characters; keep it under {TEXT_LIMIT["title"]}')
+        f = folder / f'{nid}.json'
+        if kind in PLAYED:
+            if 'title' in node:
+                rep.warn(w, f'a {kind}\'s title is the one in {nid}.json; this one isn\'t shown')
+            if not f.exists():
+                rep.err(w, f'a {kind} is a file, and {nid}.json isn\'t there')
+            else:
+                check_lesson(load_json(f), f'{folder.name}/{nid}.json', rep, kit, folder, kind)
+            if kind in ('test', 'exam') and not any(k == 'lesson' for k in done_before):
+                rep.err(w, f'a {kind} draws on the lessons before it, and there are none before this one')
+        else:
+            if f.exists():
+                rep.warn(w, f'a {kind} has no file, so {nid}.json is never read')
+            if kind == 'review' and not any(k in PLAYED for k in done_before):
+                rep.err(w, 'a review goes over what came before it, and nothing played comes before this one')
+            if kind == 'chest' and not done_before:
+                rep.warn(w, 'a chest is a reward for reaching it: it\'s first on the path, so it rewards nothing')
+            if kind == 'chest' and done_before and done_before[-1] == 'chest':
+                rep.warn(w, 'two chests in a row')
+            if kind == 'animation' and 'title' not in node:
+                rep.warn(w, 'an animation wants a "title": it\'s all the path can show of it until stage 2')
+        done_before.append(kind)
+    lessons = [nd.get('id') for nd in path if isinstance(nd, dict) and nd.get('kind') == 'lesson']
+    lo, hi = LEVELS.get(t.get('level'), (1, 99))
+    if not lessons:
+        rep.err(where, 'no lessons on the path')
+    elif not lo <= len(lessons) <= hi:
+        rep.warn(where, f'{len(lessons)} lesson(s) for {t.get("level")}, which is usually {lo} to {hi}')
+    extra = {p.stem for p in folder.glob('*.json')} - seen - {'topic'}
     for x in sorted(extra):
-        rep.warn(where, f'{x}.json is in the folder but not in "lessons", so it won\'t be shown')
+        rep.warn(where, f'{x}.json is in the folder but not on the path, so it won\'t be shown')
     return t
+
+
+def played_ids(topic):
+    """The ids of a topic's nodes that are a file each (lessons, tests and exams), in path order."""
+    return [n['id'] for n in topic.get('path') or [] if isinstance(n, dict) and n.get('kind') in PLAYED and n.get('id')]
+
+
+def path_words(topic):
+    """The path in a few words, for a commit message: 2 lessons, a chest and a test."""
+    counts = {}
+    for n in topic.get('path') or []:
+        if isinstance(n, dict) and n.get('kind') in NODE_KINDS:
+            counts[n['kind']] = counts.get(n['kind'], 0) + 1
+    parts = [f'{c} {k}{"s" if c != 1 else ""}' if c != 1 or k == 'lesson' else f'a{"n" if k[0] in "aeiou" else ""} {k}' for k, c in sorted(counts.items(), key=lambda kc: NODE_KINDS.index(kc[0]))]
+    return parts[0] if len(parts) == 1 else ', '.join(parts[:-1]) + ' and ' + parts[-1]
 
 
 def resolve_target(target, data=None):
@@ -655,8 +748,11 @@ def run_check(targets, kit, data=None):
         if kind == 'topic':
             check_topic(p, rep, kit)
         else:
-            base = p.parent if (p.parent / 'topic.json').exists() else p.parent
-            check_lesson(load_json(p), p.name, rep, kit, base)
+            node_kind = 'lesson'
+            if (p.parent / 'topic.json').exists():
+                topic = load_json(p.parent / 'topic.json')
+                node_kind = next((n.get('kind') for n in topic.get('path') or [] if isinstance(n, dict) and n.get('id') == p.stem), 'lesson')
+            check_lesson(load_json(p), p.name, rep, kit, p.parent, node_kind)
     return rep
 
 
@@ -730,7 +826,7 @@ def fit_steps(lesson_file, topic_dir, a, app):
 def cmd_fit(a):
     app = app_dir(a.app)
     kind, p = resolve_target(a.target, pathlib.Path(a.data) if a.data else None)
-    lessons = [(p / f'{lid}.json', p) for lid in load_json(p / 'topic.json')['lessons']] if kind == 'topic' else [(p, p.parent)]
+    lessons = [(p / f'{lid}.json', p) for lid in played_ids(load_json(p / 'topic.json'))] if kind == 'topic' else [(p, p.parent)]
     out, worst = {}, 0
     for f, topic_dir in lessons:
         res = fit_steps(f, topic_dir, a, app)
@@ -789,7 +885,8 @@ def write_index(data):
     ids = [f.parent.name for f in folders]
     for tid in sorted(ids, key=lambda x: (order.index(x) if x in order else len(order), x)):
         t = load_json(data / 'topics' / tid / 'topic.json')
-        topics.append({'id': tid, 'title': t.get('title'), 'level': t.get('level'), 'lessons': len(t.get('lessons', []))})
+        lessons = sum(1 for n in t.get('path') or [] if isinstance(n, dict) and n.get('kind') == 'lesson') if 'path' in t else len(t.get('lessons', []))
+        topics.append({'id': tid, 'title': t.get('title'), 'level': t.get('level'), 'lessons': lessons})
     if topics != old.get('topics'):  # an index that hasn't changed isn't touched, so sending again sends nothing
         save_json(data / 'index.json', {'v': 1, 'updated': now(), 'topics': topics})
 
@@ -829,16 +926,17 @@ def cmd_send(a):
         print('  warning: couldn\'t update the clone from GitHub first; sending what\'s here.')
     tid = src.name
     dest = data / 'topics' / tid
+    played = played_ids(topic)
     if dest.resolve() != src.resolve():
-        keep = {'topic.json', *(f'{lid}.json' for lid in topic['lessons'])}
+        keep = {'topic.json', *(f'{lid}.json' for lid in played)}
         dest.mkdir(parents=True, exist_ok=True)
         for old in dest.glob('*.json'):
             if old.name not in keep:
-                old.unlink()  # a lesson taken out of the topic goes from the repo too
+                old.unlink()  # a lesson taken off the path goes from the repo too
         for name in keep:
             shutil.copyfile(src / name, dest / name)
         used = set()
-        for lid in topic['lessons']:
+        for lid in played:
             text = (src / f'{lid}.json').read_text(encoding='utf-8')
             used |= set(re.findall(r'"(media/[^"]+)"', text))
         for rel in sorted(used):
@@ -849,7 +947,7 @@ def cmd_send(a):
         if weight:
             print(f'  media: {weight / 1024:.0f} KB')
     write_index(data)
-    message = a.message or f'Topic: {topic["title"]} ({len(topic["lessons"])} lesson{"s" if len(topic["lessons"]) != 1 else ""})'
+    message = a.message or f'Topic: {topic["title"]} ({path_words(topic)})'
     publish(data, message, [dest, data / 'index.json'], push=not a.no_push)
 
 
@@ -901,9 +999,14 @@ def cmd_progress(a):
         print(f'Nothing new{" since " + since if since else ""}.')
     else:
         print(f'{len(events)} event(s){" since " + since if since else ""}:')
-        by_lesson = {}
+        by_lesson, opened = {}, {}
         for e in events:
+            if e.get('type') == 'open':  # a chest opened, or a review or animation visited: no steps
+                opened.setdefault((e.get('topic'), e.get('node'), e.get('kind')), []).append(e)
+                continue
             by_lesson.setdefault((e.get('topic'), e.get('lesson')), []).append(e)
+        for (topic, node, kind), evs in opened.items():
+            print(f'\n{topic} › {node} ({kind}): opened {len(evs)} time(s), first at {evs[0].get("at", "?")}')
         for (topic, lesson), evs in by_lesson.items():
             title = lesson
             lf = data / 'topics' / str(topic) / f'{lesson}.json'

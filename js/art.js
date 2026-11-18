@@ -86,23 +86,50 @@ export function roundedPoly(pts, rad) {
   return d + 'Z';
 }
 
-// ---------------------------------------------------------------- the marks for each kind of step
+// ---------------------------------------------------------------- the marks for each kind of node and step
 
 const flask = (ink, cap) => `<g transform="translate(-16.1 -17) scale(1.15)"><path d="M11.5 5v6.8L5.3 21.6a2 2 0 0 0 1.7 3.1h14a2 2 0 0 0 1.7-3.1L16.5 11.8V5z" fill="${ink}" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/><rect x="9.3" y="2.8" width="9.4" height="3.4" rx="1.7" fill="${ink}"/><circle cx="11.6" cy="19.8" r="1.9" fill="${cap}"/><circle cx="16.6" cy="21" r="1.3" fill="${cap}"/><circle cx="14.6" cy="16" r="1.1" fill="${cap}"/></g>`;
 
+// Two arrows chasing each other round a circle: go over it again (a Review node).
+function arrows(ink) {
+  const R = 10.5, pt = a => [Math.cos(a) * R, Math.sin(a) * R];
+  let s = '';
+  for (const a0 of [Math.PI * 0.95, -Math.PI * 0.05]) {
+    const a1 = a0 + Math.PI * 0.72;
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    // the arrowhead at the end of the arc, pointing along it (clockwise on screen)
+    const tx = -Math.sin(a1), ty = Math.cos(a1), nx = Math.cos(a1), ny = Math.sin(a1);
+    const tip = [x1 + tx * 6.4, y1 + ty * 6.4], l = [x1 + nx * 5.4, y1 + ny * 5.4], r = [x1 - nx * 5.4, y1 - ny * 5.4];
+    s += `<path d="M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}" fill="none" stroke="${ink}" stroke-width="4.2" stroke-linecap="round"/>
+      <path d="M${l[0].toFixed(2)} ${l[1].toFixed(2)}L${tip[0].toFixed(2)} ${tip[1].toFixed(2)}L${r[0].toFixed(2)} ${r[1].toFixed(2)}z" fill="${ink}" stroke="${ink}" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+  return `<g transform="translate(0 0.5)">${s}</g>`;
+}
+
+const book = (ink, cap) => `<path d="M0 -8.6C-3.6 -11.3 -8 -12.1 -13 -11.7a1.3 1.3 0 0 0-1.2 1.3V8.3a1.3 1.3 0 0 0 1.4 1.3c4.6-.3 8.6.5 12.8 3.2 4.2-2.7 8.2-3.5 12.8-3.2a1.3 1.3 0 0 0 1.4-1.3V-10.4a1.3 1.3 0 0 0-1.2-1.3C8 -12.1 3.6 -11.3 0 -8.6z" fill="${ink}"/><path d="M0 -6.6v17" stroke="${cap}" stroke-width="2.4" stroke-linecap="round"/>`;
+const playSound = ink => `<path d="M-12.5 -9v18l13.5-9z" fill="${ink}" stroke="${ink}" stroke-width="3.6" stroke-linejoin="round"/><path d="M7 -6a8.5 8.5 0 0 1 0 12M11.6 -10.6a15 15 0 0 1 0 21.2" fill="none" stroke="${ink}" stroke-width="3.3" stroke-linecap="round"/>`;
+
 export const MARK = {
-  // an open book: read something (an Explain step)
-  explain: (ink, cap) => `<path d="M0 -8.6C-3.6 -11.3 -8 -12.1 -13 -11.7a1.3 1.3 0 0 0-1.2 1.3V8.3a1.3 1.3 0 0 0 1.4 1.3c4.6-.3 8.6.5 12.8 3.2 4.2-2.7 8.2-3.5 12.8-3.2a1.3 1.3 0 0 0 1.4-1.3V-10.4a1.3 1.3 0 0 0-1.2-1.3C8 -12.1 3.6 -11.3 0 -8.6z" fill="${ink}"/><path d="M0 -6.6v17" stroke="${cap}" stroke-width="2.4" stroke-linecap="round"/>`,
-  // play with sound coming off it: a narrated scene (stage 2)
-  scene: ink => `<path d="M-12.5 -9v18l13.5-9z" fill="${ink}" stroke="${ink}" stroke-width="3.6" stroke-linejoin="round"/><path d="M7 -6a8.5 8.5 0 0 1 0 12M11.6 -10.6a15 15 0 0 1 0 21.2" fill="none" stroke="${ink}" stroke-width="3.3" stroke-linecap="round"/>`,
+  // an open book: a lesson on the path, or something to read (an Explain step)
+  lesson: book,
+  explain: book,
+  // play with sound coming off it: an animation on its own (narrated scenes come with stage 2)
+  animation: playSound,
+  scene: playSound,
   // a flask: something to play with (a Play step)
   play: flask,
   // a question: a quick check
   check: ink => `<path d="M-7.2 -5.8a7.4 7.4 0 1 1 11.6 6.1c-2.6 1.8-4.2 3-4.2 6" fill="none" stroke="${ink}" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="0.2" cy="12.6" r="2.9" fill="${ink}"/>`,
-  // a star: a unit's test (later)
+  // a star: a test, drawing on the lessons before it
   test: ink => star(0, 0.5, 14, ink),
+  // a cup: the exam
+  exam: (ink, cap) => `<g transform="translate(-13 -14.5)"><path d="M5.5 4H1.8q.3 6.2 5.6 7.4M20.5 4h3.7q-.3 6.2-5.6 7.4" fill="none" stroke="${ink}" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M5 1h16v9.5a8 8 0 0 1-16 0z" fill="${ink}" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round"/><rect x="10.8" y="17" width="4.4" height="6" fill="${ink}"/><rect x="5.5" y="22.5" width="15" height="5.5" rx="2.2" fill="${ink}"/>${star(13, 9, 4.2, cap)}</g>`,
+  // two arrows round: a review of everything before it
+  review: arrows,
   none: () => '',
 };
+export const HEX_KINDS = new Set(['test', 'exam']);
 
 const STATE = {
   done: { top: '#ffc83d', hi: '#ffe9a6', side: '#d99a0b', deep: '#a36a00', ink: '#7a4d00', emboss: '#ffe9a6' },
@@ -113,10 +140,11 @@ const STATE = {
 const hexPts = r => Array.from({ length: 6 }, (_, i) => { const a = Math.PI / 6 + (i * Math.PI) / 3; return [Math.cos(a) * r, Math.sin(a) * r]; });
 
 // A raised button on the path, drawn around 0,0 (the middle of its top face).
-// kind: explain | check | play | scene | test.  state: done | now | todo.  progress: 0..1 draws the ring.
-export function stepButton({ kind = 'explain', state = 'todo', r = 30, depth = 8, progress = null }) {
+// kind: lesson | test | exam | review | animation (or a step's kind).  state: done | now | todo.
+// progress: 0..1 draws the ring. Tests and exams are hexagons, and an exam is a size up.
+export function stepButton({ kind = 'lesson', state = 'todo', r = kind === 'exam' ? 34 : 30, depth = 8, progress = null }) {
   const C = STATE[state];
-  const hex = kind === 'test';
+  const hex = HEX_KINDS.has(kind);
   const S = (dy = 0, grow = 0, dx = 0) => hex
     ? `<path d="${roundedPoly(hexPts(r + 3 + grow), 9)}" transform="translate(${dx} ${dy})"/>`
     : `<circle cx="${dx}" cy="${dy}" r="${r + grow}"/>`;
@@ -139,6 +167,41 @@ export function stepButton({ kind = 'explain', state = 'todo', r = 30, depth = 8
   const symbol = (C.emboss ? `<g transform="translate(0 1.6)" opacity="0.75">${mark(C.emboss, C.emboss)}</g>` : '') + mark(C.ink, C.top);
   s += `<g class="cap">${top}${shine}${symbol}</g>`;
   return s;
+}
+
+// ---------------------------------------------------------------- a treasure chest (stage0/screens/js/art.js)
+
+// 60 x 52 with the floor at y=50. Open, it's been emptied: the lid tipped back, dark inside.
+export function chest(open = false) {
+  const wood = ['#b9703d', '#8a4a26', '#d99258'], gold = ['#ffc83d', '#c98a00', '#ffe9a6'];
+  const strap = (x, y, h) => `<rect x="${x}" y="${y}" width="7" height="${h}" fill="${gold[0]}"/><rect x="${x}" y="${y}" width="2.2" height="${h}" fill="${gold[2]}"/><rect x="${x + 5}" y="${y}" width="2" height="${h}" fill="${gold[1]}"/>`;
+  const box = form('<rect x="5" y="25" width="50" height="23" rx="4"/>', wood[0],
+    `<rect x="5" y="40" width="50" height="8" fill="${wood[1]}"/><rect x="47" y="25" width="8" height="23" fill="${wood[1]}" opacity="0.55"/>
+     <path d="M5 33h50" stroke="${wood[1]}" stroke-width="1.4" opacity="0.7"/><rect x="5" y="25" width="50" height="3" fill="${wood[2]}" opacity="0.7"/>
+     ${strap(12, 25, 23)}${strap(41, 25, 23)}`);
+  const lidShape = '<path d="M4 27v-8a13 13 0 0 1 13-13h26a13 13 0 0 1 13 13v8z"/>';
+  const lid = form(lidShape, wood[0],
+    `<path d="M4 27v-8a13 13 0 0 1 13-13h10v3H18a10 10 0 0 0-10 10v8z" fill="${wood[2]}" opacity="0.85"/>
+     <path d="M48 8a13 13 0 0 1 8 11v8h-8z" fill="${wood[1]}" opacity="0.6"/><path d="M4 16h52" stroke="${wood[1]}" stroke-width="1.4" opacity="0.6"/>
+     ${strap(12, 4, 24)}${strap(41, 4, 24)}`)
+    + `<rect x="2" y="22.5" width="56" height="6" rx="3" fill="${gold[1]}"/><rect x="2" y="22.5" width="56" height="4" rx="2" fill="${gold[0]}"/><rect x="5" y="23.3" width="22" height="1.5" rx="0.75" fill="${gold[2]}"/>`;
+  const clasp = `<rect x="25" y="24" width="10" height="12" rx="3" fill="${gold[1]}"/><rect x="25" y="24" width="10" height="10.5" rx="3" fill="${gold[0]}"/><rect x="26.2" y="25" width="2.2" height="8" rx="1.1" fill="${gold[2]}"/><circle cx="30" cy="29" r="1.9" fill="#7a4d00"/><rect x="29.2" y="29" width="1.6" height="3.6" rx="0.8" fill="#7a4d00"/>`;
+  if (!open) return `${floorShadow(30, 49, 29, 4.5)}<g class="box">${box}</g><g class="lid">${lid}${clasp}</g>`;
+  return `${floorShadow(30, 49, 29, 4.5)}
+    <g class="lid"><g transform="translate(0 -15) rotate(-24 30 27)" opacity="0.96">${lid}</g></g>
+    <path d="M6 27h48l-3 -7H9z" fill="#3b1d10"/><path d="M6 27h48l-1.2 -2.8H7.2z" fill="#2a1309"/>
+    <g class="box">${box}</g><rect x="3" y="24" width="54" height="4.5" rx="2.2" fill="${gold[1]}"/><rect x="3" y="24" width="54" height="2.8" rx="1.4" fill="${gold[0]}"/>`;
+}
+
+// A chest as a node on the path, drawn around 0,0 like a button: dim while it's still ahead, shining when
+// it's the next thing to reach, and open once opened.
+export function chestNode({ state = 'todo' } = {}) {
+  const s = 1.25;
+  const body = `<g transform="translate(${-30 * s} ${36 - 50 * s}) scale(${s})">${chest(state === 'done')}</g>`;
+  if (state === 'todo') return `<g class="cap" opacity="0.5">${body}</g>`;
+  if (state === 'done') return `<g class="cap">${body}</g>`;
+  return `<circle cy="10" r="46" fill="#ffc83d" opacity="0.07"/><circle cy="10" r="36" fill="#ffc83d" opacity="0.07"/>
+    <g class="cap">${body}</g><g class="glints">${glint(30, -18, 6, '#ffe9a6')}${glint(-33, -8, 4, '#fff')}${glint(36, 22, 3.4, '#fff', 0.8)}</g>`;
 }
 
 // ---------------------------------------------------------------- topic medallions

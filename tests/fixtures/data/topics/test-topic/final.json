@@ -1,0 +1,171 @@
+{
+ "v": 1,
+ "title": "The final exam",
+ "version": 1,
+ "minutes": 3,
+ "steps": [
+  {
+   "id": "e-1",
+   "kind": "check",
+   "title": "Exam question 1",
+   "ask": "Made-up exam question 1: which is right?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "e-2",
+   "kind": "check",
+   "title": "Exam question 2",
+   "ask": "Made-up exam question 2: which is right?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "e-3",
+   "kind": "check",
+   "title": "Exam question 3",
+   "ask": "Made-up exam question 3: which is right?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "e-4",
+   "kind": "check",
+   "title": "Exam question 4",
+   "ask": "Made-up exam question 4: which is right?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  },
+  {
+   "id": "e-5",
+   "kind": "check",
+   "title": "Exam question 5",
+   "ask": "Made-up exam question 5: which is right?",
+   "input": {
+    "form": "choice",
+    "options": [
+     {
+      "id": "a",
+      "text": "The right one",
+      "right": true
+     },
+     {
+      "id": "b",
+      "text": "A wrong one",
+      "why": "Not a wrong one.",
+      "tempting": "It sounds right."
+     },
+     {
+      "id": "c",
+      "text": "Another one",
+      "why": "Not another one.",
+      "tempting": "It's next to the right one."
+     }
+    ]
+   },
+   "src": [
+    "made-up"
+   ]
+  }
+ ],
+ "sources": [
+  {
+   "id": "made-up",
+   "by": "Nobody",
+   "title": "Made-up test data",
+   "checked": "never"
+  }
+ ]
+}

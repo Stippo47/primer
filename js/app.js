@@ -14,8 +14,9 @@ import { learnScreen } from './screens/learn.js';
 import { practiceScreen, partScreen } from './screens/practice.js';
 import { homeScreen, shopScreen } from './screens/home.js';
 import { profileScreen, connectScreen } from './screens/profile.js';
+import { visitNode } from './screens/node.js';
 
-const VERSION = '0.1.0'; // keep in step with sw.js
+const VERSION = '0.2.0'; // keep in step with sw.js
 const root = document.getElementById('app');
 const view = document.getElementById('view');
 const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
@@ -47,7 +48,8 @@ let updateReady = false;
 const app = {
   VERSION, root, view, store, sync,
   topics: [],
-  prefs: { voice: true, effects: true, music: false, text: 'm', topic: null, tab: 'learn' },
+  // Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen).
+  prefs: { v: 2, voice: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn' },
   tab: 'learn',
   partNow: null,
   mustInstall: isIOS && !isInstalled,
@@ -86,6 +88,13 @@ const app = {
     return run;
   },
 
+  // A node on the path: a lesson, test or exam plays from `start`; a chest, review or animation opens.
+  openNode(topic, node, start = 0) {
+    if (run) return null;
+    if (data.PLAYED.has(node.kind)) return node.file ? app.openLesson(topic, node.file, start) : null;
+    return visitNode(app, topic, node, { record, onLeave: () => app.go('learn') });
+  },
+
   async openPart(name) {
     await partScreen(app, name, () => app.go('practice'));
   },
@@ -106,6 +115,7 @@ function record(event) {
   if (event.type === 'seen') data.noteStep(event.topic, event.lesson, event.step, { seen: true });
   if (event.type === 'attempt') data.noteStep(event.topic, event.lesson, event.step, { right: event.right, close: event.close, seen: false });
   if (event.type === 'finish') data.noteLesson(event.topic, event.lesson, 'finish');
+  if (event.type === 'open') data.noteNode(event.topic, event.node, event.kind);
 }
 
 // ---------- the tab bar
@@ -167,7 +177,11 @@ async function start() {
   addEventListener('pagehide', onHide);
   await store.recover();
   const saved = await store.get('prefs').catch(() => null);
-  if (saved) Object.assign(app.prefs, saved);
+  if (saved) {
+    // Prefs saved before 0.2 always held `effects`, chosen or not, so there's no telling whether it was
+    // chosen: it starts off again. From 0.2 on, Effects is only on if the switch was turned on.
+    Object.assign(app.prefs, saved.v === 2 ? saved : { ...saved, v: 2, effects: false });
+  }
   app.setPref('text', app.prefs.text || 'm');
   await data.loadProgress();
   await reloadLibrary();
