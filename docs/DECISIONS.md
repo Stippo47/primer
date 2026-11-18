@@ -155,3 +155,9 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 ### Profs (answered the same day)
 
 - **Voices only.** Each subject has its own narrator voice from the four kept; no teacher characters for now. Any subject's voice can be overridden in settings.
+
+## 2026-11-17: the third round
+
+- **The room is settled for now:** drawn smaller, seen a little from above, furniture as redrawn, the bookcase display, and locked shop things as dark imprints. All marked good.
+- **Rooms join by panning.** You drag straight through from one room to the next; no door needs tapping.
+- **The avatar: shapes first.** Two of the six were liked but not enough (my reading: the raccoon and the frog, the two my notes named). Next is a board of about ten base shapes as stills: no animation, no clothes. Clothes and accessories come after a base is chosen.
