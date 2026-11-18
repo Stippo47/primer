@@ -53,16 +53,16 @@ Each node has a `kind` and an `id` (unique in the topic, and not `topic`). It ma
 
 | kind | What it is | Its file | Its mark on the path |
 |---|---|---|---|
-| `lesson` | Steps that teach: explain, check and play | `<id>.json`, a lesson (below) | an open book, on a round button |
-| `test` | Questions drawing on the lessons before it. At least 3; no explain steps | `<id>.json`, the same shape as a lesson | a star, on a hexagon |
+| `lesson` | Steps that teach: explain, check and play. It declares its facts | `<id>.json`, a lesson (below) | an open book, on a round button |
+| `test` | Questions drawing on the lessons before it: listed as steps, or drawn from their facts (`draw`), or both. At least 3; no explain steps | `<id>.json`, the same shape as a lesson | a star, on a hexagon |
 | `exam` | A bigger test, at the end of a topic or a unit. At least 5 questions | `<id>.json`, the same shape | a cup, on a larger hexagon |
 | `chest` | A reward for reaching it. Opening it is a small celebration and is recorded; what's inside comes with the shop (stage 4) | none | the chest itself, closed, then open |
-| `review` | A review of everything before it on the path. A placeholder until review is built (stage 2): it says so, and visiting it lets the path go on | none | two arrows round |
+| `review` | A review of the facts of the lessons before it on the path (at most 12, the least well remembered first), each asked once and a miss once more; then it's done. If those lessons declare no facts, it says there's nothing to go over, and visiting it lets the path go on | none | two arrows round |
 | `animation` | A narrated animation on its own: a scene (below). Without its file it's a placeholder that says it comes later; give that one a `title` | `<id>.json`, a scene file | a play mark with sound |
 
-A lesson's, test's, exam's or animation's title is the `title` in its file; a chest, review or placeholder shows the node's `title` (or "A chest", "Review", "Animation"). A node is done once a lesson, test, exam or animation has been played to its end, or a chest opened, or a review or placeholder visited; the next node not done is the one to do, and the ones after it can't be started yet. A lesson's own steps show inside it, on its thin bar, never on the path.
+A lesson's, test's, exam's or animation's title is the `title` in its file; a chest, review or placeholder shows the node's `title` (or "A chest", "Review", "Animation"). A node is done once a lesson, test, exam or animation has been played to its end, a chest opened, a review gone through to its end (or visited, when it has nothing to go over), or a placeholder visited; the next node not done is the one to do, and the ones after it can't be started yet. A lesson's own steps show inside it, on its thin bar, never on the path.
 
-`primer check` refuses a test or exam with no lesson before it, a review with nothing played before it, unknown kinds or fields, repeated ids, and a missing file; it warns about a chest at the very start, two chests in a row, an animation without its scene file, and a test or exam with too few questions or with explain steps.
+`primer check` refuses a test or exam with no lesson before it, a review with nothing played before it, a test that draws from facts when no lesson before it declares any, unknown kinds or fields, repeated ids, and a missing file; it warns about a chest at the very start, two chests in a row, an animation without its scene file, a review whose lessons before it declare no facts, and a test or exam with too few questions or with explain steps.
 
 A topic written before the path existed has `"lessons": ["a", "b"]` instead; the app still reads it (each lesson becomes a lesson node), but `primer check` asks for `path`.
 
@@ -75,16 +75,19 @@ A topic written before the path existed has `"lessons": ["a", "b"]` instead; the
   "version": 1,
   "minutes": 4,
   "steps": [ ],
+  "facts": [ ],
+  "families": [ ],
   "sources": [ { "id": "jetstream", "by": "NOAA", "title": "JetStream: Introduction to Tropical Cyclones",
                  "url": "https://…", "checked": "2026-11-17", "says": "What it says that the lesson leans on." } ]
 }
 ```
 
-A test or an exam is a file of exactly this shape, played the same way; its end says "Test done" or "Exam done".
+A test or an exam is a file of exactly this shape, played the same way; its end says "Test done" or "Exam done". It has no facts of its own; instead of listing its questions, or as well, it can draw them from the facts of the lessons before it (`draw`, under Facts below).
 
 - **version:** raise it when the steps change in meaning. Progress carries it, so old answers can be told apart.
 - **sources:** every lesson has at least one. `checked` says when it was read, or `recalled` if it wasn't re-read; `says` is what the lesson takes from it. Steps cite them by id in `src`.
-- **steps:** 3 to 15, each one screen. Every step has a unique `id`, a `kind` and a short `title` (`primer progress` names the step by it).
+- **steps:** 3 to 15, each one screen. Every step has a unique `id`, a `kind` and a short `title` (`primer progress` names the step by it). An explain, check or play step can say which **fact** it teaches, `"fact": "warm-enough"` (or a list): a check or play step that does counts as a review of it, and review links back to the first step naming a fact when it's missed.
+- **facts** and **families:** what the lesson says is worth knowing afterward, each with its ways of asking it. See Facts, below.
 
 ### Step kinds
 
@@ -148,6 +151,67 @@ Words: `*like this*` stresses a word (drawn gold). A line break stays a line bre
 - **goal** reads the part's state (its description lists what it has). **closeGoal**, optional, counts as close.
 - The Check button wakes once the value the goal reads first exists (a tap has landed), or when the step's own `ready` rule holds.
 - **tries** are required: plausible inputs, as the part's state, and what each should be marked (`right`, `close` or `wrong`). At least one must be a realistic wrong one. `primer check` runs every try through the goal and refuses the lesson if any comes out otherwise, or if no try is wrong.
+
+## Facts
+
+A **fact** is one thing worth knowing after the lesson: "a hurricane needs the sea's surface at about *27 °C* or warmer". A lesson declares its facts, and each has **two or more ways of asking it** (its *asks*), so it's learned, not one question remembered. Facts are what review asks, what a test can draw from, and what Profile's figures and the room's fading are reckoned from: every answer to a fact, in a lesson, a test or review, updates the app's memory of it.
+
+```json
+"facts": [
+  { "id": "warm-enough", "text": "A hurricane needs the sea's surface at about *27 °C* or warmer.", "src": ["jetstream", "noaa-edu"],
+    "asks": [
+      { "id": "dial", "kind": "check", "ask": "Turn the dial: how warm must the sea's surface be, at least, for a hurricane?",
+        "input": { "form": "dial", "min": 0, "max": 40, "unit": "°C", "start": 10, "picture": "warmth" },
+        "answer": 27, "within": 1, "close": 3, "right": "About *27 °C*.", "misses": [ … ],
+        "tries": [ { "state": { "value": 20, "answered": true }, "marked": "wrong" }, { "state": { "value": 27, "answered": true }, "marked": "right" } ] },
+      { "id": "pick", "kind": "check", "ask": "Which of these seas could start a hurricane?", "input": { "form": "choice", "options": [ … ] } }
+    ] }
+]
+```
+
+- **id:** lower case words joined by hyphens, unique in the **topic** (a step anywhere in the topic can name it, and progress refers to it), and never changed once sent.
+- **text:** the fact, in a sentence, `*stress*` allowed. Review's summary lists the facts missed by it.
+- **src:** the lesson's sources it comes from, as a step's `src`. Required: every fact is sourced.
+- **asks:** two or more. **An ask is a check or a play step**, written exactly as one (any answer form or part: a choice, a slider, a dial, a pile, a string, a sort, a snap, a tap on the map), with its marking, `right`, its line of why, `figure` and `then`, and an `id` unique in the fact. It needs no `title` (the fact's text stands in) and takes the fact's `src` unless it gives its own. Every ask but a choice needs `tries` with a plausible wrong one, as a play step does (a choice's wrong options, with their `tempting`, are its tries). Write each to stand alone: it's asked days later, in review, among other topics. A figure can bring the picture it was taught with: the globe turned to the right ocean.
+- **Which steps teach it:** a step's `fact` (above). Its first step naming the fact is where review's link goes back to; a check or play step naming it also counts as an answer to it.
+
+`primer check` refuses a fact without `src` or with fewer than two asks, an ask that isn't a check or play step, an ask (other than a choice) without tries or without a wrong one, two asks that ask the same way, a step naming a fact no lesson of the topic declares, and a fact id declared twice in a topic. It also refuses **an ask that gives itself away**: a question that says the right option (and not the others), says the number it asks for (in its words or a figure's label), lists an order's items in their right order, or a part showing a point, marker or highlight right where its goal is. It warns about a fact no step names, and one whose asks are all the same form.
+
+### Fact families
+
+For many facts of one shape (every country's capital, each ocean's name for its storms), write a **table and a few question shapes**, and the app and the checker make the facts:
+
+```json
+"families": [
+  { "id": "capital", "about": "Countries and their capitals",
+    "rows": [ { "id": "france", "country": "France", "capital": "Paris", "region": "europe", "lon": 2.5, "lat": 46.5 }, … ],
+    "fact": { "text": "The capital of {country} is *{capital}*.", "src": ["cia-factbook"] },
+    "asks": [
+      { "id": "name", "kind": "check", "ask": "What is the capital of {country}?",
+        "input": { "form": "choice", "options": { "from": "capital", "count": 3, "near": "region",
+          "why": "{other.capital} is the capital of {other.country}.", "tempting": "Another capital nearby." } },
+        "right": "Yes: *{capital}*." },
+      { "id": "tap", "kind": "play", "ask": "Tap the country whose capital is {capital}.",
+        "play": { "part": "globe", "settings": { "tap": "country", "view": ["{lon}", "{lat}"] } },
+        "goal": { "read": "selected", "is": "{country}" }, "tries": [ … ] }
+    ] }
+]
+```
+
+- Each **row** (with an `id`) becomes a fact, `<family>-<row>` (`capital-france`), and each ask shape one of its asks.
+- **`{field}`** in any string is the row's value; a string that is only `"{field}"` takes the value as it is, so `"view": ["{lon}", "{lat}"]` is a pair of numbers.
+- **A choice's options from the table:** `options` as `{ "from": field, "count", "near", "unlike", "why", "tempting" }` makes the row's value the right option and `count` - 1 others wrong, from rows with a different value in that field. `near` puts rows sharing that field's value first (neighbours make better mistakes); `unlike` leaves out rows sharing that field with this one (so no wrong option is secretly right: two oceans whose storms are both hurricanes). Which rows is fixed by the fact's id, so the options are the same every time and on the checker. `why` and `tempting` are filled with this row and `{other.field}` for the wrong option's row.
+- A family's facts are checked like any other, so every ask shape needs what an ask needs (tries can use `{field}`s too). `primer facts <topic>` lists every fact made.
+
+### Tests drawn from facts
+
+A test or exam can draw its questions instead of listing them: `"draw": { "from": "unit", "count": 8 }` (`from`: `unit`, the lessons before it in its own unit, or `topic`, all the lessons before it). Each time it's played it takes `count` of those facts, the least well remembered first, and asks each **in a way its lessons didn't use** (an ask whose form, or part, no step teaching it used), where it has one. Listed steps, if any, come first. Its answers count as answers to the facts. `primer check` warns about a fact that can only be asked the way its lesson asked it.
+
+### What the app does with them
+
+- **The memory.** Every fact met has a card in FSRS, the open spaced-repetition scheduler (`vendor/ts-fsrs.mjs`, default weights, intervals in whole days): right is Good, close Hard, wrong Again. A lesson's finish introduces every fact it declares (met, not yet asked). From the cards come each fact's chance of being remembered now and when it's due.
+- **Review** (Practice) asks the facts due, the most slipped first, every topic mixed, each a way it wasn't asked last time; then the ones closest to slipping. A miss comes back three questions later. A review on a path asks the facts of the lessons before it.
+- **Profile** shows how much of what's been asked in a topic you'd recall now (the mean recall of its asked facts), a dot per fact, and how many are due; the room will fade a topic's things by the same number.
 
 ## A scene
 
@@ -232,14 +296,18 @@ Every event has `v`, `eid` (unique), `at`, `type` and `topic`. Events from playi
 |---|---|---|
 | `start` | `step` | A run of the lesson began, at this step |
 | `seen` | `step` | An Explain step was read and left with Continue |
-| `attempt` | `step`, `kind`, `form`, `value`, `right`, `close`, `why`, and `line` for a scene | A Check or Play step was answered, or a scene's wait. `value` is what was given: on a check, the Inputs part's value; on a play or a wait, the part's whole state. `why` is the line they were shown. A wait's `kind` is `scene`, and `line` is the line that waited |
+| `attempt` | `step`, `kind`, `form`, `value`, `right`, `close`, `why`, and `line` for a scene; `fact` and `ask` when about a fact | A Check or Play step was answered, or a scene's wait. `value` is what was given: on a check, the Inputs part's value; on a play or a wait, the part's whole state. `why` is the line they were shown. A wait's `kind` is `scene`, and `line` is the line that waited. A step that names its fact carries `fact`; a question drawn from a fact (in a test) carries `fact` and `ask`, its `step` being `<fact>.<ask>` |
+| `attempt` in review | `review` (the run's id), `fact`, `ask`, `lesson` and `version` (the fact's lesson), `kind`, `form`, `value`, `right`, `close`, `why`; no `step` | A fact answered in a review run |
+| `review` | `run`, `right`, `of`, `combo` (the run's best), and for a review on a path `node` and `done` | A review run ended (the cross, after its summary, or a review on a path gone through). `topic` is the topic reviewed, or null for every topic mixed |
 | `finish` | `right`, `of` | The lesson's end was reached, with that many right of the questions in it (scenes aren't questions) |
 | `leave` | `step` | They closed the lesson at this step, before its end |
-| `open` | `node`, `kind` | A chest was opened, or a review or animation placeholder visited (no `lesson` or `version`) |
+| `open` | `node`, `kind` | A chest was opened, or a placeholder (a review with nothing to go over, an animation without its scene) visited (no `lesson` or `version`) |
 
 An animation is played as a lesson of one step: its events carry `lesson` (the node's id) and `step` (the same id), and it sends `start`, `seen` when its scene was played to the end, any waits' `attempt`s, and `finish`, or `leave`. A scene step in a lesson is `seen` like an explain step.
 
-**Reading progress:** go through events by `at`. Drop any repeated `eid`: if the app closes mid-send, a batch can go out twice. Being wrong in a lesson costs nothing; read wrong answers for what they say about what was misunderstood.
+**Reading progress:** go through events by `at`. Drop any repeated `eid`: if the app closes mid-send, a batch can go out twice. Being wrong in a lesson costs nothing; read wrong answers for what they say about what was misunderstood. `primer progress` also replays every event through the app's own memory model (`skill/memory.mjs` runs `js/memory.js`) and says which facts are strong and which weak.
+
+**Everything comes back from these files.** The path's progress and the memory are only ever worked out from events, so a phone that connects with nothing kept (a new phone, or one cleared) reads every progress file once, adds whatever is still waiting to send, and replays it all in time order: it ends up as the old phone was. An answer recorded before its step named a fact counts for that fact if the lesson's `version` is the one it was answered in.
 
 ## read.json
 

@@ -1,0 +1,8 @@
+{
+ "v": 1,
+ "updated": "2026-01-01T00:00:00.000Z",
+ "topics": [
+  { "id": "storms", "title": "Made-up storms", "level": "tour", "lessons": 2 },
+  { "id": "capitals", "title": "Made-up capitals", "level": "glance", "lessons": 1 }
+ ]
+}

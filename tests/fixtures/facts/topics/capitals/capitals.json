@@ -1,0 +1,36 @@
+{
+ "v": 1,
+ "title": "Four capitals",
+ "version": 1,
+ "minutes": 2,
+ "steps": [
+  { "id": "read", "kind": "explain", "title": "Capitals", "text": "Paris, Lima, Tokyo and Nairobi are capitals.", "fact": ["capital-france", "capital-peru", "capital-japan", "capital-kenya"], "src": ["made-up"] },
+  { "id": "peru", "kind": "check", "title": "Peru", "fact": "capital-peru", "ask": "What is the capital of Peru?",
+   "input": { "form": "choice", "options": [
+    { "id": "lima", "text": "Lima", "right": true },
+    { "id": "quito", "text": "Quito", "why": "Quito is Ecuador's. Peru's is *Lima*.", "tempting": "It's next door." }
+   ] }, "right": "Yes: *Lima*.", "src": ["made-up"] },
+  { "id": "end", "kind": "explain", "title": "Done", "text": "Four capitals.", "src": ["made-up"] }
+ ],
+ "families": [
+  { "id": "capital", "about": "Countries and their capitals",
+   "rows": [
+    { "id": "france", "country": "France", "capital": "Paris", "region": "europe", "lon": 2.5, "lat": 46.5, "near": "Spain", "nlon": -3.5, "nlat": 40 },
+    { "id": "peru", "country": "Peru", "capital": "Lima", "region": "america", "lon": -75, "lat": -10, "near": "Bolivia", "nlon": -64, "nlat": -17 },
+    { "id": "japan", "country": "Japan", "capital": "Tokyo", "region": "asia", "lon": 138.5, "lat": 36.5, "near": "South Korea", "nlon": 128, "nlat": 36.5 },
+    { "id": "kenya", "country": "Kenya", "capital": "Nairobi", "region": "africa", "lon": 38, "lat": 0.5, "near": "Ethiopia", "nlon": 39.5, "nlat": 8.5 }
+   ],
+   "fact": { "text": "The capital of {country} is *{capital}*.", "src": ["made-up"] },
+   "asks": [
+    { "id": "capital", "kind": "check", "ask": "What is the capital of {country}?",
+     "input": { "form": "choice", "options": { "from": "capital", "count": 3, "near": "region", "why": "{other.capital} is the capital of {other.country}.", "tempting": "Another capital you might know." } },
+     "right": "Yes: *{capital}*." },
+    { "id": "tap", "kind": "play", "ask": "Tap the country whose capital is {capital}.",
+     "play": { "part": "globe", "settings": { "spin": "free", "tap": "country", "view": ["{lon}", "{lat}"] } },
+     "goal": { "read": "selected", "is": "{country}" }, "right": "Yes: *{country}*.", "why": "{capital} is in *{country}*.",
+     "tries": [ { "state": { "selected": "{country}", "tapped": { "lon": "{lon}", "lat": "{lat}", "land": true, "country": "{country}" } }, "marked": "right" },
+                { "state": { "selected": "{near}", "tapped": { "lon": "{nlon}", "lat": "{nlat}", "land": true, "country": "{near}" } }, "marked": "wrong" } ] }
+   ] }
+ ],
+ "sources": [ { "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" } ]
+}

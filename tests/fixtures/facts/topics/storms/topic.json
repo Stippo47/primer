@@ -1,0 +1,14 @@
+{
+ "v": 1,
+ "title": "Made-up storms",
+ "level": "tour",
+ "colour": "cyan",
+ "mark": "swirl",
+ "about": "Made-up test data: two lessons that declare facts, a family among them, a review of them and a test drawn from them.",
+ "path": [
+  { "kind": "lesson", "id": "fuel", "unit": "Made-up storms" },
+  { "kind": "lesson", "id": "spin" },
+  { "kind": "review", "id": "look-back" },
+  { "kind": "test", "id": "drawn" }
+ ]
+}

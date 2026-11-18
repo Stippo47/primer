@@ -34,13 +34,18 @@ NODE_KINDS = ('lesson', 'test', 'exam', 'chest', 'review', 'animation')
 PLAYED = {'lesson', 'test', 'exam'}
 NODE_FIELDS = {'kind', 'id', 'title', 'unit'}
 QUESTIONS_AT_LEAST = {'test': 3, 'exam': 5}
-LESSON_FIELDS = {'v', 'title', 'version', 'minutes', 'steps', 'sources'}
+LESSON_FIELDS = {'v', 'title', 'version', 'minutes', 'steps', 'sources', 'facts', 'families', 'draw'}
 STEP_FIELDS = {
-    'explain': {'id', 'kind', 'title', 'text', 'figure', 'src'},
-    'check': {'id', 'kind', 'title', 'ask', 'figure', 'input', 'answer', 'within', 'close', 'right', 'why', 'misses', 'then', 'tries', 'src'},
-    'play': {'id', 'kind', 'title', 'ask', 'play', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries', 'src'},
+    'explain': {'id', 'kind', 'title', 'text', 'figure', 'src', 'fact'},
+    'check': {'id', 'kind', 'title', 'ask', 'figure', 'input', 'answer', 'within', 'close', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
+    'play': {'id', 'kind', 'title', 'ask', 'play', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
     'scene': {'id', 'kind', 'title', 'parts', 'lines', 'src'},
 }
+# Facts (docs/format.md, "Facts"): what a lesson says is worth knowing afterward, each with two or more asks.
+FACT_FIELDS = {'id', 'text', 'src', 'asks'}
+FAMILY_FIELDS = {'id', 'about', 'rows', 'fact', 'asks'}
+FACT_TEXT_LIMIT = 180
+DRAW_FROM = ('unit', 'topic')
 # Scenes: an animation's file, or a scene step in a lesson (docs/format.md, "A scene").
 SCENE_FILE_FIELDS = {'v', 'title', 'version', 'minutes', 'parts', 'lines', 'sources'}
 LINE_FIELDS = {'id', 'text', 'say', 'do', 'wait', 'hold'}
@@ -823,8 +828,121 @@ def check_scene_file(scene, where, rep, kit, base, key, narrator=None):
     check_scene(scene, where, rep, kit, base, scene_voice(base, key), narrator)
 
 
-def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None, narrator=None):
-    """A lesson, test or exam file: the same shape, played step by step. node_kind says which it is on the path."""
+def check_step(step, w, rep, kit, base, ctx, ask=False):
+    """One check, play, explain or scene step, or a fact's ask (a check or play step, with tries required).
+    ctx: the lesson's source ids, the ids cited so far, the forms used, the facts the topic knows, and its narrator."""
+    inputs_desc = kit.parts.get('inputs', {})
+    kind = step.get('kind')
+    allowed = ({'check', 'play'} if ask else KINDS)
+    if kind not in allowed:
+        rep.err(w, f'"kind" is one of {", ".join(sorted(allowed))}' + (': an ask is a question' if ask else ''))
+        return
+    fields = (STEP_FIELDS[kind] - {'fact'}) if ask else STEP_FIELDS[kind]
+    for k in set(step) - fields:
+        rep.err(w, f'no field "{k}" on {"an ask" if ask else f"a {kind} step"}')
+    if not ask and not step.get('title'):
+        rep.warn(w, 'no "title": progress names the step by it')
+    check_words(step, w, rep)
+    src = step.get('src') or []
+    for s in src:
+        if s not in ctx['sources']:
+            rep.err(w, f'cites "{s}", which isn\'t in the sources')
+        ctx['cited'].add(s)
+    if not ask and 'fact' in step and kind != 'scene':
+        given = step['fact']
+        if not (isinstance(given, str) or (isinstance(given, list) and given and all(isinstance(x, str) for x in given))):
+            rep.err(w, '"fact" is the id of the fact the step teaches, or a list of them')
+        for f in step_facts(step):
+            if ctx['facts'] is not None and f not in ctx['facts']:
+                rep.err(w, f'names the fact "{f}", which no lesson of the topic declares' + (f' (they declare {", ".join(sorted(ctx["facts"]))})' if ctx['facts'] else ''))
+    words = ' '.join(str(step.get(k, '')) for k in ('text', 'ask', 'right', 'why'))
+    if kind == 'scene':
+        words += ' '.join(str(x.get('text', '')) for x in step.get('lines') or [] if isinstance(x, dict))
+    if not src and not ask and re.search(r'\d', words):
+        rep.warn(w, 'has numbers but cites no source ("src")')
+    if kind == 'scene':
+        key = f'{ctx["node"]}.{step.get("id")}'
+        check_scene(step, w, rep, kit, base, scene_voice(base, key), ctx['narrator'])
+        return
+    if kind == 'explain':
+        if not step.get('text'):
+            rep.err(w, 'an explain step needs "text"')
+        if 'figure' in step:
+            check_shown(step['figure'], f'{w}.figure', rep, kit, base)
+        return
+    if not step.get('ask'):
+        rep.err(w, f'{"an ask" if ask else f"a {kind} step"} needs "ask": its question')
+    for i, m in enumerate(step.get('misses') or []):
+        if not isinstance(m, dict) or 'when' not in m or not m.get('why'):
+            rep.err(f'{w}.misses[{i}]', 'a miss is { "when": rule, "why": "..." }')
+    if kind == 'check':
+        fig_desc = check_shown(step['figure'], f'{w}.figure', rep, kit, base) if 'figure' in step else None
+        inp = step.get('input')
+        if not isinstance(inp, dict) or inp.get('form') not in inputs_desc['settings']['form']['options']:
+            rep.err(w, f'"input" is the Inputs part\'s settings, with "form" one of {", ".join(inputs_desc["settings"]["form"]["options"])}')
+            return
+        if not ask:
+            ctx['forms'].append(inp['form'])
+        check_settings(inputs_desc, inp, f'{w}.input', rep, kit, base, form=inp['form'], writer_keys=OPTION_WRITER_FIELDS)
+        names = set(inputs_desc.get('state', {}))
+        for i, m in enumerate(step.get('misses') or []):
+            if isinstance(m, dict) and 'when' in m:
+                for p in rule_problems(m['when'], names, f'{w}.misses[{i}].when'):
+                    rep.err(w, p)
+        if inp['form'] == 'choice':
+            check_choice(step, w, rep)
+            if step.get('misses'):
+                rep.warn(w, 'on a choice, each wrong option\'s own "why" is shown; "misses" is never used')
+        else:
+            check_answer_shape(step, inputs_desc, w, rep)
+            if not step.get('why') and not step.get('misses'):
+                rep.warn(w, 'no "why" or "misses": a wrong answer would be shown nothing to learn from')
+            if ask and not step.get('tries'):
+                rep.err(w, 'an ask needs "tries", as a play step does: what someone might really give and how it\'s marked, a realistic wrong one among them')
+        if step.get('tries'):
+            marks = check_tries(step, None, inputs_desc, w, rep)
+            if ask and inp['form'] != 'choice' and marks and 'wrong' not in marks:
+                rep.err(w, 'none of its tries is wrong: give a plausible wrong answer, so it\'s shown to be possible to get wrong')
+        if step.get('then'):
+            if not fig_desc:
+                rep.err(w, '"then" runs on the figure, and this step has no part as its figure')
+            else:
+                for i, c in enumerate(step['then']):
+                    check_call(fig_desc, c, f'{w}.then[{i}]', rep, kit, base)
+    if kind == 'play':
+        desc = check_shown(step.get('play'), f'{w}.play', rep, kit, base)
+        if not desc:
+            return
+        names = set(desc.get('state', {}))
+        if not step.get('goal'):
+            rep.err(w, f'{"an ask" if ask else "a play step"} on a part needs a "goal": a rule over the part\'s state')
+            return
+        for k in ('goal', 'closeGoal', 'ready'):
+            if k in step:
+                for p in rule_problems(step[k], names, f'{w}.{k}'):
+                    rep.err(w, p)
+        for i, m in enumerate(step.get('misses') or []):
+            if isinstance(m, dict) and 'when' in m:
+                for p in rule_problems(m['when'], names, f'{w}.misses[{i}].when'):
+                    rep.err(w, p)
+        for i, c in enumerate(step.get('then') or []):
+            check_call(desc, c, f'{w}.then[{i}]', rep, kit, base)
+        if not step.get('tries'):
+            rep.err(w, f'{"an ask" if ask else "a play step"} needs "tries": plausible inputs and what they should be marked, a realistic wrong one among them. A goal that can\'t be failed teaches nothing')
+        else:
+            marks = check_tries(step, desc, inputs_desc, w, rep)
+            if marks and 'wrong' not in marks:
+                rep.err(w, 'none of its tries is wrong: give a plausible wrong input, so the step is shown to be possible to fail')
+            if marks and 'right' not in marks:
+                rep.warn(w, 'none of its tries is right: give one, so the step is shown to be possible to pass')
+        if not step.get('why') and not step.get('misses'):
+            rep.warn(w, 'no "why" or "misses": a wrong answer would be shown nothing to learn from')
+
+
+def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None, narrator=None, known_facts=None):
+    """A lesson, test or exam file: the same shape, played step by step. node_kind says which it is on the path.
+    A lesson also declares its facts (and families of them); known_facts: every fact id the topic declares, for
+    the steps that name one (None: not known, so not checked)."""
     if not isinstance(lesson, dict):
         rep.err(where, 'a lesson is an object')
         return
@@ -835,7 +953,8 @@ def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None
     if not lesson.get('title'):
         rep.err(where, 'no title')
     sources = lesson.get('sources') or []
-    if not sources:
+    only_draws = lesson.get('draw') is not None and not lesson.get('steps')
+    if not sources and not only_draws:
         rep.err(where, 'no sources: every lesson says where its facts come from')
     source_ids = set()
     for i, s in enumerate(sources):
@@ -847,14 +966,30 @@ def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None
             rep.warn(f'{where}.sources[{i}]', f'no field "{k}" in a source')
         if not s.get('checked'):
             rep.warn(f'{where}.sources[{i}]', '"checked": when it was read, or "recalled" if it wasn\'t re-read')
+    draw = lesson.get('draw')
+    if draw is not None:
+        if node_kind not in ('test', 'exam'):
+            rep.err(where, f'"draw" is for a test or an exam, which can draw its questions from the facts of the lessons before it; a {node_kind} lists its steps')
+        elif not isinstance(draw, dict) or draw.get('from') not in DRAW_FROM or (_num(draw.get('count')) is None or not 1 <= draw['count'] <= 40 or draw['count'] != int(draw['count'])):
+            rep.err(where, f'"draw" is {{ "from": "unit" or "topic", "count": how many, 1 to 40 }}')
+        else:
+            for k in set(draw) - {'from', 'count'}:
+                rep.err(where, f'no field "{k}" in "draw" (from, count)')
+    for k in ('facts', 'families'):
+        if k in lesson and node_kind != 'lesson':
+            rep.err(where, f'"{k}" belong in a lesson: a {node_kind} asks about the facts its lessons declare')
     steps = lesson.get('steps')
-    if not isinstance(steps, list) or not steps:
+    if steps is None and draw is not None:
+        steps = []
+    if not isinstance(steps, list) or (not steps and draw is None):
         rep.err(where, 'no steps')
         return
-    if not STEPS_RANGE[0] <= len(steps) <= STEPS_RANGE[1]:
+    if steps and not STEPS_RANGE[0] <= len(steps) <= STEPS_RANGE[1] and draw is None:
         rep.warn(where, f'{len(steps)} steps: a {node_kind} is usually {STEPS_RANGE[0]} to {STEPS_RANGE[1]}')
-    inputs_desc = kit.parts.get('inputs', {})
-    seen, cited, forms = set(), set(), []
+    declared = {f['id'] for f in facts_of_lesson(lesson)} if node_kind == 'lesson' else set()
+    ctx = {'sources': source_ids, 'cited': set(), 'forms': [], 'node': node_id or pathlib.Path(str(where)).stem, 'narrator': narrator,
+           'facts': (known_facts | declared) if known_facts is not None else (declared or None)}
+    seen = set()
     for n, step in enumerate(steps):
         sid = step.get('id') if isinstance(step, dict) else None
         w = f'{where} step {n + 1}' + (f' ({sid})' if sid else '')
@@ -866,110 +1001,281 @@ def check_lesson(lesson, where, rep, kit, base, node_kind='lesson', node_id=None
         elif sid in seen:
             rep.err(w, 'the same id as an earlier step')
         seen.add(sid)
-        kind = step.get('kind')
-        if kind not in KINDS:
-            rep.err(w, f'"kind" is one of {", ".join(sorted(KINDS))}')
-            continue
-        for k in set(step) - STEP_FIELDS[kind]:
-            rep.err(w, f'no field "{k}" on a {kind} step')
-        if not step.get('title'):
-            rep.warn(w, 'no "title": progress names the step by it')
-        check_words(step, w, rep)
-        src = step.get('src') or []
-        for s in src:
-            if s not in source_ids:
-                rep.err(w, f'cites "{s}", which isn\'t in the sources')
-            cited.add(s)
-        words = ' '.join(str(step.get(k, '')) for k in ('text', 'ask', 'right', 'why'))
-        if kind == 'scene':
-            words += ' '.join(str(x.get('text', '')) for x in step.get('lines') or [] if isinstance(x, dict))
-        if not src and re.search(r'\d', words):
-            rep.warn(w, 'has numbers but cites no source ("src")')
-        if kind == 'scene':
-            key = f'{node_id or pathlib.Path(str(where)).stem}.{sid}'
-            check_scene(step, w, rep, kit, base, scene_voice(base, key), narrator)
-            continue
-        if kind == 'explain':
-            if not step.get('text'):
-                rep.err(w, 'an explain step needs "text"')
-            if 'figure' in step:
-                check_shown(step['figure'], f'{w}.figure', rep, kit, base)
-            continue
-        if not step.get('ask'):
-            rep.err(w, f'a {kind} step needs "ask"')
-        for i, m in enumerate(step.get('misses') or []):
-            if not isinstance(m, dict) or 'when' not in m or not m.get('why'):
-                rep.err(f'{w}.misses[{i}]', 'a miss is { "when": rule, "why": "..." }')
-        if kind == 'check':
-            fig_desc = check_shown(step['figure'], f'{w}.figure', rep, kit, base) if 'figure' in step else None
-            inp = step.get('input')
-            if not isinstance(inp, dict) or inp.get('form') not in inputs_desc['settings']['form']['options']:
-                rep.err(w, f'"input" is the Inputs part\'s settings, with "form" one of {", ".join(inputs_desc["settings"]["form"]["options"])}')
-                continue
-            forms.append(inp['form'])
-            check_settings(inputs_desc, inp, f'{w}.input', rep, kit, base, form=inp['form'], writer_keys=OPTION_WRITER_FIELDS)
-            names = set(inputs_desc.get('state', {}))
-            for i, m in enumerate(step.get('misses') or []):
-                if isinstance(m, dict) and 'when' in m:
-                    for p in rule_problems(m['when'], names, f'{w}.misses[{i}].when'):
-                        rep.err(w, p)
-            if inp['form'] == 'choice':
-                check_choice(step, w, rep)
-                if step.get('misses'):
-                    rep.warn(w, 'on a choice, each wrong option\'s own "why" is shown; "misses" is never used')
-            else:
-                check_answer_shape(step, inputs_desc, w, rep)
-                if not step.get('why') and not step.get('misses'):
-                    rep.warn(w, 'no "why" or "misses": a wrong answer would be shown nothing to learn from')
-            if step.get('tries'):
-                check_tries(step, None, inputs_desc, w, rep)
-            if step.get('then'):
-                if not fig_desc:
-                    rep.err(w, '"then" runs on the figure, and this step has no part as its figure')
-                else:
-                    for i, c in enumerate(step['then']):
-                        check_call(fig_desc, c, f'{w}.then[{i}]', rep, kit, base)
-        if kind == 'play':
-            desc = check_shown(step.get('play'), f'{w}.play', rep, kit, base)
-            if not desc:
-                continue
-            names = set(desc.get('state', {}))
-            if not step.get('goal'):
-                rep.err(w, 'a play step needs a "goal": a rule over the part\'s state')
-                continue
-            for k in ('goal', 'closeGoal', 'ready'):
-                if k in step:
-                    for p in rule_problems(step[k], names, f'{w}.{k}'):
-                        rep.err(w, p)
-            for i, m in enumerate(step.get('misses') or []):
-                if isinstance(m, dict) and 'when' in m:
-                    for p in rule_problems(m['when'], names, f'{w}.misses[{i}].when'):
-                        rep.err(w, p)
-            for i, c in enumerate(step.get('then') or []):
-                check_call(desc, c, f'{w}.then[{i}]', rep, kit, base)
-            if not step.get('tries'):
-                rep.err(w, 'a play step needs "tries": plausible inputs and what they should be marked, a realistic wrong one among them. A goal that can\'t be failed teaches nothing')
-            else:
-                marks = check_tries(step, desc, inputs_desc, w, rep)
-                if marks and 'wrong' not in marks:
-                    rep.err(w, 'none of its tries is wrong: give a plausible wrong input, so the step is shown to be possible to fail')
-                if marks and 'right' not in marks:
-                    rep.warn(w, 'none of its tries is right: give one, so the step is shown to be possible to pass')
-            if not step.get('why') and not step.get('misses'):
-                rep.warn(w, 'no "why" or "misses": a wrong answer would be shown nothing to learn from')
-    for s in source_ids - cited:
-        rep.warn(where, f'the source "{s}" isn\'t cited by any step')
-    if forms and all(f == 'choice' for f in forms) and not any(isinstance(s, dict) and s.get('kind') == 'play' for s in steps):
+        check_step(step, w, rep, kit, base, ctx)
+    if node_kind == 'lesson':
+        check_facts(lesson, where, rep, kit, base, ctx)
+    for s in source_ids - ctx['cited'] if not only_draws else []:
+        rep.warn(where, f'the source "{s}" isn\'t cited by any step or fact')
+    if ctx['forms'] and all(f == 'choice' for f in ctx['forms']) and not any(isinstance(s, dict) and s.get('kind') == 'play' for s in steps):
         rep.warn(where, 'every question is a choice: a slider, a number, an order or a placement leaves more room to be realistically wrong')
     if node_kind in QUESTIONS_AT_LEAST:
         asked = [s for s in steps if isinstance(s, dict) and s.get('kind') in ('check', 'play')]
         explains = [s.get('id') for s in steps if isinstance(s, dict) and s.get('kind') == 'explain']
-        if not asked:
+        count = len(asked) + (int(draw['count']) if isinstance(draw, dict) and _num(draw.get('count')) is not None else 0)
+        if not count:
             rep.err(where, f'a {node_kind} asks questions, and this one has none')
-        elif len(asked) < QUESTIONS_AT_LEAST[node_kind]:
-            rep.warn(where, f'{len(asked)} question(s): a {node_kind} usually has at least {QUESTIONS_AT_LEAST[node_kind]}')
+        elif count < QUESTIONS_AT_LEAST[node_kind]:
+            rep.warn(where, f'{count} question(s): a {node_kind} usually has at least {QUESTIONS_AT_LEAST[node_kind]}')
         if explains:
             rep.warn(where, f'a {node_kind} is questions on what came before; explain steps ({", ".join(map(str, explains))}) belong in a lesson')
+
+
+# ---------- facts: what a lesson says is worth knowing afterward, and the ways of asking each
+
+def js_str(v):
+    """A value as JavaScript's String() writes it, so a family's words come out the same as on the phone."""
+    if isinstance(v, bool):
+        return 'true' if v else 'false'
+    if v is None:
+        return 'null'
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    if isinstance(v, list):
+        return ','.join(js_str(x) for x in v)
+    if isinstance(v, dict):
+        return '[object Object]'
+    return str(v)
+
+
+def fnv1a(s):
+    """FNV-1a, 32 bits, over UTF-8: the same number as js/facts.js's hash."""
+    h = 0x811c9dc5
+    for b in str(s).encode('utf-8'):
+        h ^= b
+        h = (h * 0x01000193) & 0xffffffff
+    return h
+
+
+_ONLY = re.compile(r'^\{([A-Za-z0-9_.-]+)\}$')
+_ANY = re.compile(r'\{([A-Za-z0-9_.-]+)\}')
+
+
+def fill(tpl, vars_):
+    """Exactly as js/facts.js: "{field}" in a string is the row's value; a string that is only "{field}" takes the
+    value as it is (a number stays a number)."""
+    if isinstance(tpl, str):
+        m = _ONLY.match(tpl)
+        if m and m.group(1) in vars_:
+            return vars_[m.group(1)]
+        return _ANY.sub(lambda mm: js_str(vars_[mm.group(1)]) if mm.group(1) in vars_ else mm.group(0), tpl)
+    if isinstance(tpl, list):
+        return [fill(x, vars_) for x in tpl]
+    if isinstance(tpl, dict):
+        return {k: fill(v, vars_) for k, v in tpl.items()}
+    return tpl
+
+
+def _vars(row, other=None):
+    v = dict(row)
+    for k, x in (other or {}).items():
+        v[f'other.{k}'] = x
+    return v
+
+
+def family_options(spec, row, rows, fact_id):
+    """A choice's options from a column of the table, exactly as js/facts.js (familyOptions) makes them."""
+    frm, count, near, unlike = spec.get('from'), spec.get('count', 3), spec.get('near'), spec.get('unlike')
+    others = [r for r in rows if r.get('id') != row.get('id') and frm in r and r.get(frm) != row.get(frm) and (not unlike or r.get(unlike) != row.get(unlike))]
+    others.sort(key=lambda r: (fnv1a(f'{fact_id}|{r.get("id")}'), str(r.get('id'))))
+    seen, uniq = set(), []
+    for r in others:
+        k = json.dumps(r.get(frm), sort_keys=True)
+        if k not in seen:
+            seen.add(k)
+            uniq.append(r)
+    if near and near in row:
+        uniq = [r for r in uniq if r.get(near) == row.get(near)] + [r for r in uniq if r.get(near) != row.get(near)]
+    wrong = [{'id': r['id'], 'text': js_str(r.get(frm)), 'why': fill(spec.get('why') or '', _vars(row, r)), 'tempting': fill(spec.get('tempting') or '', _vars(row, r))}
+             for r in uniq[:max(1, (count if isinstance(count, int) else 3) - 1)]]
+    return [{'id': row.get('id'), 'text': js_str(row.get(frm)), 'right': True}, *wrong]
+
+
+def family_fact(fam, row):
+    fid = f'{fam.get("id")}-{row.get("id")}'
+    v = _vars(row)
+    asks = []
+    for shape in fam.get('asks') or []:
+        if not isinstance(shape, dict):
+            continue
+        inp = shape.get('input')
+        if isinstance(inp, dict) and isinstance(inp.get('options'), dict):
+            inp = {**inp, 'options': family_options(inp['options'], row, fam.get('rows') or [], fid)}
+        ask = fill({k: x for k, x in shape.items() if k != 'input'}, v)
+        if inp:
+            ask['input'] = fill(inp, v)
+        asks.append(ask)
+    return {**fill(fam.get('fact') or {}, v), 'id': fid, 'asks': asks, 'family': fam.get('id'), 'row': row.get('id')}
+
+
+def expand_family(fam):
+    rows = fam.get('rows') if isinstance(fam, dict) and isinstance(fam.get('rows'), list) else []
+    return [family_fact(fam, r) for r in rows if isinstance(r, dict) and isinstance(r.get('id'), str)]
+
+
+def facts_of_lesson(lesson):
+    """Every fact a lesson declares: its own, then each family's, in order."""
+    own = [f for f in lesson.get('facts') or [] if isinstance(f, dict) and isinstance(f.get('id'), str)] if isinstance(lesson.get('facts'), list) else []
+    made = [f for fam in lesson.get('families') or [] for f in expand_family(fam)] if isinstance(lesson.get('families'), list) else []
+    return own + made
+
+
+def step_facts(step):
+    f = step.get('fact') if isinstance(step, dict) else None
+    return [f] if isinstance(f, str) else [x for x in f if isinstance(x, str)] if isinstance(f, list) else []
+
+
+def way_of(step):
+    """How a step or ask asks: a check's answer form, or a play's part (as js/facts.js, wayOf)."""
+    if step.get('kind') == 'check':
+        return (step.get('input') or {}).get('form') or 'check'
+    if step.get('kind') == 'play':
+        return f'play:{(step.get("play") or {}).get("part", "")}'
+    return step.get('kind')
+
+
+_NUMBER = re.compile(r'(?<![\w.])-?\d+(?:\.\d+)?(?![\w.])')
+
+
+def _norm_words(s):
+    return ' ' + re.sub(r'[^a-z0-9°%]+', ' ', str(s).replace('*', '').lower()).strip() + ' '
+
+
+def give_aways(ask, kit):
+    """Ways an ask gives its own answer away: the question names the right option; it says the number it asks
+    for; it lists an order's items in their right order; a figure marks the very place a play step wants."""
+    out = []
+    question = ask.get('ask') or ''
+    shown = [question] + [str(c[-1]) for c in ((ask.get('figure') or {}).get('calls') or []) + ((ask.get('play') or {}).get('calls') or [])
+                          if isinstance(c, list) and c and c[0] in ('point', 'marker') and isinstance(c[-1], str)]
+    words = ' '.join(_norm_words(x) for x in shown)
+    inp = ask.get('input') or {}
+    form, ans = inp.get('form'), answer_of(ask)
+    if ask.get('kind') == 'check' and form == 'choice':
+        right = next((o for o in inp.get('options') or [] if isinstance(o, dict) and o.get('id') == ans), None)
+        text = _norm_words(right.get('text', '')) if right else ''
+        if right and len(text.strip()) >= 3 and text in words and not any(_norm_words(o.get('text', '')) in words for o in inp.get('options') or [] if isinstance(o, dict) and o is not right):
+            out.append(f'the question says the right option, "{right.get("text")}"')
+    if ask.get('kind') == 'check' and form in NUMBER_FORMS and _num(ans) is not None:
+        for x in shown:
+            for m in _NUMBER.findall(str(x).replace('*', '')):
+                if abs(float(m) - ans) < 1e-9:
+                    out.append(f'it says the number it asks for, {js_str(ans)}')
+                    break
+    if ask.get('kind') == 'check' and form == 'order' and isinstance(ans, list) and len(ans) > 1:
+        texts = {i.get('id'): _norm_words(i.get('text', '')) for i in inp.get('items') or [] if isinstance(i, dict)}
+        at = [words.find(texts.get(i, '\0')) for i in ans]
+        if all(p >= 0 for p in at) and at == sorted(at):
+            out.append('the question lists the items in their right order')
+    if ask.get('kind') == 'play' and ask.get('goal'):
+        for c in (ask.get('play') or {}).get('calls') or []:
+            if not (isinstance(c, list) and len(c) >= 2 and c[0] in ('point', 'marker', 'highlight')):
+                continue
+            places = c[1] if c[0] == 'highlight' else [c[1]]
+            for p in places if isinstance(places, list) else [places]:
+                state = None
+                if isinstance(p, list) and len(p) == 2 and all(_num(x) is not None for x in p):
+                    state = {'tapped': {'lon': p[0], 'lat': p[1], 'land': False, 'country': None}}
+                elif isinstance(p, str):
+                    state = {'selected': p, 'tapped': {'country': p, 'land': True}}
+                if state and rule_holds(ask['goal'], state):
+                    out.append(f'its part shows a {c[0]} right where the goal is ({json.dumps(p, ensure_ascii=False)})')
+                    break
+    return out
+
+
+def check_facts(lesson, where, rep, kit, base, ctx):
+    """A lesson's facts and families: each fact sourced, with two or more ways of asking it, each a check or play
+    step that can be got wrong and doesn't give itself away."""
+    if 'facts' in lesson and not isinstance(lesson['facts'], list):
+        rep.err(where, '"facts" is a list: { "id", "text", "src", "asks": [...] }')
+    if 'families' in lesson and not isinstance(lesson['families'], list):
+        rep.err(where, '"families" is a list: { "id", "rows": [...], "fact": {...}, "asks": [...] }')
+    for i, fam in enumerate(lesson.get('families') or [] if isinstance(lesson.get('families'), list) else []):
+        w = f'{where} family {i + 1}' + (f' ({fam.get("id")})' if isinstance(fam, dict) and fam.get('id') else '')
+        if not isinstance(fam, dict):
+            rep.err(w, 'a family is an object')
+            continue
+        for k in set(fam) - FAMILY_FIELDS:
+            rep.err(w, f'no field "{k}" in a family ({", ".join(sorted(FAMILY_FIELDS))})')
+        if not fam.get('id') or not SLUG.match(str(fam['id'])):
+            rep.err(w, 'needs an "id" of lower case words joined by hyphens: each fact\'s id is it and the row\'s')
+        rows = fam.get('rows')
+        if not isinstance(rows, list) or len(rows) < 2:
+            rep.err(w, '"rows" is the table: two or more rows, each { "id", and its fields }')
+            rows = []
+        ids = [r.get('id') for r in rows if isinstance(r, dict)]
+        for j, r in enumerate(rows):
+            if not isinstance(r, dict) or not isinstance(r.get('id'), str) or not SLUG.match(r['id']):
+                rep.err(f'{w} row {j + 1}', 'a row is an object with an "id" of lower case words joined by hyphens')
+        if len(set(ids)) != len(ids):
+            rep.err(w, 'two rows have the same id')
+        if not isinstance(fam.get('fact'), dict) or not fam['fact'].get('text'):
+            rep.err(w, '"fact" is the shape of each row\'s fact: { "text": "... {field} ...", "src": [...] }')
+        if not isinstance(fam.get('asks'), list) or not fam['asks']:
+            rep.err(w, '"asks" are the question shapes, each an ask with {field}s to fill from a row')
+        fields = set().union(*[set(r) for r in rows if isinstance(r, dict)]) if rows else set()
+        for name in sorted(set(_ANY.findall(json.dumps([fam.get('fact'), fam.get('asks')], ensure_ascii=False)))):
+            base_name = name[6:] if name.startswith('other.') else name
+            if base_name not in fields:
+                rep.err(w, f'"{{{name}}}" names a field the rows don\'t have ({", ".join(sorted(fields))})')
+        for k, shape in enumerate(fam.get('asks') or []):
+            opts = ((shape or {}).get('input') or {}).get('options') if isinstance(shape, dict) else None
+            if isinstance(opts, dict):
+                for kk in set(opts) - {'from', 'count', 'near', 'unlike', 'why', 'tempting'}:
+                    rep.err(f'{w} ask {k + 1}', f'no field "{kk}" in options made from the table (from, count, near, unlike, why, tempting)')
+                for kk in ('from', 'near', 'unlike'):
+                    if kk in opts and opts[kk] not in fields:
+                        rep.err(f'{w} ask {k + 1}', f'options "{kk}" names "{opts[kk]}", which isn\'t a field of the rows')
+                if not opts.get('why') or not opts.get('tempting'):
+                    rep.err(f'{w} ask {k + 1}', 'options made from the table need "why" and "tempting" for the wrong ones, with {other.field} for the row each comes from')
+    seen = set()
+    for f in facts_of_lesson(lesson):
+        fid = f['id']
+        w = f'{where} fact {fid}' + (f' (family {f["family"]}, row {f["row"]})' if f.get('family') else '')
+        if not SLUG.match(fid):
+            rep.err(w, 'a fact\'s id is lower case words joined by hyphens: progress refers to it, so it never changes')
+        if fid in seen:
+            rep.err(w, 'the same id as another fact in this lesson')
+        seen.add(fid)
+        if not f.get('family'):
+            for k in set(f) - FACT_FIELDS:
+                rep.err(w, f'no field "{k}" on a fact ({", ".join(sorted(FACT_FIELDS))})')
+        text = f.get('text')
+        if not isinstance(text, str) or not text.strip():
+            rep.err(w, 'a fact needs "text": the one thing worth knowing, in a sentence')
+        elif len(text.replace('*', '')) > FACT_TEXT_LIMIT:
+            rep.warn(w, f'is {len(text)} characters; a fact is one thing, under {FACT_TEXT_LIMIT}')
+        src = f.get('src') or []
+        if not src:
+            rep.err(w, 'a fact says where it comes from: "src", ids from the lesson\'s sources')
+        for s in src:
+            if s not in ctx['sources']:
+                rep.err(w, f'cites "{s}", which isn\'t in the sources')
+            ctx['cited'].add(s)
+        asks = f.get('asks')
+        if not isinstance(asks, list) or len(asks) < 2:
+            rep.err(w, f'a fact needs two or more ways of asking it ("asks"), so it isn\'t learned as one question; it has {len(asks) if isinstance(asks, list) else 0}')
+            asks = asks if isinstance(asks, list) else []
+        ask_ids, sigs = set(), {}
+        for k, a in enumerate(asks):
+            aw = f'{w} ask {k + 1}' + (f' ({a.get("id")})' if isinstance(a, dict) and a.get('id') else '')
+            if not isinstance(a, dict):
+                rep.err(aw, 'an ask is a check or play step: { "id", "kind", "ask", ... }')
+                continue
+            if not a.get('id') or not SLUG.match(str(a['id'])):
+                rep.err(aw, 'needs an "id" of lower case words joined by hyphens')
+            elif a['id'] in ask_ids:
+                rep.err(aw, 'the same id as another ask of this fact')
+            ask_ids.add(a.get('id'))
+            check_step({**a, 'src': a.get('src') or src}, aw, rep, kit, base, ctx, ask=True)
+            for why in give_aways(a, kit):
+                rep.err(aw, f'gives itself away: {why}. Ask it so the answer has to come from memory')
+            sig = (way_of(a), _norm_words(a.get('ask', '')))
+            if sig in sigs:
+                rep.err(aw, f'asks it the same way as ask {sigs[sig]}: two asks are two different ways of asking')
+            sigs[sig] = k + 1
+        if len({way_of(a) for a in asks if isinstance(a, dict)}) == 1 and len(asks) >= 2:
+            rep.warn(w, f'every ask is a {way_of(asks[0])}: vary the forms, so it\'s known, not one question remembered')
 
 
 def check_topic(folder, rep, kit):
@@ -1001,12 +1307,16 @@ def check_topic(folder, rep, kit):
         if 'lessons' not in t:
             rep.err(where, 'no "path": the nodes in order, each {"kind": ..., "id": ...}')
         return t
-    seen, done_before = set(), []
+    facts, _files = topic_facts(folder, t)
+    known = set(facts)
+    seen, done_before, unit = set(), [], 0
     for n, node in enumerate(path):
         w = f'{where} path[{n}]'
         if not isinstance(node, dict):
             rep.err(w, 'a node is {"kind": ..., "id": ...}')
             continue
+        if n > 0 and node.get('unit'):
+            unit += 1
         kind, nid = node.get('kind'), node.get('id')
         w += f' ({nid})' if nid else ''
         if kind not in NODE_KINDS:
@@ -1032,7 +1342,19 @@ def check_topic(folder, rep, kit):
             if not f.exists():
                 rep.err(w, f'a {kind} is a file, and {nid}.json isn\'t there')
             else:
-                check_lesson(load_json(f), f'{folder.name}/{nid}.json', rep, kit, folder, kind, nid, narrator)
+                body = load_json(f)
+                check_lesson(body, f'{folder.name}/{nid}.json', rep, kit, folder, kind, nid, narrator, known)
+                draw = body.get('draw') if isinstance(body, dict) else None
+                if kind in ('test', 'exam') and isinstance(draw, dict) and draw.get('from') in DRAW_FROM:
+                    pool = [x for x in facts.values() if x['node'] < n and (draw['from'] == 'topic' or x['unit'] == unit) and x.get('asks')]
+                    if not pool:
+                        rep.err(w, f'it draws from the facts of its {draw["from"]}, and no lesson before it there declares any')
+                    elif _num(draw.get('count')) is not None and len(pool) < draw['count']:
+                        rep.warn(w, f'it draws {draw["count"]} questions from {len(pool)} fact(s): each is asked once, so it will ask {len(pool)}')
+                    for x in pool:
+                        used = {tt['way'] for tt in x['taught'] if tt['way']}
+                        if used and all(way_of(a) in used for a in x['asks'] if isinstance(a, dict)):
+                            rep.warn(w, f'the fact {x["id"]} can only be asked the way its lesson asked it ({", ".join(sorted(used))}): give it an ask in another form for a test to draw')
             if kind in ('test', 'exam') and not any(k == 'lesson' for k in done_before):
                 rep.err(w, f'a {kind} draws on the lessons before it, and there are none before this one')
         elif kind == 'animation' and f.exists():
@@ -1044,6 +1366,8 @@ def check_topic(folder, rep, kit):
                 rep.warn(w, f'a {kind} has no file, so {nid}.json is never read')
             if kind == 'review' and not any(k in PLAYED for k in done_before):
                 rep.err(w, 'a review goes over what came before it, and nothing played comes before this one')
+            elif kind == 'review' and not any(x['node'] < n for x in facts.values()):
+                rep.warn(w, 'a review asks the facts of the lessons before it, and they declare none: it shows "nothing to go over" until they do')
             if kind == 'chest' and not done_before:
                 rep.warn(w, 'a chest is a reward for reaching it: it\'s first on the path, so it rewards nothing')
             if kind == 'chest' and done_before and done_before[-1] == 'chest':
@@ -1067,7 +1391,48 @@ def check_topic(folder, rep, kit):
     extra = {p.stem for p in folder.glob('*.json')} - seen - {'topic'}
     for x in sorted(extra):
         rep.warn(where, f'{x}.json is in the folder but not on the path, so it won\'t be shown')
+    for fid, x in facts.items():
+        if x.get('dupes'):
+            rep.err(where, f'the fact "{fid}" is declared by {x["lesson"]} and again by {", ".join(x["dupes"])}: a fact\'s id is the topic\'s, and progress refers to it')
+        if not x['taught']:
+            rep.warn(where, f'no step names the fact "{fid}" ({x["lesson"]}): a miss in review links back to the start of its lesson. Give the step that teaches it "fact"')
     return t
+
+
+def topic_facts(folder, topic):
+    """A topic's facts, as js/facts.js (topicFacts) gathers them from the lessons on its path, families expanded:
+    each with its lesson, its place on the path, its unit, and the steps that teach it (`fact` on a step).
+    Also the played files, by node id."""
+    facts, files, unit = {}, {}, 0
+    for i, n in enumerate(topic.get('path') or []):
+        if not isinstance(n, dict) or not isinstance(n.get('id'), str):
+            continue
+        if i > 0 and n.get('unit'):
+            unit += 1
+        f = folder / f'{n["id"]}.json'
+        if n.get('kind') not in PLAYED or not f.exists():
+            continue
+        try:
+            body = json.loads(f.read_text(encoding='utf-8'))
+        except ValueError:
+            continue
+        if not isinstance(body, dict):
+            continue
+        files[n['id']] = (n, body)
+        if n['kind'] == 'lesson':
+            for fact in facts_of_lesson(body):
+                if fact['id'] in facts:
+                    facts[fact['id']].setdefault('dupes', []).append(n['id'])
+                    continue
+                facts[fact['id']] = {**fact, 'lesson': n['id'], 'lessonTitle': body.get('title') or n['id'], 'node': i, 'unit': unit, 'taught': []}
+    for nid, (n, body) in files.items():
+        if n['kind'] != 'lesson':
+            continue
+        for s in body.get('steps') or []:
+            for fid in step_facts(s):
+                if fid in facts:
+                    facts[fid]['taught'].append({'lesson': nid, 'step': s.get('id'), 'kind': s.get('kind'), 'way': None if s.get('kind') == 'explain' else way_of(s)})
+    return facts, files
 
 
 def played_ids(topic, folder=None):
@@ -1128,16 +1493,17 @@ def run_check(targets, kit, data=None):
         if kind == 'topic':
             check_topic(p, rep, kit)
         else:
-            node_kind, narrator = 'lesson', DEFAULT_NARRATOR
+            node_kind, narrator, known = 'lesson', DEFAULT_NARRATOR, None
             if (p.parent / 'topic.json').exists():
                 topic = load_json(p.parent / 'topic.json')
                 node_kind = next((n.get('kind') for n in topic.get('path') or [] if isinstance(n, dict) and n.get('id') == p.stem), 'lesson')
                 narrator = topic.get('narrator') if topic.get('narrator') in NARRATORS else DEFAULT_NARRATOR
+                known = set(topic_facts(p.parent, topic)[0])
             body = load_json(p)
             if isinstance(body, dict) and 'lines' in body and 'steps' not in body:
                 check_scene_file(body, p.name, rep, kit, p.parent, p.stem, narrator)
             else:
-                check_lesson(body, p.name, rep, kit, p.parent, node_kind, p.stem, narrator)
+                check_lesson(body, p.name, rep, kit, p.parent, node_kind, p.stem, narrator, known)
     return rep
 
 
@@ -1196,6 +1562,60 @@ def cmd_parts(a):
             print('  marking: ' + '; '.join(f'{k}: {json.dumps(m["rule"], ensure_ascii=False)}' for k, m in d['marking'].items() if k != 'about'))
         print(f'  needs: {d.get("needs", {}).get("weight", "")}')
         print()
+
+
+def ask_words(a):
+    """An ask in a few words: its form, its question, and its answer."""
+    if a.get('kind') == 'play':
+        return f'{way_of(a)}: "{a.get("ask", "")}"'
+    inp = a.get('input') or {}
+    ans = answer_of(a)
+    if inp.get('form') == 'choice':
+        right = next((o.get('text') for o in inp.get('options') or [] if isinstance(o, dict) and o.get('id') == ans), ans)
+        shown = f'"{right}" of {len(inp.get("options") or [])}'
+    elif isinstance(ans, (dict, list)):
+        shown = json.dumps(ans, ensure_ascii=False)
+    else:
+        shown = f'{js_str(ans)}{" " + inp["unit"] if inp.get("unit") else ""}' + (f' (within {js_str(a["within"])})' if a.get('within') else '')
+    return f'{inp.get("form")}: "{a.get("ask", "")}" → {shown}'
+
+
+def cmd_facts(a):
+    """Every fact a topic's lessons declare, with its ways of asking, the steps that teach it, and what draws on it."""
+    kind, p = resolve_target(a.topic, pathlib.Path(a.data) if a.data else None)
+    if kind != 'topic':
+        die(f'{a.topic} is a lesson file: give its topic\'s folder.')
+    topic = load_json(p / 'topic.json')
+    facts, files = topic_facts(p, topic)
+    if a.json:
+        print(json.dumps(list(facts.values()), ensure_ascii=False, indent=1))
+        return
+    made = sum(1 for x in facts.values() if x.get('family'))
+    fams = len({x['family'] for x in facts.values() if x.get('family')})
+    print(f'{topic.get("title", p.name)}: {len(facts)} fact(s)' + (f', {made} of them made from {fams} famil{"y" if fams == 1 else "ies"}' if made else '') + '.')
+    by_lesson = {}
+    for x in facts.values():
+        by_lesson.setdefault(x['lesson'], []).append(x)
+    for lid, xs in by_lesson.items():
+        print(f'\n{lid} ({files[lid][1].get("title", lid)}):')
+        for x in xs:
+            print(f'  {x["id"]}: {x.get("text", "").replace("*", "")}' + (f'  [family {x["family"]}]' if x.get('family') else '') + f'  ({", ".join(x.get("src") or []) or "no source"})')
+            taught = ', '.join(f'{t["step"]}{" (" + t["way"] + ")" if t["way"] else ""}' + ('' if t['lesson'] == lid else f' in {t["lesson"]}') for t in x['taught'])
+            print(f'    taught by: {taught or "no step names it"}')
+            for k in x.get('asks') or []:
+                if isinstance(k, dict):
+                    print(f'    ask {k.get("id")}: {ask_words(k)}')
+    for nid, (n, body) in files.items():
+        draw = body.get('draw')
+        if isinstance(draw, dict):
+            print(f'\n{nid} ({n["kind"]}): draws {draw.get("count")} question(s) from the facts of its {draw.get("from")}, asked in ways their lessons didn\'t use')
+        elif n['kind'] != 'lesson':
+            named = sorted({f for s in body.get('steps') or [] for f in step_facts(s)})
+            print(f'\n{nid} ({n["kind"]}): lists its {len(body.get("steps") or [])} question(s)' + (f'; they review {", ".join(named)}' if named else ''))
+    for i, n in enumerate(topic.get('path') or []):
+        if isinstance(n, dict) and n.get('kind') == 'review':
+            before = [x['id'] for x in facts.values() if x['node'] < i]
+            print(f'\n{n.get("id")} (review): goes over {len(before)} fact(s) from the lessons before it')
 
 
 def cmd_check(a):
@@ -1644,6 +2064,56 @@ def show_value(v):
     return json.dumps(v, ensure_ascii=False)
 
 
+STRONG, WEAK = 0.9, 0.7
+
+
+def memory_of(data, app, now=None):
+    """What the phone's memory model makes of every answer so far: skill/memory.mjs replays the progress files
+    through the app's own js/memory.js. None if Node isn't there or it couldn't run."""
+    node = shutil.which('node')
+    if not node:
+        return None
+    args = [node, str(HERE / 'memory.mjs'), '--app', str(app), '--data', str(data)] + (['--now', now] if now else [])
+    r = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode:
+        print(f'  warning: the memory couldn\'t be worked out: {(r.stderr or r.stdout).strip()[-400:]}')
+        return None
+    return json.loads(r.stdout.strip().splitlines()[-1])
+
+
+def print_memory(data, a):
+    """Which facts are strong and which weak, from every answer so far (not just the new ones)."""
+    mem = memory_of(data, app_dir(a.app), getattr(a, 'now', None))
+    if mem is None:
+        print('\n(Memory: needs Node on PATH, to run the app\'s own memory model.)')
+        return
+    facts = [x for x in mem['facts'] if not a.topic or x['topic'] == a.topic]
+    if not facts:
+        return
+    asked = [x for x in facts if x['asked']]
+    print(f'\nMemory, from every answer so far ({len(asked)} of {len(facts)} facts asked; recall is the chance it\'s remembered now, by the phone\'s own model):')
+    strong = sorted([x for x in asked if x['recall'] >= STRONG and x['marks'] and x['marks'][-1] == 'right'], key=lambda x: -x['recall'])
+    weak = sorted([x for x in asked if x['recall'] < WEAK or (x['marks'] and x['marks'][-1] == 'wrong')], key=lambda x: x['recall'])
+    holding = [x for x in asked if x not in strong and x not in weak]
+    if strong:
+        print(f'  Strong ({len(strong)}): ' + ', '.join(f'{x["fact"]} {round(x["recall"] * 100)}%' for x in strong))
+    if holding:
+        print(f'  Holding ({len(holding)}): ' + ', '.join(f'{x["fact"]} {round(x["recall"] * 100)}%' for x in holding))
+    if weak:
+        print(f'  Weak ({len(weak)}):')
+        for x in weak:
+            last = x['last'] or {}
+            missed = sum(1 for m in x['marks'] if m == 'wrong')
+            print(f'    {x["topic"]} › {x["fact"]} {round(x["recall"] * 100)}%: {x["text"].replace("*", "")}  (missed {missed} of {len(x["marks"])}; '
+                  f'last {last.get("mark")} {"in review" if last.get("via") == "review" else "in " + str(last.get("via"))}: {show_value(last.get("value"))}'
+                  + (f', shown "{last["why"]}"' if last.get('why') and last.get('mark') != 'right' else '') + ')')
+    unasked = [x for x in facts if not x['asked']]
+    if unasked:
+        print(f'  Not asked yet ({len(unasked)}): ' + ', '.join(x['fact'] for x in unasked))
+    if mem['review']['answers']:
+        print(f'  Review so far: {mem["review"]["answers"]} answer(s) in {mem["review"]["runs"]} run(s), {mem["review"]["right"]} right; best combo ×{mem["best"]}')
+
+
 def cmd_progress(a):
     data = data_dir(a.data)
     if git(data, 'pull', '-q', '--ff-only', check=False).returncode:
@@ -1659,14 +2129,27 @@ def cmd_progress(a):
         print(f'Nothing new{" since " + since if since else ""}.')
     else:
         print(f'{len(events)} event(s){" since " + since if since else ""}:')
-        by_lesson, opened = {}, {}
+        by_lesson, opened, reviews = {}, {}, []
         for e in events:
             if e.get('type') == 'open':  # a chest opened, or a review or animation visited: no steps
                 opened.setdefault((e.get('topic'), e.get('node'), e.get('kind')), []).append(e)
                 continue
+            if e.get('review') or e.get('type') == 'review':  # an answer in a review run, or a run's end
+                reviews.append(e)
+                continue
             by_lesson.setdefault((e.get('topic'), e.get('lesson')), []).append(e)
         for (topic, node, kind), evs in opened.items():
             print(f'\n{topic} › {node} ({kind}): opened {len(evs)} time(s), first at {evs[0].get("at", "?")}')
+        if reviews:
+            answers = [e for e in reviews if e.get('type') == 'attempt']
+            ends = [e for e in reviews if e.get('type') == 'review']
+            runs = {e.get('review') for e in answers} | {e.get('run') for e in ends}
+            print(f'\nReview: {len(answers)} answer(s) in {len(runs)} run(s), {sum(1 for e in answers if e.get("right"))} right' +
+                  (f', best combo ×{max(int(e.get("combo") or 0) for e in ends)}' if ends else '') +
+                  ''.join(f'; went through the review {e.get("node")} in {e.get("topic")}' for e in ends if e.get('node') and e.get('done')))
+            for e in answers:
+                if not e.get('right'):
+                    print(f'  {"close" if e.get("close") else "wrong"}: {e.get("topic")} › {e.get("fact")} (asked {e.get("ask")}, {e.get("form")}): {show_value(e.get("value"))}' + (f'  shown: "{e["why"]}"' if e.get('why') else ''))
         for (topic, lesson), evs in by_lesson.items():
             title = lesson
             lf = data / 'topics' / str(topic) / f'{lesson}.json'
@@ -1696,6 +2179,8 @@ def cmd_progress(a):
                 for t, m in zip(tries, marks):
                     if m != 'right':
                         print(f'    {m}{" at line " + t["line"] if t.get("line") else ""}: {show_value(t.get("value"))}' + (f'  shown: "{t["why"]}"' if t.get('why') else ''))
+    if not a.json:
+        print_memory(data, a)
     if a.mark_read:
         save_json(data / 'read.json', {'v': 1, 'at': now(), 'files': [f'progress/{f.name}' for f in files]})
         publish(data, 'Progress read', [data / 'read.json'], push=not a.no_push)
@@ -1715,6 +2200,10 @@ def main():
     s = sub.add_parser('check', help='check topics or lessons against the format and the parts')
     s.add_argument('targets', nargs='+', help='topic folders, lesson files, or topic ids in the data clone')
     s.set_defaults(fn=cmd_check)
+    s = sub.add_parser('facts', help='every fact a topic declares, its ways of asking, and what teaches and draws on it')
+    s.add_argument('topic', help='a topic folder, or a topic id in the data clone')
+    s.add_argument('--json', action='store_true')
+    s.set_defaults(fn=cmd_facts)
     s = sub.add_parser('fit', help='draw each step on the smallest iPhone and say whether it fits')
     s.add_argument('target')
     s.add_argument('--json', action='store_true')
@@ -1743,6 +2232,7 @@ def main():
     s.add_argument('--json', action='store_true')
     s.add_argument('--mark-read', action='store_true', help='and record it as read, which the phone shows')
     s.add_argument('--no-push', action='store_true')
+    s.add_argument('--now', help=argparse.SUPPRESS)  # an ISO time to reckon memory at: the tests
     s.set_defaults(fn=cmd_progress)
     a = p.parse_args()
     a.fn(a)

@@ -1,0 +1,67 @@
+{
+ "v": 1,
+ "title": "Made-up spin",
+ "version": 1,
+ "minutes": 3,
+ "steps": [
+  { "id": "which-way", "kind": "check", "title": "Which way", "fact": "turn", "ask": "Which way does a made-up storm turn?",
+   "input": { "form": "choice", "options": [
+    { "id": "left", "text": "To the left", "right": true },
+    { "id": "right", "text": "To the right", "why": "No: they turn *left*.", "tempting": "Most things turn right." }
+   ] }, "right": "Yes: *left*.", "src": ["made-up"] },
+  { "id": "start", "kind": "play", "title": "Where", "fact": "where", "ask": "Tap the country where made-up storms start.",
+   "play": { "part": "globe", "settings": { "spin": "free", "tap": "country", "view": [-55, -12] } },
+   "goal": { "read": "selected", "is": "Brazil" }, "right": "Yes: *Brazil*.", "why": "They start in *Brazil*.",
+   "tries": [ { "state": { "selected": "Brazil", "tapped": { "lon": -50, "lat": -10, "land": true, "country": "Brazil" } }, "marked": "right" },
+              { "state": { "selected": "Peru", "tapped": { "lon": -75, "lat": -10, "land": true, "country": "Peru" } }, "marked": "wrong" } ], "src": ["made-up"] },
+  { "id": "seas", "kind": "explain", "title": "Names", "text": "A made-up storm has a different name in each sea.", "fact": ["seas-north", "seas-south", "seas-east"], "src": ["made-up"] }
+ ],
+ "facts": [
+  { "id": "turn", "text": "Made-up storms turn *left*.", "src": ["made-up"],
+   "asks": [
+    { "id": "pick", "kind": "check", "ask": "Seen from above, a made-up storm turns which way?",
+     "input": { "form": "choice", "options": [
+      { "id": "l", "text": "Left", "right": true },
+      { "id": "r", "text": "Right", "why": "They turn *left*.", "tempting": "Clocks turn right." },
+      { "id": "e", "text": "Either", "why": "Always *left*.", "tempting": "It could seem like chance." }
+     ] }, "right": "Yes: *left*." },
+    { "id": "string", "kind": "check", "ask": "Pair each storm with the way it turns.",
+     "input": { "form": "string", "left": [ { "id": "made", "text": "Made-up storm" }, { "id": "real", "text": "Real north storm" } ],
+      "right": [ { "id": "l", "text": "Left" }, { "id": "cc", "text": "Counterclockwise" } ] },
+     "answer": { "made": "l", "real": "cc" }, "right": "Yes.", "why": "Made-up storms turn *left*.",
+     "tries": [ { "state": { "value": { "made": "cc", "real": "l" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "made": "l", "real": "cc" }, "answered": true }, "marked": "right" } ] }
+   ] },
+  { "id": "where", "text": "Made-up storms start in *Brazil*.", "src": ["made-up"],
+   "asks": [
+    { "id": "tap", "kind": "play", "ask": "Tap the country made-up storms start in.",
+     "play": { "part": "map", "settings": { "projection": "equal-earth", "tap": "country", "view": [-60, -15], "zoom": 2.4 } },
+     "goal": { "read": "selected", "is": "Brazil" }, "right": "Yes: *Brazil*.", "why": "They start in *Brazil*.",
+     "tries": [ { "state": { "selected": "Brazil", "tapped": { "lon": -50, "lat": -10, "land": true, "country": "Brazil" } }, "marked": "right" },
+                { "state": { "selected": "Bolivia", "tapped": { "lon": -64, "lat": -17, "land": true, "country": "Bolivia" } }, "marked": "wrong" } ] },
+    { "id": "pick", "kind": "check", "ask": "Which country do made-up storms start in?",
+     "input": { "form": "choice", "options": [
+      { "id": "br", "text": "Brazil", "right": true },
+      { "id": "pe", "text": "Peru", "why": "They start in *Brazil*.", "tempting": "It's next door." },
+      { "id": "cl", "text": "Chile", "why": "They start in *Brazil*.", "tempting": "It's nearby." }
+     ] }, "right": "Yes: *Brazil*." }
+   ] }
+ ],
+ "families": [
+  { "id": "seas", "about": "What a made-up storm is called in each made-up sea",
+   "rows": [
+    { "id": "north", "sea": "the North Sea", "short": "North Sea", "name": "Gale" },
+    { "id": "south", "sea": "the South Sea", "short": "South Sea", "name": "Squall" },
+    { "id": "east", "sea": "the East Sea", "short": "East Sea", "name": "Whirl" }
+   ],
+   "fact": { "text": "In {sea}, a made-up storm is a *{name}*.", "src": ["made-up"] },
+   "asks": [
+    { "id": "name", "kind": "check", "ask": "What is a made-up storm called in {sea}?",
+     "input": { "form": "choice", "options": { "from": "name", "count": 3, "why": "That's its name in {other.sea}.", "tempting": "The names sound alike." } },
+     "right": "Yes: a *{name}*." },
+    { "id": "sea", "kind": "check", "ask": "In which sea is a made-up storm called a {name}?",
+     "input": { "form": "choice", "options": { "from": "short", "count": 3, "unlike": "name", "why": "There it's a {other.name}.", "tempting": "It's a sea nearby." } },
+     "right": "Yes: {sea}." }
+   ] }
+ ],
+ "sources": [ { "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" } ]
+}

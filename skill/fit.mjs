@@ -1,6 +1,7 @@
 // `primer fit`: draws every step of a lesson in the real app, in a headless browser, on the smallest iPhone
-// (375 x 667) and on an iPhone 11 (414 x 896), and says whether it fits. It measures rather than guesses,
-// so it can't be the optimist. Never opens a window.
+// (375 x 667) and on an iPhone 11 (414 x 896), and says whether it fits; then every way of asking each of
+// its facts, as review and tests will show them. It measures rather than guesses, so it can't be the
+// optimist. Never opens a window.
 //
 //   node fit.mjs --app <primer repo> --lesson <lesson.json> --topic <topic folder> [--shots <folder>] [--browser <path>]
 // Prints one line of JSON: { lesson, steps: [ { step, verdict, words, small, big } ] }.
@@ -8,6 +9,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { basename, extname, join, normalize, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { launch, sleep } from './cdp.mjs';
 
 const args = {};
@@ -23,6 +25,13 @@ lesson.topic = topic.id;
 // An animation's file is a scene: it plays as a lesson of that one step.
 if (!lesson.steps && Array.isArray(lesson.lines)) {
   Object.assign(lesson, { kind: 'animation', steps: [{ id: lesson.id, kind: 'scene', title: lesson.title, parts: lesson.parts, lines: lesson.lines }] });
+}
+// A lesson's facts are asked in review and in tests, each ask a step of its own: they're drawn too, after the
+// steps, as <fact>.<ask>, families made from their tables by the app's own js/facts.js.
+{
+  const { factsOfLesson, askStep } = await import(pathToFileURL(join(APP, 'js', 'facts.js')).href);
+  const asks = factsOfLesson(lesson).flatMap(f => f.asks.map(a => askStep({ ...f, topic: topic.id }, a)));
+  lesson.steps = [...(lesson.steps || []), ...asks];
 }
 topic.lessons = [lesson];
 
