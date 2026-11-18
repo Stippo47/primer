@@ -224,3 +224,42 @@ The shell ran on the real phone: installed, connected to the private repo, playe
 
 - **The problem is the face: everyone is too happy.** And no style offered a side view. Next round: calmer faces with a range of expressions, and side-view characters.
 - **Round 7 (calmer faces, side views): neither landed.** Next: one crow in eight clearly distinct styles, each changing shape language, shading, limbs and eyes, standing in a cheated three-quarter pose turned slightly to the right (not full front, not full profile). "I'll know the look when I see it."
+
+## 2026-11-18: the first pieces of stage 2 on the phone
+
+Their words are in primer-data `notes/answers-2026-11-18c.md`.
+
+### Marked good
+
+Buttons and the chest, the one map (globe or flat), and the spacing.
+
+### Animations play like a video
+
+- **Full screen, no visible buttons.** The picture fills the screen. Tapping it brings up a progress bar and controls laid over it, like YouTube (pause, skip, a close button), which fade again after a few seconds. No continue bar.
+- **No interactive parts in animations.** They play through like a video. The tap-to-continue moments are taken out of the scene format, not just out of the pilot (fewer parts).
+- **Captions animate:** each word lights up as it's read. Captions can be turned on or off from the overlay, and the choice is remembered.
+- **Animations can be longer.**
+- **Louder.** "Everything is too quiet." The clips sat at about -16 LUFS. My call: narration goes up to about -13 LUFS with a limiter so peaks stay under -1 dB. A phone page can't raise its own volume, so it has to be in the files.
+
+### Voice in lessons too
+
+This replaces "voice only for animations, overviews and pronunciations" (2026-11-16). My call on how: with Voice on, a lesson step's text and its question are read aloud as the step opens, with the words lighting up as in captions. The explanation after an answer is read too. Moving on stops the voice. A step can carry its own spoken wording when the written one doesn't read aloud well. One read-along text part serves both the captions and the lesson text.
+
+### What each kind of node is for
+
+- **Animations introduce a concept, lessons reinforce and expand it, tests test it.** A topic's sections open with an animation. The pilot is reordered to match, with an animation before each lesson.
+- **Labs (their "maybe a 4th type"):** a bigger problem in several parts, usually in a playground, using what the topic covered, with coins (earned from lessons and studying) buying help when you're stuck. Proposed back to them as a design card before anything is built.
+
+### Answer forms
+
+- **Temperature slider:** have fun with it. It could be a thermometer that changes colour, and its picture should move.
+- **Depth slider:** vertical, and better looking.
+- **Dial:** the wind isn't animated any more (a regression), so it must move again.
+- **Number:** still too simple; the design and the drawing aren't liked.
+- **Pile:** the count sits in the handle, between the arrows, with a tick of vibration on each add or remove.
+- **Spot is bad.** Taken out of Practice until it's redone.
+- Every other form is good.
+
+### Avatar
+
+- **Round 8 (one crow in eight looks): too extreme.** Keep the flat vector art style. Stilt is the only one slightly liked, but the next round mustn't just be variants of it. My reading of "don't run away with that idea and just make variants of him": one or two looks may borrow from Stilt, and the rest are fresh.
