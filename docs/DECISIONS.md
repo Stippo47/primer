@@ -161,3 +161,4 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 - **The room is settled for now:** drawn smaller, seen a little from above, furniture as redrawn, the bookcase display, and locked shop things as dark imprints. All marked good.
 - **Rooms join by panning.** You drag straight through from one room to the next; no door needs tapping.
 - **The avatar: shapes first.** Two of the six were liked but not enough (my reading: the raccoon and the frog, the two my notes named). Next is a board of about ten base shapes as stills: no animation, no clothes. Clothes and accessories come after a base is chosen.
+- **"Shapes" meant shape styles, not species.** Next: one person drawn in ten different shape styles, and one monster drawn in ten. The ten animals from round 4 are liked and kept (`stage0/avatar4/`), with every earlier round's too.
