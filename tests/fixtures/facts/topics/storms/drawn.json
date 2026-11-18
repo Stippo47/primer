@@ -1,0 +1,8 @@
+{
+ "v": 1,
+ "title": "A drawn test",
+ "version": 1,
+ "minutes": 2,
+ "draw": { "from": "unit", "count": 4 },
+ "sources": [ { "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" } ]
+}

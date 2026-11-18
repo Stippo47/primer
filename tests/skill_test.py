@@ -621,6 +621,181 @@ class Voice(SceneWork):
         self.assertIn('Can\'t find the voice environments', r.stdout)
 
 
+FACTS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'storms'
+CAPITALS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'capitals'
+
+
+def fact(lesson, fid):
+    return next(f for f in lesson['facts'] if f['id'] == fid)
+
+
+def ask(lesson, fid, aid):
+    return next(a for a in fact(lesson, fid)['asks'] if a['id'] == aid)
+
+
+class FactCheck(Work):
+    """Facts: each sourced, with two or more ways of asking it, each a step that can be got wrong and doesn't
+    give itself away; steps naming facts the topic declares; families expanded and checked like any fact."""
+
+    def errors(self, change, lesson='fuel', file=None):
+        dest = self.topic(change, name='storms', source=FACTS, lesson=lesson)
+        r = run('check', dest)
+        self.assertEqual(r.returncode, 1, r.stdout)
+        return r.stdout
+
+    def test_the_made_up_fact_topics_pass(self):
+        r = run('check', FACTS, CAPITALS)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('family seas: every ask shape is a choice', r.stdout)  # said once for the family, not per row
+
+    def test_a_fact_needs_two_asks_and_a_source(self):
+        out = self.errors(lambda L: (fact(L, 'warm')['asks'].pop(), fact(L, 'land').pop('src')))
+        self.assertIn('fact warm: a fact needs two or more ways of asking it ("asks")', out)
+        self.assertIn('fact land: a fact says where it comes from', out)
+
+    def test_an_ask_is_a_check_or_play_step_and_needs_a_wrong_try(self):
+        def change(L):
+            ask(L, 'land', 'sort')['tries'] = [t for t in ask(L, 'land', 'sort')['tries'] if t['marked'] == 'right']
+            ask(L, 'count', 'pile').pop('tries')
+            ask(L, 'warm', 'pick')['kind'] = 'explain'
+        out = self.errors(change)
+        self.assertIn('fact land ask 2 (sort): none of its tries is wrong', out)
+        self.assertIn('fact count ask 1 (pile): an ask needs "tries"', out)
+        self.assertIn('fact warm ask 1 (pick): "kind" is one of check, play: an ask is a question', out)
+
+    def test_an_ask_that_gives_itself_away_is_refused(self):
+        def change(L):
+            ask(L, 'warm', 'pick')['ask'] = 'Could water at 31 °C start a made-up storm?'
+            ask(L, 'warm', 'dial')['ask'] = 'Turn the dial to 30 °C: how warm the water must be.'
+        out = self.errors(change)
+        self.assertIn('fact warm ask 1 (pick): gives itself away: the question says the right option, "Water at 31 °C"', out)
+        self.assertIn('fact warm ask 2 (dial): gives itself away: it says the number it asks for, 30', out)
+        out = self.errors(lambda L: ask(L, 'where', 'tap')['play'].update(calls=[['highlight', ['Brazil']]]), lesson='spin')
+        self.assertIn('fact where ask 1 (tap): gives itself away: its part shows a highlight right where the goal is ("Brazil")', out)
+        r = run('check', self.topic(lambda L: ask(L, 'where', 'tap')['play'].update(calls=[['marker', [-50, -10], 'pin']]), name='storms', source=FACTS, lesson='spin'))
+        self.assertEqual(r.returncode, 0, r.stdout)   # a marker at a point says nothing of a goal that reads the country tapped
+        self.assertNotIn('gives itself away', r.stdout)
+
+    def test_two_asks_the_same_way_are_refused(self):
+        out = self.errors(lambda L: fact(L, 'land')['asks'].append({**copy.deepcopy(ask(L, 'land', 'pick')), 'id': 'again'}))
+        self.assertIn('fact land ask 3 (again): asks it the same way as ask 1', out)
+
+    def test_steps_name_facts_the_topic_declares(self):
+        out = self.errors(lambda L: L['steps'][1].update(fact='nope'))
+        self.assertIn('step 2 (how-warm): names the fact "nope", which no lesson of the topic declares', out)
+        # a step can name a fact from another lesson of the topic
+        r = run('check', self.topic(lambda L: L['steps'][1].update(fact='turn'), name='storms', source=FACTS, lesson='fuel'))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        out = self.errors(lambda L: L['facts'].append({**copy.deepcopy(fact(L, 'warm')), 'id': 'turn'}))
+        self.assertIn('the fact "turn" is declared by fuel and again by spin', out)
+
+    def test_facts_and_draws_belong_where_they_go(self):
+        out = self.errors(lambda L: L.update(facts=[], draw={'from': 'unit', 'count': 4}), lesson='fuel')
+        self.assertIn('"draw" is for a test or an exam', out)
+        out = self.errors(lambda L: L.update(draw={'from': 'everywhere', 'count': 4}, facts=[]), lesson='drawn')
+        self.assertIn('"draw" is { "from": "unit" or "topic"', out)
+        self.assertIn('"facts" belong in a lesson', out)
+
+    def test_a_review_with_no_facts_before_it_is_warned_about(self):
+        r = run('check', FIXTURE)
+        self.assertIn('(look-back): a review asks the facts of the lessons before it, and they declare none', r.stdout)
+
+    def test_a_family_names_only_fields_its_rows_have(self):
+        def change(L):
+            L['families'][0]['fact']['text'] = 'In {sea}, a *{colour}* storm.'
+            L['families'][0]['asks'][0]['input']['options'].pop('why')
+        out = self.errors(change, lesson='spin')
+        self.assertIn('family 1 (seas): "{colour}" names a field the rows don\'t have', out)
+        self.assertIn('options made from the table need "why" and "tempting"', out)
+
+    def test_a_family_is_checked_like_any_fact(self):
+        out = self.errors(lambda L: L['families'][0]['asks'][0].update(ask='Is a made-up storm in {sea} a {name}?'), lesson='spin')
+        self.assertIn('fact seas-north (family seas, row north) ask 1 (name): gives itself away: the question says the right option, "Gale"', out)
+
+
+class Families(unittest.TestCase):
+    """A family makes the same facts in the checker as on the phone."""
+
+    SYNTHETIC = {'id': 'oceans', 'rows': [
+        {'id': 'a', 'ocean': 'the A Sea', 'short': 'A Sea', 'name': 'gale', 'lon': -45.5, 'lat': 22, 'big': True, 'n': 30.0},
+        {'id': 'b', 'ocean': 'the B Sea', 'short': 'B Sea', 'name': 'gale', 'lon': -120, 'lat': 14.25, 'big': False, 'n': 3},
+        {'id': 'c', 'ocean': 'the C Sea', 'short': 'C Sea', 'name': 'whirl', 'lon': 140, 'lat': 18, 'big': True, 'n': 7},
+        {'id': 'd', 'ocean': 'the D Sea', 'short': 'D Sea', 'name': 'squall', 'lon': 80, 'lat': -12, 'big': False, 'n': 1.5},
+        {'id': 'e', 'ocean': 'the E Sea', 'short': 'E Sea', 'name': 'squall', 'lon': 170, 'lat': -18, 'big': True, 'n': 12}],
+        'fact': {'text': 'In {ocean} ({n} a year, big: {big}), a *{name}*.', 'src': ['x']},
+        'asks': [
+            {'id': 'name', 'kind': 'check', 'ask': 'What is it called in {ocean}?', 'figure': {'part': 'globe', 'settings': {'view': ['{lon}', '{lat}']}},
+             'input': {'form': 'choice', 'options': {'from': 'name', 'count': 3, 'why': 'That is {other.ocean}\'s.', 'tempting': 'Like {other.short}.'}}},
+            {'id': 'sea', 'kind': 'check', 'ask': 'Where is it a {name}?',
+             'input': {'form': 'choice', 'options': {'from': 'short', 'count': 4, 'unlike': 'name', 'near': 'big', 'why': 'There: {other.name}.', 'tempting': 't'}}},
+            {'id': 'n', 'kind': 'check', 'ask': 'How many?', 'input': {'form': 'slider', 'min': 0, 'max': 40}, 'answer': '{n}', 'within': 1,
+             'tries': [{'state': {'value': '{n}', 'answered': True}, 'marked': 'right'}]}]}
+
+    def families(self):
+        caps = json.loads((CAPITALS / 'capitals.json').read_text(encoding='utf-8'))['families']
+        seas = json.loads((FACTS / 'spin.json').read_text(encoding='utf-8'))['families']
+        return caps + seas + [self.SYNTHETIC]
+
+    def test_python_and_javascript_make_the_same_facts(self):
+        sys.path.insert(0, str(PRIMER.parent))
+        import primer  # noqa: E402
+        fams = self.families()
+        py = [primer.expand_family(f) for f in fams]
+        script = ("import { expandFamily } from " + json.dumps((ROOT / 'js' / 'facts.js').as_uri()) + ";"
+                  "import { readFileSync } from 'node:fs';"
+                  "console.log(JSON.stringify(JSON.parse(readFileSync(0, 'utf8')).map(expandFamily)));")
+        out = subprocess.run(['node', '--input-type=module', '-e', script], input=json.dumps(fams), capture_output=True, text=True, encoding='utf-8', check=True).stdout
+        js = json.loads(out)
+        # JSON has one kind of number: Python writes 30.0 where JavaScript writes 30, and they are the same value
+        def num(v):
+            if isinstance(v, float) and v.is_integer():
+                return int(v)
+            if isinstance(v, list):
+                return [num(x) for x in v]
+            if isinstance(v, dict):
+                return {k: num(x) for k, x in v.items()}
+            return v
+        self.assertEqual(json.dumps(num(py), sort_keys=True, ensure_ascii=False), json.dumps(num(js), sort_keys=True, ensure_ascii=False))
+        self.assertEqual(sum(len(x) for x in py), 4 + 3 + 5)
+
+    def test_a_row_is_a_fact_and_a_column_its_options(self):
+        sys.path.insert(0, str(PRIMER.parent))
+        import primer  # noqa: E402
+        made = {f['id']: f for f in primer.expand_family(self.SYNTHETIC)}
+        a = made['oceans-a']
+        self.assertEqual(a['text'], 'In the A Sea (30 a year, big: true), a *gale*.')
+        self.assertEqual(a['asks'][0]['figure']['settings']['view'], [-45.5, 22])   # "{lon}" alone keeps its number
+        self.assertEqual(a['asks'][2]['answer'], 30.0)
+        names = a['asks'][0]['input']['options']
+        self.assertEqual([o['text'] for o in names if o.get('right')], ['gale'])
+        self.assertEqual(sorted(o['text'] for o in names), ['gale', 'squall', 'whirl'])   # one of each other value, never the right one again
+        self.assertTrue(all(o['why'].startswith('That is the ') and o['tempting'].startswith('Like ') for o in names if not o.get('right')))
+        seas = a['asks'][1]['input']['options']
+        self.assertNotIn('B Sea', [o['text'] for o in seas])   # unlike: B's storms are gales too, so B isn't offered as wrong
+        self.assertEqual(len(seas), 4)
+        self.assertEqual([o['text'] for o in seas[1:3]], sorted([o['text'] for o in seas[1:3]], key=lambda t: t not in ('C Sea', 'E Sea')))  # near: the other big seas first
+        self.assertEqual(primer.expand_family(self.SYNTHETIC), primer.expand_family(copy.deepcopy(self.SYNTHETIC)))   # the same every time
+
+
+class FactsCommand(unittest.TestCase):
+    def test_facts_lists_facts_their_asks_and_what_teaches_and_draws_on_them(self):
+        out = run('facts', FACTS, check=True).stdout
+        for line in ('Made-up storms: 8 fact(s), 3 of them made from 1 family.',
+                     'warm: A made-up storm needs water at about 30 °C.  (made-up)',
+                     'taught by: intro, how-warm (slider)',
+                     'ask dial: dial: "Turn the dial to how warm the water must be." → 30 °C (within 2)',
+                     'ask sort: sort: "Sort these: where does a made-up storm grow, and where does it weaken?" → {"sea": "grow", "land": "weak"}',
+                     'ask tap: play:map: "Tap the country made-up storms start in."',
+                     'seas-north: In the North Sea, a made-up storm is a Gale.  [family seas]',
+                     'ask sea: choice: "In which sea is a made-up storm called a Gale?" → "North Sea" of 3',
+                     'drawn (test): draws 4 question(s) from the facts of its unit',
+                     'look-back (review): goes over 8 fact(s) from the lessons before it'):
+            self.assertIn(line, out)
+        made = json.loads(run('facts', CAPITALS, '--json', check=True).stdout)
+        self.assertEqual([f['id'] for f in made], ['capital-france', 'capital-peru', 'capital-japan', 'capital-kenya'])
+        self.assertEqual(made[1]['taught'][0]['step'], 'read')
+
+
 class Rules(unittest.TestCase):
     """The checker's rules and the phone's must agree exactly."""
 
@@ -832,6 +1007,44 @@ class SendAndProgress(Work):
         self.assertTrue(read['at'] and len(read['files']) == 2)
         self.assertIn('Nothing new', run('progress', data=self.clone, check=True).stdout)
         self.assertIn('5 event(s)', run('progress', '--all', data=self.clone, check=True).stdout)
+
+    def test_progress_says_which_facts_are_strong_and_which_weak(self):
+        src = self.tmp / 'src' / 'storms'
+        shutil.copytree(FACTS, src)
+        run('send', src, data=self.clone, check=True)
+        lesson = {'v': 1, 'topic': 'storms', 'lesson': 'fuel', 'version': 1}
+        at = lambda d, h=10: f'2026-11-{10 + d:02d}T{h:02d}:00:00.000Z'
+        events = [
+            {**lesson, 'eid': 'f1', 'at': at(0), 'type': 'start', 'step': 'intro'},
+            {**lesson, 'eid': 'f2', 'at': at(0, 11), 'type': 'attempt', 'step': 'how-warm', 'fact': 'warm', 'kind': 'check', 'form': 'slider', 'value': 30, 'right': True, 'close': False, 'why': 'Yes: *30 °C*.'},
+            {**lesson, 'eid': 'f3', 'at': at(0, 12), 'type': 'attempt', 'step': 'over-land', 'fact': 'land', 'kind': 'check', 'form': 'choice', 'value': 'grow', 'right': False, 'close': False, 'why': 'No: over land it *weakens*.'},
+            {**lesson, 'eid': 'f4', 'at': at(0, 13), 'type': 'finish', 'right': 1, 'of': 2},
+            {'v': 1, 'eid': 'f5', 'at': at(2), 'type': 'attempt', 'review': 'r1', 'topic': 'storms', 'fact': 'land', 'ask': 'sort', 'lesson': 'fuel', 'version': 1, 'kind': 'check', 'form': 'sort',
+             'value': {'sea': 'weak', 'land': 'grow'}, 'right': False, 'close': False, 'why': 'Warm sea feeds it; *land* weakens it.'},
+            {'v': 1, 'eid': 'f6', 'at': at(3), 'type': 'attempt', 'review': 'r1', 'topic': 'storms', 'fact': 'warm', 'ask': 'dial', 'lesson': 'fuel', 'version': 1, 'kind': 'check', 'form': 'dial',
+             'value': 30, 'right': True, 'close': False, 'why': 'Yes: about *30 °C*.'},
+            {'v': 1, 'eid': 'f7', 'at': at(3, 11), 'type': 'review', 'run': 'r1', 'topic': None, 'right': 1, 'of': 2, 'combo': 1},
+        ]
+        self.phone_sends('2026-11-13T11-00-00-000Z-ffffff', events)
+        out = run('progress', '--all', '--now', at(3, 22), data=self.clone, check=True).stdout
+        self.assertIn('Review: 2 answer(s) in 1 run(s), 1 right, best combo ×1', out)
+        self.assertIn('wrong: storms › land (asked sort, sort): {"sea": "weak", "land": "grow"}  shown: "Warm sea feeds it; *land* weakens it."', out)
+        self.assertIn('Memory, from every answer so far (2 of 8 facts asked', out)
+        self.assertRegex(out, r'Strong \(1\): warm (9\d|100)%')
+        self.assertIn('Weak (1):', out)
+        self.assertRegex(out, r'storms › land \d+%: Over land a made-up storm weakens\.  \(missed 2 of 2; last wrong in review: \{"sea": "weak", "land": "grow"\}, shown "Warm sea feeds it; \*land\* weakens it\."\)')
+        self.assertIn('Not asked yet (6): count, turn, where, seas-north', out)
+        self.assertIn('Review so far: 2 answer(s) in 1 run(s), 1 right; best combo ×1', out)
+        # the same numbers as the phone: memory.mjs runs the app's own model
+        mem = json.loads(subprocess.run(['node', str(ROOT / 'skill' / 'memory.mjs'), '--app', str(ROOT), '--data', str(self.clone), '--now', at(3, 22)],
+                                        capture_output=True, text=True, encoding='utf-8', check=True).stdout)
+        warm = next(x for x in mem['facts'] if x['fact'] == 'warm')
+        script = ("import { Memory } from " + json.dumps((ROOT / 'js' / 'memory.js').as_uri()) + ";"
+                  "const m = new Memory(); m.answer('k', 'right', '" + at(0, 11) + "'); m.answer('k', 'right', '" + at(3) + "');"
+                  "console.log(m.recall('k', Date.parse('" + at(3, 22) + "')).toFixed(4))")
+        js = subprocess.run(['node', '--input-type=module', '-e', script], capture_output=True, text=True, check=True).stdout.strip()
+        self.assertEqual(f'{warm["recall"]:.4f}', js)
+        self.assertEqual(warm['answers'], 2)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 // Anything that stops a send ends up in status(), in plain words, for the screens to show.
 // Copied from Riffle's sync, without photos and their own decks.
 import * as store from './store.js';
+import * as clock from './clock.js';
 
 // The data repo's owner is the one whose GitHub Pages serve this app (<owner>.github.io), so no name
 // is written into this public code. A local test server uses a stand-in owner.
@@ -198,10 +199,13 @@ export async function disconnect() {
 let eidCount = 0;
 export const newId = () => `${Date.now().toString(36)}-${(eidCount++).toString(36)}-${rand()}`;
 
+// An event as it's kept and sent: its id and time added (the app's clock, js/clock.js).
+export const stampEvent = event => (event.eid ? event : { v: 1, eid: newId(), at: clock.iso(), ...event });
+
 // The write into the backup list happens before this returns its promise, so an answer queued a
 // moment before the app dies is still kept.
 export async function enqueue(event) {
-  const queued = store.queueAdd({ v: 1, eid: newId(), at: new Date().toISOString(), ...event });
+  const queued = store.queueAdd(stampEvent(event));
   await queued;
   state.waiting = await store.queueCount();
   emit();
@@ -342,13 +346,45 @@ export async function pull(onWords = () => {}) {
   for (const path of have.keys()) {
     if (!live.has(path)) { await store.files.del(path); mediaUrls.delete(path); changed = true; }
   }
-  if (changed) onWords();
+  if (changed) await onWords();
   await eachAtOnce(todo.filter(t => !t.path.endsWith('.json')), 3, bring);
   await readWhen();
   state.pulledAt = Date.now();
   state.pullProblem = missed ? `${missed} file${missed === 1 ? '' : 's'} didn't come down. It will try again.` : null;
   emit();
+  for (const fn of pulled) await Promise.resolve(fn()).catch(() => {});
   return changed;
+}
+
+// Told after every pull: the app checks then whether this phone needs its memory back.
+const pulled = new Set();
+export const onPulled = fn => { pulled.add(fn); return () => pulled.delete(fn); };
+
+// Every event in the repo's progress files, repeats dropped: what a new or cleared phone rebuilds its
+// memory and path from. These files never come down to be kept; they're read once, here. Null if any
+// couldn't be read (no signal, a refusal), so nothing is rebuilt from half the story.
+export async function progressEvents() {
+  let key;
+  try { key = await getKey(); } catch { return null; }
+  if (!key) return null;
+  try {
+    const r = await call(`/repos/${FULL}/git/trees/${BRANCH}?recursive=1`, key);
+    if (!r.ok) return null;
+    const list = (await r.json()).tree.filter(t => t.type === 'blob' && /^progress\/[^/]+\.json$/.test(t.path) && !t.path.startsWith('progress/connect-check'));
+    const events = [], seen = new Set();
+    let missed = 0;
+    await eachAtOnce(list, 4, async t => {
+      try {
+        const b = await call(`/repos/${FULL}/git/blobs/${t.sha}`, key, { accept: 'application/vnd.github.raw+json', timeout: MEDIA_TIMEOUT });
+        if (!b.ok) throw new Error(String(b.status));
+        const batch = JSON.parse(await b.text());
+        for (const e of (batch && batch.events) || []) if (e && e.eid && !seen.has(e.eid)) { seen.add(e.eid); events.push(e); }
+      } catch { missed++; }
+    });
+    return missed ? null : events;
+  } catch {
+    return null;
+  }
 }
 
 // When the writer last read the attempts, from the note they leave in the repo.

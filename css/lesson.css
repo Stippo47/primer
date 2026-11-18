@@ -82,6 +82,30 @@
 .nrow .tickmark { width: 18px; display: flex; color: var(--teal); }
 .nrow .small { margin-left: auto; }
 
+/* review: the lesson player with the combo on top (js/review.js). The chip is gold once a run of right
+   answers has started; five pips fill one per right answer, and empty again after every fifth. */
+.rtop { gap: 12px; }
+.combo { height: 40px; min-width: 52px; padding: 0 9px; border-radius: 13px; display: flex; align-items: center; justify-content: center; flex: none;
+  background: var(--plate); color: var(--muted); box-shadow: 0 4px 0 var(--line); font-size: 22px; transform-origin: 50% 60%; }
+.combo b { font-weight: inherit; }
+.combo.on { background: var(--gold); color: #2a1650; box-shadow: 0 4px 0 var(--gold-edge); }
+.cpips { display: flex; gap: 4px; }
+.cpips i { width: 20px; height: 9px; border-radius: 5px; background: var(--track); transition: background 160ms; }
+.cpips i.on { background: var(--gold); }
+.rtop.ended .combo, .rtop.ended .cpips { visibility: hidden; }
+.rnote { flex: none; font-size: calc(13.5px * var(--ts)); font-weight: 700; color: var(--muted); line-height: 1.35; margin-bottom: -6px; }
+.taught { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px 6px 8px; border-radius: 11px; font-size: 13.5px;
+  background: rgba(255, 255, 255, 0.08); color: #ffd9e5; border: 2px solid rgba(255, 154, 184, 0.35); transition: transform var(--press-out) ease-out; }
+.taught.down { transform: translateY(2px); transition-duration: var(--press-in); }
+.taught svg { flex: none; }
+.peekhost { position: absolute; inset: 0; z-index: 30; background: var(--ground); }
+.rend .crownbig { display: flex; flex-direction: column; align-items: center; gap: 2px; transform-origin: 50% 70%; }
+.rend .crownbig p { font-size: 30px; }
+.rend .missed { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; text-align: left; }
+.rend .missed li { font-size: calc(14px * var(--ts)); font-weight: 700; line-height: 1.35; color: var(--soft); padding: 7px 11px; border-radius: 12px;
+  background: var(--panel); border-left: 4px solid var(--pink); }
+.rend .missed .key { color: var(--gold); }
+
 /* a chest opened, or a placeholder (review, animation) visited */
 .visit .lend .tally { font-size: 16px; color: var(--muted); max-width: 300px; line-height: 1.35; }
 .lend .rays.gold { background: radial-gradient(220px 220px at 50% 42%, rgba(255, 200, 61, 0.2), transparent 70%); }

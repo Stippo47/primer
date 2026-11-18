@@ -1,14 +1,16 @@
-// The nodes on a path that aren't played step by step: a chest, and the placeholders for a review and an
-// animation. A chest opens with a small celebration and is recorded as opened; what's inside comes with
-// the shop (stage 4). A review or an animation says it comes later, and visiting it lets the path go on.
-// Each is a screen of its own with the tab bar hidden, a cross to leave and one big button.
+// The nodes on a path that aren't played step by step: a chest, and the placeholders for a review with
+// nothing to go over and an animation without its scene. A chest opens with a small celebration and is
+// recorded as opened; what's inside comes with the shop (stage 4). A review whose lessons before it teach
+// no facts says so, and an animation says it comes later; visiting either lets the path go on. (A review
+// with facts before it is a review run: js/review.js.) Each is a screen of its own with the tab bar
+// hidden, a cross to leave and one big button.
 import { esc } from '../ui.js';
 import { icon, svg, chest, stepButton, glint } from '../art.js';
 import * as feel from '../feel.js';
 
 const WORDS = {
   chest: { big: 'A chest!', small: "What's inside comes with the shop." },
-  review: { big: 'Review', small: 'Soon: a review of everything before it on the path.' },
+  review: { big: 'Review', small: 'Nothing to go over here yet.' },
   animation: { big: 'Animation', small: 'Soon: animations come with the voices.' },
 };
 

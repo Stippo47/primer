@@ -1,0 +1,59 @@
+{
+ "v": 1,
+ "title": "Made-up fuel",
+ "version": 1,
+ "minutes": 3,
+ "steps": [
+  { "id": "intro", "kind": "explain", "title": "Fuel", "text": "Made-up storms feed on *warm water*, and a made-up sea sees a few of them a year.", "fact": ["warm", "count"], "src": ["made-up"] },
+  { "id": "how-warm", "kind": "check", "title": "How warm", "fact": "warm", "ask": "How warm must the water be for a made-up storm?",
+   "input": { "form": "slider", "min": 0, "max": 40, "step": 1, "unit": "°C", "start": 5 },
+   "answer": 30, "within": 2, "close": 5, "right": "Yes: *30 °C*.", "why": "It's *30 °C*.", "src": ["made-up"] },
+  { "id": "over-land", "kind": "check", "title": "Over land", "fact": "land", "ask": "A made-up storm moves over land. What happens?",
+   "input": { "form": "choice", "options": [
+    { "id": "weak", "text": "It weakens", "right": true },
+    { "id": "grow", "text": "It grows", "why": "No: over land it *weakens*.", "tempting": "Land is warm in summer." },
+    { "id": "stay", "text": "It stays", "why": "No: over land it *weakens*.", "tempting": "Storm damage goes on for days." }
+   ] }, "right": "Yes: it *weakens*.", "src": ["made-up"] }
+ ],
+ "facts": [
+  { "id": "warm", "text": "A made-up storm needs water at about *30 °C*.", "src": ["made-up"],
+   "asks": [
+    { "id": "pick", "kind": "check", "ask": "Which water could start a made-up storm?",
+     "input": { "form": "choice", "options": [
+      { "id": "cold", "text": "Water at 10 °C", "why": "Too cold: it needs about *30 °C*.", "tempting": "Cold water still moves." },
+      { "id": "hot", "text": "Water at 31 °C", "right": true },
+      { "id": "mild", "text": "Water at 20 °C", "why": "Too cool: it needs about *30 °C*.", "tempting": "Warm enough to swim in." }
+     ] }, "right": "Yes: it needs about *30 °C*." },
+    { "id": "dial", "kind": "check", "ask": "Turn the dial to how warm the water must be.",
+     "input": { "form": "dial", "min": 0, "max": 40, "step": 1, "unit": "°C", "start": 5, "picture": "warmth" },
+     "answer": 30, "within": 2, "close": 5, "right": "Yes: about *30 °C*.", "why": "About *30 °C*.",
+     "tries": [ { "state": { "value": 12, "answered": true }, "marked": "wrong" }, { "state": { "value": 30, "answered": true }, "marked": "right" } ] }
+   ] },
+  { "id": "land", "text": "Over land a made-up storm *weakens*.", "src": ["made-up"],
+   "asks": [
+    { "id": "pick", "kind": "check", "ask": "Where does a made-up storm weaken?",
+     "input": { "form": "choice", "options": [
+      { "id": "land", "text": "Over land", "right": true },
+      { "id": "sea", "text": "Over sea", "why": "Over warm sea it keeps going. Over *land* it weakens.", "tempting": "Waves look rough." },
+      { "id": "ice", "text": "Over ice", "why": "It never gets that far. Over *land* it weakens.", "tempting": "Ice is cold." }
+     ] }, "right": "Yes: over *land*." },
+    { "id": "sort", "kind": "check", "ask": "Sort these: where does a made-up storm grow, and where does it weaken?",
+     "input": { "form": "sort", "bins": [ { "id": "grow", "text": "Grows" }, { "id": "weak", "text": "Weakens" } ],
+      "items": [ { "id": "sea", "text": "Warm sea" }, { "id": "land", "text": "Land" } ] },
+     "answer": { "sea": "grow", "land": "weak" }, "right": "Yes.", "why": "Warm sea feeds it; *land* weakens it.",
+     "tries": [ { "state": { "value": { "sea": "weak", "land": "grow" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "sea": "grow", "land": "weak" }, "answered": true }, "marked": "right" } ] }
+   ] },
+  { "id": "count", "text": "A made-up sea sees *seven* storms a year.", "src": ["made-up"],
+   "asks": [
+    { "id": "pile", "kind": "check", "ask": "Pile up the storms a made-up sea sees in a year.",
+     "input": { "form": "pile", "min": 0, "max": 15, "thing": "storm" },
+     "answer": 7, "within": 0, "close": 1, "right": "Yes: *seven*.", "why": "It's *seven*.",
+     "tries": [ { "state": { "value": 12, "answered": true }, "marked": "wrong" }, { "state": { "value": 7, "answered": true }, "marked": "right" } ] },
+    { "id": "slide", "kind": "check", "ask": "How many storms does a made-up sea see in a year?",
+     "input": { "form": "slider", "min": 0, "max": 20, "step": 1, "start": 18 },
+     "answer": 7, "within": 1, "close": 3, "right": "Yes: *seven*.", "why": "It's *seven*.",
+     "tries": [ { "state": { "value": 15, "answered": true }, "marked": "wrong" }, { "state": { "value": 7, "answered": true }, "marked": "right" } ] }
+   ] }
+ ],
+ "sources": [ { "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" } ]
+}

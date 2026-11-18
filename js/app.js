@@ -1,6 +1,7 @@
-// Primer's shell: start-up, the five tabs, opening a lesson or a part, connecting, and what runs when the
-// app is hidden. The tabs are Learn, Practice, Home (raised, in the centre), Shop and Profile. The tab bar
-// hides inside a lesson, an opened part and the connect screen; a cross or a back arrow leaves.
+// Primer's shell: start-up, the five tabs, opening a lesson, a review or a part, connecting, getting a
+// new phone's memory back, and what runs when the app is hidden. The tabs are Learn, Practice, Home
+// (raised, in the centre), Shop and Profile. The tab bar hides inside a lesson, a review, an opened part
+// and the connect screen; a cross or a back arrow leaves.
 import * as store from './store.js';
 import * as sync from './sync.js';
 import * as feel from './feel.js';
@@ -8,6 +9,10 @@ import * as data from './data.js';
 import * as parts from './parts.js';
 import * as lessonPlayer from './lesson.js';
 import * as rules from './rules.js';
+import * as clock from './clock.js';
+import * as facts from './facts.js';
+import * as memory from './memory.js';
+import * as review from './review.js';
 import { icon } from './art.js';
 import { esc } from './ui.js';
 import { learnScreen } from './screens/learn.js';
@@ -77,6 +82,10 @@ const app = {
     try { localStorage.setItem('primer-prefs', JSON.stringify({ text: app.prefs.text })); } catch { /* it just flashes */ }
   },
 
+  // How much of a topic you'd recall now, 0 to 1 (null if none of its facts has been asked yet): the value
+  // the room's things will fade with (data.memoryOf, from the memory model).
+  memoryOf: topic => data.memoryOf(topic),
+
   // The narrator for a topic: the one chosen in Profile for its subject, else the topic's own.
   narratorFor(topic) {
     return (topic.subject && (app.prefs.narrators || {})[topic.subject]) || topic.narrator || DEFAULT_NARRATOR;
@@ -85,6 +94,7 @@ const app = {
   async openLesson(topic, lesson, start = 0) {
     if (run) return;
     paintTabs();
+    if (lesson.draw) lesson = drawn(topic, lesson);
     run = new lessonPlayer.Run(view, {
       topic, lesson, start,
       record,
@@ -96,12 +106,29 @@ const app = {
     return run;
   },
 
-  // A node on the path: a lesson, test, exam or animation plays from `start`; a chest or review opens (and
-  // an animation without its scene file, as a placeholder).
+  // A node on the path: a lesson, test, exam or animation plays from `start`; a chest opens; a review goes
+  // over the facts of the lessons before it (a placeholder if they teach none); an animation without its
+  // scene file is a placeholder.
   openNode(topic, node, start = 0) {
     if (run) return null;
     if (data.isPlayed(node)) return node.file ? app.openLesson(topic, node.file, start) : null;
+    if (node.kind === 'review' && review.poolFor({ node: { topic, node } }).length) return app.openReview({ node: { topic, node } });
     return visitNode(app, topic, node, { record, onLeave: () => app.go('learn') });
+  },
+
+  // Review (js/review.js): everything met, every topic mixed (Practice); one topic (Profile, scope); or the
+  // facts before a review on a path (node). anyway: nothing was due, so it starts with the closest to slipping.
+  async openReview({ scope = null, node = null, anyway = false } = {}) {
+    if (run) return null;
+    const pool = review.poolFor({ topics: app.topics, scope, node });
+    if (!pool.length) return null;
+    const back = node ? 'learn' : scope ? 'profile' : 'practice';
+    run = new review.Review(view, {
+      app, pool, node, scope, anyway, record,
+      onLeave: () => { run = null; app.go(back); },
+    });
+    await run.open();
+    return run;
   },
 
   async openPart(name) {
@@ -117,14 +144,44 @@ const app = {
   },
 };
 
-// Every attempt and answer: saved on the phone, then queued to go up as part of a new file.
+// Every attempt and answer: queued to go up as part of a new file, and applied on the phone: the path
+// moves on and the memory hears it (data.apply). A phone rebuilt from the repo replays the same events.
 function record(event) {
-  sync.enqueue(event);
-  if (event.type === 'start') data.noteLesson(event.topic, event.lesson, 'start');
-  if (event.type === 'seen') data.noteStep(event.topic, event.lesson, event.step, { seen: true });
-  if (event.type === 'attempt') data.noteStep(event.topic, event.lesson, event.step, { right: event.right, close: event.close, seen: false });
-  if (event.type === 'finish') data.noteLesson(event.topic, event.lesson, 'finish');
-  if (event.type === 'open') data.noteNode(event.topic, event.node, event.kind);
+  const e = sync.stampEvent(event);
+  sync.enqueue(e);
+  data.apply(e);
+}
+
+// A test or exam that draws its questions from facts: its listed steps, then `count` facts of its unit or
+// topic, the least well remembered first, each asked in a way its lesson didn't use. Drawn afresh each time.
+function drawn(topic, file) {
+  const d = file.draw || {};
+  const from = facts.factsBefore(topic.facts, topic, file.id, d.from === 'unit' ? 'unit' : 'topic');
+  const mem = data.memoryNow(), now = clock.now();
+  const steps = facts.drawSteps(from, Math.max(1, Number(d.count) || 8), { recall: k => mem.recall(k, now), last: k => (mem.card(k) || {}).ask || null });
+  const used = new Set(steps.map(s => s.fact));
+  const sources = [...(file.sources || [])];
+  for (const f of from) if (used.has(f.id)) for (const s of f.sources) if (!sources.some(x => x.id === s.id)) sources.push(s);
+  return { ...file, steps: [...(file.steps || []), ...steps], sources };
+}
+
+// A phone that connects with nothing kept (new, or cleared) gets everything back from the repo's progress
+// files: the path and the memory, replayed from every event. Done once; never over what the phone has.
+let rebuilding = false;
+async function maybeRebuild() {
+  if (rebuilding || !(await sync.connected()) || (await store.get('rebuilt').catch(() => null)) || !data.isBlank()) return null;
+  rebuilding = true;
+  try {
+    const events = await sync.progressEvents();
+    if (!events) return null;   // not every file came down: try again at the next pull
+    const waiting = (await store.queueAll()).map(r => r.event);
+    const out = await data.rebuild([...events, ...waiting]);
+    await store.set('rebuilt', { at: clock.iso(), ...out });
+    app.render();
+    return out;
+  } finally {
+    rebuilding = false;
+  }
 }
 
 // ---------- the tab bar
@@ -191,9 +248,11 @@ async function start() {
   }
   app.setPref('text', app.prefs.text || 'm');
   await data.loadProgress();
+  await data.loadMemory();
   await reloadLibrary();
   navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {});
   sync.onChange(paintTabs);
+  sync.onPulled(maybeRebuild);
   app.tab = SCREENS[app.prefs.tab] ? app.prefs.tab : 'learn';
   app.go(app.tab);
   app.pullNow = await sync.start(async () => { await reloadLibrary(); app.render(); });
@@ -206,7 +265,7 @@ start();
 // For the tests and the fit tool, on a local test server only.
 if (isLocalHost) {
   window.__primer = {
-    app, store, sync, feel, data, parts, rules, lesson: lessonPlayer,
+    app, store, sync, feel, data, parts, rules, lesson: lessonPlayer, clock, facts, memory, review, rebuild: maybeRebuild,
     get run() { return run; },
     // Draws one lesson, without a data repo and without saving anything: for `primer fit`.
     async fit(topic, lesson, i, media = p => p) {

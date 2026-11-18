@@ -11,8 +11,9 @@ Every command is `python "$HOME/.claude/skills/primer/primer.py" <command>`, wri
 
 ```
 primer parts                       every part: its settings, calls, events and state
-primer check <topic folder>        the files, the parts, and the rules for getting it realistically wrong
-primer fit <topic folder>          draws each step on the smallest iPhone, and says what doesn't fit
+primer check <topic folder>        the files, the parts, the facts and the rules for getting it realistically wrong
+primer facts <topic folder>        every fact the topic declares (families made into facts), its asks, what teaches and draws on it
+primer fit <topic folder>          draws each step, and each ask of each fact, on the smallest iPhone, and says what doesn't fit
 primer voice <topic folder>        voices its scenes: a clip per line per narrator, heard back, timed by word
 primer send <topic folder>         checks, shrinks pictures, copies into the data clone, commits and pushes
 primer progress                    what came back since you last read it (--all for everything, --topic t)
@@ -23,7 +24,7 @@ The file format is in `format.md`, next to this file. Read it before writing a l
 
 ## What a lesson is
 
-A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, worked through one after another: a **lesson**, a **test** (questions on the lessons before it), an **exam** (a bigger test), a **chest** (a reward for reaching it), a **review** of everything before it (a placeholder for now), or an **animation** on its own: a narrated scene. Its **level** is one word, counting the lessons: Glance (1 lesson), Tour (2 to 4), Solid (5 to 9), Deep (10 to 15). A lesson is 5 to 15 minutes: a run of **steps**, one screen each. A test or exam is a file of the same shape, of questions only. A node with a `unit` starts a new banner on the path.
+A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, worked through one after another: a **lesson**, a **test** (questions on the lessons before it, listed or drawn from their facts), an **exam** (a bigger test), a **chest** (a reward for reaching it), a **review** of the facts of the lessons before it, or an **animation** on its own: a narrated scene. Its **level** is one word, counting the lessons: Glance (1 lesson), Tour (2 to 4), Solid (5 to 9), Deep (10 to 15). A lesson is 5 to 15 minutes: a run of **steps**, one screen each. A test or exam is a file of the same shape, of questions only. A node with a `unit` starts a new banner on the path.
 
 | Step | What happens |
 |---|---|
@@ -33,6 +34,17 @@ A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, 
 | `scene` | A narrated animation on parts: lines said by the narrator and captioned, with actions hung on their words. It can wait for a goal, like a play step |
 
 Write a topic as a folder: `topic.json` with its `path`, one file per lesson, test, exam or animation, and `media/` for pictures. Check it, fit it, voice its scenes, send it. A sensible shape: lessons, a chest after a stretch of them, then a short test drawing on them all; an exam at the end of a big topic; an animation where motion explains something, between the lessons it joins.
+
+## Facts
+
+Every lesson declares its **facts** (format.md, "Facts"): the handful of things worth knowing afterward, about six to a lesson, each a sentence with its `src`, and **two or more ways of asking it** (`asks`). An ask is a check or play step, written exactly as one: vary the forms across a fact's asks (a dial and a choice; a map tap and a sort), so it's known, not one question remembered. Facts are what review asks, days later and among other topics, what a test can draw from, and what Profile and the room fade by. The rules:
+
+- **Tie the lesson to them.** Give the step that teaches a fact `"fact": "<id>"` (a check or play step then counts as a review of it; the first step naming it is where review's link goes back to after a miss). An explain step can name the facts it teaches too.
+- **Each ask stands alone.** It's asked out of context: say what it's about ("the Atlantic's season", not "it"). A figure can bring the picture it was taught with.
+- **No ask gives itself away.** The checker refuses a question that says its right option or the number it asks for, an order listed in its right order, or a marker sitting where the goal is. Give every ask but a choice `tries` with a plausible wrong one.
+- **Families for tables.** Many facts of one shape (capitals, each ocean's name for a storm) are a table and a few question shapes (`families`): `{field}` fills from each row, and a choice's options can come from a column (`"options": { "from": "capital", "count": 3, "near": "region", "unlike": ..., "why": "{other.capital} is ...", "tempting": "..." }`). `primer facts` shows every fact made.
+- **Tests can draw** (`"draw": { "from": "unit", "count": 8 }`): each fact asked in a way its lesson didn't use, so give every fact at least one ask in a form its teaching step doesn't use.
+- **Ids never change** once sent: progress, and the phone's memory, refer to them.
 
 ## Scenes
 
@@ -73,7 +85,7 @@ These are rules `primer check` enforces, not hopes:
 
 ## Reading progress
 
-`primer progress` lists each lesson's runs and each question's attempts: right, close or wrong, with what they gave and the line they were shown. Wrong answers are the most useful part: read them for what was misunderstood, and let the next lesson bend toward it. `--mark-read` records that you read it.
+`primer progress` lists each lesson's runs and each question's attempts: right, close or wrong, with what they gave and the line they were shown; then review's answers and misses; then **memory**: every answer so far replayed through the phone's own memory model, so each fact is **strong** (recall 90% or more, last answered right), **holding**, or **weak** (under 70%, or missed last time, with what they gave). Wrong answers and weak facts are the most useful part: read them for what was misunderstood, and let the next lesson bend toward it. `--mark-read` records that you read it.
 
 ## Sending
 

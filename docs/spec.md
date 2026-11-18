@@ -4,7 +4,7 @@ Primer is a phone web app for learning, one topic at a time, by doing as much as
 
 ## The tabs
 
-Five, left to right: **Learn**, **Practice**, **Home** (raised, in the centre), **Shop** and **Profile**. The app opens on the tab it was left on. The tab bar hides inside a lesson, an opened Playground part and the connect screen; a cross (a lesson) or a back arrow (the others) in the top left leaves. A quiet ring on Profile's icon means something there wants a look: not saving, not sending, or an update ready.
+Five, left to right: **Learn**, **Practice**, **Home** (raised, in the centre), **Shop** and **Profile**. The app opens on the tab it was left on. The tab bar hides inside a lesson, a review run, an opened Playground part and the connect screen; a cross (a lesson, a review) or a back arrow (the others) in the top left leaves. A quiet ring on Profile's icon means something there wants a look: not saving, not sending, or an update ready.
 
 ## Learn
 
@@ -18,7 +18,11 @@ The top row names the topic, with its medallion. Tapping it opens the list of to
 
 **A chest** opens on a screen of its own: it pops in closed, then its lid springs open with a light from inside and glints, and "What's inside comes with the shop." Opening it is saved and sent up (an `open` event), and the path goes on. Currency is a later stage.
 
-**An animation** is a narrated scene on its own (see Scenes, below), played as a lesson of that one step: the cross leaves, the thin bar fills as the lines go by, and Continue at its end goes straight back to the path, the animation done. An animation without its scene file, and **a review** for now, is a placeholder screen that says it comes later; visiting it is saved and sent up, and the path goes on past it.
+**An animation** is a narrated scene on its own (see Scenes, below), played as a lesson of that one step: the cross leaves, the thin bar fills as the lines go by, and Continue at its end goes straight back to the path, the animation done. An animation without its scene file is a placeholder screen that says it comes later; visiting it is saved and sent up, and the path goes on past it.
+
+**A review** on the path is a review run (see Review, below) of the facts of the lessons before it: at most twelve, the least well remembered first, each once and a miss once more. Getting to its end is what makes it done. If those lessons declare no facts, it's a placeholder that says there's nothing to go over, and visiting it lets the path go on.
+
+**A test or exam drawn from facts** plays like any other, its questions chosen afresh each time it's started (so it starts from the top, never "Carry on").
 
 With no topics yet, Learn says so, with Connect if the app isn't connected.
 
@@ -68,7 +72,20 @@ Every step started, read, answered and finished is saved on the phone and queued
 
 ## Practice
 
-**Review** sits on top, with a fan of cards. It arrives with stage 2, so its Start is off and it says Soon.
+**Review** sits on top, with a fan of cards, its name, the best combo so far (a crown and ×n, no label) and Start. When nothing is due it says so plainly, "Nothing due", and offers **Review anyway**, which starts with the facts closest to slipping. Before any lesson has taught a fact, its Start is off ("After a lesson").
+
+## Review
+
+Every fact met is asked again just as it's about to slip. Lessons declare their facts, each with several ways of asking it (`format.md`, Facts), and a memory model keeps, for each, how likely it is to be remembered now and when it's due: FSRS, with its default weights, in whole days. Every answer to a fact counts, in a lesson, a test or review: right is Good, close is Hard, wrong is Again.
+
+- **A run** is the lesson player with its own top row: the cross, the combo, and five pips. The tab bar hides. Each question is one of a fact's asks, played, marked, shown and saved exactly as a lesson step is, with the picture it was taught with when it has one.
+- **What comes up:** the facts due, the most slipped first, every topic mixed (another topic than the last when one is near the front of the queue); each asked a way it wasn't asked last time. When the due ones run out, a line says so, and it carries on with the facts closest to slipping. It's endless: the cross ends it.
+- **The combo** counts right answers in a row: gold once it's started; close holds it, wrong ends it. The pips fill one per right answer and empty after every fifth, when the chip gives a bigger pop. No lives, and no coins until the shop.
+- **A miss** shows the answer beside what was given and its one line of why, with a link (a book and the lesson's name) back to the lesson step that taught it: that step opens over the run, to look at or try again, and the cross on it comes back to the run. Nothing done there is recorded. The fact comes back three questions later, and in the memory sooner (a day, where a right answer might be days or weeks).
+- **The summary,** when the cross ends a run with anything answered: a crown and the run's best combo, how many were right of how many, and up to three facts missed. Continue goes back where the run started.
+- **A topic on its own:** Profile's details for a topic have Review and the topic's name, a run of that topic's facts only.
+
+Saved and sent: each answer is an `attempt` with the run's id, and the run's end is a `review` event (`format.md`, "A progress file").
 
 **Playground** lists the kit's tools, like the map as an atlas, each on a card with its picture, its name and the lesson that first uses it. Answer forms aren't tools: Inputs says `"playground": false` in its description and gets no card. Under the tools, one small, quiet row, **Answer forms**, opens Inputs with every form and its settings, so dragging can be tried on the phone: Answer shows the truth as a lesson does, Again starts afresh. Tapping a card opens the part by itself: full size, a row of things to try (from the part's description), and a panel of its settings, each a row of choices, a switch or a slider; a setting marked wide, like the map's projection and style, has a line of its own with its choices across the panel. Changing a setting redraws the part at once. Everything here is built from the part's own description, the same one the writer reads.
 
@@ -78,9 +95,11 @@ Calm placeholders. Home shows a small drawn room and says it comes later; the ro
 
 ## Profile
 
-Two tiles: lessons finished, and questions answered right.
+Three tiles: lessons finished, questions answered right, and the best combo in review (a crown and ×n).
 
-**Knowledge** lists each topic with a bar and a number. Until review arrives, the number is its questions' last answers: right counts in full, close a half, wrong nothing, and each fades by half every two weeks since it was answered. The colour runs from blue (well remembered) to grey, and a topic under 50% that has been tried has a warning mark. There's no word for fading, and no streak. Tapping a topic opens its details: when it was last studied, how many were right last time, a dot for each question, and a button to its path.
+**Knowledge** lists each topic with a bar and a number: how much of what's been asked in it you'd recall now, by the memory model (the mean of its asked facts' recall). The colour runs from blue (well remembered) to grey, and a topic under 70% that has been asked has a warning mark (FSRS aims to review a fact as its recall falls to 90%, and its forgetting has a long tail, so 70 is well slipped). There's no word for fading, and no streak. Tapping a topic opens its details: when it was last studied, how many of its facts are due again, a dot for each fact (coloured by its recall; an open ring if never asked), Review and the topic's name, and a quieter link to its path. A topic written before facts existed keeps the old figure: its questions' last answers, right counting in full and close a half, each fading by half every two weeks, with a dot per question, how many were right last time, and the warning mark under 50%.
+
+The same number, from 0 to 1, is what the room will fade a topic's things by (`app.memoryOf(topic)`, `data.memoryOf`).
 
 **Settings:** Voice, Effects and Music switches, and the text size (three sizes of A). Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear from a board). An install from before 0.2 has Effects turned off once, since its saved settings can't tell a chosen "on" from the old default; from 0.2 on, Effects is on only if the switch was turned on. Voice is the narration in scenes (on to start with); Music has nothing to play yet.
 
@@ -125,6 +144,7 @@ Copied from Riffle.
 - **Connecting:** from Profile. The person makes a fine-grained GitHub key that reaches only `primer-data` and pastes it once. The app checks it can read and write with a real test write, and refuses to keep a key that can really open any other private repo. Every way that can fail says why.
 - **Offline:** a service worker keeps the app on the phone. Lessons and their media come down whenever there's signal (on opening, coming back, and Check for lessons) and are kept in IndexedDB, so a lesson plays with no signal.
 - **Sending:** every attempt and answer waits in a queue and goes up at most every 15 seconds, when the app is hidden, comes back or signal returns, and on Send now. Each batch is a new file under `progress/`, so nothing collides with the writer. Writes wait their turn, one at a time. Refusals are told in plain words; one miss counts as no signal, three in a row while the phone says it's online counts as a problem. Every call gives up after 25 seconds.
+- **Everything is an event.** What has been done (the path's progress) and what's remembered (the memory of every fact) are both worked out from the events alone, the same events that go up (`data.apply`). So **a phone that connects with nothing kept**, new or cleared, gets it all back: after its first pull it reads every progress file in the repo once (they're never kept), adds anything still waiting to send, and replays them in time order. It does this once, and never over what a phone already has; if a file can't be read, it waits for the next pull rather than rebuild from half the story.
 - **The service worker leaves other paths alone.** Its scope is all of `/primer/`, which also serves stage 0's pages and the docs, so it answers only for the app's own files and lets everything else go to the network. Its caches are named `primer-app-<version>`, and it only clears caches with that prefix: the stage 0 phone test's `primer-stage0-phone-…` caches survive.
 
 ## Nothing typed gets lost
@@ -135,10 +155,10 @@ On iPhone the app has to be added to the Home Screen: Safari and the Home Screen
 
 ## For testing
 
-On a local test server only: `?api=` points the app at a stand-in for GitHub, `?insets=48,34` pretends to have an iPhone's safe areas, `?sw` turns the service worker on, and `window.__primer` reaches inside. `tests/serve.mjs` serves the app under `/primer/` with the stand-in under `/__gh`; `tests/e2e.mjs` drives it in headless Edge with real touch; `tests/skill_test.py` tests the writer's side.
+On a local test server only: `?api=` points the app at a stand-in for GitHub, `?insets=48,34` pretends to have an iPhone's safe areas, `?sw` turns the service worker on, and `window.__primer` reaches inside (`__primer.clock.shift(ms)` moves the app's clock on, so days of memory pass in a test). `tests/serve.mjs` serves the app under `/primer/` with the stand-in under `/__gh`; `tests/e2e.mjs` drives it in headless Edge with real touch; `tests/skill_test.py` tests the writer's side.
 
 ## The writer's side
 
-`skill/` holds the `primer` skill, installed with `python skill/install.py [--tts <folder>]`: `parts`, `check`, `fit`, `voice`, `send` and `progress`. `skill/SKILL.md` has the commands and the rules for writing. Its fit check draws each step in the real app, in headless Edge, rather than estimating, so it can't be the optimist; for a scene it draws every line's caption.
+`skill/` holds the `primer` skill, installed with `python skill/install.py [--tts <folder>]`: `parts`, `check`, `facts`, `fit`, `voice`, `send` and `progress`. `check` checks facts and their asks and expands families (the same expansion as the app's, `js/facts.js`, written again in Python and tested against it); `facts` lists a topic's facts, their asks and what teaches and draws on them; `fit` draws every ask too; `progress` adds which facts are strong and which weak, worked out by the app's own memory model (`skill/memory.mjs` runs `js/memory.js` in Node). `skill/SKILL.md` has the commands and the rules for writing. Its fit check draws each step in the real app, in headless Edge, rather than estimating, so it can't be the optimist; for a scene it draws every line's caption.
 
 `voice` makes a scene's clips on the PC's graphics card, in the voice environments stage 0 set up (a folder holding `kokoro`, `chatterbox` and `check`, named by `--tts`, `PRIMER_TTS` or `install.py --tts`; never written into the code): Kokoro for Heart, George and Bella, Chatterbox's built-in voice for Chatterbox A. Each take is encoded as stage 0's clips were (AAC-LC, mono, 24 kHz, 64 kbps, about -16 LUFS, trimmed to its sound), heard back with faster-whisper, made again up to four times if its words come out wrong, and timed word by word by forced alignment (wav2vec2) against the finished clip, so the times are the phone's. The scripts that load the models (`skill/voice/say.py` and `hear.py`) run inside those environments; the skill only calls them. A clip is made again only when its words, narrator or making change.

@@ -1,13 +1,18 @@
 // Profile: what you know, topic by topic (blue when well remembered, grey as it slips, a warning mark on
 // low ones, no word for it), and the settings: Voice, Effects and Music, text size, the key connection,
-// what's waiting to send, the version, and whether the phone has promised to keep the data.
+// what's waiting to send, the version, and whether the phone has promised to keep the data. A topic's
+// figure is how much of what's been asked in it you'd recall now, from the memory model (data.knowledge).
 import { esc, head, sheet, when } from '../ui.js';
-import { icon, svg, medallion, hazard, MARK } from '../art.js';
+import { icon, svg, medallion, hazard, MARK, crown } from '../art.js';
 import * as data from '../data.js';
 import * as feel from '../feel.js';
 import { NARRATORS } from '../scene.js';
 
-export const LOW = 50;
+// Under this a topic gets the warning mark. From the memory model it's 70: FSRS aims to review a fact when its
+// recall falls to 90%, and its forgetting has a long tail (a fact learned well still reads 60% months on),
+// so 70 is well slipped. A topic without facts keeps the old figure's 50.
+export const LOW = 50, LOW_MEMORY = 70;
+const low = k => k.tried && k.pct < (k.facts ? LOW_MEMORY : LOW);
 // well remembered is blue; forgotten is grey
 export function knowColour(pct) {
   const t = Math.min(1, Math.max(0, (95 - pct) / 55));
@@ -35,15 +40,17 @@ export function profileScreen(app) {
     const k = data.knowledge(t), col = knowColour(k.pct);
     return `<button class="krow" data-topic="${esc(t.id)}" data-sound="select">${medallion(t, 28)}<p class="nm">${esc(t.title)}</p>
       <div class="kb"><b style="width:${k.pct}%;background:${col}"></b></div><p class="pc" style="color:${col}">${k.pct}%</p>
-      <div class="wn">${k.tried && k.pct < LOW ? svg(22, 22, hazard()) : ''}</div></button>`;
+      <div class="wn">${low(k) ? svg(22, 22, hazard()) : ''}</div></button>`;
   }).join('');
   const toggle = (key, label) => `<div class="srow"><p>${label}</p><button class="toggle" data-pref="${key}" aria-pressed="${!!prefs[key]}" aria-label="${label}" data-sound="${prefs[key] ? 'off' : 'on'}"></button></div>`;
   // Each subject has its own narrator, named by its topics; one chosen here speaks for the whole subject.
   const subjects = [...new Map(app.topics.filter(t => t.subject).map(t => [t.subject, t])).values()];
   const narrators = subjects.map(t => `<div class="srow"><p>${esc(t.subject)}</p><button class="btn sm ghost" data-narrator="${esc(t.subject)}" data-sound="select">${esc(NARRATORS[app.narratorFor(t)] || app.narratorFor(t))}</button></div>`).join('');
   const trouble = app.store.troubleNow();
+  const best = data.memoryNow().best;
   view.innerHTML = `<section class="screen profile">${head('<span class="title">Profile</span>')}
-    <div class="tiles"><div class="plate">${book}<p class="sky-t" id="lessonsdone">${data.lessonsDone(app.topics)}</p></div><div class="plate">${tick}<p style="color:#7df0cf">${rightCount}</p></div></div>
+    <div class="tiles"><div class="plate">${book}<p class="sky-t" id="lessonsdone">${data.lessonsDone(app.topics)}</p></div><div class="plate">${tick}<p style="color:#7df0cf">${rightCount}</p></div>
+      <div class="plate" id="bestcombo">${svg(33, 27, `<g transform="scale(1.1)">${crown()}</g>`)}<p class="gold-t">×${best}</p></div></div>
     ${app.topics.length ? `<p class="over">Knowledge</p><div class="plate know">${rows}</div>` : ''}
     <p class="over">Settings</p>
     <div class="plate settings">
@@ -125,18 +132,29 @@ function pickNarrator(app, topic) {
   });
 }
 
+// A topic's details: when it was last studied, how many of its facts are due again (or, for a topic
+// without facts, how many of its questions were right last time), a dot for each fact (its colour its
+// recall; dim if never asked), and a review of just this topic.
 function topicDetail(app, topic) {
   const k = data.knowledge(topic), col = knowColour(k.pct);
   const calendar = svg(26, 26, `<rect x="2" y="5.5" width="22" height="19" rx="5" fill="#1b8fd1"/><rect x="2" y="4" width="22" height="19" rx="5" fill="#dfe5ff"/><path d="M2 9a5 5 0 0 1 5-5h12a5 5 0 0 1 5 5v2H2z" fill="#49c6ff"/><rect x="7" y="1" width="3" height="6" rx="1.5" fill="#fff"/><rect x="16" y="1" width="3" height="6" rx="1.5" fill="#fff"/><rect x="6" y="14" width="4" height="4" rx="1.2" fill="#7f88c8"/><rect x="11.5" y="14" width="4" height="4" rx="1.2" fill="#7f88c8"/>`);
   const ticked = svg(26, 26, `<circle cx="13" cy="14.5" r="11" fill="#127a85"/><circle cx="13" cy="13" r="11" fill="#2bc4a4"/><path d="M8 13.5l3.6 3.6L18.5 9.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`);
+  const clockPic = svg(26, 26, `<circle cx="13" cy="14.5" r="11" fill="#1b8fd1"/><circle cx="13" cy="13" r="11" fill="#dfe5ff"/><circle cx="13" cy="13" r="8.4" fill="#49c6ff"/><path d="M13 8v5.4l3.4 2.2" fill="none" stroke="#0e1436" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`);
   const fact = (pic, big, small) => `<div class="fact">${pic}<div><p>${esc(big)}</p><p class="muted">${esc(small)}</p></div></div>`;
+  const second = k.facts ? fact(clockPic, `${k.due} of ${k.learned} facts`, 'due again') : fact(ticked, `${k.right} of ${k.total}`, 'right last time');
+  // a fact never asked is a dim dot; an asked one is coloured by how well it's remembered
+  const dot = v => (v === null || v === undefined ? '<i class="unasked"></i>' : `<i style="background:${knowColour(40 + v * 55)};opacity:${v === 0 ? 0.55 : 1}"></i>`);
+  const canReview = k.facts && k.learned > 0;
   const s = sheet(app.root, `
     <div style="display:flex;align-items:center;gap:12px">${medallion(topic, 46)}<p style="font-size:23px;flex:1">${esc(topic.title)}</p>
-      ${k.tried && k.pct < LOW ? svg(26, 24, `<g transform="scale(1.15)">${hazard()}</g>`) : ''}<p style="font-size:26px;color:${col}">${k.pct}%</p></div>
-    <div class="facts">${fact(calendar, k.lastAt ? when(k.lastAt) : 'Not yet', 'last studied')}${fact(ticked, `${k.right} of ${k.total}`, 'right last time')}</div>
-    <div class="dots">${k.dots.map(v => `<i style="background:${knowColour(40 + v * 55)};opacity:${v === 0 ? 0.55 : 1}"></i>`).join('')}</div>
-    <button class="btn" data-go="learn" style="margin-top:18px">${esc(topic.title)}</button>`);
+      ${low(k) ? svg(26, 24, `<g transform="scale(1.15)">${hazard()}</g>`) : ''}<p style="font-size:26px;color:${col}">${k.pct}%</p></div>
+    <div class="facts">${fact(calendar, k.lastAt ? when(k.lastAt) : 'Not yet', 'last studied')}${second}</div>
+    <div class="dots">${k.dots.map(dot).join('')}</div>
+    ${canReview ? `<button class="btn" data-go="review" style="margin-top:18px">Review ${esc(topic.title)}</button><button class="linkrow" data-go="learn">Its path${icon.right(14)}</button>`
+    : `<button class="btn" data-go="learn" style="margin-top:18px">${esc(topic.title)}</button>`}`);
   s.el.querySelector('[data-go=learn]').onclick = () => { s.close(); app.setPref('topic', topic.id); app.go('learn'); };
+  const r = s.el.querySelector('[data-go=review]');
+  if (r) r.onclick = () => { s.close(); app.openReview({ scope: topic }); };
 }
 
 export function connectScreen(app, back) {

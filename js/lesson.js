@@ -1,6 +1,7 @@
 // The lesson player, for every node that's played step by step: a lesson, a test or an exam (`kind` on
-// the file the library hands it), and an animation, which is a lesson of one scene step. Each is a run of
-// steps, one screen each:
+// the file the library hands it), and an animation, which is a lesson of one scene step. Review
+// (js/review.js) is this player too, with its own top row and its steps chosen as it goes, and so is a
+// look back at one step from review (`peek`). Each is a run of steps, one screen each:
 //   explain  a short paragraph and a figure
 //   check    a quick question, answered with the Inputs part
 //   play     a part with a goal, marked by reading the part's state
@@ -78,19 +79,26 @@ export class Run {
   // view: the element to draw in. topic, lesson: from the library. start: the step to begin at.
   // record(event): saves and queues an attempt. media(path): a media path's address. onLeave(how).
   // voice: for scenes, { on() (the Voice setting), set(on), narrator (chosen for the topic's subject) }.
-  constructor(view, { topic, lesson, start = 0, record = () => {}, media = p => p, onLeave = () => {}, voice = {} }) {
-    Object.assign(this, { view, topic, lesson, record, media, onLeave, voice });
+  // peek: a look back at one step from review (js/review.js): nothing is recorded, and Continue leaves.
+  // A review run is this player too, with its own top row, steps chosen as it goes and no end of its own.
+  constructor(view, { topic, lesson, start = 0, record = () => {}, media = p => p, onLeave = () => {}, voice = {}, peek = false }) {
+    Object.assign(this, { view, topic, lesson, record: peek ? () => {} : record, media, onLeave, voice, peek });
     this.i = Math.max(0, Math.min(start, lesson.steps.length - 1));
     this.mounted = [];
     this.results = {};
     this.state = 'idle'; // idle | ready | marked | ended
   }
 
+  // The row along the top: a cross, and a thin bar that fills as the steps go by.
+  topRow() {
+    return `<header class="ltop"><button class="round mute" data-go="leave" aria-label="Close" data-sound="off">${icon.close(20)}</button><div class="lbar"><b></b></div></header>`;
+  }
+
   async open() {
     document.documentElement.classList.add('bare');
     this.inputsDesc = await parts.describe('inputs');
-    this.view.innerHTML = `<section class="lesson" aria-label="${esc(this.lesson.title)}">
-      <header class="ltop"><button class="round mute" data-go="leave" aria-label="Close" data-sound="off">${icon.close(20)}</button><div class="lbar"><b></b></div></header>
+    this.view.innerHTML = `<section class="lesson${this.peek ? ' peek' : ''}" aria-label="${esc(this.lesson.title)}">
+      ${this.topRow()}
       <div class="lbody"></div>
       <footer class="lfoot"><div class="lfeed" hidden></div><button class="btn" data-go="go" data-sound="none"></button></footer>
     </section>`;
@@ -102,20 +110,28 @@ export class Run {
     this.onClick = e => {
       const b = e.target.closest('[data-go]');
       if (!b || b.disabled) return;
-      const what = b.dataset.go;
-      if (what === 'leave') this.leave('closed');
-      else if (what === 'go') this.go();
-      else if (what === 'finish') this.leave('finished');
+      this.clicked(b.dataset.go, b);
     };
     this.root.addEventListener('click', this.onClick);
-    this.record({ type: 'start', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: this.step.id });
+    this.begin();
     await this.show(this.i);
     return this;
+  }
+
+  clicked(what) {
+    if (what === 'leave') this.leave('closed');
+    else if (what === 'go') this.go();
+    else if (what === 'finish') this.leave('finished');
+  }
+
+  begin() {
+    this.record({ type: 'start', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: this.step.id });
   }
 
   get step() { return this.lesson.steps[this.i]; }
 
   progressTo(share, animate = true) {
+    if (!this.bar) return;
     const from = this.share ?? share;
     this.share = share;
     if (animate && from !== share) feel.spring(this.bar, v => `scaleX(${v})`, from, share, { ms: 600 });
@@ -264,9 +280,25 @@ export class Run {
       this.results[s.id] = { seen: true };
       this.record({ type: 'seen', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id }, { seen: true });
     }
+    if (this.peek) return this.leave('finished');
     if (this.i + 1 < this.lesson.steps.length) return this.show(this.i + 1);
     return this.end();
   }
+
+  // An answer, as recorded: what was given, how it was marked and the line shown. A step that names the
+  // fact it teaches, or an ask of a fact (in a test drawn from facts), says which, so the memory hears it.
+  attemptEvent(s, state, res) {
+    const e = {
+      type: 'attempt', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id, kind: s.kind,
+      form: s.kind === 'check' ? s.input.form : s.play.part, value: s.kind === 'check' ? state.value : state, right: res.right, close: res.close, why: res.why,
+    };
+    if (s.fact !== undefined) e.fact = s.fact;
+    if (s.askId !== undefined) e.ask = s.askId;
+    return e;
+  }
+
+  // After marking, for a player that does more with an answer (review's combo). kind: right, close, wrong.
+  marked() {}
 
   check() {
     const s = this.step, live = this.input || this.play;
@@ -291,10 +323,8 @@ export class Run {
     if (this.input) requestAnimationFrame(() => this.body.scrollTo({ top: this.body.scrollHeight, behavior: 'smooth' }));
     this.setButton(this.i + 1 < this.lesson.steps.length ? 'continue' : 'finish', true);
     this.btn.className = `btn ${kind === 'right' ? 'teal' : kind === 'close' ? 'gold' : 'pink'}`;
-    this.record({
-      type: 'attempt', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id, kind: s.kind,
-      form: s.kind === 'check' ? s.input.form : s.play.part, value: s.kind === 'check' ? state.value : state, right: res.right, close: res.close, why: res.why,
-    }, { right: res.right, close: res.close });
+    this.record(this.attemptEvent(s, state, res), { right: res.right, close: res.close });
+    this.marked(res, kind, s);
   }
 
   end() {
@@ -339,7 +369,7 @@ export class Run {
     this.clearParts();
     if (this.root) this.root.removeEventListener('click', this.onClick);
     this.view.innerHTML = '';
-    document.documentElement.classList.remove('bare');
+    if (!this.peek) document.documentElement.classList.remove('bare');   // a peek returns to a review, still bare
   }
 
   // For `primer fit`: shows the feedback as it would look after an answer, without marking anything.

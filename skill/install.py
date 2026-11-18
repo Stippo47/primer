@@ -17,7 +17,7 @@ here = pathlib.Path(__file__).resolve().parent
 app = here.parent
 target = pathlib.Path.home() / '.claude' / 'skills' / 'primer'
 target.mkdir(parents=True, exist_ok=True)
-for name in ('SKILL.md', 'primer.py', 'fit.mjs', 'cdp.mjs'):
+for name in ('SKILL.md', 'primer.py', 'fit.mjs', 'cdp.mjs', 'memory.mjs'):
     shutil.copyfile(here / name, target / name)
 (target / 'voice').mkdir(exist_ok=True)
 for name in ('say.py', 'hear.py', 'textnorm.py'):

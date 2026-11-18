@@ -1,0 +1,11 @@
+{
+ "v": 1,
+ "title": "Made-up capitals",
+ "level": "glance",
+ "colour": "pink",
+ "mark": "flag",
+ "about": "Made-up test data: a family of facts from a table of countries and capitals.",
+ "path": [
+  { "kind": "lesson", "id": "capitals", "unit": "Capitals" }
+ ]
+}
