@@ -39,7 +39,7 @@ export const PICTURES = {
   // fire on top and heat shimmering up from it at the high end. For temperature.
   warmth: {
     w: 140, h: 128, inWindow: 1.3, look: 'thermometer',
-    STOPS: [[0, '#e8f8ff'], [0.22, '#a6e1ff'], [0.42, '#49c6ff'], [0.56, '#7fdcc4'], [0.68, '#ffd75a'], [0.84, '#ffa23a'], [1, '#ff6a3d']],
+    STOPS: [[0, '#e8f8ff'], [0.22, '#a6e1ff'], [0.42, '#49c6ff'], [0.54, '#5fd9c0'], [0.62, '#a8e67e'], [0.7, '#ffd75a'], [0.84, '#ffa23a'], [1, '#ff6a3d']],
     body() {
       const arm = a => {
         const c = Math.cos(a), s = Math.sin(a), p = (r, w) => `${(70 + c * r - s * w).toFixed(2)} ${(66 + s * r + c * w).toFixed(2)}`;
@@ -59,7 +59,7 @@ export const PICTURES = {
         <path class="shade" d="M104.6 46A40 40 0 0 1 46 98.6A44 44 0 0 0 104.6 46Z"/>
         <ellipse cx="55" cy="47" rx="15" ry="8.5" fill="#ffffff" opacity="0.38" transform="rotate(-32 55 47)"/>
         <path d="M37 60A34 34 0 0 1 56 34" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" opacity="0.7"/>
-        <g class="rime" fill="#ffffff"><path/><path/></g>
+        <g class="rime" fill="#f2fbff"><path/><path/></g>
         <g class="snow"><path d="${flake}" fill="none" stroke="#7fb7e6" stroke-width="5" stroke-linecap="round" transform="translate(0 1.6)"/><path d="${flake}" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/></g>
         <g class="flame" opacity="0"><g class="flame-in"><path class="outer" d="${flame(1, 70)}" fill="#fff0b8"/><path d="${flame(0.55, 76)}" fill="#ffffff" opacity="0.9"/></g></g></g>
         <g class="frost" fill="#ffffff"><path class="fs" d="${star(18, 38, 8)}"/><path class="fs" d="${star(119, 28, 6)}"/><path class="fs" d="${star(123, 98, 6)}"/><path class="fs" d="${star(14, 84, 5)}"/></g>`;
@@ -87,8 +87,8 @@ export const PICTURES = {
       // frost creeping over the ball from its rim, a crust with a ragged inner edge; it breathes in and
       // out a little, slowly
       const creep = cold * (0.9 + 0.1 * wave(t, 0.45));
-      svg.querySelectorAll('.rime path').forEach((p, i) => p.setAttribute('d', creep < 0.02 ? '' : frostCrust(i ? -18 : 142, (i ? 70 : 150) * creep, i ? 0.7 : 1)));
-      attr(svg, '.rime', { opacity: f2(0.9 * smooth(0, 0.3, cold)) });
+      svg.querySelectorAll('.rime path').forEach((p, i) => p.setAttribute('d', creep < 0.02 ? '' : i ? frostCrust(118, 70 * creep, 0.55) : frostCrust(140, 120 * creep, 1)));
+      attr(svg, '.rime', { opacity: f2(0.85 * smooth(0, 0.3, cold)) });
       // melting: drops gather under the ball and fall, while it's between ice and mild
       const drip = smooth(0.12, 0.26, k) * (1 - smooth(0.46, 0.58, k));
       attr(svg, '.drips', { opacity: f2(drip) });
@@ -102,7 +102,8 @@ export const PICTURES = {
       attr(svg, '.flame', { opacity: f2(burn), transform: `translate(70 92) scale(${f2(0.55 + 0.45 * smooth(0.56, 0.95, k))}) translate(-70 -92)` });
       attr(svg, '.flame-in', { transform: `translate(70 92) scale(${f2(1 + 0.025 * wave(t, 6.3))} ${f2(flick)}) translate(-70 -92)` });
       attr(svg, '.flame .outer', { fill: mixHex('#fff0b8', '#ffe066', blaze) });
-      attr(svg, '.fire', { opacity: f2(blaze), transform: `translate(70 40) scale(1 ${f2(0.35 + 0.65 * blaze)}) translate(-70 -40)` });
+      // the fire grows up from behind the ball rather than fading in, so it never looks smoky
+      attr(svg, '.fire', { opacity: f2(smooth(0.78, 0.83, k)), transform: `translate(70 40) scale(${f2(0.7 + 0.3 * blaze)} ${f2(0.2 + 0.8 * blaze)}) translate(-70 -40)` });
       attr(svg, '.fire-in', { transform: `translate(70 42) scale(${f2(1 + 0.03 * wave(t, 5.3, 2))} ${f2(1 + 0.09 * wave(t, 8.9) + 0.04 * wave(t, 13.1))}) translate(-70 -42)` });
       attr(svg, '.glow', { opacity: f2(smooth(0.7, 1, k) * (0.85 + 0.15 * wave(t, 1.3))) });
       // heat shimmering up from it when it's hot
@@ -111,7 +112,7 @@ export const PICTURES = {
       svg.querySelectorAll('.shimmer path').forEach((p, i) => {
         const c = cycle(t, 2.6, i * 0.37), x = [46, 70, 94][i], y = lerp(lerp(26, 8, blaze), -10, c), a = 3.2;
         p.setAttribute('d', `M${x} ${f2(y)}q${a} -3.5 0 -7t0 -7t0 -7`);
-        p.setAttribute('opacity', f2(Math.sin(Math.PI * c)));
+        p.setAttribute('opacity', f2(Math.min(1, 2.5 * Math.sin(Math.PI * c))));
       });
     },
   },

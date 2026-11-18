@@ -5,6 +5,7 @@
 // moves; nothing slides over anything else.
 import { esc } from '../kit.js';
 import { range, tidy, startOf, show, truthLine, clearTruth } from './common.js';
+import { time } from '../clock.js';
 
 export const css = `
 .pi-tape { position: relative; padding: 10px 0 14px; border-radius: 22px; background: #1b2250; border: 3px solid #364090; box-shadow: 0 5px 0 #2f3678; overflow: hidden; }
@@ -66,19 +67,21 @@ export function mount(f) {
     if (v !== f.value()) { f.set(v, true); feel.tick(); }
   };
   const stop = () => { if (anim) cancelAnimationFrame(anim); anim = 0; };
-  // glides to a step, slowing as it comes in
+  // glides to a step, slowing as it comes in. Its time is the inputs' one clock (in ms), so a film or a
+  // test that holds the clock holds the tape too; with reduced motion asked for, it's there at once.
+  const ms = () => time() * 1000;
   const glide = target => {
     stop();
-    const s0 = pos, t0 = performance.now(), ms = Math.min(420, 160 + Math.abs(target - s0) * 18);
-    const frame = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - (1 - k) ** 3; go(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
+    const s0 = pos, t0 = ms(), span = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : Math.min(420, 160 + Math.abs(target - s0) * 18);
+    const frame = () => { const k = Math.min(1, Math.max(0, (ms() - t0) / span)), e = 1 - (1 - k) ** 3; go(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
     anim = requestAnimationFrame(frame);
   };
   // a flick runs on and slows down, then settles on the nearest step
   const coast = v => {
     stop();
-    let vel = v, last = performance.now();
-    const frame = now => {
-      const dt = Math.min(40, now - last); last = now;
+    let vel = v, last = ms();
+    const frame = () => {
+      const now = ms(), dt = Math.max(0, Math.min(40, now - last)); last = now;
       vel *= Math.pow(0.994, dt);
       let s = pos + vel * dt;
       if (s < 0 || s > N) { s = Math.min(N, Math.max(0, s)); vel = 0; }

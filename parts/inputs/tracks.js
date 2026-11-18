@@ -35,7 +35,7 @@ const runLength = g => Math.hypot(g.x1 - g.x0, g.y1 - g.y0);
 export const along = (g, p) => [g.x0 + (g.x1 - g.x0) * p, g.y0 + (g.y1 - g.y0) * p];
 
 // The liquid's colour, from cold to hot.
-const LIQUID = [[0, '#a6e1ff'], [0.25, '#49c6ff'], [0.45, '#4fd6c4'], [0.56, '#a8e08a'], [0.66, '#ffd75a'], [0.82, '#ffa23a'], [1, '#ff5a4a']];
+const LIQUID = [[0, '#a6e1ff'], [0.25, '#49c6ff'], [0.45, '#4fd6c4'], [0.56, '#a8e67e'], [0.66, '#ffd75a'], [0.82, '#ffa23a'], [1, '#ff5a4a']];
 
 export const TRACKS = {
   // A rail with a fill: the slider as it always was, across or up and down.

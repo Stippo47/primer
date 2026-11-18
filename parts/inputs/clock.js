@@ -14,8 +14,11 @@ let raf = 0, last = -1e9, frames = 0, held = null, pinned = null;
 
 const askedStill = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 const reduced = () => !!askedStill && askedStill.matches;
-// The time now, in seconds.
+// The time now, in seconds, for what moves on its own (still, with reduced motion asked for).
 export const now = () => (pinned !== null ? pinned : held !== null ? held : reduced() ? 0 : (performance.now() - T0) / 1000);
+// The time now, in seconds, for motion a finger set going (a tape gliding to rest): the same clock, held
+// and pinned with everything else, but it runs whatever the setting, or a flick would never come to rest.
+export const time = () => (pinned !== null ? pinned : held !== null ? held : (performance.now() - T0) / 1000);
 
 function loop(ts) {
   raf = 0;
