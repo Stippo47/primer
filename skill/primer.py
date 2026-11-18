@@ -47,6 +47,12 @@ IMAGE_LONG_SIDE = 1600
 IMAGE_QUALITY = 82
 PICTURES = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 MEDIA_TYPES = PICTURES | {'.svg', '.m4a', '.mp3'}
+# The answer forms, by how they answer (parts/inputs/part.json has their settings and marking).
+NUMBER_FORMS = ('slider', 'dial', 'number', 'pile')
+STARTS = {'slider': 'middle', 'dial': 'middle', 'pile': 'fewest'}  # these start at a real value, and can be checked as they are
+PAIR_FORMS = ('string', 'snap', 'match')
+PILE_MOST = 60
+LIST_SETTINGS = ('options', 'items', 'left', 'right', 'bins')
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -305,6 +311,7 @@ def check_value(spec, v, where, rep, kit, base):
         of = spec.get('of')
         if isinstance(of, dict):
             ids = []
+            optional = spec.get('optional') or {}
             for i, item in enumerate(v):
                 if not isinstance(item, dict) or not all(isinstance(item.get(k), str) and item.get(k) for k in of):
                     rep.err(f'{where}[{i}]', f'needs {", ".join(of)}')
@@ -312,6 +319,11 @@ def check_value(spec, v, where, rep, kit, base):
                 ids.append(item['id'])
                 if spec.get('maxText') and len(item.get('text', '')) > spec['maxText']:
                     rep.warn(f'{where}[{i}]', f'is {len(item["text"])} characters; keep it under {spec["maxText"]}')
+                for k in sorted(set(item) - set(of) - set(optional)):
+                    rep.err(f'{where}[{i}]', f'no field "{k}" here' + (f' (it may have {", ".join(optional)})' if optional else ''))
+                for k, t in optional.items():
+                    if k in item:
+                        check_value({'type': t}, item[k], f'{where}[{i}].{k}', rep, kit, base)
             if len(set(ids)) != len(ids):
                 rep.err(where, 'has the same id twice')
         elif of == 'country':
@@ -343,7 +355,7 @@ def check_settings(desc, settings, where, rep, kit, base, form=None, writer_keys
         if form and spec.get('forms') and form not in spec['forms']:
             rep.warn(f'{where}.{k}', f'isn\'t used by the {form} form')
         value = v
-        if k in ('options', 'items', 'left', 'right') and isinstance(v, list):
+        if k in LIST_SETTINGS and isinstance(v, list):
             value = [{kk: vv for kk, vv in o.items() if kk not in writer_keys} if isinstance(o, dict) else o for o in v]
         check_value(spec, value, f'{where}.{k}', rep, kit, base)
 
@@ -430,41 +442,60 @@ def check_answer_shape(step, inputs_desc, where, rep):
     inp = step.get('input') or {}
     form, ans = inp.get('form'), answer_of(step)
     errors_before = len(rep.errors)
-    if form in ('slider', 'number'):
+    if form in NUMBER_FORMS:
         if _num(ans) is None:
             rep.err(where, 'the answer is a number')
             return
         lo, hi = inp.get('min', 0), inp.get('max', 100)
+        if form == 'pile':
+            if not all(_num(x) is not None and x == int(x) and 0 <= x <= PILE_MOST for x in (lo, hi)):
+                rep.err(where, f'a pile holds whole counts from 0 to {PILE_MOST}: give "min" and "max" as whole numbers in that range')
+            if ans != int(ans):
+                rep.err(where, 'a pile\'s answer is a whole count')
+            if inp.get('thingImage') and 'thing' in inp:
+                rep.warn(where, '"thingImage" is piled, so "thing" is never shown')
         if not (min(lo, hi) <= ans <= max(lo, hi)):
             rep.err(where, f'the answer {ans} is off the scale ({lo} to {hi})')
-        if form == 'slider' and not step.get('within'):
-            rep.warn(where, 'a slider with "within" 0 is right only on the exact value: give it some room')
-        if form == 'slider':
-            # A slider starts at a real value (start, or the middle of its scale) and can be checked as it is,
-            # so where it starts must not give the answer away.
-            log = inp.get('scale') == 'log' and lo > 0 and hi > lo
+        if form in ('slider', 'dial') and not step.get('within'):
+            rep.warn(where, f'a {form} with "within" 0 is right only on the exact value: give it some room')
+        if form in STARTS:
+            # These start at a real value (start, or the middle of the scale; a pile at its fewest) and can be
+            # checked as they are, so where they start must not give the answer away.
+            log = form != 'pile' and inp.get('scale') == 'log' and lo > 0 and hi > lo
             mid = (lo * hi) ** 0.5 if log else (lo + hi) / 2
-            start = inp.get('start', mid)
-            said = 'starts' if 'start' in inp else f'starts in the middle of its scale, at {mid:g}'
+            first = mid if STARTS[form] == 'middle' else max(0, min(lo, hi))
+            start = inp.get('start', first)
+            said = 'starts' if 'start' in inp else (f'starts in the middle of its scale, at {mid:g}' if STARTS[form] == 'middle' else f'starts at its fewest, {first:g}')
             if _num(start) is not None:
                 if not (min(lo, hi) <= start <= max(lo, hi)):
-                    rep.err(where, f'the slider\'s start, {start}, is off the scale ({lo} to {hi})')
+                    rep.err(where, f'the {form}\'s start, {start}, is off the scale ({lo} to {hi})')
                 else:
                     state = {'value': start, 'answered': True}
                     got = mark(step, state, inputs_desc)
                     if got == 'right':
-                        rep.err(where, f'the slider {said}, which is already marked right: it gives the answer away. Set "start" well away from it')
+                        rep.err(where, f'the {form} {said}, which is already marked right: it gives the answer away. Set "start" well away from it')
                     elif got == 'close':
-                        rep.warn(where, f'the slider {said}, which is already marked close: set "start" farther from the answer')
+                        rep.warn(where, f'the {form} {said}, which is already marked close: set "start" farther from the answer')
     elif form == 'order':
         ids = [i.get('id') for i in inp.get('items') or []]
         if not (isinstance(ans, list) and sorted(map(str, ans)) == sorted(map(str, ids))):
             rep.err(where, 'the answer is every item\'s id, in the right order')
-    elif form == 'match':
-        left = {i.get('id') for i in inp.get('left') or []}
-        right = {i.get('id') for i in inp.get('right') or []}
+    elif form in PAIR_FORMS:
+        left = {i.get('id') for i in inp.get('left') or [] if isinstance(i, dict)}
+        right = {i.get('id') for i in inp.get('right') or [] if isinstance(i, dict)}
         if not (isinstance(ans, dict) and set(ans) == left and set(ans.values()) <= right and len(set(ans.values())) == len(ans)):
             rep.err(where, 'the answer pairs every left id with a different right id')
+        if form == 'snap' and len(inp.get('left') or []) != len(inp.get('right') or []):
+            rep.err(where, 'a snap has as many pieces ("right") as cards ("left"): every piece clicks into one card')
+        if form == 'match':
+            rep.warn(where, 'match still plays, but String is the newer way to pair things: "form": "string" takes the same left, right and answer')
+    elif form == 'sort':
+        items = {i.get('id') for i in inp.get('items') or [] if isinstance(i, dict)}
+        bins = {i.get('id') for i in inp.get('bins') or [] if isinstance(i, dict)}
+        if not (isinstance(ans, dict) and set(ans) == items and set(ans.values()) <= bins):
+            rep.err(where, 'the answer puts every item in one of the bins: { itemId: binId } for every item')
+        elif bins - set(ans.values()):
+            rep.warn(where, f'nothing belongs in {", ".join(sorted(bins - set(ans.values())))}: a bin that stays empty is a hint')
     elif form == 'spot':
         if not (isinstance(ans, dict) and all(_num(ans.get(k)) is not None and 0 <= ans[k] <= 1 for k in ('x', 'y', 'r'))):
             rep.err(where, 'the answer is { "x", "y", "r" }, each from 0 to 1')

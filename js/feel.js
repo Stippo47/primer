@@ -133,9 +133,6 @@ export function spring(el, make, from, to, { ms = 520, bounce = MOTION.bounce } 
 // A thing arriving: grows from small to full size, ringing a little.
 export const pop = (el, from = 0.6) => spring(el, v => `scale(${v})`, from, 1, { ms: 480 });
 
-// The give of a press let go: back up from slightly squashed.
-export const release = el => spring(el, v => `scale(${v})`, 0.94, 1, { ms: 380 });
-
 // A gentle overshoot without ringing, for slides.
 export function glide(el, make, from, to, ms = 420) {
   if (!el || !el.animate) return null;
@@ -151,19 +148,26 @@ export function nudge(el) {
 
 // ---------- every press
 
-// The press itself: the sound named on the element (data-sound) or a soft tap, the tick, and the spring
-// back. Raised buttons sink while held through the .down class, so the press shows before the lift.
+// The press itself: the sound named on the element (data-sound) or a soft tap, and the tick. A button shows
+// the press by sinking in while it's held, as a real one would (the .down class: it moves down onto its
+// side, and its side shrinks to nothing), then coming back up when let go. No bounce, no wobble, and no
+// shadow under it (ruled 2026-11-18).
 export function press(el, name) {
   sound(name || (el && el.dataset && el.dataset.sound) || 'tap');
   tick();
-  if (el && !el.hasAttribute('data-nospring')) release(el);
 }
 
 const PRESSABLE = 'button, [data-press]';
-let held = null;
+// A quick tap still shows the button going in and coming back: it stays in at least this long.
+export const MIN_DOWN = 110;
+let held = null, heldAt = 0;
 function letGo() {
-  if (held) held.classList.remove('down');
+  const el = held;
   held = null;
+  if (!el) return;
+  const wait = MIN_DOWN - (performance.now() - heldAt);
+  if (wait <= 0) { el.classList.remove('down'); return; }
+  setTimeout(() => { if (held !== el) el.classList.remove('down'); }, wait);
 }
 
 // Wires every press in the app: one listener for all of them.
@@ -173,6 +177,7 @@ export function wire(root = document) {
     if (!el || el.disabled || el.closest('.hap')) return;
     letGo();
     held = el;
+    heldAt = performance.now();
     el.classList.add('down');
   }, true);
   root.addEventListener('pointerup', letGo, true);

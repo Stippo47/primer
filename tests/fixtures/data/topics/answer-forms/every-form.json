@@ -1,0 +1,83 @@
+{
+ "v": 1,
+ "title": "Every answer form",
+ "version": 1,
+ "minutes": 4,
+ "steps": [
+  {
+   "id": "read", "kind": "explain", "title": "Words to start",
+   "text": "Made-up words to start with. Then *every newer way of answering*, each to be got wrong and then right.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "dial-wind", "kind": "check", "title": "Turn the dial",
+   "ask": "Turn the dial to the made-up wind speed: 119 km/h.",
+   "input": { "form": "dial", "min": 0, "max": 250, "step": 1, "unit": "km/h", "start": 20, "ticks": 6, "picture": "wind", "pictureFrom": 0, "pictureTo": 180 },
+   "answer": 119, "within": 6, "close": 20,
+   "misses": [{ "when": { "read": "value", "between": [0, 99] }, "why": "Lower than that: a made-up gale." }],
+   "why": "Higher than that: a made-up storm.",
+   "tries": [{ "state": { "value": 60, "answered": true }, "marked": "wrong" }, { "state": { "value": 135, "answered": true }, "marked": "close" }, { "state": { "value": 117, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "pile-count", "kind": "check", "title": "Pile them up",
+   "ask": "Pile up the made-up count: seven storms.",
+   "input": { "form": "pile", "min": 0, "max": 20, "start": 1, "thing": "storm" },
+   "answer": 7, "within": 0, "close": 2,
+   "misses": [{ "when": { "read": "value", "between": [10, 20] }, "why": "Far too many: it was seven." }],
+   "why": "It was seven.",
+   "tries": [{ "state": { "value": 15, "answered": true }, "marked": "wrong" }, { "state": { "value": 8, "answered": true }, "marked": "close" }, { "state": { "value": 7, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "string-pairs", "kind": "check", "title": "Strings",
+   "ask": "Draw a string from each made-up word to its picture.",
+   "input": { "form": "string", "left": [{ "id": "hot", "text": "Hot" }, { "id": "cold", "text": "Cold" }, { "id": "wet", "text": "Wet" }],
+     "right": [{ "id": "sun", "text": "Sun", "image": "media/sun.svg" }, { "id": "snow", "text": "Snow", "image": "media/snow.svg" }, { "id": "drop", "text": "Rain", "image": "media/drop.svg" }] },
+   "answer": { "hot": "sun", "cold": "snow", "wet": "drop" },
+   "why": "Hot with sun, cold with snow, wet with rain.",
+   "tries": [{ "state": { "value": { "hot": "sun", "cold": "drop", "wet": "snow" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "hot": "sun", "cold": "snow", "wet": "drop" }, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "sort-bins", "kind": "check", "title": "Into bins",
+   "ask": "Sort these into the made-up bins.",
+   "input": { "form": "sort", "bins": [{ "id": "warm", "text": "Warm", "image": "media/sun.svg" }, { "id": "cold", "text": "Cold", "image": "media/snow.svg" }],
+     "items": [{ "id": "desert", "text": "A desert" }, { "id": "ice", "text": "An ice sheet" }, { "id": "tropics", "text": "The tropics" }, { "id": "pole", "text": "A pole" }] },
+   "answer": { "desert": "warm", "ice": "cold", "tropics": "warm", "pole": "cold" },
+   "misses": [{ "when": { "read": "value.pole", "is": "warm" }, "why": "A pole is the coldest place there is." }],
+   "why": "Deserts and the tropics are warm; ice sheets and the poles are cold.",
+   "tries": [{ "state": { "value": { "desert": "warm", "ice": "cold", "tropics": "cold", "pole": "cold" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "desert": "warm", "ice": "cold", "tropics": "warm", "pole": "cold" }, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "snap-pieces", "kind": "check", "title": "Snap them in",
+   "ask": "Snap each made-up tool to what it measures.",
+   "input": { "form": "snap", "left": [{ "id": "baro", "text": "Barometer" }, { "id": "anemo", "text": "Anemometer" }, { "id": "vane", "text": "Wind vane" }],
+     "right": [{ "id": "pres", "text": "Air pressure" }, { "id": "speed", "text": "Wind speed" }, { "id": "dir", "text": "Wind direction" }] },
+   "answer": { "baro": "pres", "anemo": "speed", "vane": "dir" },
+   "why": "Cups spin for the speed; the vane points the way.",
+   "tries": [{ "state": { "value": { "baro": "pres", "anemo": "dir", "vane": "speed" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "baro": "pres", "anemo": "speed", "vane": "dir" }, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "slide-wind", "kind": "check", "title": "A slider with the dial's picture",
+   "ask": "Set the slider to a made-up gale: 150 km/h.",
+   "input": { "form": "slider", "min": 0, "max": 250, "step": 5, "unit": "km/h", "start": 25, "picture": "wind", "pictureTo": 180 },
+   "answer": 150, "within": 10,
+   "why": "It was 150.",
+   "tries": [{ "state": { "value": 60, "answered": true }, "marked": "wrong" }, { "state": { "value": 155, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "dial-warm", "kind": "check", "title": "A dial with the slider's picture",
+   "ask": "Turn the dial to a made-up warm sea: 28 °C.",
+   "input": { "form": "dial", "min": 0, "max": 40, "step": 1, "unit": "°C", "start": 8, "ticks": 5, "picture": "warmth", "pictureTo": 35 },
+   "answer": 28, "within": 1, "close": 3,
+   "why": "It was 28.",
+   "tries": [{ "state": { "value": 12, "answered": true }, "marked": "wrong" }, { "state": { "value": 28, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  }
+ ],
+ "sources": [{ "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" }]
+}

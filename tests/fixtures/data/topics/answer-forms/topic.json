@@ -1,0 +1,15 @@
+{
+ "v": 1,
+ "title": "Answer forms",
+ "level": "glance",
+ "colour": "teal",
+ "mark": "star",
+ "about": "Made-up test data: one lesson that answers with every newer form, a picture on a slider and a dial each.",
+ "path": [
+  {
+   "kind": "lesson",
+   "id": "every-form",
+   "unit": "Every form"
+  }
+ ]
+}

@@ -71,6 +71,7 @@ export function readyOf(step, state) {
 // ---------------------------------------------------------------- the player
 
 export class Run {
+  static FEEDBACK_ROOM = 96;  // about what the feedback takes from the step when it slides up
   // view: the element to draw in. topic, lesson: from the library. start: the step to begin at.
   // record(event): saves and queues an attempt. media(path): a media path's address. onLeave(how).
   constructor(view, { topic, lesson, start = 0, record = () => {}, media = p => p, onLeave = () => {} }) {
@@ -160,6 +161,7 @@ export class Run {
     this.setButton(s.kind === 'explain' ? 'continue' : 'check', s.kind === 'explain');
     await Promise.all(jobs);
     if (this.i !== i) return;
+    this.shareRoom();
     const live = this.input || this.play;
     if (live) {
       const recheck = () => { if (this.state === 'idle' || this.state === 'ready') this.setReady(readyOf(s, live.state())); };
@@ -168,6 +170,20 @@ export class Run {
     }
     this.state = s.kind === 'explain' ? 'ready' : this.state;
     this.view.dispatchEvent(new CustomEvent('stepshown', { detail: { i, id: s.id } }));
+  }
+
+  // Shares the room a step leaves on a tall screen (css/lesson.css, "Laying a step out"). A picture in the
+  // answer that may grow (data-grow: the most it may grow, in pixels) takes a share of the room first, as
+  // --grow; the room kept back is what the feedback needs when it slides up, so checking doesn't make the
+  // step scroll. The rest stays round the answer.
+  shareRoom() {
+    const box = this.body.querySelector('.linput');
+    const pics = box ? [...box.querySelectorAll('[data-grow]')] : [];
+    if (!pics.length) return;
+    for (const p of pics) p.style.setProperty('--grow', '0px');
+    const room = box.clientHeight - (box.firstElementChild ? box.firstElementChild.offsetHeight : box.clientHeight);
+    const each = (Math.max(0, room - Run.FEEDBACK_ROOM) * 0.6) / pics.length;
+    for (const p of pics) p.style.setProperty('--grow', `${Math.round(Math.min(Number(p.dataset.grow) || 0, each))}px`);
   }
 
   setButton(kind, enabled) {

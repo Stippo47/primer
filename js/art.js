@@ -139,7 +139,8 @@ const STATE = {
 
 const hexPts = r => Array.from({ length: 6 }, (_, i) => { const a = Math.PI / 6 + (i * Math.PI) / 3; return [Math.cos(a) * r, Math.sin(a) * r]; });
 
-// A raised button on the path, drawn around 0,0 (the middle of its top face).
+// A raised button on the path, drawn around 0,0 (the middle of its top face): a top face (its cap, which
+// sinks onto its side when pressed) on a side in its own darker tones. Nothing under it: no shadow.
 // kind: lesson | test | exam | review | animation (or a step's kind).  state: done | now | todo.
 // progress: 0..1 draws the ring. Tests and exams are hexagons, and an exam is a size up.
 export function stepButton({ kind = 'lesson', state = 'todo', r = kind === 'exam' ? 34 : 30, depth = 8, progress = null }) {
@@ -149,14 +150,13 @@ export function stepButton({ kind = 'lesson', state = 'todo', r = kind === 'exam
     ? `<path d="${roundedPoly(hexPts(r + 3 + grow), 9)}" transform="translate(${dx} ${dy})"/>`
     : `<circle cx="${dx}" cy="${dy}" r="${r + grow}"/>`;
   const R = hex ? r + 3 : r;
-  let s = floorShadow(0, depth + R * 0.9, R * 1.05, R * 0.34, 0.42);
+  let s = '';
   if (progress !== null) {
     const rr = R + 11, cy = depth / 2, len = 2 * Math.PI * rr;
     s = `<circle cy="${cy}" r="${rr + 9}" fill="#49c6ff" opacity="0.08"/>
       <circle cy="${cy}" r="${rr}" fill="none" stroke="#2a3168" stroke-width="7"/>
       <circle class="ring" cy="${cy}" r="${rr}" fill="none" stroke="#ffc83d" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(len * Math.max(0.02, progress)).toFixed(1)} ${len.toFixed(1)}" transform="rotate(-90 0 ${cy})"/>`;
   }
-  s += `<g fill="#0c1030">${S(depth + 2, 5)}</g>`;
   s += form(S(depth), C.deep, `<g fill="${C.side}">${S(depth - 4)}</g>`);
   const top = form(S(0), C.side,
     `<g fill="${C.top}">${S(-3.5, 0, -3)}</g>
@@ -169,39 +169,81 @@ export function stepButton({ kind = 'lesson', state = 'todo', r = kind === 'exam
   return s;
 }
 
-// ---------------------------------------------------------------- a treasure chest (stage0/screens/js/art.js)
+// ---------------------------------------------------------------- shading, the room's way
 
-// 60 x 52 with the floor at y=50. Open, it's been emptied: the lid tipped back, dark inside.
-export function chest(open = false) {
-  const wood = ['#b9703d', '#8a4a26', '#d99258'], gold = ['#ffc83d', '#c98a00', '#ffe9a6'];
-  const strap = (x, y, h) => `<rect x="${x}" y="${y}" width="7" height="${h}" fill="${gold[0]}"/><rect x="${x}" y="${y}" width="2.2" height="${h}" fill="${gold[2]}"/><rect x="${x + 5}" y="${y}" width="2" height="${h}" fill="${gold[1]}"/>`;
-  const box = form('<rect x="5" y="25" width="50" height="23" rx="4"/>', wood[0],
-    `<rect x="5" y="40" width="50" height="8" fill="${wood[1]}"/><rect x="47" y="25" width="8" height="23" fill="${wood[1]}" opacity="0.55"/>
-     <path d="M5 33h50" stroke="${wood[1]}" stroke-width="1.4" opacity="0.7"/><rect x="5" y="25" width="50" height="3" fill="${wood[2]}" opacity="0.7"/>
-     ${strap(12, 25, 23)}${strap(41, 25, 23)}`);
-  const lidShape = '<path d="M4 27v-8a13 13 0 0 1 13-13h26a13 13 0 0 1 13 13v8z"/>';
-  const lid = form(lidShape, wood[0],
-    `<path d="M4 27v-8a13 13 0 0 1 13-13h10v3H18a10 10 0 0 0-10 10v8z" fill="${wood[2]}" opacity="0.85"/>
-     <path d="M48 8a13 13 0 0 1 8 11v8h-8z" fill="${wood[1]}" opacity="0.6"/><path d="M4 16h52" stroke="${wood[1]}" stroke-width="1.4" opacity="0.6"/>
-     ${strap(12, 4, 24)}${strap(41, 4, 24)}`)
-    + `<rect x="2" y="22.5" width="56" height="6" rx="3" fill="${gold[1]}"/><rect x="2" y="22.5" width="56" height="4" rx="2" fill="${gold[0]}"/><rect x="5" y="23.3" width="22" height="1.5" rx="0.75" fill="${gold[2]}"/>`;
-  const clasp = `<rect x="25" y="24" width="10" height="12" rx="3" fill="${gold[1]}"/><rect x="25" y="24" width="10" height="10.5" rx="3" fill="${gold[0]}"/><rect x="26.2" y="25" width="2.2" height="8" rx="1.1" fill="${gold[2]}"/><circle cx="30" cy="29" r="1.9" fill="#7a4d00"/><rect x="29.2" y="29" width="1.6" height="3.6" rx="0.8" fill="#7a4d00"/>`;
-  if (!open) return `${floorShadow(30, 49, 29, 4.5)}<g class="box">${box}</g><g class="lid">${lid}${clasp}</g>`;
-  return `${floorShadow(30, 49, 29, 4.5)}
-    <g class="lid"><g transform="translate(0 -15) rotate(-24 30 27)" opacity="0.96">${lid}</g></g>
-    <path d="M6 27h48l-3 -7H9z" fill="#3b1d10"/><path d="M6 27h48l-1.2 -2.8H7.2z" fill="#2a1309"/>
-    <g class="box">${box}</g><rect x="3" y="24" width="54" height="4.5" rx="2.2" fill="${gold[1]}"/><rect x="3" y="24" width="54" height="2.8" rx="1.4" fill="${gold[0]}"/>`;
+// The room's one way of shading (stage0/room/js/draw.js), for drawings at the bar of its trophies and globe:
+// a shape in its base colour, a lit crescent along its upper-left edge and a shade crescent along its
+// lower-right, made by sliding copies of its own outline, all cut to the shape. d is a path; l and s are
+// how deep the lit and the shade crescents go.
+export function tones(d, { base, lit, shade }, { l = 1.6, s = 3 } = {}) {
+  const a = uid('t'), b = uid('t');
+  const lx = (l * 0.8).toFixed(2), ly = l.toFixed(2), sx = (-s * 0.75).toFixed(2), sy = (-s).toFixed(2);
+  return `<path d="${d}" fill="${lit}"/><clipPath id="${a}"><path d="${d}"/></clipPath><clipPath id="${b}"><path d="${d}" transform="translate(${lx} ${ly})"/></clipPath>
+    <g clip-path="url(#${a})"><path d="${d}" transform="translate(${lx} ${ly})" fill="${shade}"/><g clip-path="url(#${b})"><path d="${d}" transform="translate(${sx} ${sy})" fill="${base}"/></g></g>`;
+}
+// A rounded rectangle, as a path.
+export const rectPath = (x, y, w, h, r) => `M${x + r} ${y}H${x + w - r}A${r} ${r} 0 0 1 ${x + w} ${y + r}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}Z`;
+
+// ---------------------------------------------------------------- a treasure chest
+
+const CHEST = {
+  wood: { base: '#c67c44', lit: '#e6a266', shade: '#8e4c28', groove: '#9a5530', inside: '#3e1d0c', back: '#7a4222' },
+  gold: { base: '#ffc83d', lit: '#ffe69a', shade: '#d6960a', ink: '#6b3a10' },
+};
+// still ahead on the path: the same chest in the path's dim tones, not see-through
+const CHEST_DIM = {
+  wood: { base: '#3a4290', lit: '#4a53a6', shade: '#2a3172', groove: '#30387e', inside: '#1a1f4c', back: '#2a3172' },
+  gold: { base: '#5962b0', lit: '#7079c4', shade: '#464f9c', ink: '#262d68' },
+};
+
+// A chest, 64 x 58 with the floor at y=56, seen a little from above and lit from the upper left, drawn
+// the way the room's trophies are: a clear form, three tones each of wood and gold, one highlight.
+// open: the lid stands tipped back and the inside shows; glow: something's in it (the opening screen),
+// otherwise it's been emptied (opened, on the path). dim: still ahead.
+export function chest(opts = {}) {
+  const { open = false, glow = false, dim = false } = typeof opts === 'boolean' ? { open: opts } : opts;
+  const { wood: W, gold: G } = dim ? CHEST_DIM : CHEST;
+  const box = rectPath(6, 30, 52, 25, 5);
+  const straps = (y, h) => [15, 43].map(x => tones(rectPath(x, y, 6, h, 1), G, { l: 0.9, s: 1.6 })).join('');
+  const lock = (y, h) => `${tones(rectPath(27, y, 10, h, 3), G, { l: 1, s: 1.8 })}<circle cx="32" cy="${y + 5.2}" r="1.9" fill="${G.ink}"/><rect x="31.2" y="${y + 5.6}" width="1.6" height="${Math.max(2, h - 9)}" rx="0.8" fill="${G.ink}"/>`;
+  const front = `${tones(box, W)}<path d="M8 43.5H56" stroke="${W.groove}" stroke-width="1.3" opacity="0.7"/>${straps(30, 25)}`;
+  if (!open) {
+    const lid = 'M5 31V21C5 12 11.5 6 20.5 6H43.5C52.5 6 59 12 59 21V31Z';
+    const clip = uid('lid');
+    return `<g class="chest-shut"><g class="box">${front}</g>
+      <g class="lid">${tones(lid, W, { l: 2, s: 3 })}<clipPath id="${clip}"><path d="${lid}"/></clipPath>
+        <g clip-path="url(#${clip})"><path d="M5 18.5H59" stroke="${W.groove}" stroke-width="1.3" opacity="0.6"/>${straps(4, 28)}</g>
+        ${tones(rectPath(4, 28, 56, 6, 3), G, { l: 1.2, s: 2 })}${lock(25, 14)}
+        <path d="M9.5 21C9.5 14.5 13.5 10.8 19.5 10.3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="${dim ? 0.25 : 0.75}"/></g></g>`;
+  }
+  // open: the lid stands tipped back behind the box, its inside toward us, narrower at the top as it leans
+  // away, with its gold edge and hasp now uppermost; the box's mouth shows between
+  const lidIn = 'M7 31L9.5 13C10 9 12.5 7.5 16.5 7.5H47.5C51.5 7.5 54 9 54.5 13L57 31Z';
+  const inner = { base: W.back, lit: W.base, shade: W.inside };
+  const halo = glow ? (() => {
+    const id = uid('glow');
+    return `<radialGradient id="${id}" cx="32" cy="24" r="44" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffe27a" stop-opacity="0.75"/><stop offset="0.45" stop-color="#ffc83d" stop-opacity="0.25"/><stop offset="1" stop-color="#ffc83d" stop-opacity="0"/></radialGradient>
+      <circle class="light" cx="32" cy="24" r="44" fill="url(#${id})"/>`;
+  })() : '';
+  return `<g class="chest-open">${halo}
+    <g class="lid">${tones(lidIn, inner, { l: 1.6, s: 2.6 })}<path d="M10 18.5H54M9.2 25H55" stroke="${W.inside}" stroke-width="1.2" opacity="0.45"/>
+      ${tones(rectPath(9, 5, 46, 5, 2.5), G, { l: 1, s: 1.8 })}${tones(rectPath(28.5, 9, 7, 6.5, 2), G, { l: 0.8, s: 1.4 })}</g>
+    <path d="${rectPath(8, 24, 48, 8, 2.5)}" fill="${glow ? '#ffcf5a' : W.inside}"/>
+    ${glow ? `<path d="${rectPath(13, 25.2, 38, 4, 2)}" fill="#fff8dc"/>` : `<path d="${rectPath(8, 24, 48, 3, 1.5)}" fill="${W.back}"/>`}
+    <g class="box">${front}${tones(rectPath(4, 28.5, 56, 5, 2.5), G, { l: 1.2, s: 2 })}${lock(31, 10)}
+      <path d="M8 30.2H24" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity="${dim ? 0.25 : 0.7}"/></g></g>`;
 }
 
-// A chest as a node on the path, drawn around 0,0 like a button: dim while it's still ahead, shining when
-// it's the next thing to reach, and open once opened.
+// A chest as a node on the path, drawn around 0,0 like a button: closed and dim while it's still ahead,
+// closed and shining when it's the next thing to reach, and open (emptied) once opened. Nothing under it.
 export function chestNode({ state = 'todo' } = {}) {
-  const s = 1.25;
-  const body = `<g transform="translate(${-30 * s} ${36 - 50 * s}) scale(${s})">${chest(state === 'done')}</g>`;
-  if (state === 'todo') return `<g class="cap" opacity="0.5">${body}</g>`;
-  if (state === 'done') return `<g class="cap">${body}</g>`;
-  return `<circle cy="10" r="46" fill="#ffc83d" opacity="0.07"/><circle cy="10" r="36" fill="#ffc83d" opacity="0.07"/>
-    <g class="cap">${body}</g><g class="glints">${glint(30, -18, 6, '#ffe9a6')}${glint(-33, -8, 4, '#fff')}${glint(36, 22, 3.4, '#fff', 0.8)}</g>`;
+  const s = 1.2;
+  const body = `<g transform="translate(${-32 * s} ${38 - 56 * s}) scale(${s})">${chest({ open: state === 'done', dim: state === 'todo' })}</g>`;
+  if (state !== 'now') return `<g class="cap">${body}</g>`;
+  const id = uid('halo');
+  return `<radialGradient id="${id}" cx="0" cy="6" r="44" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd75a" stop-opacity="0.32"/><stop offset="1" stop-color="#ffd75a" stop-opacity="0"/></radialGradient>
+    <circle cy="6" r="44" fill="url(#${id})"/>
+    <g class="cap">${body}</g><g class="glints">${glint(31, -22, 6, '#ffe9a6')}${glint(-34, -10, 4, '#fff')}${glint(38, 18, 3.4, '#fff', 0.8)}</g>`;
 }
 
 // ---------------------------------------------------------------- topic medallions
