@@ -1,0 +1,49 @@
+{
+  "title": "Blob and Noodle",
+  "topic": "stage0",
+  "order": 13,
+  "cards": [
+    {
+      "id": "person-blob-noodle",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "The person, Blob to Noodle",
+      "text": "Eight steps between the two shapes you liked, and a little past each end. Tick the ones you like.",
+      "why": "The shape you settle on is how the avatar, and everything drawn around it, gets built from here on. Only the build changes across the eight. The face, colours, hair and wave are the same in all of them.",
+      "pick": ["blobnoodle"],
+      "details": "What stays the same in all eight: brown skin, copper hair with a fringe swept to the left and a high ponytail, a plain yellow body, indigo legs, dark shoes, the wave, and the same face, at the same size, in the same place. Where the head is the top of one soft Blob body it's a little wider, as in the Blob you picked, and the hair grows to fit. The ponytail is built like the arms: a soft drip with nubs, a soft swoop with tapering arms, a curl with bendy arms.\n\nWhat changes, from the Blob end to the Noodle end:\n1 Softer: past Blob. Head, body and legs are one outline. The legs are only a notch, the arms small bumps.\n2 Blob: as you picked it.\n3 Long nubs: the Blob body, with its nubs grown into long soft arms and legs.\n4 Blob + noodles: the Blob body on thin bendy legs, with bendy arms, round hands and big shoes.\n5 Soft noodle: a head on its own soft pear-shaped body, the arms and legs tapering out of it.\n6 Round noodle: Noodle with a bigger, rounder body and thick short limbs.\n7 Noodle: as you picked it.\n8 Bendier: past Noodle. A smaller body, and longer, thinner limbs that bend twice.\n\nThe picture on the front shows all eight at the size they'd stand in the room, at one shared scale. The single pictures share one scale too, so the face is the same size in each.\n\nMy pick is 4, Blob + noodles. It keeps Blob's big soft body, which gives the face room and gives clothes room later, and adds Noodle's arms and legs, which can wave, point and walk in ways nubs can't. My second is 6, Round noodle, the sturdiest of the Noodle side and the easiest to read at room size.\n\nStill weak: 1 can look like a wooden peg doll; 3's arms are long enough to look gangly; 5's ponytail is a big stiff swoop; in the four with a Blob body, the line where the face meets the yellow can still read as a hood.",
+      "images": ["../../stage0/avatar6/shots/person-lineup.png"],
+      "items": [
+        { "id": "softer", "label": "1 Softer", "image": "../../stage0/avatar6/shots/person-softer.png", "text": "Past Blob: head, body and legs one outline, the legs only a notch, the arms small bumps." },
+        { "id": "blob", "label": "2 Blob", "image": "../../stage0/avatar6/shots/person-blob.png", "text": "Blob as you picked it: one soft body, nubs for arms, two lumps for legs." },
+        { "id": "longer", "label": "3 Long nubs", "image": "../../stage0/avatar6/shots/person-longer.png", "text": "The Blob body, its nubs grown into long soft arms and legs." },
+        { "id": "blobnoodle", "label": "4 Blob + noodles", "image": "../../stage0/avatar6/shots/person-blobnoodle.png", "text": "The Blob body on thin bendy legs, with bendy arms, round hands and big shoes. My pick." },
+        { "id": "softnoodle", "label": "5 Soft noodle", "image": "../../stage0/avatar6/shots/person-softnoodle.png", "text": "A head on its own soft pear body, arms and legs tapering out of it." },
+        { "id": "rounder", "label": "6 Round noodle", "image": "../../stage0/avatar6/shots/person-rounder.png", "text": "Noodle with a bigger round body, thick short limbs, big hands and shoes. My second." },
+        { "id": "noodle", "label": "7 Noodle", "image": "../../stage0/avatar6/shots/person-noodle.png", "text": "Noodle as you picked it: a small round body, long bendy limbs." },
+        { "id": "bendier", "label": "8 Bendier", "image": "../../stage0/avatar6/shots/person-bendier.png", "text": "Past Noodle: a smaller body, longer thinner limbs that bend twice." }
+      ]
+    },
+    {
+      "id": "monsters-again",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Monsters, tried again",
+      "text": "Four new monsters, each drawn in Blob and in Noodle. Tick any you like, in either shape.",
+      "why": "If one of these is right, the avatar can be a monster rather than a person. Each is new from the ground up: a new body, a new colour, and a new thing that makes it a monster, instead of horns, fur, extra eyes or fangs.",
+      "pick": ["lamp-blob"],
+      "details": "The four, each the same character in both shapes:\n1 Lamp: raspberry. A wide dumpling, head and body in one, with a little lamp hanging from a stalk on its forehead. It looks up at its lamp.\n2 Flop: lime. A tall drop whose whole top bends over and hangs down one side, like a soft cap. A calm smile and rosy cheeks.\n3 Hug: tangerine. A small head on a big pear-shaped body, with two pairs of arms: one pair cheering, one pair held out wide.\n4 Wiggle: sky blue. A tall dome with arms, standing on four short tentacles instead of legs.\n\nIn Blob each is one soft body with nubs that melt out of it. In Noodle each has a smaller body on long bendy arms and legs, and its special part becomes a noodle too: the lamp's stalk, Flop's tip, Wiggle's tentacles.\n\nNone has horns, fur, a crest, fangs or more than two eyes, and none is purple, so none is like the purple monster or the mint three-eyed one. I checked them against well-known characters and changed two things: the lamp monster was blue at first, which came too close to a known game creature, so it's raspberry now; and the four-armed one isn't called Four-arms, which is another show's character.\n\nThe picture on the front shows all eight at one shared scale, at the size they'd stand in the room: Blob on top, Noodle below.\n\nMy pick is Lamp in Blob (1). It has the clearest shape at room size, it's the most its own, and a light that comes on suits an app for learning. It would also glow nicely in the dark room. My second is Hug in Noodle (3), the cheeriest.\n\nStill weak: Wiggle reads as an octopus more than a monster; Flop's tip in Noodle can look like a question mark or a plant shoot; Hug's head is small for its body in Blob.",
+      "images": ["../../stage0/avatar6/shots/monster-lineup.png"],
+      "items": [
+        { "id": "lamp-blob", "label": "1 Lamp, Blob", "image": "../../stage0/avatar6/shots/monster-lamp-blob.png", "text": "A raspberry dumpling with a lamp hanging from a stalk on its forehead. My pick." },
+        { "id": "lamp-noodle", "label": "1 Lamp, Noodle", "image": "../../stage0/avatar6/shots/monster-lamp-noodle.png", "text": "A round raspberry body on bendy legs. The lamp hangs from a long bendy stalk." },
+        { "id": "flop-blob", "label": "2 Flop, Blob", "image": "../../stage0/avatar6/shots/monster-flop-blob.png", "text": "A lime drop whose whole top bends over and hangs down one side." },
+        { "id": "flop-noodle", "label": "2 Flop, Noodle", "image": "../../stage0/avatar6/shots/monster-flop-noodle.png", "text": "A small lime drop on bendy legs. Its tip is a long noodle that curls at the end." },
+        { "id": "hug-blob", "label": "3 Hug, Blob", "image": "../../stage0/avatar6/shots/monster-hug-blob.png", "text": "A tangerine pear with a small head and four arms: two cheering, two held out." },
+        { "id": "hug-noodle", "label": "3 Hug, Noodle", "image": "../../stage0/avatar6/shots/monster-hug-noodle.png", "text": "A round head on a round body, four bendy arms, bendy legs. My second." },
+        { "id": "wiggle-blob", "label": "4 Wiggle, Blob", "image": "../../stage0/avatar6/shots/monster-wiggle-blob.png", "text": "A sky-blue dome with arms, standing on four short tentacles that curl at the floor." },
+        { "id": "wiggle-noodle", "label": "4 Wiggle, Noodle", "image": "../../stage0/avatar6/shots/monster-wiggle-noodle.png", "text": "A smaller dome on four long tentacles, each curling at its tip." }
+      ]
+    }
+  ]
+}
