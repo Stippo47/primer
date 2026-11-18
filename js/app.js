@@ -133,15 +133,13 @@ const tabsEl = document.createElement('nav');
 tabsEl.className = 'tabs';
 tabsEl.setAttribute('aria-label', 'Tabs');
 tabsEl.innerHTML = TABS.map(([id, name, draw]) => id === 'home'
-  ? `<button class="tab home" data-tab="${id}" data-nospring><span class="knob">${draw(34)}</span><span>${name}</span></button>`
-  : `<button class="tab" data-tab="${id}" data-nospring><span class="ic">${draw(26)}</span><span>${name}</span></button>`).join('');
+  ? `<button class="tab home" data-tab="${id}"><span class="knob">${draw(34)}</span><span>${name}</span></button>`
+  : `<button class="tab" data-tab="${id}"><span class="ic">${draw(26)}</span><span>${name}</span></button>`).join('');
 root.append(tabsEl);
+// A tab presses in like any button (css/app.css), and opens its screen.
 tabsEl.addEventListener('click', e => {
   const b = e.target.closest('[data-tab]');
-  if (!b) return;
-  const knob = b.querySelector('.knob, .ic');
-  if (knob) feel.spring(knob, v => `scale(${v})`, 0.88, 1, { ms: 420 });
-  app.go(b.dataset.tab);
+  if (b) app.go(b.dataset.tab);
 });
 function paintTabs() {
   for (const b of tabsEl.querySelectorAll('[data-tab]')) b.classList.toggle('on', b.dataset.tab === app.tab);

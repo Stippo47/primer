@@ -115,11 +115,18 @@ Words: `*like this*` stresses a word (drawn gold). A line break stays a line bre
   "src": ["jetstream"] }
 ```
 
-- **input** is the Inputs part's settings; `form` picks the way of answering: `choice`, `slider`, `number`, `order`, `match` or `spot`.
-- **A slider starts at a real value**, with its fill showing and Check awake: `start`, or the middle of its scale (on a log scale, the middle of the stretched scale). Never "?". `primer check` refuses a start the step would already mark right, and warns about one it would mark close.
-- **A slider can drive a picture** above it: `picture` names one (`warmth`: a ball from a snowflake to a fire; `depth`: the sea cut away, with a warm layer as deep as the value), and `pictureFrom` and `pictureTo` are the values where it reaches its low and high ends (the ends of the scale if left out). Any lesson can use any picture; a new picture is a general addition to the Inputs part, never one lesson's.
-- **answer**, by form: choice, the right option's id (or mark that option `"right": true`); slider and number, a number; order, the ids in the right order; match, `{ leftId: rightId }`; spot, `{ "x", "y", "r" }` from 0 to 1 across and down the picture.
-- **within** is how far off still counts as right (slider, number). **close** is a wider band that counts as close: it shows as Close, in gold, and counts half. Without `close` it's 2.5 times `within`.
+- **input** is the Inputs part's settings; `form` picks the way of answering. Several forms of each kind live side by side, and a lesson uses whichever suits:
+  - one of several: `choice`;
+  - a number: `slider`, `dial` (the slider bent round a window; the same settings), `number` (a keypad) or `pile` (a count you see at a glance, in rows of `per`, of a drawn `thing` or a picture, `thingImage`; whole counts from 0 to 60);
+  - an order: `order`;
+  - pairs: `string` (draw a line from each left one to its partner), `sort` (drop `items` into two to four `bins`; many can share a bin) or `snap` (jigsaw pieces, the right column, into sockets on the cards, the left; as many pieces as cards). `match` is the old way, still played; `primer check` suggests `string`;
+  - a place on a picture: `spot`.
+- **Labels** on a string, sort or snap (and a sort's bins) are short words, and may have a small picture: `{ "id": "sun", "text": "Sun", "image": "media/sun.svg" }`.
+- **A slider, a dial or a pile starts at a real value**, with its fill showing and Check awake: `start`, or the middle of its scale (on a log scale, the middle of the stretched scale; a pile, its fewest). Never "?". `primer check` refuses a start the step would already mark right, and warns about one it would mark close.
+- **A slider or a dial can drive a picture**, above the slider or in the dial's window: `picture` names one (`warmth`: a ball from a snowflake to a fire; `depth`: the sea cut away, with a warm layer as deep as the value; `wind`: a palm on an island, still at the low end, bent in a gale at the high end), and `pictureFrom` and `pictureTo` are the values where it reaches its low and high ends (the ends of the scale if left out). Any picture goes on either; any lesson can use any picture; a new picture is a general addition to the Inputs part, never one lesson's.
+- **answer**, by form: choice, the right option's id (or mark that option `"right": true`); slider, dial and number, a number; pile, a whole number; order, the ids in the right order; string, snap and match, `{ leftId: rightId }` for every left one; sort, `{ itemId: binId }` for every item; spot, `{ "x", "y", "r" }` from 0 to 1 across and down the picture. Forms that answer alike are marked alike.
+- **within** is how far off still counts as right (slider, dial, number, pile). **close** is a wider band that counts as close: it shows as Close, in gold, and counts half. Without `close` it's 2.5 times `within`.
+- **tries**, as on a play step, can be given on a check too: the Inputs part's state (`{ "value": …, "answered": true }`) and how it should be marked. `primer check` runs them; give a plausible wrong one, above all on a string, sort or snap, where the realistic mistake is a particular mix-up.
 - **right** is shown when it's right. A wrong answer shows one line of why: on a choice, the picked option's `why`; otherwise the first of `misses` whose `when` rule holds, or else `why`.
 
 **Choice options** each have `id` and `text`. Every wrong one also has `why` (shown to the learner) and `tempting` (for the writer: why someone would pick it). `primer check` refuses a choice without them, with "all of the above" or "none of the above", or with answers of very different lengths. The phone shuffles them.

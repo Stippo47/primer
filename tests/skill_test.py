@@ -19,6 +19,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PRIMER = ROOT / 'skill' / 'primer.py'
 FIXTURE = ROOT / 'tests' / 'fixtures' / 'data' / 'topics' / 'test-topic'
+FORMS = ROOT / 'tests' / 'fixtures' / 'data' / 'topics' / 'answer-forms'
 
 
 def run(*args, data=None, check=False):
@@ -45,13 +46,13 @@ class Work(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def topic(self, change=None, name='test-topic'):
-        """A copy of the made-up topic, with one lesson changed by `change(lesson)`."""
+    def topic(self, change=None, name='test-topic', source=FIXTURE, lesson='every-kind'):
+        """A copy of a made-up topic, with one lesson changed by `change(lesson)`."""
         self.copies = getattr(self, 'copies', 0) + 1
         dest = self.tmp / f'copy{self.copies}' / name
-        shutil.copytree(FIXTURE, dest)
+        shutil.copytree(source, dest)
         if change:
-            f = dest / 'every-kind.json'
+            f = dest / f'{lesson}.json'
             lesson = json.loads(f.read_text(encoding='utf-8'))
             change(lesson)
             f.write_text(json.dumps(lesson, ensure_ascii=False, indent=1), encoding='utf-8')
@@ -66,8 +67,22 @@ class Parts(unittest.TestCase):
     def test_lists_every_part_from_its_description(self):
         out = run('parts', check=True).stdout
         for word in ('globe: Globe', 'inputs: Inputs', 'spinTo(place: place', 'band(from: number', 'reveal(answer: answer)', 'spin (choice free, auto, locked', 'events: tapped', 'state: selected',
-                     'picture (choice none, warmth, depth', 'start (number', 'borders (bool', 'style (choice day, warmth, muted, political'):
+                     'picture (choice none, warmth, depth, wind', 'start (number', 'borders (bool', 'style (choice day, warmth, muted, political',
+                     'form (choice choice, slider, dial, number, pile, order, string, sort, snap, match, spot', 'thing (choice dot, storm, drop, leaf, star, coin',
+                     'bins (list', '(forms: string, snap, match)', 'per (number 2 to 10', 'thingImage (media'):
             self.assertIn(word, out)
+
+    def test_every_form_has_settings_marking_and_an_example_with_a_wrong_try(self):
+        desc = json.loads(run('parts', '--json', check=True).stdout)['inputs']
+        for form in desc['settings']['form']['options']:
+            self.assertIn(form, desc['marking'], form)
+            ex = desc['example'][form]
+            self.assertEqual(ex['settings']['form'], form)
+            self.assertIn('wrong', [t['marked'] for t in ex['tries']], form)
+            self.assertIn('right', [t['marked'] for t in ex['tries']], form)
+        for form in ('dial', 'pile', 'string', 'sort', 'snap'):
+            own = [k for k, s in desc['settings'].items() if form in (s.get('forms') or [])]
+            self.assertTrue(own, form)
 
     def test_json(self):
         parts = json.loads(run('parts', '--json', check=True).stdout)
@@ -251,8 +266,80 @@ class Check(Work):
 
     def test_a_sliders_picture_is_one_the_part_has(self):
         out = self.errors(lambda L: step(L, 'slide')['input'].update(picture='thermometer', start='low'))
-        self.assertIn('"thermometer" isn\'t one of none, warmth, depth', out)
+        self.assertIn('"thermometer" isn\'t one of none, warmth, depth, wind', out)
         self.assertIn('.input.start: is a number', out)
+
+    def test_match_still_checks_but_suggests_string(self):
+        r = run('check', FIXTURE)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('match still plays, but String is the newer way to pair things', r.stdout)
+
+
+class Forms(Work):
+    """The newer answer forms: dial, pile, string, sort and snap."""
+
+    def forms(self, change):
+        return self.topic(change, name='answer-forms', source=FORMS, lesson='every-form')
+
+    def errors(self, change):
+        r = run('check', self.forms(change))
+        self.assertEqual(r.returncode, 1, r.stdout)
+        return r.stdout
+
+    def test_the_forms_topic_passes_with_nothing_to_say(self):
+        r = run('check', FORMS)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('All good', r.stdout)
+
+    def test_a_dial_is_checked_like_a_slider(self):
+        out = self.errors(lambda L: step(L, 'dial-wind').update(answer=300))
+        self.assertIn('the answer 300 is off the scale (0 to 250)', out)
+        out = self.errors(lambda L: step(L, 'dial-wind')['input'].update(start=118))
+        self.assertIn('the dial starts, which is already marked right: it gives the answer away', out)
+        out = self.errors(lambda L: (step(L, 'dial-wind')['input'].pop('start'), step(L, 'dial-wind').update(answer=125)))
+        self.assertIn('the dial starts in the middle of its scale, at 125', out)
+        out = self.errors(lambda L: step(L, 'dial-warm')['input'].update(picture='palm'))
+        self.assertIn('"palm" isn\'t one of none, warmth, depth, wind', out)
+
+    def test_a_pile_holds_whole_counts_up_to_sixty(self):
+        out = self.errors(lambda L: step(L, 'pile-count')['input'].update(max=80))
+        self.assertIn('a pile holds whole counts from 0 to 60', out)
+        out = self.errors(lambda L: step(L, 'pile-count').update(answer=7.5))
+        self.assertIn("a pile's answer is a whole count", out)
+        out = self.errors(lambda L: (step(L, 'pile-count')['input'].pop('start'), step(L, 'pile-count').update(answer=0, misses=[])))
+        self.assertIn('the pile starts at its fewest, 0, which is already marked right', out)
+        out = self.errors(lambda L: step(L, 'pile-count')['input'].update(thing='bear'))
+        self.assertIn('"bear" isn\'t one of dot, storm, drop, leaf, star, coin', out)
+
+    def test_pairs_are_checked(self):
+        out = self.errors(lambda L: step(L, 'string-pairs').update(answer={'hot': 'sun', 'cold': 'sun', 'wet': 'drop'}))
+        self.assertIn('the answer pairs every left id with a different right id', out)
+        out = self.errors(lambda L: step(L, 'snap-pieces')['input']['right'].pop())
+        self.assertIn('a snap has as many pieces ("right") as cards ("left")', out)
+
+    def test_a_sort_puts_every_item_in_a_bin(self):
+        out = self.errors(lambda L: step(L, 'sort-bins')['answer'].pop('pole'))
+        self.assertIn('the answer puts every item in one of the bins', out)
+        out = self.errors(lambda L: step(L, 'sort-bins')['answer'].update(pole='hot'))
+        self.assertIn('the answer puts every item in one of the bins', out)
+        r = run('check', self.forms(lambda L: step(L, 'sort-bins')['input']['bins'].append({'id': 'mild', 'text': 'Mild'})))
+        self.assertIn('nothing belongs in mild: a bin that stays empty is a hint', r.stdout)
+
+    def test_labels_may_have_a_picture_that_must_be_there(self):
+        out = self.errors(lambda L: step(L, 'string-pairs')['input']['right'][0].update(image='media/gone.svg'))
+        self.assertIn("media/gone.svg isn't in the topic's folder", out)
+        out = self.errors(lambda L: step(L, 'sort-bins')['input']['items'][0].update(colour='red'))
+        self.assertIn('no field "colour" here (it may have image)', out)
+
+    def test_tries_on_every_form_are_run(self):
+        def change(L):
+            step(L, 'sort-bins')['tries'][0]['marked'] = 'right'
+            step(L, 'snap-pieces')['tries'][1]['marked'] = 'wrong'
+            step(L, 'pile-count')['tries'][1]['marked'] = 'right'
+        out = self.errors(change)
+        self.assertIn('sort-bins).tries[0]: should be marked right, but the goal marks it wrong', out)
+        self.assertIn('snap-pieces).tries[1]: should be marked wrong, but the goal marks it right', out)
+        self.assertIn('pile-count).tries[1]: should be marked right, but the goal marks it close', out)
 
 
 SCENES = ROOT / 'tests' / 'fixtures' / 'scenes' / 'topics' / 'scene-topic'
@@ -501,6 +588,37 @@ class Rules(unittest.TestCase):
         js = json.loads(subprocess.run(['node', '--input-type=module', '-e', script, json.dumps(self.CASES)], capture_output=True, text=True, check=True).stdout)
         self.assertEqual(py, js)
         self.assertEqual(py[:2], [True, False])
+
+    def test_every_form_is_marked_the_same_by_the_phone_and_the_checker(self):
+        """Each form's examples and every Check step in the made-up topics, marked by js/lesson.js and by
+        primer.py: right, close or wrong must come out the same, and as each try says."""
+        sys.path.insert(0, str(PRIMER.parent))
+        import primer  # noqa: E402
+        desc = json.loads((ROOT / 'parts' / 'inputs' / 'part.json').read_text(encoding='utf-8'))
+        cases = []
+        for form, ex in desc['example'].items():
+            s = {'kind': 'check', 'input': ex['settings'], 'answer': ex['answer']}
+            s.update({k: ex[k] for k in ('within', 'close') if k in ex})
+            cases += [(s, t['state'], t['marked']) for t in ex['tries']]
+        for f in sorted((ROOT / 'tests' / 'fixtures' / 'data' / 'topics').glob('*/*.json')):
+            if f.name == 'topic.json':
+                continue
+            for s in json.loads(f.read_text(encoding='utf-8')).get('steps', []):
+                if s.get('kind') == 'check':
+                    cases += [(s, t['state'], t['marked']) for t in s.get('tries', [])]
+                    cases.append((s, {'value': primer.answer_of(s) if s['input']['form'] != 'spot' else {'x': s['answer']['x'], 'y': s['answer']['y']}, 'answered': True}, 'right'))
+        forms = {c[0]['input']['form'] for c in cases}
+        self.assertTrue({'dial', 'pile', 'string', 'sort', 'snap'} <= forms, forms)
+        py = [primer.mark(s, st, desc) for s, st, _ in cases]
+        script = ("import { mark } from " + json.dumps((ROOT / 'js' / 'lesson.js').as_uri()) + ";"
+                  "import { readFileSync } from 'node:fs';"
+                  "const [desc, cases] = JSON.parse(readFileSync(0, 'utf8'));"
+                  "console.log(JSON.stringify(cases.map(([s, st]) => { const r = mark(s, st, desc); return r.right ? 'right' : r.close ? 'close' : 'wrong'; })));")
+        out = subprocess.run(['node', '--input-type=module', '-e', script], input=json.dumps([desc, [[s, st] for s, st, _ in cases]]), capture_output=True, text=True, encoding='utf-8', check=True).stdout
+        js = json.loads(out)
+        self.assertEqual(py, js)
+        self.assertEqual(py, [m for _, _, m in cases])
+        self.assertGreater(len(cases), 40)
 
 
 class Fit(Work):

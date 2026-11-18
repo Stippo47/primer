@@ -102,7 +102,7 @@ export function learnScreen(app) {
     trail.innerHTML = t.art + U.nodes.map((x, i) => {
       const state = stateOf(x);
       return `<button class="node ${state}${x.node.kind === 'chest' ? ' chest' : ''}" data-node="${esc(x.node.id)}" data-kind="${esc(x.node.kind)}" style="left:${t.pts[i].x.toFixed(1)}px;top:${t.pts[i].y.toFixed(1)}px"
-        aria-label="${esc(`${data.KIND_WORDS[x.node.kind]}: ${x.node.title}`)}" data-sound="${state === 'todo' ? 'off' : 'tap'}" data-nospring>
+        aria-label="${esc(`${data.KIND_WORDS[x.node.kind]}: ${x.node.title}`)}" data-sound="${state === 'todo' ? 'off' : 'tap'}">
         ${svg(84, 84, `<g transform="translate(42 38)">${nodeArt(x)}</g>`, 'viewBox="0 0 84 84"')}</button>`;
     }).join('');
     sec.append(trail);

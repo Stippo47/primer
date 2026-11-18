@@ -1,6 +1,7 @@
 // Practice: Review (which arrives with stage 2) and the Playground, where each tool opens by itself with
 // a panel of its settings to play with, built from the part's own description. Answer forms (Inputs)
-// aren't tools and aren't listed; partScreen can still open one, for the tests.
+// aren't tools: they get one quiet row under the tools, "Answer forms", which opens every form with its
+// settings, so dragging can be tried on the phone.
 import { esc, head } from '../ui.js';
 import { icon, svg, snippet } from '../art.js';
 import * as parts from '../parts.js';
@@ -26,7 +27,10 @@ export async function practiceScreen(app) {
   view.innerHTML = `<section class="screen practice">${head('<span class="title">Practice</span>')}
     <div class="stage review"><div class="fan">${svg(190, 164, fan)}</div>
       <div class="side"><p>Review</p><span class="soon">Soon</span><button class="btn" disabled data-sound="none">Start</button></div></div>
-    <p class="h2">Playground</p><div class="parts"></div></section>`;
+    <p class="h2">Playground</p><div class="parts"></div>
+    <button class="formsrow" data-part="inputs"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="2" y="9" width="18" height="4" rx="2" fill="currentColor" opacity="0.45"/><circle cx="14" cy="11" r="5" fill="currentColor"/></svg>
+      <span>Answer forms</span>${icon.right(16)}</button></section>`;
+  view.querySelector('.formsrow').onclick = () => app.openPart('inputs');
   const grid = view.querySelector('.parts');
   const names = await parts.listParts().catch(() => []);
   const descs = await Promise.all(names.map(n => parts.describe(n).catch(() => null)));
@@ -62,7 +66,7 @@ export async function partScreen(app, name, back) {
   let handle = null;
 
   view.innerHTML = `<section class="screen partview">
-    ${head(`<button class="round" data-go="back" aria-label="Back">${icon.left(20)}</button><span class="title sm">${esc(desc.title)}</span>`)}
+    ${head(`<button class="round" data-go="back" aria-label="Back">${icon.left(20)}</button><span class="title sm">${esc(isInputs ? "Answer forms" : desc.title)}</span>`)}
     <div class="${isInputs ? 'plate partstage inputs' : 'stage partstage'}"></div>
     <div class="tries"></div>
     <div class="plate panel"></div></section>`;
@@ -97,6 +101,8 @@ export async function partScreen(app, name, back) {
       const b = e.target.closest('[data-try]');
       if (!b || !handle) return;
       const call = subst(tryList[Number(b.dataset.try)].call, { answer: exampleFor().answer });
+      // an answer form shows the truth as a lesson does: locked first, so nothing moves under it
+      if (isInputs && call[0] === 'reveal') handle.run(['lock']);
       handle.run(call);
     };
   }

@@ -10,7 +10,9 @@ export const TUNE = {
 
 // Follows one finger as a drag and two as a pinch. Handlers: blocked, start, move, release, cancel, tap,
 // pinchStart, pinch(scale), pinchEnd(scale). move and release get dx, dy from where the finger landed,
-// and release also the finger's speed (vx, vy, in pixels per millisecond). Returns a function that stops it.
+// and release also the finger's speed (vx, vy, in pixels per millisecond). tap also gets the element the
+// finger first touched: while a finger is tracked its events go to el, so the event's own target is el.
+// Returns a function that stops it.
 export function track(el, h) {
   const pts = new Map();
   let drag = null, pinch = null, ignore = false, samples = [], spread0 = 1;
@@ -44,7 +46,7 @@ export function track(el, h) {
     try { el.setPointerCapture(e.pointerId); } catch { /* synthetic pointers in tests */ }
     if (pts.size === 1) {
       ignore = false;
-      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, moved: false };
+      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, moved: false, target: e.target };
       h.start && h.start(e);
       samples = [{ x: e.clientX, y: e.clientY, t: e.timeStamp }];
     } else if (pts.size === 2) {
@@ -74,9 +76,9 @@ export function track(el, h) {
     const dt = e.timeStamp - drag.t0;
     const first = samples[0], span = Math.max(1, e.timeStamp - first.t);
     const vx = (e.clientX - first.x) / span, vy = (e.clientY - first.y) / span;
-    const moved = drag.moved;
+    const moved = drag.moved, target = drag.target;
     drag = null;
-    if (!moved) { if (dt < TUNE.tapMs) h.tap && h.tap(e); else h.cancel && h.cancel(); return; }
+    if (!moved) { if (dt < TUNE.tapMs) h.tap && h.tap(e, target); else h.cancel && h.cancel(); return; }
     h.release && h.release({ dx, dy, vx, vy, x: e.clientX, y: e.clientY });
   };
   const onCancel = e => {

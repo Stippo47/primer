@@ -184,8 +184,36 @@ try {
   const marksOf = await ev(`Object.fromEntries([...document.querySelectorAll('.node.todo')].map(n=>[n.dataset.kind,n.querySelector('svg').innerHTML.replace(/a\\d+/g,'')]))`);
   ok(new Set(Object.values(marksOf)).size === Object.keys(marksOf).length && Object.keys(marksOf).length === 6, 'each kind has its own mark', Object.keys(marksOf));
   ok(await ev(`(()=>{const c=document.querySelector('.node[data-kind=chest] svg');return !!c.querySelector('.lid')&&!c.querySelector('circle.ring')})()`), 'a chest is drawn as a chest');
+  ok(await ev(`(()=>{const c=document.querySelector('.node[data-kind=chest] svg');return !!c.querySelector('.chest-shut')&&!c.querySelector('.chest-open')&&!c.querySelector('.glints')&&c.innerHTML.includes('#3a4290')&&!c.querySelector('[opacity="0.5"]')})()`), 'a chest still ahead is closed, in the path\'s dim tones, and not see-through');
   ok(await ev(`['test','exam'].every(k=>/<path d="M/.test(document.querySelector('.node[data-kind='+k+'] svg').innerHTML))`), 'a test and an exam are hexagons, as the sketch shows');
   await shot('04-path');
+
+  console.log('Buttons press in, with no shadow under them');
+  ok(await ev(`[...document.querySelectorAll('.node svg')].every(s=>!/#060926|#0c1030/.test(s.innerHTML))`), 'nothing on the path has a shadow under it (no floor shadow, no dark rim)');
+  // Every button's look, on the screens it's on: a side in its own tone is fine; a blurred, offset or see-through shadow isn't.
+  const shadowless = () => ev(`[...document.querySelectorAll('button')].filter(b=>b.offsetParent).flatMap(b=>{const s=getComputedStyle(b).boxShadow;if(s==='none')return [];
+    return s.split(/,(?![^(]*\\))/).filter(one=>{const n=one.replace(/rgba?\\([^)]*\\)/,'').trim().split(/\\s+/).map(parseFloat);const a=/rgba\\([^)]*,\\s*([\\d.]+)\\)/.exec(one);return n[0]!==0||n[2]>0||n[3]>0||(a&&Number(a[1])<1)}).map(x=>(b.className||b.tagName)+': '+x)})`);
+  ok((await shadowless()).length === 0, 'no button on the path has a shadow under it', await shadowless());
+  const pressAt = async (sel, ms) => { const r = await f.rect(sel); await f.touch('touchStart', [[r.x, r.y]]); await sleep(ms); };
+  await pressAt('.node.now', 160);
+  const held = await ev(`(()=>{const n=document.querySelector('.node.now'),m=new DOMMatrix(getComputedStyle(n.querySelector('.cap')).transform);return {down:n.classList.contains('down'),y:m.f}})()`);
+  await f.touch('touchEnd', []);
+  await sleep(320);
+  const backUp = await ev(`(()=>{const n=document.querySelector('.node.now'),m=new DOMMatrix(getComputedStyle(n.querySelector('.cap')).transform);return {down:n.classList.contains('down'),y:m.f}})()`);
+  ok(held.down && held.y >= 5 && !backUp.down && backUp.y === 0, 'a node sinks onto its side while held, and comes back up when let go', { held, backUp });
+  const wobbles = () => ev(`document.getAnimations().filter(a=>a.effect&&a.effect.target&&a.effect.target.closest&&a.effect.target.closest('button')&&a.effect.getKeyframes().some(k=>/scale/.test(k.transform||''))).length`);
+  ok((await wobbles()) === 0, 'and nothing on it springs or wobbles');
+  await f.tap('.head');
+  await sleep(200);
+  // a quick tap still shows the press: the button stays in a moment after the finger lifts
+  const tb = await f.rect('.topicpick');
+  await f.touch('touchStart', [[tb.x, tb.y]]); await sleep(30); await f.touch('touchEnd', []);
+  const quick = await ev(`(()=>{const b=document.querySelector('.topicpick');return {down:b.classList.contains('down'),y:new DOMMatrix(getComputedStyle(b).transform).f,side:getComputedStyle(b).boxShadow}})()`);
+  await sleep(400);
+  ok(quick.down && (await ev(`!document.querySelector('.topicpick').classList.contains('down')`)), 'a quick tap still shows the button going in, and it comes back', quick);
+  ok((await wobbles()) === 0, 'with no jiggle');
+  if (await ev(`!!document.querySelector('.scrim')`)) await f.tapAt(W / 2, 90);
+  await sleep(300);
   await f.tap('.node[data-kind=test]');
   await sleep(400);
   ok(await ev(`!!document.querySelector('.callout.dim') && !document.querySelector('.callout [data-go=start]') && document.querySelector('.callout').innerText.includes('A quick test')`), 'a node still ahead shows its kind and title, and nothing to start');
@@ -197,7 +225,7 @@ try {
   await f.tap('[data-go=topics]');
   await sleep(500);
   const sheet = await ev(`[...document.querySelectorAll('.toprow')].map(r=>r.innerText.replace(/\\s+/g,' ').trim())`);
-  ok(sheet.length === 2 && sheet[0].includes('Test topic') && sheet[0].toUpperCase().includes('TOUR') && sheet[1].toUpperCase().includes('DEEP'), 'the topic list shows each topic with one level word', sheet);
+  ok(sheet.length === 3 && sheet[0].includes('Test topic') && sheet[0].toUpperCase().includes('TOUR') && sheet[1].toUpperCase().includes('DEEP'), 'the topic list shows each topic with one level word', sheet);
   await shot('06-topics');
   await f.tap('.toprow:nth-child(3)');
   await sleep(500);
@@ -217,7 +245,11 @@ try {
   ok((await btn()).text === 'Continue' && !(await btn()).disabled, 'an Explain step has Continue straight away');
   ok(await ev(`document.querySelector('.ltext .key').textContent === 'These words'`), '*words* are stressed');
   await shot('07-explain-globe');
-  await press();
+  await pressAt('.lfoot .btn', 160);
+  const btnHeld = await ev(`(()=>{const b=document.querySelector('.lfoot .btn'),cs=getComputedStyle(b);return {down:b.classList.contains('down'),y:new DOMMatrix(cs.transform).f,side:cs.boxShadow}})()`);
+  await f.touch('touchEnd', []);
+  await sleep(450);
+  ok(btnHeld.down && btnHeld.y === 4 && /0px 0px 0px/.test(btnHeld.side), "the big button sinks by its side's depth while held, its side gone, and Continue goes on when let go", btnHeld);
   ok((await stepId()) === 'read-picture' && await waitFor(`(document.querySelector('.lstage img')||{}).src?.startsWith('blob:')`), 'an Explain step with a picture shows it, from the pulled media');
   await press();
   // choice: wrong
@@ -230,6 +262,7 @@ try {
   ok(v.cls.includes('wrong') && v.verdict === 'Not quite' && v.why === 'Wrong, for a made-up reason.', 'a wrong choice says so, with the line of why for the answer given', v);
   ok(await ev(`document.querySelector('.pi-opt[data-id=a]').classList.contains('right') && document.querySelector('.pi-opt[data-id=b]').classList.contains('wrong')`), 'and shows the right one beside it');
   ok((await btn()).text === 'Continue' && (await btn()).cls.includes('pink'), 'Check becomes Continue');
+  ok((await shadowless()).length === 0, 'no button in a lesson has a shadow under it, the choices included', await shadowless());
   await shot('08-choice-wrong');
   await press();
   // slider: right, on a stretched scale
@@ -305,6 +338,7 @@ try {
   await press();
   ok(!(await bare()) && await ev(`document.querySelector('.node[data-node=every-kind]').classList.contains('done')`), 'back on the path, the lesson is gold');
   ok(await ev(`document.querySelector('.node[data-node=first-chest]').classList.contains('now')`), 'and the chest after it is the next thing to reach');
+  ok(await ev(`(()=>{const c=document.querySelector('.node[data-node=first-chest] svg');return !!c.querySelector('.chest-shut')&&!!c.querySelector('.glints')&&!c.innerHTML.includes('#3a4290')&&c.innerHTML.includes('#c67c44')})()`), 'the chest that\'s next is closed, in its own colours, with glints');
   await shot('13-path-done');
 
   console.log('A chest');
@@ -314,10 +348,11 @@ try {
   await f.tap('.callout [data-go=start]');
   await sleep(900);
   ok(await bare() && (await text()).includes('A chest!') && await ev(`document.querySelector('.chestbig .open').getAttribute('opacity') === '1'`), 'it opens with a small celebration, the tab bar hidden');
+  ok(await ev(`!!document.querySelector('.chestbig .shut .chest-shut') && !!document.querySelector('.chestbig .open .chest-open .light')`), 'closed, then open with a light from inside');
   await shot('13b-chest');
   ok((await everyEvent()).some(e => e.type === 'open' && e.node === 'first-chest' && e.kind === 'chest' && e.topic === 'test-topic'), 'opening it is recorded, and goes up with the answers');
   await press();
-  ok(!(await bare()) && await ev(`document.querySelector('.node[data-node=first-chest]').classList.contains('done') && /rotate\\(-24/.test(document.querySelector('.node[data-node=first-chest] svg').innerHTML)`), 'back on the path the chest is open, and done');
+  ok(!(await bare()) && await ev(`(()=>{const n=document.querySelector('.node[data-node=first-chest]');return n.classList.contains('done')&&!!n.querySelector('.chest-open')&&!n.querySelector('.chest-open .light')&&!n.querySelector('.glints')})()`), 'back on the path the chest is open, emptied, and done');
   ok(await ev(`document.querySelector('.node[data-node=second]').classList.contains('now')`), 'and the second lesson is next');
   await f.tap('.node[data-node=first-chest]');
   await sleep(300);
@@ -435,6 +470,96 @@ try {
   ok(!(await bare()) && (await text()).includes('Second topic'), 'the cross leaves at once, back to the path');
   ok((await everyEvent()).some(e => e.type === 'leave' && e.step === 'read' && e.topic === 'second-topic'), 'and says where it was left');
 
+  console.log('Every newer answer form, played wrong and then right by touch');
+  {
+    const L = JSON.parse(readFileSync(join(ROOT, 'tests', 'fixtures', 'data', 'topics', 'answer-forms', 'every-form.json'), 'utf8'));
+    const along = async (pts, ms = 480) => {
+      await f.touch('touchStart', [[pts[0].x, pts[0].y]]);
+      for (const p of pts.slice(1)) { await sleep(ms / pts.length); await f.touch('touchMove', [[p.x, p.y]]); }
+      await sleep(60);
+      await f.touch('touchEnd', []);
+      await sleep(260);
+    };
+    const dialAt = (v, inp) => ev(`(()=>{const r=document.querySelector('.pi-dialbox').getBoundingClientRect(),s=Math.min(r.width,r.height)/300,a=Math.PI*0.75+(${v}-${inp.min})/(${inp.max}-${inp.min})*Math.PI*1.5;return {x:r.left+r.width/2+Math.cos(a)*106*s,y:r.top+r.height/2+Math.sin(a)*106*s}})()`);
+    // Gives an answer the way a finger would: turns the dial round its ring, drags the pile's level, draws
+    // the strings, carries things into bins and pieces into sockets, taps the slider's track.
+    const answerBy = async (inp, value) => {
+      if (inp.form === 'dial') {
+        const from = (await ev('__primer.run.input.state()')).value, pts = [];
+        for (let k = 0; k <= 16; k++) pts.push(await dialAt(from + ((value - from) * k) / 16, inp));
+        await along(pts);
+      } else if (inp.form === 'pile') {
+        const h = await f.rect('.pi-handle');
+        const y = await ev(`(()=>{const r=[...document.querySelectorAll('.pi-row')].map(e=>e.getBoundingClientRect().top),rowH=r[0]-r[1];return r[0]+rowH-rowH*${value}/${inp.per || 5}})()`);
+        await f.drag(h.x, h.y, 0, y - h.y, { steps: 14, ms: 380 });
+      } else if (inp.form === 'slider') {
+        const t = await f.rect('.pi-track');
+        await f.tapAt(t.left + ((value - inp.min) / (inp.max - inp.min)) * t.w, t.y);
+      } else if (inp.form === 'string') {
+        for (const [l, r] of Object.entries(value)) {
+          const a = await f.rect(`.pi-end2[data-side=l][data-id="${l}"]`), z = await f.rect(`.pi-end2[data-side=r][data-id="${r}"]`);
+          await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
+        }
+      } else if (inp.form === 'sort') {
+        for (const [item, bin] of Object.entries(value)) {
+          const a = await f.rect(`.pi-sorttile[data-id="${item}"]`), z = await f.rect(`.pi-bin[data-bin="${bin}"]`);
+          await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 14, ms: 360 });
+          await sleep(300);
+        }
+      } else if (inp.form === 'snap') {
+        for (const [card, piece] of Object.entries(value)) {
+          const c = await f.rect(`.pi-card[data-id="${card}"]`), p = await f.rect(`.pi-piece[data-id="${piece}"]`);
+          await f.drag(p.x, p.y, c.right - p.left, c.y - p.y, { steps: 14, ms: 360 });
+          await sleep(350);
+        }
+      }
+      await sleep(250);
+    };
+    // what the truth looks like once checked, by form
+    const REVEAL = {
+      dial: { wrong: `!document.querySelector('.pi-dialbox .truth').hasAttribute('hidden') && !!document.querySelector('.pi-read.truth') && !!document.querySelector('.pi-knob.wrong')`, right: `document.querySelector('.pi-dialbox').classList.contains('right')` },
+      pile: { wrong: `!document.querySelector('.pi-level.truth').hidden && document.querySelectorAll('.pi-thing.over').length === 8 && document.querySelector('.pi-count.truth').textContent === '7'`, right: `document.querySelector('.pi-handle').classList.contains('right') && document.querySelector('.pi-level.truth').hidden` },
+      string: { wrong: `document.querySelectorAll('.rope.truth').length === 2 && document.querySelectorAll('.pi-end2.wrong').length === 2`, right: `document.querySelectorAll('.pi-end2.right').length === 3 && !document.querySelector('.rope.truth')` },
+      sort: { wrong: `document.querySelectorAll('.pi-sorttile.truth').length === 1 && document.querySelectorAll('.pi-sorttile.right').length === 3`, right: `document.querySelectorAll('.pi-sorttile.right').length === 4` },
+      snap: { wrong: `document.querySelectorAll('.pi-piece.truth').length === 2 && document.querySelectorAll('.pi-card.wrong').length === 2 && document.querySelectorAll('.pi-piece.docked').length === 3`, right: `document.querySelectorAll('.pi-card.right').length === 3` },
+      slider: { wrong: `!document.querySelector('.pi-chip.truth').hidden`, right: `!document.querySelector('.pi-chip.truth').hidden` },
+    };
+    await f.tap('[data-go=topics]');
+    await sleep(400);
+    await f.tap('.toprow:nth-child(4)');
+    await sleep(500);
+    ok((await text()).includes('Answer forms') && await ev(`document.querySelectorAll('.node').length === 1`), 'the answer forms topic shows its path');
+    const asked = L.steps.filter(s => s.kind === 'check').length;
+    for (const pass of ['wrong', 'right']) {
+      await f.tap('.node[data-node=every-form]');
+      await sleep(300);
+      await f.tap('.callout [data-go=start]');
+      for (const s of L.steps) {
+        await waitFor(`__primer.run && __primer.run.step.id === ${JSON.stringify(s.id)} && (!!__primer.run.input || ${s.kind === 'explain'})`);
+        await sleep(300);
+        if (s.kind === 'explain') { await press(); continue; }
+        const value = pass === 'right' ? s.answer : s.tries.find(t => t.marked === 'wrong').state.value;
+        await answerBy(s.input, value);
+        const st = await ev('__primer.run.input.state()');
+        ok(st.answered && JSON.stringify(st.value) === JSON.stringify(value), `${s.id} (${s.input.form}): answered ${pass} by touch`, st);
+        await shot(`30-${s.id}-${pass}-a`);
+        await press();
+        const vd = await verdict();
+        ok(vd.verdict === (pass === 'right' ? 'Right' : 'Not quite') && (pass === 'right' || vd.why.length > 0), `${s.id}: marked ${pass}${pass === 'wrong' ? ', with its line of why' : ''}`, vd);
+        await sleep(1100);
+        ok(await ev(REVEAL[s.input.form][pass]), `${s.id}: the truth is shown beside the answer given`);
+        await shot(`30-${s.id}-${pass}-b`);
+        await press();
+      }
+      await waitFor(`!!document.querySelector('.lend')`);
+      ok((await text()).includes(`${pass === 'right' ? asked : 0} of ${asked} right`), `played ${pass}, the end says so`, await text());
+      await press();
+    }
+    const tried = (await everyEvent()).filter(e => e.type === 'attempt' && e.topic === 'answer-forms');
+    ok(['dial', 'pile', 'string', 'sort', 'snap'].every(form => tried.filter(e => e.form === form).length >= 2), 'every attempt with the newer forms is recorded, with the form', tried.map(e => e.form));
+    ok(tried.some(e => e.form === 'sort' && e.value && e.value.tropics === 'cold' && e.right === false), 'a sort attempt holds where each thing was put');
+  }
+
   console.log('Nothing typed gets lost');
   await f.tap('[data-go=topics]');
   await sleep(300);
@@ -488,7 +613,7 @@ try {
   await f.tap('.tab[data-tab=profile]');
   await sleep(400);
   const know = await ev(`[...document.querySelectorAll('.krow')].map(r=>({t:r.innerText.replace(/\\s+/g,' ').trim(),warn:!!r.querySelector('.wn svg'),col:r.querySelector('.kb b').style.background}))`);
-  ok(know.length === 2 && /\d+%/.test(know[0].t), 'Knowledge lists each topic with its number', know);
+  ok(know.length === 3 && /\d+%/.test(know[0].t), 'Knowledge lists each topic with its number', know);
   ok(!/fading/i.test(await text()) && !/streak/i.test(await text()), 'with no "fading" and no streak');
   await shot('14-profile');
   await f.tap('.krow');
@@ -540,6 +665,49 @@ try {
   const cards = await ev(`[...document.querySelectorAll('.pcard')].map(c=>c.innerText.replace(/\\s+/g,' ').trim())`);
   ok(cards.length === 1 && cards[0].startsWith('Globe') && cards[0].includes('from Every kind of step'), 'the Playground lists the tools (the globe), saying which lesson first uses each', cards);
   ok(!(await ev(`!!document.querySelector('.pcard[data-part=inputs]')`)) && (await ev('__primer.parts.listParts()')).includes('inputs'), "Inputs, an answer form, isn't in the list, but is still in the kit for lessons");
+  const row = await ev(`(()=>{const r=document.querySelector('.formsrow'),c=document.querySelector('.pcard');if(!r||!c)return null;const a=r.getBoundingClientRect(),b=c.getBoundingClientRect();return {text:r.innerText.trim(),below:a.top>b.bottom,h:a.height,cardH:b.height,quiet:getComputedStyle(r).backgroundColor==='rgba(0, 0, 0, 0)'}})()`);
+  ok(row && row.text === 'Answer forms' && row.below && row.h < row.cardH / 2 && row.quiet, 'a small, quiet "Answer forms" row sits after the tools', row);
+  await shot('17a-practice-answer-forms');
+  await f.tap('.formsrow');
+  await waitFor(`!!document.querySelector('.partstage .pi')`);
+  const formsOffered = await ev(`[...document.querySelectorAll('[data-set=form]')].map(b=>b.dataset.v)`);
+  ok(await bare() && ['choice', 'slider', 'dial', 'number', 'pile', 'order', 'string', 'sort', 'snap', 'match', 'spot'].every(x => formsOffered.includes(x)), 'it opens every answer form, with its settings', formsOffered);
+  for (const form of ['dial', 'pile', 'string', 'sort', 'snap']) {
+    await f.tap(`[data-set=form][data-v=${form}]`);
+    await sleep(500);
+    ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `${form} opens there, to try by hand`);
+    await shot(`17c-forms-${form}`);
+  }
+  // Every carrying form also answers to taps: tap a thing, then where it goes.
+  const pv = () => ev('__primer.app.partNow.state().value');
+  await f.tap('[data-set=form][data-v=sort]'); await sleep(500);
+  const tile = await ev(`document.querySelector('.partstage .pi-sorttile').dataset.id`);
+  await f.tap(`.partstage .pi-sorttile[data-id="${tile}"]`); await sleep(200);
+  const lastBin = await ev(`[...document.querySelectorAll('.partstage .pi-bin')].at(-1).dataset.bin`);
+  await f.tap(`.partstage .pi-bin[data-bin="${lastBin}"] .head`); await sleep(600);
+  ok((await pv())[tile] === lastBin, 'sort: tap a thing, then a bin, and it goes in', await pv());
+  await f.tap('[data-set=form][data-v=snap]'); await sleep(500);
+  const card = await ev(`document.querySelector('.partstage .pi-card').dataset.id`), piece = await ev(`document.querySelector('.partstage .pi-piece').dataset.id`);
+  await f.tap(`.partstage .pi-piece[data-id="${piece}"]`); await sleep(200);
+  await f.tap(`.partstage .pi-card[data-id="${card}"]`); await sleep(600);
+  ok((await pv())[card] === piece, 'snap: tap a piece, then a card, and it clicks in', await pv());
+  await f.tap('[data-set=form][data-v=string]'); await sleep(500);
+  await f.tap('.partstage .pi-end2[data-side=l]'); await f.tap('.partstage .pi-end2[data-side=r]'); await sleep(300);
+  ok(Object.keys(await pv()).length === 1, 'string: tap one, then the other, and a string joins them', await pv());
+  await f.tap('[data-set=form][data-v=order]'); await sleep(500);
+  const was = await pv();
+  await f.tap('.partstage .pi-item:first-child'); await f.tap('.partstage .pi-item:last-child'); await sleep(300);
+  const swapped = await pv();
+  ok(swapped[0] === was.at(-1) && swapped.at(-1) === was[0], 'order: tap two and they swap', { was, swapped });
+  await f.tap('[data-set=form][data-v=snap]'); await sleep(500);
+  await f.tap('[data-try="0"]');
+  await sleep(1100);
+  ok(await ev(`document.querySelectorAll('.partstage .pi-piece.truth, .partstage .pi-piece.right').length === 3 && document.querySelector('.partstage .pi').classList.contains('locked')`), 'its Answer shows the truth, locked as a lesson does');
+  await f.tap('[data-try="1"]');
+  await sleep(500);
+  ok(await ev(`!document.querySelector('.partstage .pi').classList.contains('locked') && !document.querySelector('.partstage .pi-piece.truth')`), 'and Again starts it afresh');
+  await f.tap('[data-go=back]');
+  await sleep(400);
   ok(await ev(`document.querySelector('.review .btn').disabled`), "Review's Start is off until stage 2");
   await f.tap('.pcard[data-part=globe]');
   await waitFor(`document.querySelector('.partstage canvas')`);
@@ -576,20 +744,52 @@ try {
     await sleep(300);
     ok(await ev(`!!document.querySelector('.partstage .form-${form}')`), `Inputs still opens as ${form} (number, match and spot unchanged)`);
   }
-  for (const form of ['slider', 'order']) {
+  for (const form of ['slider', 'order', 'dial', 'pile', 'string', 'sort', 'snap']) {
     await f.tap(`[data-set=form][data-v=${form}]`);
     await sleep(400);
     if (form === 'slider') {
       const t = await f.rect('.pi-track');
       await f.drag(t.left + 10, t.y, t.w * 0.8, 0, { steps: 20, ms: 500 });
       await f.drag(t.left + t.w * 0.8, t.y, -t.w * 0.6, 6, { steps: 25, ms: 600 });
-    } else {
+    } else if (form === 'order') {
       const a = await f.rect('.pi-item');
       await f.drag(a.x, a.y, 0, 130, { steps: 20, ms: 500 });
       await sleep(500);
       ok(await ev(`[...document.querySelectorAll('.pi-item')].every(i=>getComputedStyle(i).willChange==='transform')`), 'order items move on their own layers');
       const c = await f.rect('.pi-item:last-child');
       await f.drag(c.x, c.y, 0, -150, { steps: 20, ms: 500, hold: 0 });
+    } else if (form === 'dial') {
+      // round the ring and back
+      const d = await f.rect('.pi-dialbox'), r = Math.min(d.w, d.h) * 106 / 300, pts = [];
+      for (let k = 0; k <= 24; k++) { const a = Math.PI * (0.8 + 1.3 * Math.sin((k / 24) * Math.PI)); pts.push([d.x + Math.cos(a) * r, d.y + Math.sin(a) * r]); }
+      await f.touch('touchStart', [pts[0]]);
+      for (const p of pts.slice(1)) { await sleep(25); await f.touch('touchMove', [p]); }
+      await f.touch('touchEnd', []);
+      ok(await ev(`getComputedStyle(document.querySelector('.pi-knob')).willChange==='transform'`), 'the dial\'s knob moves on its own layer');
+    } else if (form === 'pile') {
+      const h = await f.rect('.pi-handle'), box = await f.rect('.pi-pilebox');
+      await f.drag(h.x, h.y, 0, box.top + 30 - h.y, { steps: 20, ms: 500 });
+      const h2 = await f.rect('.pi-handle');
+      await f.drag(h2.x, h2.y, 0, (box.bottom - 60) - h2.y, { steps: 20, ms: 500 });
+      ok(await ev(`['.pi-handle','.pi-level'].every(s=>getComputedStyle(document.querySelector(s)).willChange==='transform')`), 'the pile\'s level and handle move on their own layers');
+    } else if (form === 'string') {
+      const a = await f.rect('.pi-end2[data-side=l]'), z = await f.rect('.pi-end2[data-side=r]:last-child');
+      await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 20, ms: 500 });
+      await f.drag(a.x, a.y, z.x - a.x - 40, z.y - a.y - 60, { steps: 20, ms: 500 });
+    } else if (form === 'sort') {
+      const a = await f.rect('.pi-sorttile'), z = await f.rect('.pi-bin');
+      await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 20, ms: 500 });
+      await sleep(400);
+      const a2 = await f.rect('.pi-sorttile.in');
+      await f.drag(a2.x, a2.y, 60, 160, { steps: 20, ms: 500 });
+      ok(await ev(`[...document.querySelectorAll('.pi-sorttile')].every(i=>getComputedStyle(i).willChange==='transform')`), 'sort\'s things move on their own layers');
+    } else if (form === 'snap') {
+      const c = await f.rect('.pi-card'), p = await f.rect('.pi-piece:last-of-type');
+      await f.drag(p.x, p.y, c.right - p.left, c.y - p.y, { steps: 20, ms: 500 });
+      await sleep(400);
+      const p2 = await f.rect('.pi-piece.docked');
+      await f.drag(p2.x, p2.y, 30, 140, { steps: 20, ms: 500 });
+      ok(await ev(`[...document.querySelectorAll('.pi-piece')].every(i=>getComputedStyle(i).willChange==='transform')`), 'snap\'s pieces move on their own layers');
     }
     await sleep(700);
     const before = await b.send('Page.captureScreenshot', { format: 'png' });
@@ -656,6 +856,19 @@ try {
         if (form === 'order') { const r = await f.rect('#bench .pi-item'); const r2 = await f.rect('#bench .pi-item:last-child'); await f.drag(r.x, r.y, 0, r2.y - r.y, { steps: 12, ms: 300 }); }
         if (form === 'match') { await f.tap('#bench .pi-cell[data-side=l]'); await f.tap('#bench .pi-cell[data-side=r]'); }
         if (form === 'spot') { const r = await f.rect('#bench .pi-spot'); await f.tapAt(r.x, r.y); }
+        if (form === 'dial') {
+          const r = await f.rect('#bench .pi-dialbox');
+          await f.tapAt(r.x - Math.min(r.w, r.h) * 0.35, r.y);
+          if (JSON.stringify(await ev('__h.state()')) === before) await f.tapAt(r.x + Math.min(r.w, r.h) * 0.35, r.y);
+        }
+        if (form === 'pile') {
+          const r = await f.rect('#bench .pi-pilebox');
+          await f.tapAt(r.x, r.top + 30);
+          if (JSON.stringify(await ev('__h.state()')) === before) await f.tapAt(r.x, r.bottom - 26);
+        }
+        if (form === 'string') { await f.tap('#bench .pi-end2[data-side=l]'); await f.tap('#bench .pi-end2[data-side=r]'); }
+        if (form === 'sort') { const a = await f.rect('#bench .pi-sorttile'), z = await f.rect('#bench .pi-bin'); await f.drag(a.x, a.y, z.x - a.x, z.y - a.y, { steps: 10, ms: 260 }); }
+        if (form === 'snap') { const c = await f.rect('#bench .pi-card'), p = await f.rect('#bench .pi-piece'); await f.drag(p.x, p.y, c.right - p.left, c.y - p.y, { steps: 10, ms: 260 }); }
         await sleep(120);
         moved = JSON.stringify(await ev('__h.state()')) !== before;
       }
@@ -1112,6 +1325,8 @@ try {
   await b.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await go(`${APP}&sw=1`);
   ok((await text()).includes('Test topic') || (await text()).includes('Learn'), 'with no signal at all, the app opens', await text());
+  await f.tap('.tab[data-tab=learn]');
+  await sleep(400);
   await f.tap('.node');
   await f.tap('.callout [data-go=start]');
   ok(await waitFor(`!!document.querySelector('.lstage canvas')`), 'and a lesson plays, its globe and all');

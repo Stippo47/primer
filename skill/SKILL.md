@@ -28,7 +28,7 @@ A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, 
 | Step | What happens |
 |---|---|
 | `explain` | A short paragraph, with a figure: a part (the globe, set up) or a picture |
-| `check` | A quick question, answered with the Inputs part: choice, slider, number, order, match, or tap the spot |
+| `check` | A quick question, answered with the Inputs part: choice; a number on a slider, dial, keypad or pile; order; pairs by string, sort or snap; or tap the spot |
 | `play` | A part with a goal, marked by reading the part's state: "tap where a hurricane would start" |
 | `scene` | A narrated animation on parts: lines said by the narrator and captioned, with actions hung on their words. It can wait for a goal, like a play step |
 
@@ -51,13 +51,13 @@ A scene is a script (format.md, "A scene"): lines, each `{ "id", "text", "do": [
 
 A part knows nothing about lessons. A lesson says which part, its settings, the calls to make, and what to read from it. `primer parts` lists everything; a lesson may only use what's listed there. **Never write one-off code into a lesson.** If a lesson needs something the kit can't do, say so and what it would cost; the kit grows with a general part or setting, not a widget for one lesson.
 
-Today's kit: **Inputs** (every way of answering; a slider starts at a real value, `start`, and can drive a picture, `picture`: `warmth` for temperature, `depth` for how deep) and **Globe** (spin, labels, styles including sea warmth and a four-colour political map, borders on or off, highlights, latitude bands, points, a turning hurricane; reports taps with place, land and country).
+Today's kit: **Inputs** (every way of answering, several of each kind: choice; slider, dial, number or pile for a number; order; string, sort or snap for pairs, match being the old way, which `check` steers away from; spot. A slider, dial or pile starts at a real value, `start`. A slider or a dial can drive a picture, `picture`: `warmth` for temperature, `depth` for how deep, `wind` for wind. Labels on strings, sorts and snaps may have a small picture, `image`) and **Globe** (spin, labels, styles including sea warmth and a four-colour political map, borders on or off, highlights, latitude bands, points, a turning hurricane; reports taps with place, land and country).
 
 ## Getting it realistically wrong
 
 These are rules `primer check` enforces, not hopes:
 
-1. **Big answer spaces first.** A slider, a placement, a typed number or an order before a choice of four. "How warm must the sea be?" is a slider marked by how close you got, with the truth drawn beside the guess. A slider starts at a real value: set `start` well away from the answer (the checker refuses a start that's already right), and give it a `picture` where one fits.
+1. **Big answer spaces first.** A slider, a dial, a pile, a placement, a typed number, an order, strings, a sort or a snap before a choice of four. Vary the forms: several forms of each kind exist so lessons don't all feel alike. "How warm must the sea be?" is a slider marked by how close you got, with the truth drawn beside the guess. A slider starts at a real value: set `start` well away from the answer (the checker refuses a start that's already right), and give it a `picture` where one fits.
 2. **Ask before you tell.** A guess before the explanation helps it stick, even when the guess is wrong. Put a check or a play before the explain step that answers it.
 3. **Wrong choices come from real misconceptions.** Every wrong option has `tempting` (why someone would really pick it) and `why` (the one line they're shown). No "all of the above", no "none of the above", and options of similar length: the checker refuses tells.
 4. **Every play step can fail.** Give `tries`: plausible inputs as the part's state and what each should be marked, a realistic wrong one among them. The checker runs them through the goal and refuses the lesson if one comes out otherwise. The tempting wrong answer should be a real one: on the hurricane globe, the equator, where the sea is warmest.

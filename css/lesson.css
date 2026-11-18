@@ -6,8 +6,17 @@
 .lbar b { display: block; height: 100%; border-radius: 7px; background: var(--gold); box-shadow: inset 0 -4px 0 rgba(201, 138, 0, 0.6), inset 0 3px 0 rgba(255, 255, 255, 0.35);
   transform-origin: 0 50%; transform: scaleX(0); }
 
+/* Laying a step out, the same for every kind of step. A step is up to three blocks: a figure, the words,
+   and the answer. On a tall screen the room left over is shared out, never left as one gap at the bottom:
+   - a figure grows first, to its cap;
+   - the answer takes the room left under the words and sits in the middle of it, so the space falls
+     above and below it; an answer with a picture ([data-grow] in its part: the slider's picture, the dial,
+     the pile) lets that picture take a share of the room first (Run.shareRoom in js/lesson.js);
+   - on an Explain or Play step, the words sit in the middle of the room left under the figure.
+   The words always start at the top. On the smallest iPhone there's little room to share: every block keeps
+   its own size, and a step scrolls only if it truly doesn't fit (primer fit says which). */
 .lbody { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 16px; padding: 10px 16px 18px; }
-.lstage { flex: 1 1 320px; min-height: 210px; max-height: 380px; position: relative; }
+.lstage { flex: 20 1 320px; min-height: 210px; max-height: 380px; position: relative; }
 .lstage.image { display: flex; align-items: center; justify-content: center; }
 .lstage.image img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
 .lstage.small { flex-basis: 230px; min-height: 170px; max-height: 260px; }
@@ -15,7 +24,8 @@
 .ltext { flex: none; font-size: calc(21px * var(--ts)); line-height: 1.3; }
 .ltext.long { font-size: calc(18px * var(--ts)); font-weight: 700; line-height: 1.42; color: var(--soft); }
 .ltext .key { color: var(--gold); }
-.linput { flex: none; }
+.lstage + .ltext:last-child { margin-block: auto; }
+.linput { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; }
 
 .lfoot { position: relative; flex: none; padding: 14px 16px calc(var(--sab) + 16px); border-top: 2px solid transparent; }
 .lfoot.right { background: #173e57; border-top-color: var(--teal); }

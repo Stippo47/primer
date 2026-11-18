@@ -3,6 +3,7 @@
  "updated": "2026-01-01T00:00:00.000Z",
  "topics": [
   { "id": "test-topic", "title": "Test topic", "level": "tour", "lessons": 2 },
-  { "id": "second-topic", "title": "Second topic", "level": "deep", "lessons": 1 }
+  { "id": "second-topic", "title": "Second topic", "level": "deep", "lessons": 1 },
+  { "id": "answer-forms", "title": "Answer forms", "level": "glance", "lessons": 1 }
  ]
 }

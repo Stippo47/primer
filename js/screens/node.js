@@ -17,8 +17,8 @@ export function visitNode(app, topic, node, { record, onLeave }) {
   document.documentElement.classList.add('bare');
   const w = WORDS[node.kind];
   const art = node.kind === 'chest'
-    ? `<div class="chestbig">${svg(180, 160, `<g class="shut" transform="translate(18 18) scale(2.4)">${chest(false)}</g><g class="open" transform="translate(18 18) scale(2.4)" opacity="0">${chest(true)}</g>
-        <g class="sparks" opacity="0">${glint(40, 30, 9, '#ffe9a6')}${glint(150, 24, 7, '#fff')}${glint(160, 86, 5, '#ffe9a6')}${glint(22, 92, 5, '#fff', 0.8)}</g>`)}</div>`
+    ? `<div class="chestbig">${svg(180, 160, `<g class="shut" transform="translate(13 18) scale(2.4)">${chest({ open: false })}</g><g class="open" transform="translate(13 18) scale(2.4)" opacity="0">${chest({ open: true, glow: true })}</g>
+        <g class="sparks" opacity="0">${glint(36, 22, 9, '#ffe9a6')}${glint(150, 14, 7, '#fff')}${glint(162, 78, 5, '#ffe9a6')}${glint(18, 84, 5, '#fff', 0.8)}</g>`)}</div>`
     : svg(120, 120, `<g transform="translate(60 52) scale(1.5)">${stepButton({ kind: node.kind, state: 'now' })}</g>`);
   view.innerHTML = `<section class="lesson visit" aria-label="${esc(node.title)}">
     <header class="ltop"><button class="round mute" data-go="leave" aria-label="Close" data-sound="off">${icon.close(20)}</button></header>
