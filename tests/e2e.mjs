@@ -919,6 +919,16 @@ try {
         await press();
         continue;
       }
+      if (node.kind === 'review' || node.kind === 'animation') {
+        // visited, as any review or animation node is for now
+        await f.tap(`.node[data-node=${node.id}]`);
+        await sleep(300);
+        await f.tap('.callout [data-go=start]');
+        await sleep(700);
+        ok(await bare(), `the pilot's ${node.kind}, ${node.id}, opens`);
+        await press();
+        continue;
+      }
       const file = JSON.parse(readFileSync(join(dir, `${node.id}.json`), 'utf8'));
       const questions = file.steps.filter(s => s.kind !== 'explain');
       ok(node.kind !== 'lesson' || (file.steps.length >= 8 && file.steps.length <= 10), `${node.id}: ${file.steps.length} steps`);

@@ -51,7 +51,7 @@ It now works on the globe and every flat map, in every style. `clear()` should t
 
 ### To add a projection
 
-Add one line to `PROJECTIONS` in `views.js` (any d3-geo projection symmetric about the equator: its outline, fit, panning and edges are worked out from it) and its name to the `projection` setting's options in `part.json`. The tests mount every setting and every call on every option of that setting, so they cover it at once. A projection that isn't flat-and-symmetric (an azimuthal map centred on a pole, say) needs its own view object beside `globeView` and `flatView`, answering the same questions.
+Add one line to `PROJECTIONS` in `views.js` (any d3-geo projection symmetric about the equator: its outline, fit, panning and edges are worked out from it; one whose poles run off to infinity also gives `lats`, the latitudes it shows, as Mercator does with 60 S to 84 N) and its name to the `projection` setting's options in `part.json`. The tests mount every setting and every call on every option of that setting, so they cover it at once. A projection that isn't flat-and-symmetric (an azimuthal map centred on a pole, say) needs its own view object beside `globeView` and `flatView`, answering the same questions.
 
 ### Smooth on the phone
 
