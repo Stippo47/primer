@@ -1,0 +1,106 @@
+{
+  "title": "Answer forms",
+  "topic": "stage1",
+  "order": 2,
+  "cards": [
+    {
+      "id": "number-forms",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Answering with a number",
+      "text": "Three new ways to answer with a number. Each film answers once wrong, then right. Tick any you'd keep.",
+      "why": "You found typing a number meh. What you keep replaces the keypad for questions like how fast, how high or how many, and shows your answer next to the true one.",
+      "pick": [
+        "tower",
+        "pile"
+      ],
+      "details": "Each film is a real lesson step about hurricanes, answered by a finger: wrong first, then Check, then right. Nothing is typed in any of them; you drag, and a picture changes as you go.\n\nMy picks are Tower and Pile, because they suit different numbers. Tower works for anything with a unit (how high, how far, how warm): it sets your answer against things you already know the size of, like Everest and a jet. Hold your finger at the top and the scale stretches, so the screen never tells you the answer must fit inside it. Pile is for small counts, where seeing seven storms next to twenty says more than the digits do.\n\nDial is the most fun to turn, and its picture is the liveliest. But its numbers run around the edge from 0 to 250, which hints at roughly where the answer sits, and it suits speeds and not much else.\n\nWhat's weak: the palm tree and the cloud are first drawings, and Pile stops at 40, so it isn't for big numbers. All three work with a finger in a test browser; none has been tried on your phone yet.",
+      "items": [
+        {
+          "id": "dial",
+          "label": "Dial",
+          "video": "../../stage0/inputs/films/number-dial.mp4",
+          "text": "Turn the dial. A palm tree in the middle bends harder as the wind rises. On Check it blows up to the true speed."
+        },
+        {
+          "id": "tower",
+          "label": "Tower",
+          "video": "../../stage0/inputs/films/number-tower.mp4",
+          "text": "Pull a cloud up beside Everest and a jet. Hold at the top and the scale stretches. The true cloud rises in gold."
+        },
+        {
+          "id": "pile",
+          "label": "Pile",
+          "video": "../../stage0/inputs/films/number-pile.mp4",
+          "text": "Raise the level and storms pile in, five to a row. On Check the extra ones fade, or the missing ones fill in gold."
+        }
+      ]
+    },
+    {
+      "id": "match-forms",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Matching things up",
+      "text": "Three new ways to match things up. Each film answers once wrong, then right. Tick any you'd keep.",
+      "why": "You didn't like pairing by coloured dots. What you keep replaces them, and on Check it shows which pairs were wrong and moves them to where they belong.",
+      "pick": [
+        "string",
+        "sort"
+      ],
+      "details": "My picks are String and Sort.\n\nString: you pull a string from a name to its partner, and it hangs between them. You see every pair at once, and crossed strings show a mix-up at a glance. On Check the wrong strings fade and gold ones draw themselves to the right partners. It fits five pairs on the screen.\n\nSort is for a different kind of question, where several things belong in the same place (hurricane or tornado?). Facts drop into bins and stack up; wrong ones hop across on Check.\n\nSnap feels the most satisfying, as the piece clicks into its card and the two become one. But each pair takes a full row, plus room below for the loose pieces, so only three pairs fit on the screen. I'd keep it only if you like it best.\n\nWhat's weak: the little maps in String are small, and the instrument drawings in Snap are first drawings. All three work with a finger in a test browser; none has been tried on your phone yet.",
+      "items": [
+        {
+          "id": "snap",
+          "label": "Snap",
+          "video": "../../stage0/inputs/films/match-snap.mp4",
+          "text": "Drag each word onto its instrument, where it clicks in like a jigsaw piece. Wrong pieces pop out and fly to their place."
+        },
+        {
+          "id": "string",
+          "label": "String",
+          "video": "../../stage0/inputs/films/match-string.mp4",
+          "text": "Pull a string from each name to its ocean. On Check the wrong strings fade and gold ones show the right way."
+        },
+        {
+          "id": "sort",
+          "label": "Sort",
+          "video": "../../stage0/inputs/films/match-sort.mp4",
+          "text": "Drop each fact in the hurricane bin or the tornado bin. Many can go in one bin. Wrong ones hop across."
+        }
+      ]
+    },
+    {
+      "id": "spot-forms",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Pointing at a picture",
+      "text": "Three new ways to point at the right place on a picture. Each film answers once wrong, then right.",
+      "why": "Tapping the spot felt weird. What you keep replaces it, and on Check it plays out what really happens at the place you chose, so a wrong answer still teaches something.",
+      "pick": [
+        "pin",
+        "regions"
+      ],
+      "details": "My picks are Pin and Regions, for two different kinds of question.\n\nPin is for a point on any picture or map. The pin waits in a corner, bobbing, so it's clear it can be picked up. While you carry it, its point rides above your finger, so you can see where it will land. On Check the wind appears as arrows, the picture zooms in on your pin and the true spot, and a line between them says how far off you were, with the wind speed at each.\n\nRegions is for pictures with named parts. Whatever is under your finger lights up and says its name, and you can slide around before letting go, so you never wonder what you're pointing at. On Check the air starts moving in every part: choose the eye and you watch the air sink there.\n\nLasso is for answers that are an area. You draw around it, and on Check a season of storms starts, inside your loop and out. It's the most fun when it plays out, but the least obvious to start: there's only a small loop sign in the corner, and drawing a neat loop with a thumb is harder than placing a pin.\n\nWhat's weak: the cut-open hurricane in Regions is a first drawing, and the storm starts in Lasso are a made-up typical season, placed where real ones start. All three work with a finger in a test browser; none has been tried on your phone yet.",
+      "items": [
+        {
+          "id": "pin",
+          "label": "Pin",
+          "video": "../../stage0/inputs/films/spot-pin.mp4",
+          "text": "Drag the pin onto the storm. On Check it zooms in on your pin and the true spot, with the wind drawn in."
+        },
+        {
+          "id": "regions",
+          "label": "Regions",
+          "video": "../../stage0/inputs/films/spot-regions.mp4",
+          "text": "Slide over a storm cut in half; the part under your finger lights up and says its name. On Check the air moves."
+        },
+        {
+          "id": "lasso",
+          "label": "Lasso",
+          "video": "../../stage0/inputs/films/spot-lasso.mp4",
+          "text": "Draw a loop around part of the map. On Check a season of storms starts, inside your loop and out."
+        }
+      ]
+    }
+  ]
+}

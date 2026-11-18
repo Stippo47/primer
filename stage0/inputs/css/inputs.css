@@ -1,0 +1,105 @@
+/* Answer-form sketches in the approved "mix" look. Tokens and the lesson screen are copied from the app
+   (css/app.css and css/lesson.css), so each sketch sits in a real lesson step. No live blur anywhere. */
+
+@font-face { font-family: "Nunito"; src: url("../vendor/fonts/nunito-latin.woff2") format("woff2"); font-weight: 400 900; font-display: block; }
+
+:root {
+  --ground: #141a3c; --bar: #0f1434; --panel: #1b2250; --plate: #222a60; --line: #2f3678; --line2: #364090; --track: #2a3168;
+  --off: #262d60; --off-edge: #1c2250;
+  --text: #ffffff; --soft: #dde4ff; --muted: #7f88c8; --dim: #5d66ad; --ink: #0e1436;
+  --gold: #ffc83d; --gold-edge: #c98a00; --cyan: #49c6ff; --cyan-edge: #1b8fd1; --sky: #6fd6ff;
+  --teal: #2bc4a4; --teal-edge: #127a85; --pink: #ee4b7a; --pink-edge: #b8325c; --purple: #8b3fbf; --purple-edge: #5f2a8a;
+  --sat: 48px; --sab: 34px; --ts: 1;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: #0b0f2a; overscroll-behavior: none; }
+body { color: var(--text); font-family: "Nunito", system-ui, sans-serif; font-weight: 800; font-size: 14px; line-height: 1.25;
+  -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%; overflow: hidden; }
+p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; touch-action: manipulation; }
+button:focus { outline: none; }
+[hidden] { display: none !important; }
+canvas { display: block; }
+
+/* the phone: 414 by 896, an iPhone 11 opened from the home screen */
+#phone { position: absolute; left: 0; top: 0; width: 414px; height: 896px; overflow: hidden; background: var(--ground); transform-origin: 0 0; }
+#phone::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(200px 200px at 60px 200px, rgba(91, 43, 214, 0.26), transparent 70%),
+    radial-gradient(230px 230px at 380px 560px, rgba(15, 163, 177, 0.15), transparent 70%),
+    radial-gradient(150px 150px at 350px 130px, rgba(224, 67, 154, 0.11), transparent 70%); }
+body.film #phone *, body.film #phone *::before, body.film #phone *::after { transition: none !important; animation: none !important; }
+
+/* which sketch this is, top left where the clock sits */
+.sketch { position: absolute; left: 16px; top: 13px; z-index: 3; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+  background: var(--panel); border: 1.5px solid var(--line); border-radius: 8px; padding: 2px 8px 1px; white-space: nowrap; }
+
+/* chunky bits, as in the app */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 16px; padding: 0 18px; width: 100%;
+  background: var(--cyan); color: var(--ink); box-shadow: 0 4px 0 var(--cyan-edge); font-size: 16px; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
+  transition: transform 60ms ease-out, box-shadow 60ms ease-out; }
+.btn.down { transform: translateY(4px); box-shadow: 0 0 0 var(--cyan-edge); }
+.btn.gold { background: var(--gold); color: #2a1650; box-shadow: 0 4px 0 var(--gold-edge); }
+.btn.teal { background: var(--teal); color: #fff; box-shadow: 0 4px 0 var(--teal-edge); }
+.btn.pink { background: var(--pink); color: #fff; box-shadow: 0 4px 0 var(--pink-edge); }
+.btn.gold.down, .btn.teal.down, .btn.pink.down { box-shadow: none; }
+.btn:disabled { background: var(--off); color: var(--dim); box-shadow: 0 4px 0 var(--off-edge); cursor: default; transform: none; }
+.round { width: 42px; height: 42px; border-radius: 14px; background: var(--plate); border: 2px solid var(--line2); box-shadow: 0 3px 0 var(--off-edge);
+  display: flex; align-items: center; justify-content: center; color: #8f98dc; flex: none; }
+
+/* the lesson step */
+.lesson { position: absolute; inset: 0; z-index: 1; }
+.ltop { position: absolute; left: 0; right: 0; top: calc(var(--sat) + 6px); display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 50px; }
+.lbar { flex: 1; height: 14px; border-radius: 7px; background: var(--track); overflow: hidden; }
+.lbar b { display: block; height: 100%; border-radius: 7px; background: var(--gold); box-shadow: inset 0 -4px 0 rgba(201, 138, 0, 0.6), inset 0 3px 0 rgba(255, 255, 255, 0.35);
+  transform-origin: 0 50%; }
+.lbody { position: absolute; left: 0; right: 0; top: calc(var(--sat) + 66px); bottom: 0; padding: 0 16px; }
+.ltext { font-size: calc(21px * var(--ts)); line-height: 1.3; min-height: 55px; }
+.ltext .key { color: var(--gold); }
+.lform { position: absolute; left: 16px; right: 16px; }
+
+.lfoot { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 14px 16px calc(var(--sab) + 16px); border-top: 2px solid transparent; }
+.lfoot.right { background: #173e57; border-top-color: var(--teal); }
+.lfoot.close { background: #3a3150; border-top-color: var(--gold); }
+.lfoot.wrong { background: #3d1d4a; border-top-color: var(--pink); }
+.lfeed { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+.lfeed .badge { width: 38px; height: 38px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; }
+.lfoot.right .badge { background: var(--teal); box-shadow: 0 3px 0 var(--teal-edge); }
+.lfoot.close .badge { background: var(--gold); box-shadow: 0 3px 0 var(--gold-edge); color: #2a1650; }
+.lfoot.wrong .badge { background: var(--pink); box-shadow: 0 3px 0 var(--pink-edge); }
+.lverdict { font-size: 20px; }
+.lfoot.right .lverdict { color: #7df0cf; }
+.lfoot.close .lverdict { color: var(--gold); }
+.lfoot.wrong .lverdict { color: #ff9ab8; }
+.lwhy { font-size: calc(15px * var(--ts)); font-weight: 700; line-height: 1.38; color: #eef1ff; margin-top: 3px; }
+
+/* the ghost finger draws over everything and never takes a touch */
+canvas.ghost { position: absolute; left: 0; top: 0; z-index: 9; pointer-events: none; }
+
+/* ---- pieces the forms share ---- */
+.chipx { position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 12px; white-space: nowrap;
+  background: #fff; color: #1b1f5e; box-shadow: 0 3px 0 #b9c2ee; font-size: 15px; padding: 5px 11px; pointer-events: none; }
+.chipx.gold { background: var(--gold); color: #2a1650; box-shadow: 0 3px 0 var(--gold-edge); }
+.chipx.pink { background: var(--pink); color: #fff; box-shadow: 0 3px 0 #8f1f44; }
+.chipx.teal { background: var(--teal); color: #fff; box-shadow: 0 3px 0 var(--teal-edge); }
+
+/* a tile you pick up and drag */
+.tile { position: absolute; display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 52px; border-radius: 16px;
+  background: #1b2250; border: 2px solid #364090; box-shadow: 0 4px 0 #2f3678; font-size: calc(15px * var(--ts)); line-height: 1.12; touch-action: none; }
+.tile.lift { background: #222a60; border-color: #6fd6ff; box-shadow: 0 12px 18px rgba(4, 6, 24, 0.5); z-index: 5; }
+.tile.right { background: #1d5f63; border-color: #2bc4a4; box-shadow: 0 4px 0 #127a85; }
+.tile.wrong { background: #5a2050; border-color: #ee4b7a; box-shadow: 0 4px 0 #8f1f44; }
+
+/* the list of sketches, when no form is asked for */
+body.list { overflow: auto; background: var(--ground); }
+body.list #phone { display: none; }
+body.list main { max-width: 760px; margin: 0 auto; padding: 28px 18px 60px; }
+body.list h1 { font-size: 26px; margin: 0 0 6px; }
+body.list h2 { font-size: 18px; margin: 26px 0 10px; color: var(--sky); }
+body.list p { color: var(--soft); font-weight: 700; line-height: 1.45; }
+body.list .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+body.list a.card { display: block; text-decoration: none; color: var(--text); background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 12px 14px; box-shadow: 0 4px 0 var(--line); }
+body.list a.card b { display: block; font-size: 17px; margin-bottom: 4px; }
+body.list a.card span { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; font-weight: 700; }
+body.list a.card em { font-style: normal; color: var(--gold); font-size: 12px; }
