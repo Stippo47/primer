@@ -753,13 +753,14 @@ def warn_voice(lines, voice, narrator, where, rep, until):
             changed.append(lid)
         elif mine.get('check') == 'flag':
             rep.warn(f'{where} line {lid}', f'its clip was heard as "{mine.get("heard")}": listen to it, or reword the line and voice it again')
+    def listed(ids):
+        return ", ".join(ids) if len(ids) <= 12 else f'{", ".join(ids[:8])} and {len(ids) - 8} more'
     if unvoiced and len(unvoiced) == len(lines):
-        listed = f' ({", ".join(unvoiced)})' if len(unvoiced) <= 12 else f' ({len(unvoiced)} lines)'
-        rep.warn(where, f'isn\'t voiced yet{listed}: run primer voice. Until then they {until}')
+        rep.warn(where, f'isn\'t voiced yet ({listed(unvoiced) if len(unvoiced) <= 12 else f"{len(unvoiced)} lines"}): run primer voice. Until then they {until}')
     elif unvoiced:
-        rep.warn(where, f'has lines that aren\'t voiced yet ({", ".join(unvoiced)}): run primer voice. Until then they {until}')
+        rep.warn(where, f'has lines that aren\'t voiced yet ({listed(unvoiced)}): run primer voice. Until then they {until}')
     if changed:
-        rep.warn(where, f'lines changed since they were voiced ({", ".join(changed)}): run primer voice. Until then they {until}')
+        rep.warn(where, f'lines changed since they were voiced ({listed(changed)}): run primer voice. Until then they {until}')
 
 
 def step_say(step, field):
@@ -772,15 +773,29 @@ def step_say(step, field):
 
 
 def spoken_lines(lesson):
-    """What a lesson, test or exam reads aloud, as lines like a scene's ({ id, text, say }), in step order.
-    An id is <step>.<what>: text or ask (shown as the step opens), right, why, miss-<n> (the nth of its misses,
-    from 1) and option-<id> (a wrong choice's why): each line of feedback, read once it's shown. The phone
-    finds them by the same ids (js/lesson.js, mark)."""
+    """What a lesson, test or exam reads aloud, as lines like a scene's ({ id, text, say }): its steps in order,
+    then every ask of the facts it declares (its own, then its families', {field}s filled in). An id is
+    <base>.<what>: text or ask (shown as the step opens), right, why, miss-<n> (the nth of its misses, from 1)
+    and option-<id> (a wrong choice's why): each line of feedback, read once it's shown. A step's base is its
+    id; an ask's is <fact>.<ask>, the same wherever it's asked (a lesson, a drawn test, review). The phone finds
+    them by the same ids (js/narration.js, stepLines; js/lesson.js, mark)."""
     out = []
-    for s in (lesson.get('steps') or []) if isinstance(lesson, dict) else []:
-        if not isinstance(s, dict) or not isinstance(s.get('id'), str) or s.get('kind') not in SPOKEN_FIELDS:
-            continue
-        sid = s['id']
+    if not isinstance(lesson, dict):
+        return out
+    for s in lesson.get('steps') or []:
+        if isinstance(s, dict) and isinstance(s.get('id'), str):
+            out += step_lines(s, s['id'])
+    for f in facts_of_lesson(lesson):
+        for a in f.get('asks') or []:
+            if isinstance(a, dict) and isinstance(a.get('id'), str) and a.get('kind') in ('check', 'play'):
+                out += step_lines(a, f'{f["id"]}.{a["id"]}')
+    return out
+
+
+def step_lines(s, sid):
+    """The lines one step or ask reads aloud, under the base id `sid`."""
+    out = []
+    if s.get('kind') in SPOKEN_FIELDS:
         for field in SPOKEN_FIELDS[s['kind']]:
             if isinstance(s.get(field), str) and s[field].strip():
                 out.append({'id': f'{sid}.{field}', 'text': s[field], **({'say': step_say(s, field)} if step_say(s, field) else {})})
@@ -797,10 +812,11 @@ def spoken_lines(lesson):
 def check_spoken(lesson, where, rep, base, key, narrator):
     """A lesson's spoken words: each `say` is words, symbols are read as the writer says, and it's voiced."""
     lines = spoken_lines(lesson)
-    for s in lesson.get('steps') or []:
-        if not isinstance(s, dict) or 'say' not in s:
+    said = [(f'{where} step {s.get("id")}', s) for s in lesson.get('steps') or [] if isinstance(s, dict)]
+    said += [(f'{where} fact {f["id"]} ask {a.get("id")}', a) for f in facts_of_lesson(lesson) for a in f.get('asks') or [] if isinstance(a, dict)]
+    for w, s in said:
+        if 'say' not in s:
             continue
-        w = f'{where} step {s.get("id")}'
         say, fields = s['say'], SPOKEN_FIELDS.get(s.get('kind'), ())
         if isinstance(say, str):
             if not say.strip():

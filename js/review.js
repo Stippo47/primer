@@ -28,8 +28,10 @@ export class Review extends Run {
   // app: for media, lesson look-backs and the topics. pool: the facts to ask, as { fact, key, topic }.
   // node: { topic, node } for a review on a path (a set run, then done); scope: a topic, from Profile.
   // anyway: nothing was due when it was started.
-  constructor(view, { app, pool, node = null, scope = null, anyway = false, record = () => {}, onLeave = () => {} }) {
-    super(view, { topic: node ? node.topic : scope || { id: null }, lesson: { id: 'review', title: 'Review', steps: [] }, record, onLeave });
+  // voice: { on() } (the Voice setting): each ask is read in its own topic's narrator, from the voice file of
+  // the lesson that declares its fact.
+  constructor(view, { app, pool, node = null, scope = null, anyway = false, record = () => {}, onLeave = () => {}, voice = {} }) {
+    super(view, { topic: node ? node.topic : scope || { id: null }, lesson: { id: 'review', title: 'Review', steps: [] }, record, onLeave, voice });
     Object.assign(this, { app, pool, node, scope, anyway });
     this.runId = `r${clock.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
     this.combo = 0; this.best = 0; this.answered = 0; this.right = 0;
@@ -55,7 +57,16 @@ export class Review extends Run {
   begin() {
     this.meter = new Combo(this.root.querySelector('.combohost'), { count: this.combo });
     const first = this.nextStep();
-    if (first) this.lesson.steps.push(first);
+    if (first) { this.lesson.steps.push(first); this.warmStep(first); }
+  }
+
+  // An ask's voice: the voice file of the lesson that declares its fact, in its own topic's narrator.
+  voiceFor(s) {
+    const item = s && this.byKey.get(s.key);
+    if (!item) return super.voiceFor(s);
+    const t = item.topic, home = (t.lessons || []).find(l => l.id === item.fact.lesson);
+    return { key: `${t.id}/${home ? home.id : ''}`, timing: home ? home.timing || null : null, order: [this.app.narratorFor(t), t.narrator],
+      media: p => this.app.mediaUrl(data.mediaPath(t.id, p)) };
   }
 
   // ---- choosing
@@ -133,12 +144,13 @@ export class Review extends Run {
     if (kind === 'right') { this.right++; this.combo++; this.best = Math.max(this.best, this.combo); }
     else if (kind === 'wrong') this.combo = 0;
     this.meter.set(this.combo, { how: kind });
-    if (kind !== 'wrong') return;
+    if (kind !== 'wrong') { this.pickAhead(); return; }
     const item = this.byKey.get(s.key);
     if (!this.missed.includes(item)) this.missed.push(item);
     // it comes back: a few questions on, or, on a path, once more at the end
     if (!this.node) this.again.push({ item, at: this.answered + COMEBACK });
     else if (!this.retried.has(item.key)) { this.retried.add(item.key); this.again.push({ item, at: Infinity }); }
+    this.pickAhead();
     // the way back to where it was taught
     const fact = item.fact, at = taughtAt(fact);
     const lesson = item.topic.lessons.find(l => l.id === at.lesson);
@@ -172,11 +184,21 @@ export class Review extends Run {
     await this.peeking.open();
   }
 
+  // The next ask, chosen as soon as this one is marked (nothing changes between then and Continue), so its
+  // clips are found while the feedback shows and the tap on Continue can start its question at once.
+  pickAhead() {
+    this.ahead = { step: this.nextStep() };
+    this.warmStep(this.ahead.step);
+  }
+
   go() {
     if (this.btn.dataset.kind === 'check') return this.check();
     feel.press(this.btn, 'tap');
-    const next = this.nextStep();
+    const next = this.ahead ? this.ahead.step : this.nextStep();
+    this.ahead = null;
+    this.reader.stop();
     if (!next) return this.end();
+    this.reader.prime(this.lineOf(next, 'main'), this.voiceFor(next));
     this.lesson.steps.push(next);
     return this.show(this.lesson.steps.length - 1);
   }

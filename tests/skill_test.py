@@ -765,6 +765,21 @@ class Voice(SceneWork):
         self.assertEqual(r.returncode, 1)
         self.assertIn('Can\'t find the voice environments', r.stdout)
 
+    def test_words_that_sound_the_same_are_heard_as_said_but_a_bad_take_is_not(self):
+        """A recogniser can't tell "sea" from "C" or "they're" from "there": no retake for those. A repeat or
+        a dropped word is still a bad take."""
+        sys.path.insert(0, str(PRIMER.parent / 'voice'))
+        import textnorm  # noqa: E402
+        same = [("That's land: tap the sea.", "That's land, tap the C."),
+                ("In the northwest Pacific they're *typhoons*.", 'In the northwest, Pacific there typhoons.'),
+                ("They're five.", 'There are five.'), ('There are five.', "They're five.")]
+        for want, heard in same:
+            self.assertEqual(textnorm.verdict(textnorm.diff(want, heard)), 'ok', (want, heard))
+        for want, heard in [('Yes: the South Pacific.', 'Yes, the South Pacific. Yes, the South Pacific.'),
+                            ('They drift *west*, out over the Pacific.', 'A drift west, out over the Pacific,'),
+                            ('*Hurricane* is the name in the North Atlantic.', 'Hurricane is the name in the North Atlantic. Offered.')]:
+            self.assertEqual(textnorm.verdict(textnorm.diff(want, heard)), 'flag', (want, heard))
+
 
 FACTS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'storms'
 CAPITALS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'capitals'
@@ -856,6 +871,61 @@ class FactCheck(Work):
     def test_a_family_is_checked_like_any_fact(self):
         out = self.errors(lambda L: L['families'][0]['asks'][0].update(ask='Is a made-up storm in {sea} a {name}?'), lesson='spin')
         self.assertIn('fact seas-north (family seas, row north) ask 1 (name): gives itself away: the question says the right option, "Gale"', out)
+
+
+class AskVoice(Work):
+    """A fact's asks are voiced like a lesson's steps, into their lesson's voice file, keyed by fact and ask."""
+
+    def voice(self, dest, *extra):
+        env = {**os.environ, 'PRIMER_APP': str(ROOT), 'PRIMER_VOICE_FAKE': '1'}
+        r = subprocess.run([sys.executable, str(PRIMER), 'voice', str(dest), '--python', sys.executable, '--narrators', 'topic', *extra],
+                           capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        return r.stdout
+
+    def timing(self, dest, key):
+        return json.loads((dest / 'voice' / f'{key}.json').read_text(encoding='utf-8'))
+
+    def unvoiced(self, source, name):
+        dest = self.tmp / f'copy-{name}' / name
+        shutil.copytree(source, dest)
+        shutil.rmtree(dest / 'voice', ignore_errors=True)
+        return dest
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_asks_are_voiced_with_their_lesson_by_fact_and_ask(self):
+        dest = self.unvoiced(FACTS, 'storms')
+        r = run('check', dest)
+        self.assertIn('fuel.json: isn\'t voiced yet', r.stdout)
+        self.voice(dest)
+        lines = self.timing(dest, 'fuel')['lines']
+        fuel = json.loads((dest / 'fuel.json').read_text(encoding='utf-8'))
+        for a in fact(fuel, 'warm')['asks']:
+            self.assertIn(f'warm.{a["id"]}.ask', lines)
+            self.assertIn(f'warm.{a["id"]}.right', lines)
+        pick = ask(fuel, 'warm', 'pick')
+        wrong = [o['id'] for o in pick['input']['options'] if o.get('why')]
+        self.assertTrue(wrong and all(f'warm.pick.option-{o}' in lines for o in wrong))
+        e = lines['warm.pick.ask']['heart']
+        self.assertTrue(e['clip'].startswith('voice/fuel/warm.pick.ask.heart.') and (dest / e['clip']).exists())
+        self.assertNotIn('voiced', run('check', dest).stdout)
+        # a family's asks are voiced with their {field}s filled in, one fact per row
+        spin = self.timing(dest, 'spin')['lines']
+        seas = [k for k in spin if k.startswith('seas-')]
+        self.assertTrue(seas and all('{' not in spin[k]['heart']['said'] for k in seas), seas)
+        self.assertTrue(any(k.startswith('seas-north.') and k.endswith('.ask') for k in seas), seas)
+        # one ask's feedback changes: only its clip is made again
+        ask(fuel, 'warm', 'pick')['right'] = 'Yes: a made-up storm needs warm water, about 30 degrees.'
+        (dest / 'fuel.json').write_text(json.dumps(fuel, ensure_ascii=False), encoding='utf-8')
+        r = run('check', dest)
+        self.assertIn('lines changed since they were voiced (warm.pick.right)', r.stdout)
+        self.assertIn('1 clip(s) to make', self.voice(dest))
+
+    def test_an_asks_say_is_checked_like_a_steps(self):
+        dest = self.topic(lambda L: ask(L, 'warm', 'pick').update(say={'text': 'Nothing.'}), name='storms', source=FACTS, lesson='fuel')
+        r = run('check', dest)
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn('fact warm ask pick: "say" speaks for ask, right, why; not "text"', r.stdout)
 
 
 class Families(unittest.TestCase):

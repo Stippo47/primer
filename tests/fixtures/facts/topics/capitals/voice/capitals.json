@@ -1,0 +1,592 @@
+{
+ "v": 1,
+ "scene": "capitals",
+ "units": "seconds from the start of each clip; words are [word as said, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 96 kbps at about -13 LUFS, true peaks under -1 dB.",
+ "lines": {
+  "read.text": {
+   "heart": {
+    "clip": "voice/capitals/read.text.heart.d1e3206e.m4a",
+    "key": "d1e3206ee0c1107f08fceff7595d244814d11621",
+    "said": "Paris, Lima, Tokyo and Nairobi are capitals.",
+    "seconds": 2.223,
+    "words": [
+     ["Paris,", 0.15, 0.364],
+     ["Lima,", 0.418, 0.632],
+     ["Tokyo", 0.685, 0.899],
+     ["and", 0.953, 1.167],
+     ["Nairobi", 1.221, 1.435],
+     ["are", 1.488, 1.702],
+     ["capitals.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Paris, Lima, Tokyo and Nairobi are capitals.",
+    "takes": 1
+   }
+  },
+  "peru.ask": {
+   "heart": {
+    "clip": "voice/capitals/peru.ask.heart.b5b9efaa.m4a",
+    "key": "b5b9efaabbc1473ce9cd2b44ed246d2c07e711c7",
+    "said": "What is the capital of Peru?",
+    "seconds": 1.924,
+    "words": [
+     ["What", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Peru?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "What is the capital of Peru?",
+    "takes": 1
+   }
+  },
+  "peru.right": {
+   "heart": {
+    "clip": "voice/capitals/peru.right.heart.7d4bdfa2.m4a",
+    "key": "7d4bdfa249ca7c96c39fa654cb04e7f0d04d3b05",
+    "said": "Yes: *Lima*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Lima.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Lima.",
+    "takes": 1
+   }
+  },
+  "peru.option-quito": {
+   "heart": {
+    "clip": "voice/capitals/peru.option-quito.heart.f9126423.m4a",
+    "key": "f912642324c76fff6f061f0ab879af92e37c5c74",
+    "said": "Quito is Ecuador's. Peru's is *Lima*.",
+    "seconds": 1.924,
+    "words": [
+     ["Quito", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["Ecuador's.", 0.675, 0.884],
+     ["Peru's", 0.937, 1.147],
+     ["is", 1.199, 1.409],
+     ["Lima.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Quito is Ecuador's. Peru's is Lima.",
+    "takes": 1
+   }
+  },
+  "end.text": {
+   "heart": {
+    "clip": "voice/capitals/end.text.heart.539b2cf3.m4a",
+    "key": "539b2cf39fc55b7ef87df2b38b1abba28ce00a5e",
+    "said": "Four capitals.",
+    "seconds": 0.724,
+    "words": [
+     ["Four", 0.15, 0.299],
+     ["capitals.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Four capitals.",
+    "takes": 1
+   }
+  },
+  "capital-france.capital.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.capital.ask.heart.ab0f5cef.m4a",
+    "key": "ab0f5cef0b47031444e313af778b233bb5b46921",
+    "said": "What is the capital of France?",
+    "seconds": 1.924,
+    "words": [
+     ["What", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["France?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "What is the capital of France?",
+    "takes": 1
+   }
+  },
+  "capital-france.capital.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.capital.right.heart.666c3804.m4a",
+    "key": "666c3804f93d15728d23eb45070888ad7dfb4956",
+    "said": "Yes: *Paris*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Paris.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Paris.",
+    "takes": 1
+   }
+  },
+  "capital-france.capital.option-peru": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.capital.option-peru.heart.a63238ec.m4a",
+    "key": "a63238ec8be96ce5a38161721be03bdf42f39883",
+    "said": "Lima is the capital of Peru.",
+    "seconds": 1.924,
+    "words": [
+     ["Lima", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Peru.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Lima is the capital of Peru.",
+    "takes": 1
+   }
+  },
+  "capital-france.capital.option-japan": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.capital.option-japan.heart.9946747f.m4a",
+    "key": "9946747f708d7c01fe4ce711b978105e986ff3a5",
+    "said": "Tokyo is the capital of Japan.",
+    "seconds": 1.924,
+    "words": [
+     ["Tokyo", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Japan.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Tokyo is the capital of Japan.",
+    "takes": 1
+   }
+  },
+  "capital-france.tap.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.tap.ask.heart.5e303976.m4a",
+    "key": "5e303976fc1e5d12ede598c9428c8a5cce2eee49",
+    "said": "Tap the country whose capital is Paris.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["whose", 0.953, 1.167],
+     ["capital", 1.221, 1.435],
+     ["is", 1.488, 1.702],
+     ["Paris.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country whose capital is Paris.",
+    "takes": 1
+   }
+  },
+  "capital-france.tap.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.tap.right.heart.5bf83de2.m4a",
+    "key": "5bf83de23934e02724edfe2198e86c51c94abf19",
+    "said": "Yes: *France*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["France.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: France.",
+    "takes": 1
+   }
+  },
+  "capital-france.tap.why": {
+   "heart": {
+    "clip": "voice/capitals/capital-france.tap.why.heart.3942308a.m4a",
+    "key": "3942308a0f4e41f3554dc1e1a9e5fec33c9cdd15",
+    "said": "Paris is in *France*.",
+    "seconds": 1.324,
+    "words": [
+     ["Paris", 0.15, 0.345],
+     ["is", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["France.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Paris is in France.",
+    "takes": 1
+   }
+  },
+  "capital-peru.capital.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.capital.ask.heart.b5b9efaa.m4a",
+    "key": "b5b9efaabbc1473ce9cd2b44ed246d2c07e711c7",
+    "said": "What is the capital of Peru?",
+    "seconds": 1.924,
+    "words": [
+     ["What", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Peru?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "What is the capital of Peru?",
+    "takes": 1
+   }
+  },
+  "capital-peru.capital.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.capital.right.heart.7d4bdfa2.m4a",
+    "key": "7d4bdfa249ca7c96c39fa654cb04e7f0d04d3b05",
+    "said": "Yes: *Lima*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Lima.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Lima.",
+    "takes": 1
+   }
+  },
+  "capital-peru.capital.option-france": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.capital.option-france.heart.1b593f96.m4a",
+    "key": "1b593f96a18db1d9277a660173f7f0ec09b9c5d3",
+    "said": "Paris is the capital of France.",
+    "seconds": 1.924,
+    "words": [
+     ["Paris", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["France.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Paris is the capital of France.",
+    "takes": 1
+   }
+  },
+  "capital-peru.capital.option-japan": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.capital.option-japan.heart.9946747f.m4a",
+    "key": "9946747f708d7c01fe4ce711b978105e986ff3a5",
+    "said": "Tokyo is the capital of Japan.",
+    "seconds": 1.924,
+    "words": [
+     ["Tokyo", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Japan.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Tokyo is the capital of Japan.",
+    "takes": 1
+   }
+  },
+  "capital-peru.tap.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.tap.ask.heart.c906c3c5.m4a",
+    "key": "c906c3c5aa4a2bcf509875e50167342a35577c4e",
+    "said": "Tap the country whose capital is Lima.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["whose", 0.953, 1.167],
+     ["capital", 1.221, 1.435],
+     ["is", 1.488, 1.702],
+     ["Lima.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country whose capital is Lima.",
+    "takes": 1
+   }
+  },
+  "capital-peru.tap.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.tap.right.heart.99ad3de7.m4a",
+    "key": "99ad3de707dd3b95ef886b299e18436a95b66ea2",
+    "said": "Yes: *Peru*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Peru.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Peru.",
+    "takes": 1
+   }
+  },
+  "capital-peru.tap.why": {
+   "heart": {
+    "clip": "voice/capitals/capital-peru.tap.why.heart.dc6a22a2.m4a",
+    "key": "dc6a22a270900ce375bdcfd924a8f2beafe2a53b",
+    "said": "Lima is in *Peru*.",
+    "seconds": 1.324,
+    "words": [
+     ["Lima", 0.15, 0.345],
+     ["is", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Peru.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Lima is in Peru.",
+    "takes": 1
+   }
+  },
+  "capital-japan.capital.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.capital.ask.heart.2e82a67f.m4a",
+    "key": "2e82a67fc76dbb153cee6e7fec9249a49fae50a3",
+    "said": "What is the capital of Japan?",
+    "seconds": 1.924,
+    "words": [
+     ["What", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Japan?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "What is the capital of Japan?",
+    "takes": 1
+   }
+  },
+  "capital-japan.capital.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.capital.right.heart.9712ab23.m4a",
+    "key": "9712ab235df716c14d5b9cda9e279b126968bcbb",
+    "said": "Yes: *Tokyo*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Tokyo.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Tokyo.",
+    "takes": 1
+   }
+  },
+  "capital-japan.capital.option-peru": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.capital.option-peru.heart.a63238ec.m4a",
+    "key": "a63238ec8be96ce5a38161721be03bdf42f39883",
+    "said": "Lima is the capital of Peru.",
+    "seconds": 1.924,
+    "words": [
+     ["Lima", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Peru.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Lima is the capital of Peru.",
+    "takes": 1
+   }
+  },
+  "capital-japan.capital.option-kenya": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.capital.option-kenya.heart.6ee69614.m4a",
+    "key": "6ee696146db88a0b00f4895ee0ff57105bb72991",
+    "said": "Nairobi is the capital of Kenya.",
+    "seconds": 1.924,
+    "words": [
+     ["Nairobi", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Kenya.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Nairobi is the capital of Kenya.",
+    "takes": 1
+   }
+  },
+  "capital-japan.tap.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.tap.ask.heart.9b6f27ea.m4a",
+    "key": "9b6f27eafb0db674530232e95a87bd97c82bef30",
+    "said": "Tap the country whose capital is Tokyo.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["whose", 0.953, 1.167],
+     ["capital", 1.221, 1.435],
+     ["is", 1.488, 1.702],
+     ["Tokyo.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country whose capital is Tokyo.",
+    "takes": 1
+   }
+  },
+  "capital-japan.tap.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.tap.right.heart.a64a20c0.m4a",
+    "key": "a64a20c0b3713f40c8ab6569a1d998d7c15ad2d8",
+    "said": "Yes: *Japan*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Japan.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Japan.",
+    "takes": 1
+   }
+  },
+  "capital-japan.tap.why": {
+   "heart": {
+    "clip": "voice/capitals/capital-japan.tap.why.heart.3dc9bc89.m4a",
+    "key": "3dc9bc899bfb9469731b92adae990b44e89a24db",
+    "said": "Tokyo is in *Japan*.",
+    "seconds": 1.324,
+    "words": [
+     ["Tokyo", 0.15, 0.345],
+     ["is", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Japan.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Tokyo is in Japan.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.capital.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.capital.ask.heart.9c67396c.m4a",
+    "key": "9c67396c9ac944b91812bb103c9ea2d3d812120f",
+    "said": "What is the capital of Kenya?",
+    "seconds": 1.924,
+    "words": [
+     ["What", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Kenya?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "What is the capital of Kenya?",
+    "takes": 1
+   }
+  },
+  "capital-kenya.capital.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.capital.right.heart.7ba08410.m4a",
+    "key": "7ba084108b4233f173ed51f31c0a25b2872cd276",
+    "said": "Yes: *Nairobi*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Nairobi.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Nairobi.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.capital.option-japan": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.capital.option-japan.heart.9946747f.m4a",
+    "key": "9946747f708d7c01fe4ce711b978105e986ff3a5",
+    "said": "Tokyo is the capital of Japan.",
+    "seconds": 1.924,
+    "words": [
+     ["Tokyo", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["Japan.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Tokyo is the capital of Japan.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.capital.option-france": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.capital.option-france.heart.1b593f96.m4a",
+    "key": "1b593f96a18db1d9277a660173f7f0ec09b9c5d3",
+    "said": "Paris is the capital of France.",
+    "seconds": 1.924,
+    "words": [
+     ["Paris", 0.15, 0.36],
+     ["is", 0.412, 0.622],
+     ["the", 0.675, 0.884],
+     ["capital", 0.937, 1.147],
+     ["of", 1.199, 1.409],
+     ["France.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Paris is the capital of France.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.tap.ask": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.tap.ask.heart.d9bb0cad.m4a",
+    "key": "d9bb0cad44cdff6e2c5a511b6f100e0ac2ed09bc",
+    "said": "Tap the country whose capital is Nairobi.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["whose", 0.953, 1.167],
+     ["capital", 1.221, 1.435],
+     ["is", 1.488, 1.702],
+     ["Nairobi.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country whose capital is Nairobi.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.tap.right": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.tap.right.heart.222786bc.m4a",
+    "key": "222786bc691488f5976063d49bc5c110c7928e07",
+    "said": "Yes: *Kenya*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Kenya.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Kenya.",
+    "takes": 1
+   }
+  },
+  "capital-kenya.tap.why": {
+   "heart": {
+    "clip": "voice/capitals/capital-kenya.tap.why.heart.e793a1a6.m4a",
+    "key": "e793a1a6c4291f6ddca44471b8320eb4bd5a3d7f",
+    "said": "Nairobi is in *Kenya*.",
+    "seconds": 1.324,
+    "words": [
+     ["Nairobi", 0.15, 0.345],
+     ["is", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Kenya.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Nairobi is in Kenya.",
+    "takes": 1
+   }
+  }
+ }
+}

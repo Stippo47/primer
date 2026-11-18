@@ -18,7 +18,7 @@ import { holds, read, subst } from './rules.js';
 import { icon, medallion } from './art.js';
 import { Scene, DEFAULT_NARRATOR } from './scene.js';
 import { ReadAlong, markup } from './readalong.js';
-import { Reader, spokenLines } from './narration.js';
+import { Reader, stepLines, baseOf } from './narration.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // *words* are stressed, as in the scene scripts; a line break stays a line break.
@@ -93,24 +93,41 @@ export class Run {
     this.mounted = [];
     this.results = {};
     this.state = 'idle'; // idle | ready | marked | ended
-    // its words read aloud: the lesson's voice file (timing), in the chosen narrator, else the topic's
-    this.spoken = new Map(spokenLines(lesson).map(l => [l.id, l]));
+    // its words read aloud, in the narrator chosen for its subject, else the topic's
     this.reader = new Reader({ timing: lesson.timing || null, order: [voice.narrator, topic.narrator], media, on: () => (voice.on ? voice.on() : true) });
   }
 
-  // The line of the step that is read as it opens: its text, or its question.
-  mainLine(i) {
-    const s = this.lesson.steps[i];
-    return s ? this.spoken.get(`${s.id}.${s.kind === 'explain' ? 'text' : 'ask'}`) || null : null;
+  // Where a step's voice is: its lesson's voice file, or, for an ask of a fact (a test drawn from facts), the
+  // voice file of the lesson that declares the fact. { key, timing, order } for the Reader.
+  voiceFor(s) {
+    const order = [this.voice.narrator, this.topic.narrator];
+    if (s && s.askId !== undefined && typeof s.fact === 'string') {
+      const f = this.topic.facts && this.topic.facts.facts && this.topic.facts.facts.get(s.fact);
+      const home = f && (this.topic.lessons || []).find(l => l.id === f.lesson);
+      return { key: home ? home.id : '', timing: home ? home.timing || null : null, order };
+    }
+    return { key: this.lesson.id || '', timing: this.lesson.timing || null, order };
   }
+
+  // A line a step reads: 'main', its text or question as it opens, or one of its lines of feedback (right,
+  // why, miss-<n>, option-<id>). Asks of facts are found by fact and ask, whatever the run calls the step.
+  lineOf(s, what) {
+    if (!s) return null;
+    const want = what === 'main' ? (s.kind === 'explain' ? 'text' : 'ask') : what;
+    return stepLines(s).find(l => l.id === `${baseOf(s)}.${want}`) || null;
+  }
+  mainLine(i) { return this.lineOf(this.lesson.steps[i], 'main'); }
 
   // Reads one of the step's lines into its words on screen: the text or question, or the feedback's why.
   speak(which) {
     const s = this.step;
-    const line = which === 'main' ? this.mainLine(this.i) : this.spoken.get(`${s.id}.${this.whyLine}`);
+    const line = this.lineOf(s, which === 'main' ? 'main' : this.whyLine);
     const ra = which === 'main' ? this.textRa : this.whyRa;
-    if (line && ra) this.reader.read(line, ra);
+    if (line && ra) this.reader.read(line, ra, this.voiceFor(s));
   }
+
+  // Starts finding a step's clips, so a tap can start them at once.
+  warmStep(s) { if (s) this.reader.warm(stepLines(s), this.voiceFor(s)); }
 
   // The row along the top: a cross, and a thin bar that fills as the steps go by.
   topRow() {
@@ -139,7 +156,7 @@ export class Run {
       this.clicked(b.dataset.go, b);
     };
     this.root.addEventListener('click', this.onClick);
-    this.reader.warm([...this.spoken.values()]);
+    for (const s of this.lesson.steps) this.warmStep(s);
     this.begin();
     await this.show(this.i);
     return this;
@@ -295,7 +312,7 @@ export class Run {
     feel.press(this.btn, 'tap');
     this.reader.stop();
     // still inside the tap: the next step's words get their player now, so they can be read as it opens
-    this.reader.prime(this.mainLine(this.i + 1));
+    this.reader.prime(this.mainLine(this.i + 1), this.voiceFor(this.lesson.steps[this.i + 1]));
     const s = this.step;
     if (s.kind === 'explain' || s.kind === 'scene') {
       this.results[s.id] = { seen: true };

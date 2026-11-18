@@ -1,0 +1,549 @@
+{
+ "v": 1,
+ "scene": "fuel",
+ "units": "seconds from the start of each clip; words are [word as said, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 96 kbps at about -13 LUFS, true peaks under -1 dB.",
+ "lines": {
+  "intro.text": {
+   "heart": {
+    "clip": "voice/fuel/intro.text.heart.52190ecc.m4a",
+    "key": "52190eccc3aadb145347817d58f4a631682dcd33",
+    "said": "Made-up storms feed on *warm water*, and a made-up sea sees a few of them a year.",
+    "seconds": 5.223,
+    "words": [
+     ["Made-up", 0.15, 0.379],
+     ["storms", 0.437, 0.666],
+     ["feed", 0.723, 0.953],
+     ["on", 1.01, 1.239],
+     ["warm", 1.297, 1.526],
+     ["water,", 1.583, 1.813],
+     ["and", 1.87, 2.099],
+     ["a", 2.157, 2.386],
+     ["made-up", 2.443, 2.673],
+     ["sea", 2.73, 2.959],
+     ["sees", 3.017, 3.246],
+     ["a", 3.303, 3.533],
+     ["few", 3.59, 3.819],
+     ["of", 3.877, 4.106],
+     ["them", 4.163, 4.393],
+     ["a", 4.45, 4.679],
+     ["year.", 4.737, 4.966]
+    ],
+    "check": "ok",
+    "heard": "Made-up storms feed on warm water, and a made-up sea sees a few of them a year.",
+    "takes": 1
+   }
+  },
+  "how-warm.ask": {
+   "heart": {
+    "clip": "voice/fuel/how-warm.ask.heart.9703d801.m4a",
+    "key": "9703d801a20ed61e74b3caaf483390e1b79f7fca",
+    "said": "How warm must the water be for a made-up storm?",
+    "seconds": 3.123,
+    "words": [
+     ["How", 0.15, 0.372],
+     ["warm", 0.427, 0.649],
+     ["must", 0.705, 0.927],
+     ["the", 0.982, 1.204],
+     ["water", 1.259, 1.481],
+     ["be", 1.537, 1.759],
+     ["for", 1.814, 2.036],
+     ["a", 2.091, 2.313],
+     ["made-up", 2.369, 2.591],
+     ["storm?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "How warm must the water be for a made-up storm?",
+    "takes": 1
+   }
+  },
+  "how-warm.right": {
+   "heart": {
+    "clip": "voice/fuel/how-warm.right.heart.a99ad5cc.m4a",
+    "key": "a99ad5cc3def035700aedd22f2cbe2bb4cc76644",
+    "said": "Yes: *30 °C*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["30", 0.374, 0.554],
+     ["°C.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: 30 °C.",
+    "takes": 1
+   }
+  },
+  "how-warm.why": {
+   "heart": {
+    "clip": "voice/fuel/how-warm.why.heart.a6893f5d.m4a",
+    "key": "a6893f5d6ce2ee91141056dda48a6e9af9d6f40f",
+    "said": "It's *30 °C*.",
+    "seconds": 1.023,
+    "words": [
+     ["It's", 0.15, 0.33],
+     ["30", 0.374, 0.554],
+     ["°C.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "It's 30 °C.",
+    "takes": 1
+   }
+  },
+  "over-land.ask": {
+   "heart": {
+    "clip": "voice/fuel/over-land.ask.heart.2666ec53.m4a",
+    "key": "2666ec53b995d4c6eb9fb4b761b0447aa8cc74bf",
+    "said": "A made-up storm moves over land. What happens?",
+    "seconds": 2.523,
+    "words": [
+     ["A", 0.15, 0.367],
+     ["made-up", 0.422, 0.639],
+     ["storm", 0.693, 0.911],
+     ["moves", 0.965, 1.182],
+     ["over", 1.237, 1.454],
+     ["land.", 1.508, 1.726],
+     ["What", 1.78, 1.997],
+     ["happens?", 2.052, 2.269]
+    ],
+    "check": "ok",
+    "heard": "A made-up storm moves over land. What happens?",
+    "takes": 1
+   }
+  },
+  "over-land.right": {
+   "heart": {
+    "clip": "voice/fuel/over-land.right.heart.62ba9470.m4a",
+    "key": "62ba9470336c268b8e9f1ee4b87a772ccf460d04",
+    "said": "Yes: it *weakens*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["it", 0.374, 0.554],
+     ["weakens.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: it weakens.",
+    "takes": 1
+   }
+  },
+  "over-land.option-grow": {
+   "heart": {
+    "clip": "voice/fuel/over-land.option-grow.heart.ba9b2aff.m4a",
+    "key": "ba9b2aff6f0ef86f17e252c3c8e39f129c094873",
+    "said": "No: over land it *weakens*.",
+    "seconds": 1.623,
+    "words": [
+     ["No:", 0.15, 0.354],
+     ["over", 0.405, 0.608],
+     ["land", 0.659, 0.863],
+     ["it", 0.914, 1.118],
+     ["weakens.", 1.169, 1.372]
+    ],
+    "check": "ok",
+    "heard": "No: over land it weakens.",
+    "takes": 1
+   }
+  },
+  "over-land.option-stay": {
+   "heart": {
+    "clip": "voice/fuel/over-land.option-stay.heart.ba9b2aff.m4a",
+    "key": "ba9b2aff6f0ef86f17e252c3c8e39f129c094873",
+    "said": "No: over land it *weakens*.",
+    "seconds": 1.623,
+    "words": [
+     ["No:", 0.15, 0.354],
+     ["over", 0.405, 0.608],
+     ["land", 0.659, 0.863],
+     ["it", 0.914, 1.118],
+     ["weakens.", 1.169, 1.372]
+    ],
+    "check": "ok",
+    "heard": "No: over land it weakens.",
+    "takes": 1
+   }
+  },
+  "warm.pick.ask": {
+   "heart": {
+    "clip": "voice/fuel/warm.pick.ask.heart.42e4e60e.m4a",
+    "key": "42e4e60e58b02a96774093124a753dbb84b42055",
+    "said": "Which water could start a made-up storm?",
+    "seconds": 2.223,
+    "words": [
+     ["Which", 0.15, 0.364],
+     ["water", 0.418, 0.632],
+     ["could", 0.685, 0.899],
+     ["start", 0.953, 1.167],
+     ["a", 1.221, 1.435],
+     ["made-up", 1.488, 1.702],
+     ["storm?", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Which water could start a made-up storm?",
+    "takes": 1
+   }
+  },
+  "warm.pick.right": {
+   "heart": {
+    "clip": "voice/fuel/warm.pick.right.heart.66ee568e.m4a",
+    "key": "66ee568e1a6316d91781300913bafd8e170edaff",
+    "said": "Yes: it needs about *30 °C*.",
+    "seconds": 1.924,
+    "words": [
+     ["Yes:", 0.15, 0.36],
+     ["it", 0.412, 0.622],
+     ["needs", 0.675, 0.884],
+     ["about", 0.937, 1.147],
+     ["30", 1.199, 1.409],
+     ["°C.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Yes: it needs about 30 °C.",
+    "takes": 1
+   }
+  },
+  "warm.pick.option-cold": {
+   "heart": {
+    "clip": "voice/fuel/warm.pick.option-cold.heart.f55c9000.m4a",
+    "key": "f55c9000fd59c3395d81da801782fba8cf28d6ac",
+    "said": "Too cold: it needs about *30 °C*.",
+    "seconds": 2.223,
+    "words": [
+     ["Too", 0.15, 0.364],
+     ["cold:", 0.418, 0.632],
+     ["it", 0.685, 0.899],
+     ["needs", 0.953, 1.167],
+     ["about", 1.221, 1.435],
+     ["30", 1.488, 1.702],
+     ["°C.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Too cold: it needs about 30 °C.",
+    "takes": 1
+   }
+  },
+  "warm.pick.option-mild": {
+   "heart": {
+    "clip": "voice/fuel/warm.pick.option-mild.heart.49c3faad.m4a",
+    "key": "49c3faad8859bb9517937a4450cd08a8027b6f2b",
+    "said": "Too cool: it needs about *30 °C*.",
+    "seconds": 2.223,
+    "words": [
+     ["Too", 0.15, 0.364],
+     ["cool:", 0.418, 0.632],
+     ["it", 0.685, 0.899],
+     ["needs", 0.953, 1.167],
+     ["about", 1.221, 1.435],
+     ["30", 1.488, 1.702],
+     ["°C.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Too cool: it needs about 30 °C.",
+    "takes": 1
+   }
+  },
+  "warm.dial.ask": {
+   "heart": {
+    "clip": "voice/fuel/warm.dial.ask.heart.1d92ad75.m4a",
+    "key": "1d92ad75b6ed8d73616039f0fc976dc90f55ba70",
+    "said": "Turn the dial to how warm the water must be.",
+    "seconds": 3.123,
+    "words": [
+     ["Turn", 0.15, 0.372],
+     ["the", 0.427, 0.649],
+     ["dial", 0.705, 0.927],
+     ["to", 0.982, 1.204],
+     ["how", 1.259, 1.481],
+     ["warm", 1.537, 1.759],
+     ["the", 1.814, 2.036],
+     ["water", 2.091, 2.313],
+     ["must", 2.369, 2.591],
+     ["be.", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "Turn the dial to how warm the water must be.",
+    "takes": 1
+   }
+  },
+  "warm.dial.right": {
+   "heart": {
+    "clip": "voice/fuel/warm.dial.right.heart.48a4d1ac.m4a",
+    "key": "48a4d1ac7e57137ecacd4b95c35d5ed3090e2e27",
+    "said": "Yes: about *30 °C*.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["about", 0.393, 0.588],
+     ["30", 0.637, 0.832],
+     ["°C.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: about 30 °C.",
+    "takes": 1
+   }
+  },
+  "warm.dial.why": {
+   "heart": {
+    "clip": "voice/fuel/warm.dial.why.heart.f48e335f.m4a",
+    "key": "f48e335fb7b3bb9a28a0af5af2896ff4b88c0000",
+    "said": "About *30 °C*.",
+    "seconds": 1.023,
+    "words": [
+     ["About", 0.15, 0.33],
+     ["30", 0.374, 0.554],
+     ["°C.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "About 30 °C.",
+    "takes": 1
+   }
+  },
+  "land.pick.ask": {
+   "heart": {
+    "clip": "voice/fuel/land.pick.ask.heart.cc1de574.m4a",
+    "key": "cc1de574c750042ca4f257b40bae1c68f90c3878",
+    "said": "Where does a made-up storm weaken?",
+    "seconds": 1.924,
+    "words": [
+     ["Where", 0.15, 0.36],
+     ["does", 0.412, 0.622],
+     ["a", 0.675, 0.884],
+     ["made-up", 0.937, 1.147],
+     ["storm", 1.199, 1.409],
+     ["weaken?", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Where does a made-up storm weaken?",
+    "takes": 1
+   }
+  },
+  "land.pick.right": {
+   "heart": {
+    "clip": "voice/fuel/land.pick.right.heart.742ef2be.m4a",
+    "key": "742ef2bebd139170f1b4523ee35164206bffe0f2",
+    "said": "Yes: over *land*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["over", 0.374, 0.554],
+     ["land.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: over land.",
+    "takes": 1
+   }
+  },
+  "land.pick.option-sea": {
+   "heart": {
+    "clip": "voice/fuel/land.pick.option-sea.heart.b6299098.m4a",
+    "key": "b629909858600c71b626c6cd1fe9119e82e2c41c",
+    "said": "Over warm sea it keeps going. Over *land* it weakens.",
+    "seconds": 3.123,
+    "words": [
+     ["Over", 0.15, 0.372],
+     ["warm", 0.427, 0.649],
+     ["sea", 0.705, 0.927],
+     ["it", 0.982, 1.204],
+     ["keeps", 1.259, 1.481],
+     ["going.", 1.537, 1.759],
+     ["Over", 1.814, 2.036],
+     ["land", 2.091, 2.313],
+     ["it", 2.369, 2.591],
+     ["weakens.", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "Over warm sea it keeps going. Over land it weakens.",
+    "takes": 1
+   }
+  },
+  "land.pick.option-ice": {
+   "heart": {
+    "clip": "voice/fuel/land.pick.option-ice.heart.f94f67aa.m4a",
+    "key": "f94f67aa67ea3e9838a20dc2e9269a847c784a83",
+    "said": "It never gets that far. Over *land* it weakens.",
+    "seconds": 2.824,
+    "words": [
+     ["It", 0.15, 0.37],
+     ["never", 0.425, 0.645],
+     ["gets", 0.7, 0.92],
+     ["that", 0.975, 1.194],
+     ["far.", 1.249, 1.469],
+     ["Over", 1.524, 1.744],
+     ["land", 1.799, 2.019],
+     ["it", 2.074, 2.294],
+     ["weakens.", 2.349, 2.569]
+    ],
+    "check": "ok",
+    "heard": "It never gets that far. Over land it weakens.",
+    "takes": 1
+   }
+  },
+  "land.sort.ask": {
+   "heart": {
+    "clip": "voice/fuel/land.sort.ask.heart.8cda8b6a.m4a",
+    "key": "8cda8b6a48f8328d7b3e4e633bd6211d8e7db1fd",
+    "said": "Sort these: where does a made-up storm grow, and where does it weaken?",
+    "seconds": 4.023,
+    "words": [
+     ["Sort", 0.15, 0.376],
+     ["these:", 0.433, 0.659],
+     ["where", 0.715, 0.941],
+     ["does", 0.998, 1.224],
+     ["a", 1.28, 1.506],
+     ["made-up", 1.563, 1.789],
+     ["storm", 1.845, 2.071],
+     ["grow,", 2.128, 2.354],
+     ["and", 2.41, 2.636],
+     ["where", 2.693, 2.919],
+     ["does", 2.976, 3.202],
+     ["it", 3.258, 3.484],
+     ["weaken?", 3.541, 3.767]
+    ],
+    "check": "ok",
+    "heard": "Sort these: where does a made-up storm grow, and where does it weaken?",
+    "takes": 1
+   }
+  },
+  "land.sort.right": {
+   "heart": {
+    "clip": "voice/fuel/land.sort.right.heart.a588f919.m4a",
+    "key": "a588f919ecd54f9484cd8ce9d9bc95d7aa369602",
+    "said": "Yes.",
+    "seconds": 0.425,
+    "words": [
+     ["Yes.", 0.15, 0.21]
+    ],
+    "check": "ok",
+    "heard": "Yes.",
+    "takes": 1
+   }
+  },
+  "land.sort.why": {
+   "heart": {
+    "clip": "voice/fuel/land.sort.why.heart.4d3ddbd0.m4a",
+    "key": "4d3ddbd0c5eba0508b3e1c8364f632c266008914",
+    "said": "Warm sea feeds it; *land* weakens it.",
+    "seconds": 2.223,
+    "words": [
+     ["Warm", 0.15, 0.364],
+     ["sea", 0.418, 0.632],
+     ["feeds", 0.685, 0.899],
+     ["it;", 0.953, 1.167],
+     ["land", 1.221, 1.435],
+     ["weakens", 1.488, 1.702],
+     ["it.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Warm sea feeds it; land weakens it.",
+    "takes": 1
+   }
+  },
+  "count.pile.ask": {
+   "heart": {
+    "clip": "voice/fuel/count.pile.ask.heart.40e4925c.m4a",
+    "key": "40e4925c729c8baafa5b10f8bff31312abe1eb1a",
+    "said": "Pile up the storms a made-up sea sees in a year.",
+    "seconds": 3.424,
+    "words": [
+     ["Pile", 0.15, 0.374],
+     ["up", 0.429, 0.653],
+     ["the", 0.709, 0.932],
+     ["storms", 0.988, 1.212],
+     ["a", 1.268, 1.491],
+     ["made-up", 1.547, 1.771],
+     ["sea", 1.826, 2.05],
+     ["sees", 2.106, 2.329],
+     ["in", 2.385, 2.609],
+     ["a", 2.665, 2.888],
+     ["year.", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "Pile up the storms a made-up sea sees in a year.",
+    "takes": 1
+   }
+  },
+  "count.pile.right": {
+   "heart": {
+    "clip": "voice/fuel/count.pile.right.heart.2c31c298.m4a",
+    "key": "2c31c2983736306fa51c23b283c7f5006dd4bf03",
+    "said": "Yes: *seven*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["seven.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: seven.",
+    "takes": 1
+   }
+  },
+  "count.pile.why": {
+   "heart": {
+    "clip": "voice/fuel/count.pile.why.heart.1df91ea3.m4a",
+    "key": "1df91ea3c28068cdc5e8a24cae638cfb7931a1df",
+    "said": "It's *seven*.",
+    "seconds": 0.724,
+    "words": [
+     ["It's", 0.15, 0.299],
+     ["seven.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "It's seven.",
+    "takes": 1
+   }
+  },
+  "count.slide.ask": {
+   "heart": {
+    "clip": "voice/fuel/count.slide.ask.heart.8ecf0528.m4a",
+    "key": "8ecf05286a8070aac762548b40fab91607d3bb07",
+    "said": "How many storms does a made-up sea see in a year?",
+    "seconds": 3.424,
+    "words": [
+     ["How", 0.15, 0.374],
+     ["many", 0.429, 0.653],
+     ["storms", 0.709, 0.932],
+     ["does", 0.988, 1.212],
+     ["a", 1.268, 1.491],
+     ["made-up", 1.547, 1.771],
+     ["sea", 1.826, 2.05],
+     ["see", 2.106, 2.329],
+     ["in", 2.385, 2.609],
+     ["a", 2.665, 2.888],
+     ["year?", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "How many storms does a made-up sea see in a year?",
+    "takes": 1
+   }
+  },
+  "count.slide.right": {
+   "heart": {
+    "clip": "voice/fuel/count.slide.right.heart.2c31c298.m4a",
+    "key": "2c31c2983736306fa51c23b283c7f5006dd4bf03",
+    "said": "Yes: *seven*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["seven.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: seven.",
+    "takes": 1
+   }
+  },
+  "count.slide.why": {
+   "heart": {
+    "clip": "voice/fuel/count.slide.why.heart.1df91ea3.m4a",
+    "key": "1df91ea3c28068cdc5e8a24cae638cfb7931a1df",
+    "said": "It's *seven*.",
+    "seconds": 0.724,
+    "words": [
+     ["It's", 0.15, 0.299],
+     ["seven.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "It's seven.",
+    "takes": 1
+   }
+  }
+ }
+}
