@@ -1,0 +1,116 @@
+/* The combo chip and its pips (js/combo.js). Every colour comes from the tier class, as custom properties,
+   so a copy of the chip inside another tier's class (the one fading or falling away) keeps its own colours.
+   Everything that moves is a transform or an opacity on a small layer of its own; glows are gradients.
+   Elsewhere (the summary, Practice, Profile) a tier class gives --tier-ink, --tier-line, --tier-plate and
+   --tier-glow for the best run's colour on the navy ground. */
+
+.tier-plain { --tier-ink: #b4bcef; --tier-line: #3b4390; --tier-plate: #252c62; --tier-glow: rgba(127, 136, 200, 0.16);
+  --c-edge: var(--line); --c-ink: var(--soft); --c-ink-sh: transparent; --c-pip: #aab3ee; --c-burst: #aab3ee; }
+.tier-bronze { --tier-ink: #f0a46a; --tier-line: #7a4a2c; --tier-plate: #30254c; --tier-glow: rgba(240, 150, 90, 0.22);
+  --c-edge: #7a3c18; --c-ink: #3d1605; --c-ink-sh: rgba(255, 214, 173, 0.65); --c-pip: #e08d55; --c-burst: #f2b27a; }
+.tier-silver { --tier-ink: #e2e8f8; --tier-line: #5d6690; --tier-plate: #2a3062; --tier-glow: rgba(220, 230, 255, 0.18);
+  --c-edge: #66709a; --c-ink: #1f2655; --c-ink-sh: rgba(255, 255, 255, 0.75); --c-pip: #dfe6f7; --c-burst: #e7edfa; }
+.tier-gold { --tier-ink: #ffc83d; --tier-line: #6b5a2a; --tier-plate: #2c2850; --tier-glow: rgba(255, 200, 61, 0.2);
+  --c-edge: #c98a00; --c-ink: #2a1650; --c-ink-sh: rgba(255, 244, 200, 0.75); --c-pip: #ffc83d; --c-burst: #ffd75a; --c-glow: rgba(255, 200, 61, 0.55); }
+.tier-crystal { --tier-ink: #c9a8ff; --tier-line: #5a3a9a; --tier-plate: #2e2462; --tier-glow: rgba(166, 124, 245, 0.26);
+  --c-edge: #4c2a94; --c-ink: #fff; --c-ink-sh: #5a2fb0; --c-pip: #b48cff; --c-burst: #c9a8ff; --c-glow: rgba(166, 124, 245, 0.6); }
+.tier-diamond { --tier-ink: #c4f2ff; --tier-line: #3b7aa3; --tier-plate: #1f3062; --tier-glow: rgba(160, 225, 255, 0.22);
+  --c-edge: #4f8fc0; --c-ink: #163a7a; --c-ink-sh: rgba(255, 255, 255, 0.9); --c-pip: #def6ff; --c-burst: #c9f1ff; --c-glow: rgba(170, 230, 255, 0.55); }
+.tier-aurora { --tier-ink: #8ff5d9; --tier-line: #2a8c80; --tier-plate: #1d2a5e; --tier-glow: rgba(43, 196, 164, 0.24);
+  --c-edge: #100d40; --c-ink: #fff; --c-ink-sh: #120f48; --c-pip: #2bc4a4; --c-burst: #7df0cf; --c-glow: rgba(43, 196, 164, 0.55); --c-glow2: rgba(166, 124, 245, 0.6); }
+
+/* ---------------------------------------------------------------- the chip */
+
+/* Layers, back to front: the glow, a tier-up's ring and bits (so they come out from behind), the body, a
+   ghost fading off it, the number, the glints; a chip falling away covers everything. */
+.combo { position: relative; z-index: 2; flex: none; width: var(--w, 52px); height: 40px; transform-origin: 50% 60%; }
+.cbody { position: absolute; inset: 0; border-radius: 13px; overflow: hidden; background: var(--plate); box-shadow: 0 4px 0 var(--c-edge); }
+.cface, .crim { position: absolute; left: 0; top: 0; }
+.cnum { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1;
+  color: var(--c-ink); text-shadow: 0 1.5px 0 var(--c-ink-sh); }
+.cnum b { font-weight: inherit; }
+.cghost .cnum::before { content: attr(data-text); }
+.combo:not(.on) > .cbody .cnum { color: var(--muted); }
+
+/* a shine sweeping across (silver, gold; a faint rainbow on diamond), off to the side until it goes */
+.cshine { position: absolute; inset: 0; opacity: 0; transform: translateX(-100%);
+  background: linear-gradient(105deg, transparent 0 34%, rgba(255, 255, 255, 0.6) 34% 46%, transparent 46% 51%, rgba(255, 255, 255, 0.35) 51% 55%, transparent 55%); }
+.cshine.prism { background: linear-gradient(105deg, transparent 0 34%, rgba(255, 111, 163, 0.38) 34% 40%, rgba(255, 207, 61, 0.38) 40% 46%, rgba(47, 208, 255, 0.38) 46% 52%, transparent 52%); }
+.combo.idle > .cbody > .cshine { opacity: 1; animation: c-sweep 3s 0.5s infinite both ease-in-out; }
+@keyframes c-sweep { 0% { transform: translateX(-100%); } 45%, 100% { transform: translateX(100%); } }
+
+/* a facet catching the light (crystal, diamond): each in turn, a wave across the cut */
+.fx { position: absolute; inset: 0; opacity: 0; }
+.combo.idle > .cbody > .fx { animation: c-facet 3s var(--d, 0s) infinite both ease-in-out; }
+@keyframes c-facet { 0% { opacity: 0; } 12% { opacity: 1; } 30%, 100% { opacity: 0; } }
+
+/* the glow behind (gold and up), a soft gradient that breathes; aurora's turns from teal to violet and back */
+/* (its top stays clear of the band behind the phone's clock, 11px above the chip, even at its largest) */
+.cglow { position: absolute; z-index: -1; left: -20px; right: -20px; top: -9px; bottom: -14px; pointer-events: none; opacity: 0.7;
+  background: radial-gradient(closest-side, var(--c-glow), transparent); }
+.cglow > i { position: absolute; inset: 0; opacity: 0; background: radial-gradient(closest-side, var(--c-glow2, transparent), transparent); }
+.combo.idle > .cglow { animation: c-breathe 3s infinite alternate ease-in-out; }
+.combo.idle > .cglow > i { animation: c-fade 3s infinite alternate ease-in-out; }
+@keyframes c-breathe { from { opacity: 0.45; transform: scale(0.92); } to { opacity: 0.9; transform: scale(1.06); } }
+@keyframes c-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* glints round the chip: a four-point star that turns as it comes and goes */
+.cs { position: absolute; z-index: 3; pointer-events: none; opacity: 0; }
+.cs svg { display: block; }
+.combo.idle > .cs { animation: c-glint 3s var(--d, 0s) infinite both ease-out; }
+.combo.idle > .cs.p6 { animation-name: c-glint6; animation-duration: 6s; }
+@keyframes c-glint { 0% { opacity: 0; transform: scale(0.2) rotate(-30deg); } 9% { opacity: 1; transform: scale(1) rotate(0deg); } 23%, 100% { opacity: 0; transform: scale(0.25) rotate(35deg); } }
+@keyframes c-glint6 { 0% { opacity: 0; transform: scale(0.2) rotate(-30deg); } 4.5% { opacity: 1; transform: scale(1) rotate(0deg); } 11.5%, 100% { opacity: 0; transform: scale(0.25) rotate(35deg); } }
+
+/* aurora: the waves of light slide through, the stars twinkle, a spark rides round the rim */
+.crib { position: absolute; left: 0; top: 0; height: 100%; }
+.crib svg { display: block; }
+.combo.idle > .cbody > .crib { animation: c-drift 6s infinite linear; }
+@keyframes c-drift { to { transform: translateX(-50%); } }
+.cst { position: absolute; border-radius: 50%; background: #fff; opacity: 0.6; }
+.combo.idle > .cbody > .cst { animation: c-star 3s var(--d, 0s) infinite ease-in-out; }
+@keyframes c-star { 0%, 100% { opacity: 0.25; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1.15); } }
+.corbit { position: absolute; left: -7px; right: -7px; top: -5px; bottom: -1px; z-index: 3; pointer-events: none; opacity: 0; }
+.corbit > i { position: absolute; inset: 0; }
+.cos { position: absolute; left: 50%; top: 50%; }
+.cos > .cs { opacity: 1; }
+.combo.idle > .corbit { opacity: 1; animation: c-orbx 1.5s -0.75s infinite alternate cubic-bezier(0.37, 0, 0.63, 1); }
+.combo.idle > .corbit > i { animation: c-orby 1.5s infinite alternate cubic-bezier(0.37, 0, 0.63, 1); }
+@keyframes c-orbx { from { transform: translateX(-50%); } to { transform: translateX(50%); } }
+@keyframes c-orby { from { transform: translateY(-50%); } to { transform: translateY(50%); } }
+
+/* reaching a tier: a ring and a few bits of its colour; losing it: the old chip, falling away */
+.cring { position: absolute; z-index: -1; inset: -2px; border-radius: 15px; border: 2.5px solid var(--c-burst); opacity: 0; pointer-events: none; }
+.cp { position: absolute; z-index: -1; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+  background: currentColor; opacity: 0; pointer-events: none; }
+.cp.g { width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 0; background: none; }
+.cp svg { display: block; }
+.cghost { position: absolute; inset: 0; pointer-events: none; }
+.cghost.falling { z-index: 4; }
+
+/* reduced motion: the tiers keep their colours, and nothing idles. Crystal and diamond keep their glints,
+   still, since they're part of how those look. */
+.combo.still *, .combo.still { animation: none !important; }
+.combo.still:is(.tier-crystal, .tier-diamond) > .cs { opacity: 0.9; transform: scale(0.8); }
+@media (prefers-reduced-motion: reduce) { .combo, .combo * { animation: none !important; } }
+
+/* ---------------------------------------------------------------- the pips */
+
+.cpips { display: flex; gap: 4px; }
+.cpips i { width: 20px; height: 9px; border-radius: 5px; background: var(--track); transition: background 160ms; }
+.cpips i.on { background: var(--c-pip); }
+.cpips.tier-aurora i.on:nth-child(2) { background: #49c6ff; }
+.cpips.tier-aurora i.on:nth-child(3) { background: #7d8cf7; }
+.cpips.tier-aurora i.on:nth-child(4) { background: #a67cf5; }
+.cpips.tier-aurora i.on:nth-child(5) { background: #ee6fa0; }
+/* emptying after a miss: from the right, one after another */
+.cpips.drop i { transition-duration: 300ms; }
+.cpips.drop i:nth-child(4) { transition-delay: 60ms; }
+.cpips.drop i:nth-child(3) { transition-delay: 120ms; }
+.cpips.drop i:nth-child(2) { transition-delay: 180ms; }
+.cpips.drop i:nth-child(1) { transition-delay: 240ms; }
+
+/* ---------------------------------------------------------------- elsewhere: the best run's colour */
+
+.tierink { color: var(--tier-ink); }
+.lend .rays.tiered { background: radial-gradient(220px 220px at 50% 42%, var(--tier-glow), transparent 70%); }

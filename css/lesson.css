@@ -82,17 +82,12 @@
 .nrow .tickmark { width: 18px; display: flex; color: var(--teal); }
 .nrow .small { margin-left: auto; }
 
-/* review: the lesson player with the combo on top (js/review.js). The chip is gold once a run of right
-   answers has started; five pips fill one per right answer, and empty again after every fifth. */
+/* review: the lesson player with the combo on top (js/review.js): the chip and its five pips, drawn by
+   js/combo.js (css/combo.css), which come alive tier by tier as the run of right answers grows. */
 .rtop { gap: 12px; }
-.combo { height: 40px; min-width: 52px; padding: 0 9px; border-radius: 13px; display: flex; align-items: center; justify-content: center; flex: none;
-  background: var(--plate); color: var(--muted); box-shadow: 0 4px 0 var(--line); font-size: 22px; transform-origin: 50% 60%; }
-.combo b { font-weight: inherit; }
-.combo.on { background: var(--gold); color: #2a1650; box-shadow: 0 4px 0 var(--gold-edge); }
-.cpips { display: flex; gap: 4px; }
-.cpips i { width: 20px; height: 9px; border-radius: 5px; background: var(--track); transition: background 160ms; }
-.cpips i.on { background: var(--gold); }
-.rtop.ended .combo, .rtop.ended .cpips { visibility: hidden; }
+.combohost { display: flex; align-items: center; gap: 12px; }
+.rtop.ended .combohost { visibility: hidden; }
+.rtop.ended .combohost * { animation: none !important; }
 .rnote { flex: none; font-size: calc(13.5px * var(--ts)); font-weight: 700; color: var(--muted); line-height: 1.35; margin-bottom: -6px; }
 .taught { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px 6px 8px; border-radius: 11px; font-size: 13.5px;
   background: rgba(255, 255, 255, 0.08); color: #ffd9e5; border: 2px solid rgba(255, 154, 184, 0.35); transition: transform var(--press-out) ease-out; }
