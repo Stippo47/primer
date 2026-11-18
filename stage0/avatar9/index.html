@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  Primer: the avatar, ninth round. A sketch to react to, not app code.
+  Stills only: no animation, no clothes.
+
+  Round eight's eight looks were too extreme. This round keeps to flat vector art: flat fills, simple clean
+  shapes, at most a flat shade tone or two, no gradients, hatching, texture, heavy outlines or glows. The
+  same crow is drawn eight ways that vary moderately: body shape, shape language, legs and wings, eyes, beak,
+  how much shading, and the colour of the black. All stand in the same cheated stance: three-quarters on,
+  turned a little to the right. The eight looks are in js/crows.js, each with a note on what it does.
+
+    index.html?pic=crow-plump         one crow. ids: plump, sleek, hooded, crisp, longtail, ruff, bean, ink
+    index.html?lineup=crow-lineup     the eight at room size, numbered, one shared scale
+    index.html?lineup=crow-icons      the eight at icon size, each fitted into a 64-point square
+    add &room=1 to a lineup to draw it at 1x instead of the phone's 2x
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, one crow in eight flat looks</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
