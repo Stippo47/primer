@@ -491,12 +491,12 @@ export class Scene {
 
   wantSound() { return !!(this.opts.voice && this.opts.voice()) && !this.failed; }
 
+  // The picture, or the play button. At the end it does nothing: back plays the last line again.
   toggle() {
     if (this.state === 'ready') return this.play();
     if (this.state === 'playing' || this.state === 'gap') return this.pause();
     if (this.state === 'paused') return this.resume();
     if (this.state === 'hold') return this.goOn();
-    if (this.state === 'ended') return this.replay();
     return null;
   }
 
@@ -546,11 +546,12 @@ export class Scene {
     this.startLine(this.i + 1);
   }
 
-  // Back: the line again from its start, or the one before when this one has only just begun.
+  // Back: the line again from its start, or the one before when this one has only just begun. Between
+  // lines, or at the end of one read silently, the line on screen is the one just said: it starts again.
   back() {
     if (this.state === 'ready') return null;
-    const t = this.state === 'playing' ? this.clock(performance.now()) : this.state === 'paused' && this.pausedFrom === 'playing' ? this.pausedAt : 99;
-    const early = t < BACK_TO_PREVIOUS || this.state === 'gap' || this.state === 'hold' || (this.state === 'paused' && this.pausedFrom === 'gap');
+    const t = this.state === 'playing' ? this.clock(performance.now()) : this.state === 'paused' && this.pausedFrom === 'playing' ? this.pausedAt : null;
+    const early = t !== null && t < BACK_TO_PREVIOUS;
     return this.jump(early && this.i > 0 ? this.i - 1 : this.i);
   }
 
@@ -593,8 +594,6 @@ export class Scene {
     this.startLine(k);
   }
 
-  replay() { return this.jump(0); }
-
   // The speaker on the picture: Voice on or off from here, carrying on from the same moment. After no
   // sound played, it tries the voice again.
   toggleVoice() {
@@ -625,6 +624,7 @@ export class Scene {
     this.pips.forEach(b => { b.style.transform = 'scaleX(1)'; });
     if (this.host.progress) this.host.progress(1);
     this.hideNote('go');
+    this.seenEnd = true;   // from now on the host may go on whenever it likes, even while a line is replayed
     this.set('ended');
     this.host.button('continue', true);
     this.host.ended();

@@ -5,11 +5,14 @@
  "steps": [
   { "id": "before", "kind": "explain", "title": "Before", "text": "A made-up step before the scene.", "src": ["made-up"] },
   { "id": "tour", "kind": "scene", "title": "A short scene",
-    "parts": { "globe": { "part": "globe", "settings": { "style": "day", "spin": "locked", "tap": "none", "view": [0, 30] } } },
+    "parts": {
+     "globe": { "part": "globe", "settings": { "style": "day", "spin": "locked", "tap": "none", "view": [0, 30] } },
+     "warmth": { "part": "inputs", "settings": { "form": "slider", "min": 10, "max": 40, "unit": "°C", "start": 14, "picture": "warmth" } }
+    },
     "lines": [
-     { "id": "one", "text": "Here is *France*.", "do": [ { "at": "France", "call": ["highlight", ["France"], "pink"] } ] },
+     { "id": "one", "text": "Here is *France*.", "do": [ { "at": "France", "call": ["globe.highlight", ["France"], "pink"] } ] },
      { "id": "two", "text": "And here is Peru, far away.", "say": "And here is Peru, far far away.",
-       "do": [ { "at": "Peru", "call": ["spinTo", "Peru", 0.5] } ] }
+       "do": [ { "at": "Peru", "call": ["globe.spinTo", "Peru", 0.5] }, { "at": "away", "call": ["warmth.reveal", 27] } ] }
     ],
     "src": ["made-up"] },
   { "id": "after", "kind": "check", "title": "After", "ask": "Which was lit up first?",

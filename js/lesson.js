@@ -186,8 +186,9 @@ export class Run {
     this.setButton('continue', false);
     const ids = { topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id };
     const host = {
+      // null while it plays: Continue, asleep until the scene has once reached its end
       button: (kind, enabled = false, colour = '') => {
-        this.setButton(kind || 'continue', !!kind && enabled);
+        this.setButton(kind || 'continue', kind ? enabled : !!(this.scene && this.scene.seenEnd));
         if (colour) this.btn.className = `btn ${colour}`;
       },
       feedback: (kind, why) => this.feedback(kind, why),
@@ -235,8 +236,8 @@ export class Run {
   }
 
   go() {
-    // until its end, a scene step's button is the scene's: Check during a wait, then Continue
-    if (this.scene && this.scene.state !== 'ended') {
+    // during a scene's wait, the button is the scene's: Check, then Continue to carry the scene on
+    if (this.scene && (this.scene.state === 'wait' || this.scene.state === 'marked')) {
       if (this.btn.dataset.kind !== 'check') feel.press(this.btn, 'tap');
       return this.scene.button();
     }

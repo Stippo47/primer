@@ -22,7 +22,7 @@ const DEFAULT_TITLES = { chest: 'A chest', review: 'Review', animation: 'Animati
 // exactly as a lesson is. Its voice file is voice/<node>.json.
 export function sceneLesson(file, id, topic) {
   const { parts, lines, title } = file;
-  return { ...file, id, topic, kind: 'animation', steps: [{ id, kind: 'scene', title, parts, lines, voice: id }] };
+  return { ...file, id, topic, kind: 'animation', steps: [{ id, kind: 'scene', title, parts, lines, voiceKey: id }] };
 }
 
 // Where a scene's voice is: voice/<node>.json for an animation, voice/<lesson>.<step>.json for a scene
@@ -54,7 +54,7 @@ export async function library() {
       if (file) {
         file.steps = file.steps.map(s => {
           if (!s || s.kind !== 'scene') return s;
-          const v = voicePath(id, s.voice || `${n.id}.${s.id}`);
+          const v = voicePath(id, s.voiceKey || `${n.id}.${s.id}`);
           return { ...s, timing: files.has(v) ? json(files.get(v)) : null };
         });
       }

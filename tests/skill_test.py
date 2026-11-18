@@ -365,8 +365,14 @@ class SceneCheck(SceneWork):
         self.assertIn("isn't voiced yet (turn, storm, tap, end)", r.stdout)
 
     def test_a_scene_step_in_a_lesson_is_checked_too(self):
-        out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][0]['do'][0].update(call=['highlight', ['France'], 'mauve']))
+        out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][0]['do'][0].update(call=['globe.highlight', ['France'], 'mauve']))
         self.assertIn('"mauve" isn\'t a colour', out)
+
+    def test_with_two_parts_a_call_names_its_part(self):
+        out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][0]['do'][0].update(call=['highlight', ['France']]))
+        self.assertIn('this scene has 2 parts: name the one, like "globe.highlight"', out)
+        out = self.errors(lesson_change=lambda L: L['steps'][1]['lines'][1]['do'][1].update(call=['warmth.spinTo', 'Peru']))
+        self.assertIn('inputs has no call "spinTo"', out)
 
     def test_the_topics_narrator(self):
         dest = self.scene_topic()

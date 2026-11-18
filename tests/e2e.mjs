@@ -104,7 +104,7 @@ const waitFor = async (expr, ms = 8000) => { const t0 = Date.now(); while (Date.
 const reloadLibrary = () => ev(`__primer.data.library().then(t => { __primer.app.topics = t; __primer.app.render(); return t.length })`);
 // scenes
 const scene = () => ev('__primer.run && __primer.run.scene ? __primer.run.scene.debug() : null');
-const sceneState = s => waitFor(`__primer.run && __primer.run.scene && __primer.run.scene.state === ${JSON.stringify(s)}`, 15000);
+const sceneState = (s, ms = 15000) => waitFor(`__primer.run && __primer.run.scene && __primer.run.scene.state === ${JSON.stringify(s)}`, ms);
 const openNode = async id => {
   await f.tap(`.node[data-node=${id}]`);
   await sleep(300);
@@ -770,7 +770,7 @@ try {
         ok(first.narrators.every(n => n === (topicFile.narrator || 'heart')), `${node.id}: every line has its clip, in the topic's narrator`, first.narrators);
         await f.tap('.sbig');
         const waitLine = file.lines.find(x => x.wait);
-        await sceneState('wait');
+        ok(await sceneState('wait', 90000), `${node.id}: played on its voice, line by line, to its wait`);
         await shot(`21-pilot-${node.id}-wait`);
         const tr = waitLine.wait.tries.find(x => x.marked === 'right').state.tapped;
         const p = await ev(`__primer.run.scene.handles.globe.where([${tr.lon},${tr.lat}])`);
@@ -780,7 +780,7 @@ try {
         const vd = await verdict();
         ok(vd.verdict === 'Right', `${node.id}: its wait, answered right`, vd);
         await press();
-        await sceneState('ended');
+        await sceneState('ended', 90000);
         const fired = (await scene()).fired;
         const want = file.lines.reduce((n, x) => n + (x.do || []).length, 0);
         const lags = fired.map(x => +(x.at - x.want).toFixed(3));
@@ -991,6 +991,7 @@ try {
   await press();
   await sceneState('ready');
   ok((await ev(`document.querySelector('.svoice').getAttribute('aria-pressed')`)) === 'false', 'a scene step inside a lesson, with Voice off: its speaker shows off');
+  ok(await ev(`document.querySelectorAll('.spart').length === 2 && !!document.querySelector('.spart[data-part=globe] canvas') && !!document.querySelector('.spart[data-part=warmth] .pi')`), 'two parts share the picture, one above the other, each named in the calls ("warmth.reveal")');
   await f.tap('.sbig');
   await sceneState('hold');
   d = await scene();
@@ -1001,7 +1002,7 @@ try {
   ok((await scene()).state === 'hold', 'it waits as long as it takes');
   await f.tap('.scap');
   await sceneState('ended');
-  ok((await scene()).fired.length === 2, 'a tap goes on to the next line, and at the last line\'s end the scene is done');
+  ok((await scene()).fired.length === 3 && !(await ev(`document.querySelector('.spart[data-part=warmth] .pi-chip.truth').hidden`)), 'a tap goes on to the next line, its calls reach both parts, and at the last line\'s end the scene is done');
   await press();
   await waitFor(`__primer.run.step.id === 'after' && __primer.run.input`);
   await f.tap('.pi-opt[data-id=france]');
