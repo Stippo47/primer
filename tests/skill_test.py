@@ -765,6 +765,21 @@ class Voice(SceneWork):
         self.assertEqual(r.returncode, 1)
         self.assertIn('Can\'t find the voice environments', r.stdout)
 
+    def test_words_that_sound_the_same_are_heard_as_said_but_a_bad_take_is_not(self):
+        """A recogniser can't tell "sea" from "C" or "they're" from "there": no retake for those. A repeat or
+        a dropped word is still a bad take."""
+        sys.path.insert(0, str(PRIMER.parent / 'voice'))
+        import textnorm  # noqa: E402
+        same = [("That's land: tap the sea.", "That's land, tap the C."),
+                ("In the northwest Pacific they're *typhoons*.", 'In the northwest, Pacific there typhoons.'),
+                ("They're five.", 'There are five.'), ('There are five.', "They're five.")]
+        for want, heard in same:
+            self.assertEqual(textnorm.verdict(textnorm.diff(want, heard)), 'ok', (want, heard))
+        for want, heard in [('Yes: the South Pacific.', 'Yes, the South Pacific. Yes, the South Pacific.'),
+                            ('They drift *west*, out over the Pacific.', 'A drift west, out over the Pacific,'),
+                            ('*Hurricane* is the name in the North Atlantic.', 'Hurricane is the name in the North Atlantic. Offered.')]:
+            self.assertEqual(textnorm.verdict(textnorm.diff(want, heard)), 'flag', (want, heard))
+
 
 FACTS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'storms'
 CAPITALS = ROOT / 'tests' / 'fixtures' / 'facts' / 'topics' / 'capitals'

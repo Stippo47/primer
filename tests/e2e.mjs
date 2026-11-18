@@ -1474,16 +1474,23 @@ try {
     await sleep(300);
     await f.tap('.review [data-go=review]');
     let pictured = null;
+    const reviewAsked = [];
     for (let k = 0; k < 20 && !pictured; k++) {
       await waitFor(`__primer.run && __primer.run.step && (!!__primer.run.input || !!__primer.run.play)`);
-      await sleep(400);
       const s = await ev('__primer.run.step');
+      reviewAsked.push(`${s.fact}.${s.askId}.ask`);
+      await waitFor(`__primer.run.reader.heard.some(h => h.id === ${JSON.stringify(reviewAsked.at(-1))})`, 3000);
+      await sleep(400);
       if (s.figure && s.figure.part && s.input && s.input.form === 'choice') { pictured = s; break; }
       await answerStep(true);
       await press();
       await press();
     }
     ok(!!pictured, 'a pilot review question brings its picture: the globe turned to its ocean', pictured && pictured.id);
+    const reviewHeard = await ev('__primer.run.reader.heard');
+    const pilotNarrator = topicFile.narrator || 'heart';
+    ok(reviewAsked.length > 0 && reviewAsked.every(id => reviewHeard.some(h => h.id === id && h.narrator === pilotNarrator)),
+      `each pilot review question is read aloud from its own clip, in ${pilotNarrator}'s voice (${reviewAsked.length} of them)`, { reviewAsked, reviewHeard });
     if (pictured) {
       await sleep(900);
       await b.size(W, H, 2); await sleep(600); await b.shot(join(SHOTS, '24-pilot-review-question.png')); await b.size(W, H, 1); await sleep(300);

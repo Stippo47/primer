@@ -13,7 +13,7 @@ ORDINAL = {"one": "first", "two": "second", "three": "third", "five": "fifth", "
 # from "see"). Compared as the same word.
 SAME = {"kilometers": "kilometres", "km": "kilometres", "kilometer": "kilometre", "meters": "metres", "meter": "metre",
         "centre": "center", "colour": "color", "colours": "colors", "coloured": "colored", "vapour": "vapor", "ok": "okay",
-        "see": "sea", "seas": "sea", "sees": "sea", "too": "to", "two": "to", "their": "there", "theyre": "there",
+        "see": "sea", "seas": "sea", "sees": "sea", "c": "sea", "too": "to", "two": "to", "their": "there", "theyre": "there",
         "hear": "here", "its": "it's", "whether": "weather", "whole": "hole", "for": "four", "right": "write", "knew": "new",
         # names a recogniser writes the way it knows them, said the way `say` spells them
         "noaa": "noah"}
@@ -70,8 +70,8 @@ def words(text, spell=False, years=False):
     if spell:
         text = spell_numbers(text, years)
     text = strip_accents(text.lower()).replace("’", "'")
-    # "they're" and "there are" sound the same, and a recogniser writes either
-    text = re.sub(r"\bthey're\b", "there are", text)
+    # "they're", "there" and "there are" said quickly sound the same, and a recogniser writes any of them
+    text = re.sub(r"\b(they're|there are)\b", "there", text)
     # "four hundred and eighty" is how a number is said; "four hundred eighty" how it's spelled out here
     text = re.sub(r"\b(hundred|thousand|million) and (?=(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b)", r"\1 ", text)
     text = re.sub(r"[-–—]", " ", text)
