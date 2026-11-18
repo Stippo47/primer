@@ -66,7 +66,7 @@ export async function partScreen(app, name, back) {
   let handle = null;
 
   view.innerHTML = `<section class="screen partview">
-    ${head(`<button class="round" data-go="back" aria-label="Back">${icon.left(20)}</button><span class="title sm">${esc(desc.title)}</span>`)}
+    ${head(`<button class="round" data-go="back" aria-label="Back">${icon.left(20)}</button><span class="title sm">${esc(isInputs ? "Answer forms" : desc.title)}</span>`)}
     <div class="${isInputs ? 'plate partstage inputs' : 'stage partstage'}"></div>
     <div class="tries"></div>
     <div class="plate panel"></div></section>`;

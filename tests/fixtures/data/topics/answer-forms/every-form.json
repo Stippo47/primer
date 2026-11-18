@@ -46,7 +46,7 @@
      "items": [{ "id": "desert", "text": "A desert" }, { "id": "ice", "text": "An ice sheet" }, { "id": "tropics", "text": "The tropics" }, { "id": "pole", "text": "A pole" }] },
    "answer": { "desert": "warm", "ice": "cold", "tropics": "warm", "pole": "cold" },
    "misses": [{ "when": { "read": "value.pole", "is": "warm" }, "why": "A pole is the coldest place there is." }],
-   "why": "Deserts and the tropics are warm; ice sheets and the poles are cold.",
+   "why": "Deserts and the tropics are warm; ice and poles, cold.",
    "tries": [{ "state": { "value": { "desert": "warm", "ice": "cold", "tropics": "cold", "pole": "cold" }, "answered": true }, "marked": "wrong" }, { "state": { "value": { "desert": "warm", "ice": "cold", "tropics": "warm", "pole": "cold" }, "answered": true }, "marked": "right" }],
    "src": ["made-up"]
   },

@@ -14,6 +14,9 @@ const cardPath = (w, h) => `M${CORNER} 0H${w}V${h / 2 - R}A${R} ${R} 0 0 0 ${w} 
 // A piece: square on the left with a plug of the socket's own radius, rounded on the right.
 const piecePath = (w, h) => `M0 0H${w - CORNER}A${CORNER} ${CORNER} 0 0 1 ${w} ${CORNER}V${h - CORNER}A${CORNER} ${CORNER} 0 0 1 ${w - CORNER} ${h}H0V${h / 2 + R}A${R} ${R} 0 0 1 0 ${h / 2 - R}Z`;
 const plugPath = h => `M0 ${h / 2 + R}A${R} ${R} 0 0 1 0 ${h / 2 - R}Z`;
+// A piece's body without its plug: its side (its thickness, below it) is drawn from this, and the plug's
+// own side only while it's loose. Clicked in, the plug sits in the socket and its side is hidden inside.
+const bodyPath = (w, h) => `M0 0H${w - CORNER}A${CORNER} ${CORNER} 0 0 1 ${w} ${CORNER}V${h - CORNER}A${CORNER} ${CORNER} 0 0 1 ${w - CORNER} ${h}H0Z`;
 
 export const css = `
 .pi-snapbox { position: relative; }
@@ -53,10 +56,10 @@ export function mount(f) {
     return { row: Object.fromEntries(order.map((id, i) => [id, i])), docked: {} };
   };
   let st = start(), G = null;
-  const shape = (el, d, w, h, extra = '') => {
+  const shape = (el, d, w, h, extra = '', side = d) => {
     const svg = el.querySelector('svg');
     svg.setAttribute('width', w); svg.setAttribute('height', h + DEPTH);
-    svg.querySelector('.side').setAttribute('d', d);
+    svg.querySelector('.side').setAttribute('d', side);
     svg.querySelector('.side').setAttribute('transform', `translate(0 ${DEPTH})`);
     svg.querySelector('.face').setAttribute('d', d);
     if (extra) { svg.querySelector('.plugside').setAttribute('d', extra); svg.querySelector('.plugside').setAttribute('transform', `translate(0 ${DEPTH})`); }
@@ -81,7 +84,7 @@ export function mount(f) {
     for (const el of pieceEls) {
       const id = el.dataset.id, docked = !!st.docked[id];
       el.style.width = `${PW}px`; el.style.height = `${H}px`;
-      shape(el, piecePath(PW, H), PW, H, plugPath(H));
+      shape(el, piecePath(PW, H), PW, H, plugPath(H), bodyPath(PW, H));
       el.classList.toggle('docked', docked);
       placeAt(el, docked ? CW : CW + LOOSE, G.rowY(st.row[id]), feel, animate && el._at ? el._at : null);
     }

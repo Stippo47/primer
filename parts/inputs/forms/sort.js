@@ -12,7 +12,7 @@ export const css = `
 .pi-bin.hover { border-color: #6fd6ff; background: #1f2862; }
 .pi-bin .head { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 6px;
   text-align: center; font-size: calc(15px * var(--ts, 1)); line-height: 1.1; }
-.pi-bin .head .pi-img { height: 36px; max-width: 64px; }
+.pi-bin .head .pi-img { height: 32px; max-width: 60px; }
 .pi-bin .slot { position: absolute; left: 6px; right: 6px; border-radius: 13px; background: rgba(15, 20, 52, 0.55); }
 .pi-tray { position: absolute; left: 0; right: 0; border-radius: 18px; background: rgba(15, 20, 52, 0.4); }
 .pi-sorttile { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 8px; border-radius: 13px; text-align: center;
@@ -46,7 +46,7 @@ export function mount(f) {
   // the same in the tray and in a bin; bins have room for a fair share and grow if more go in.
   const layout = (animate = false) => {
     const W = box.clientWidth, n = bins.length, binW = (W - GAP * (n - 1)) / n, tileW = binW - PAD * 2;
-    let tileH = 44;
+    let tileH = 42;
     for (const t of tiles) { t.style.width = `${tileW}px`; t.style.height = 'auto'; tileH = Math.max(tileH, t.offsetHeight); }
     let headH = 46;
     for (const b of bins) { const h = binEl(b.id).querySelector('.head'); h.style.height = 'auto'; headH = Math.max(headH, h.scrollHeight + 12); }

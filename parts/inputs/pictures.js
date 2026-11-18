@@ -167,7 +167,7 @@ export const PICTURES = {
       nuts[1].setAttribute('cx', (T[0] + 4.5).toFixed(2)); nuts[1].setAttribute('cy', (T[1] + 6).toFixed(2));
       nuts[2].setAttribute('cx', (T[0] + 2.6).toFixed(2)); nuts[2].setAttribute('cy', (T[1] + 4).toFixed(2));
       // fronds: [angle when still, angle in a gale, length], angles in degrees, 0 is downwind (right), 90 down
-      const FRONDS = [[164, 372, 0.95], [205, 360, 1], [248, 352, 0.9], [292, 346, 0.95], [326, 356, 1], [8, 368, 0.95], [-14 + 360, 384, 0.85]];
+      const FRONDS = [[164, 372, 0.95], [205, 360, 1], [248, 352, 0.9], [292, 346, 0.95], [326, 356, 1], [372, 366, 0.95], [346, 384, 0.85]];
       const frond = ([a0, a1, s], back) => {
         const a = (lerp(a0, a1, e) * Math.PI) / 180;
         const L = lerp(44, 52, e) * s * (back ? 0.86 : 1), W = lerp(8.5, 6.5, e) * (back ? 0.9 : 1);
