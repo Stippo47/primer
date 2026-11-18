@@ -1,0 +1,15 @@
+{
+  "id": "profs",
+  "kind": "options",
+  "rarity": "uncommon",
+  "title": "A prof for each subject",
+  "text": "You said each \"prof\" could get their own voice and you choose yours. Which of these did you mean?",
+  "why": "Characters are the hardest thing to draw by code, as the avatar round is showing, so this decides whether lessons get a cast to draw or only voices to choose.",
+  "pick": "voices",
+  "details": "My pick is to start with voices only: geography gets one of your four narrators, science another, and so on, and settings let you swap any of them or use one voice for everything. Faces can follow once the avatar style works, since a prof is drawn the same way as your avatar.\n\nThe four kept voices are Heart, Chatterbox A, George and Bella.",
+  "options": [
+    { "id": "cast", "label": "A cast", "text": "A teacher character per subject, drawn and with its own voice. You can swap the voice." },
+    { "id": "voices", "label": "Voices only", "text": "Each subject has its own narrator voice. No characters yet. You can swap any." },
+    { "id": "one", "label": "One voice", "text": "You choose one narrator and it reads everything." }
+  ]
+}

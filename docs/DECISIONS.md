@@ -114,9 +114,41 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 - **Shop: learning unlocks, coins buy.** A unique thing shows as an outline until its lesson is done, and then it can be bought. This replaces "earn unique" from the first answers. **Prizes are different:** trophies and the like are given, and never appear in the shop. Nothing is labelled with what it's obviously for.
 - **Profile:** no "fading" label; colour and number do it. The scale runs blue to grey, not blue to red. A warning mark on a topic opens its details, such as the day it was last studied. "Strong and weak" becomes "Skills" or "Knowledge".
 
-### Still open
+### Still open (answered below)
 
 - The name of the joined Review and Playground tab.
 - Which animal or monster the avatar is.
 - The narrator, after the second round of voices.
 - Whether the shell (stage 1) starts now. Asked as a card.
+
+## 2026-11-17: answers to the second round
+
+### Settled
+
+- **Stage 1, the shell, starts now.**
+- **The joined tab is called Practice.** While a review run or a Playground part is open, the tab bar is hidden; a cross or a back arrow in the top left leaves.
+- **The hurricane is drawn as Disc,** their favourite. Bands and Cut paper also passed.
+- **Bounce halfway between gentle and medium** is right.
+- **Rooms are changed by doors,** no arrows.
+- **The room's ideas hold:** touching a thing, fading things and the globe display were all marked good.
+- **The other screens hold:** Learn, the topic list, Practice, Review, an opened part, and Profile were all marked good.
+- **Voices kept:** Heart, Chatterbox A, George and Bella for narration. For languages every voice put forward passed: Japanese Alpha, Tebukuro and Chatterbox A; Spanish Dora, Alex and Chatterbox A; Italian Sara and Nicola; Hindi Alpha and Psi. Which sounds most natural in Japanese and Spanish can't be judged by either of us, so a native speaker's ear is wanted before a language course leans on one.
+
+### Changed
+
+- **Shop: a locked thing is a dark imprint of its shape,** with no outline and no dashed card.
+- **The room is drawn smaller,** so more of it shows at once. The furniture is better but wants a better view angle.
+- **Displays live where they make sense.** The globe zooms in for geography. A bookshelf zooms in the same way for less tangible topics (philosophy, language, ideas): it gains books as topics are learned, and more at each milestone in a lesson. The same rule applies wherever something in the room is a natural home for a kind of knowledge.
+
+### Redo
+
+- **The avatar: none of the six.** Look at how Duolingo and Kurzgesagt draw their characters and learn from that style. The purple monster is disliked in particular.
+
+### New idea, to be understood
+
+- **"Each prof gets their own voice, you can choose yours."** My reading: subjects have teacher characters, each with its own voice, and you can pick which one teaches you. Asked as a card, since it adds characters to draw.
+
+### Still open
+
+- The avatar, after a third round.
+- What the "profs" are.
