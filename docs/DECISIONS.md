@@ -263,3 +263,13 @@ This replaces "voice only for animations, overviews and pronunciations" (2026-11
 ### Avatar
 
 - **Round 8 (one crow in eight looks): too extreme.** Keep the flat vector art style. Stilt is the only one slightly liked, but the next round mustn't just be variants of it. My reading of "don't run away with that idea and just make variants of him": one or two looks may borrow from Stilt, and the rest are fresh.
+
+## 2026-11-18: labs, crow round 9, review on the phone
+
+Their words are in primer-data `notes/answers-2026-11-18d.md`.
+
+- **Labs: yes**, as designed on the Misc card: one bigger problem in three to five parts, in a playground; hints (a nudge, a pointer, the answer) cost coins; with no coins a part can still show its answer but earns nothing; a lab never blocks the path, and the test opens once the lessons are done. It comes after the current stage 2 pieces, with coins.
+- **Review: good** (the run, missing, Profile, and my small calls: warning under 70%, close keeps the combo, unasked facts as open dots).
+- **Wording:** the ask "In a hurricane, when is the heat that drives it let out into the air?" reads badly. Every ask gets a wording pass: plain, short, one idea per question.
+- **The combo should come alive as it grows.** They offered flames, or tiers: nothing, bronze, silver, gold, crystal (purple), diamond and on. My call: tiers, since flames read as a streak, which is ruled out, and tiers sit with the crown and trophies. Each tier's chip is livelier than the last, calmly (nothing jarring).
+- **Avatar round 9:** Plump and Bean picked. Next: variants of those two, including changes to the face.
