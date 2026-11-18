@@ -285,13 +285,14 @@ export function cup() {
     <path d="M24 2h5v11a12 12 0 0 1-7 10.9A12 12 0 0 0 24 13z" fill="${GOLD[1]}" opacity="0.55"/>${star(17, 12, 5.6, '#fff')}`;
 }
 
-// A crown for the best combo, 30 x 24 (stage 0's, from the Review sketch).
-export function crown() {
+// A crown for the best combo, 30 x 24 (stage 0's, from the Review sketch). Gold, or in another metal:
+// js/combo.js draws the best run's crown in its tier's.
+export function crown({ base = GOLD[0], shade = GOLD[1], lit = GOLD[2], jewel = '#ee4b7a', shine = '#ffc2d4' } = {}) {
   const shape = '<path stroke-linejoin="round" d="M2 21L0.5 5.5L8.5 11.5L15 1.5L21.5 11.5L29.5 5.5L28 21Z"/>';
-  return `${form(shape, GOLD[0], `<path d="M15 1.5L21.5 11.5L29.5 5.5L28 21H15z" fill="${GOLD[1]}" opacity="0.45"/><path d="M2 21L0.5 5.5L8.5 11.5L15 1.5v6L9.5 15L4 10.5L5 21z" fill="${GOLD[2]}" opacity="0.8"/>`)}
-    <rect x="1.5" y="18" width="27" height="5.5" rx="2.2" fill="${GOLD[1]}"/><rect x="1.5" y="18" width="27" height="3.2" rx="1.6" fill="${GOLD[0]}"/>
-    <circle cx="15" cy="14" r="2.3" fill="#ee4b7a"/><circle cx="14.3" cy="13.3" r="0.8" fill="#ffc2d4"/>
-    <circle cx="0.8" cy="5" r="2" fill="${GOLD[2]}"/><circle cx="15" cy="1.8" r="2.1" fill="${GOLD[2]}"/><circle cx="29.2" cy="5" r="2" fill="${GOLD[0]}"/>`;
+  return `${form(shape, base, `<path d="M15 1.5L21.5 11.5L29.5 5.5L28 21H15z" fill="${shade}" opacity="0.45"/><path d="M2 21L0.5 5.5L8.5 11.5L15 1.5v6L9.5 15L4 10.5L5 21z" fill="${lit}" opacity="0.8"/>`)}
+    <rect x="1.5" y="18" width="27" height="5.5" rx="2.2" fill="${shade}"/><rect x="1.5" y="18" width="27" height="3.2" rx="1.6" fill="${base}"/>
+    <circle cx="15" cy="14" r="2.3" fill="${jewel}"/><circle cx="14.3" cy="13.3" r="0.8" fill="${shine}"/>
+    <circle cx="0.8" cy="5" r="2" fill="${lit}"/><circle cx="15" cy="1.8" r="2.1" fill="${lit}"/><circle cx="29.2" cy="5" r="2" fill="${base}"/>`;
 }
 
 // A warning mark, 22 x 20

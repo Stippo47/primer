@@ -3,7 +3,8 @@
 // what's waiting to send, the version, and whether the phone has promised to keep the data. A topic's
 // figure is how much of what's been asked in it you'd recall now, from the memory model (data.knowledge).
 import { esc, head, sheet, when } from '../ui.js';
-import { icon, svg, medallion, hazard, MARK, crown } from '../art.js';
+import { icon, svg, medallion, hazard, MARK } from '../art.js';
+import { tierClass, tierCrown } from '../combo.js';
 import * as data from '../data.js';
 import * as feel from '../feel.js';
 import { NARRATORS } from '../scene.js';
@@ -50,7 +51,7 @@ export function profileScreen(app) {
   const best = data.memoryNow().best;
   view.innerHTML = `<section class="screen profile">${head('<span class="title">Profile</span>')}
     <div class="tiles"><div class="plate">${book}<p class="sky-t" id="lessonsdone">${data.lessonsDone(app.topics)}</p></div><div class="plate">${tick}<p style="color:#7df0cf">${rightCount}</p></div>
-      <div class="plate" id="bestcombo">${svg(33, 27, `<g transform="scale(1.1)">${crown()}</g>`)}<p class="gold-t">×${best}</p></div></div>
+      <div class="plate ${tierClass(best)}" id="bestcombo">${svg(33, 27, `<g transform="scale(1.1)">${tierCrown(best)}</g>`)}<p class="tierink">×${best}</p></div></div>
     ${app.topics.length ? `<p class="over">Knowledge</p><div class="plate know">${rows}</div>` : ''}
     <p class="over">Settings</p>
     <div class="plate settings">

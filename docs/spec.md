@@ -72,7 +72,7 @@ Every step started, read, answered and finished is saved on the phone and queued
 
 ## Practice
 
-**Review** sits on top, with a fan of cards, its name, the best combo so far (a crown and ×n, no label) and Start. When nothing is due it says so plainly, "Nothing due", and offers **Review anyway**, which starts with the facts closest to slipping. Before any lesson has taught a fact, its Start is off ("After a lesson").
+**Review** sits on top, with a fan of cards, its name, the best combo so far (a crown and ×n, no label, in the best run's tier) and Start. When nothing is due it says so plainly, "Nothing due", and offers **Review anyway**, which starts with the facts closest to slipping. Before any lesson has taught a fact, its Start is off ("After a lesson").
 
 ## Review
 
@@ -80,9 +80,22 @@ Every fact met is asked again just as it's about to slip. Lessons declare their 
 
 - **A run** is the lesson player with its own top row: the cross, the combo, and five pips. The tab bar hides. Each question is one of a fact's asks, played, marked, shown and saved exactly as a lesson step is, with the picture it was taught with when it has one.
 - **What comes up:** the facts due, the most slipped first, every topic mixed (another topic than the last when one is near the front of the queue); each asked a way it wasn't asked last time. When the due ones run out, a line says so, and it carries on with the facts closest to slipping. It's endless: the cross ends it.
-- **The combo** counts right answers in a row: gold once it's started; close holds it, wrong ends it. The pips fill one per right answer and empty after every fifth, when the chip gives a bigger pop. No lives, and no coins until the shop.
+- **The combo** counts right answers in a row: close holds it, wrong ends it. The pips fill one per right answer and empty after every fifth, when they ripple. No lives, and no coins until the shop.
+- **Its chip comes alive as it grows,** in tiers (ruled 2026-11-18: tiers, not flames), each livelier than the last, calmly. One part, `js/combo.js` with `css/combo.css`; the thresholds are its `TIERS` table and nowhere else.
+
+  | Tier | From | The chip | Its idle motion |
+  |---|---|---|---|
+  | Plain | 0 | the flat plate | none |
+  | Bronze | 5 | warm metal, a lit band and a fine highlight line | a glint now and then (two corners, every six seconds) |
+  | Silver | 10 | cool metal, the same way | a slow shine sweeping across, every three seconds |
+  | Gold | 15 | gold, the same way | the sweep, glints, and a soft glow behind that breathes |
+  | Crystal | 25 | purple, step-cut into facets | the facets catch the light in a slow wave; four small sparkles; the glow |
+  | Diamond | 40 | pale and icy, a brilliant cut with a little colour in it | the facet wave, prismatic glints in turn, a faint rainbow sweep, the glow |
+  | Aurora | 60 | a night-sky chip with a rim of light | waves of light drifting through it, its stars twinkling, a spark circling the rim, a glow turning teal to violet |
+
+  The pips fill in the tier's colour (aurora's run teal to pink). **Reaching a tier** is one moment, under a second: the chip swells and settles with the app's spring, a ring and a few bits of the tier's colour burst from it, the phone ticks (`feel.tick`), and once it has settled its idle motion starts. **A miss** lets the old chip sink a little and fade, with plain ×0 coming up under it and the pips emptying from the right: no jolt. Everything that moves is a transform or an opacity on a small layer; glows are gradients, never blur; every idle period divides six seconds. **Reduced motion** (the system's setting; the app has none of its own yet, and a caller can pass `still`): the tiers keep their colours and look, and nothing idles, swells, bursts or falls. The tick stays.
 - **A miss** shows the answer beside what was given and its one line of why, with a link (a book and the lesson's name) back to the lesson step that taught it: that step opens over the run, to look at or try again, and the cross on it comes back to the run. Nothing done there is recorded. The fact comes back three questions later, and in the memory sooner (a day, where a right answer might be days or weeks).
-- **The summary,** when the cross ends a run with anything answered: a crown and the run's best combo, how many were right of how many, and up to three facts missed. Continue goes back where the run started.
+- **The summary,** when the cross ends a run with anything answered: a crown and the run's best combo, in that run's tier (the crown in its metal, the number and the light behind in its colour), how many were right of how many, and up to three facts missed. Continue goes back where the run started.
 - **A topic on its own:** Profile's details for a topic have Review and the topic's name, a run of that topic's facts only.
 
 Saved and sent: each answer is an `attempt` with the run's id, and the run's end is a `review` event (`format.md`, "A progress file").
@@ -95,7 +108,7 @@ Calm placeholders. Home shows a small drawn room and says it comes later; the ro
 
 ## Profile
 
-Three tiles: lessons finished, questions answered right, and the best combo in review (a crown and ×n).
+Three tiles: lessons finished, questions answered right, and the best combo in review (a crown and ×n, in the best run's tier).
 
 **Knowledge** lists each topic with a bar and a number: how much of what's been asked in it you'd recall now, by the memory model (the mean of its asked facts' recall). The colour runs from blue (well remembered) to grey, and a topic under 70% that has been asked has a warning mark (FSRS aims to review a fact as its recall falls to 90%, and its forgetting has a long tail, so 70 is well slipped). There's no word for fading, and no streak. Tapping a topic opens its details: when it was last studied, how many of its facts are due again, a dot for each fact (coloured by its recall; an open ring if never asked), Review and the topic's name, and a quieter link to its path. A topic written before facts existed keeps the old figure: its questions' last answers, right counting in full and close a half, each fading by half every two weeks, with a dot per question, how many were right last time, and the warning mark under 50%.
 

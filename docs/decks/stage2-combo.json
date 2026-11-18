@@ -1,0 +1,28 @@
+{
+  "title": "The combo, in tiers",
+  "topic": "stage2",
+  "order": 3,
+  "cards": [
+    {
+      "id": "combo-tiers",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "The combo comes alive",
+      "text": "Right answers in a row now climb from plain through bronze, silver, gold, crystal and diamond, and one more.",
+      "why": "You asked for the combo to feel more alive the higher it gets. Tiers fit with the crown and the trophies, and each one moves a little more than the one before, calmly, with nothing flashy.",
+      "details": "The numbers: plain under 5, bronze at 5, silver at 10, gold at 15, crystal at 25, diamond at 40, and aurora at 60. They're kept in one list, so they're easy to change.\n\nThe films show the top corner of the screen bigger than it is on the phone. On the phone the chip is the same size as before. Each film loops.\n\nIf your phone is set to reduce motion, the tiers still change colour and look, but nothing moves.\n\nThe pictures and films are from the tests, with a made-up topic. The tests jump a run ahead to each tier, so other numbers on them don't always add up.",
+      "parts": [
+        { "id": "plain", "title": "Plain, under 5", "text": "Just the count, as before, with pale pips. Nothing moves yet.", "images": ["../stage2/shots-combo/still-00-plain.png"] },
+        { "id": "bronze", "title": "Bronze, from 5", "text": "Warm metal with a bright band across it. Now and then a small glint at a corner.", "videos": ["../stage2/shots-combo/idle-01-bronze.mp4"], "images": ["../stage2/shots-combo/still-01-bronze.png"] },
+        { "id": "silver", "title": "Silver, from 10", "text": "Cool metal. A slow shine sweeps across it every few seconds.", "videos": ["../stage2/shots-combo/idle-02-silver.mp4"], "images": ["../stage2/shots-combo/still-02-silver.png"] },
+        { "id": "gold", "title": "Gold, from 15", "text": "The shine, a glint now and then, and a soft glow behind it that slowly breathes.", "videos": ["../stage2/shots-combo/idle-03-gold.mp4"], "images": ["../stage2/shots-combo/still-03-gold.png"] },
+        { "id": "crystal", "title": "Crystal, from 25", "text": "Purple, cut into facets. Light runs across the facets in a slow wave, and a few small sparkles come and go.", "videos": ["../stage2/shots-combo/idle-04-crystal.mp4"], "images": ["../stage2/shots-combo/still-04-crystal.png"] },
+        { "id": "diamond", "title": "Diamond, from 40", "text": "Pale and icy, cut like a gem, with a little colour caught in it. Coloured glints take turns, a faint rainbow shine passes, and it glows.", "videos": ["../stage2/shots-combo/idle-05-diamond.mp4"], "images": ["../stage2/shots-combo/still-05-diamond.png"] },
+        { "id": "aurora", "title": "Aurora, from 60", "text": "My idea for the one after diamond: a night-sky chip with northern lights drifting through it, twinkling stars, and a spark circling its edge.", "videos": ["../stage2/shots-combo/idle-06-aurora.mp4"], "images": ["../stage2/shots-combo/still-06-aurora.png"] },
+        { "id": "reach", "title": "Reaching a tier", "text": "The chip swells and settles, a ring and a few bits of the new colour come out from behind it, and the phone ticks. It's over in under a second, then the new tier's motion starts. Here, reaching gold and reaching diamond.", "videos": ["../stage2/shots-combo/reach-gold.mp4", "../stage2/shots-combo/reach-diamond.mp4"] },
+        { "id": "drop", "title": "Losing it", "text": "A wrong answer lets the chip sink a little and fade, with plain ×0 coming up underneath, and the pips empty from the right. No jolt.", "videos": ["../stage2/shots-combo/drop-gold.mp4"] },
+        { "id": "best", "title": "Your best, in its colour", "text": "Your best run's crown takes its tier: at the end of a run, on the Review card in Practice, and in Profile.", "images": ["../stage2/shots-combo/best-summary.png", "../stage2/shots-combo/best-practice.png", "../stage2/shots-combo/best-profile.png"] }
+      ]
+    }
+  ]
+}

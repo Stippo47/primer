@@ -1580,7 +1580,8 @@ try {
     }
     await live();
     let d = await dbg();
-    ok(d.combo === 3 && (await ev(`document.querySelector('.combo').classList.contains('on') && document.querySelector('.combo').innerText.trim() === '×3' && document.querySelectorAll('.cpips i.on').length === 3`)), 'three right in a row: the combo is gold, ×3, with three pips', d);
+    ok(d.combo === 3 && d.chip.tier === 'plain' && (await ev(`document.querySelector('.combo').classList.contains('on') && document.querySelector('.combo').innerText.trim() === '×3' && document.querySelectorAll('.cpips i.on').length === 3`)),
+      'three right in a row: the chip counts ×3, still plain (a tier starts at five), with three pips', d);
     await shot2('41-review-question-combo');
     const missed = d.step;
     asked.push(missed);
@@ -1636,7 +1637,10 @@ try {
       'the cross ends it with a short summary: how many right, the best combo (the run after the miss went longer), what was missed', sum);
     await shot2('44-review-summary');
     await press();
-    ok(!(await bare()) && (await ev(`document.querySelector('.review .crownchip') ? document.querySelector('.review .crownchip').innerText.trim() : ''`)) === `×${runBest}`, `back on Practice, the crown shows the best combo, ×${runBest}`);
+    const comboTier = n => ev(`import('/primer/js/combo.js').then(m => m.tierOf(${n}).id)`);
+    const firstTier = await comboTier(runBest);
+    ok(!(await bare()) && (await ev(`document.querySelector('.review .crownchip') ? document.querySelector('.review .crownchip').innerText.trim() : ''`)) === `×${runBest}`
+      && await ev(`document.querySelector('.review .crownchip').classList.contains('tier-${firstTier}')`), `back on Practice, the crown shows the best combo, ×${runBest}, in its tier's colour (${firstTier})`);
     await shot2('40b-review-card-crown');
     const reviewEvents = (await everyEvent()).filter(e => e.review || e.type === 'review');
     const runIds = new Set(reviewEvents.filter(e => e.type === 'attempt').map(e => e.review));
@@ -1666,6 +1670,95 @@ try {
     await f.tap('[data-go=leave]');
     await sleep(400);
     ok(!(await bare()) && (await ev(`!!document.querySelector('.practice')`)), 'and the cross with nothing answered goes straight back');
+
+    console.log('The combo comes alive: a tier at each threshold, a miss drops it, reduced motion stills it');
+    {
+      const TIERS = await ev(`import('/primer/js/combo.js').then(m => m.TIERS)`);
+      const want = { 0: 'plain', 4: 'plain', 5: 'bronze', 9: 'bronze', 10: 'silver', 14: 'silver', 15: 'gold', 24: 'gold', 25: 'crystal', 39: 'crystal', 40: 'diamond', 59: 'diamond', 60: 'aurora', 999: 'aurora' };
+      const got = {};
+      for (const n of Object.keys(want)) got[n] = await comboTier(n);
+      ok(JSON.stringify(TIERS.map(t => `${t.id}@${t.at}`)) === '["plain@0","bronze@5","silver@10","gold@15","crystal@25","diamond@40","aurora@60"]' && Object.entries(want).every(([n, id]) => got[n] === id),
+        'the tiers, in one table: plain, then bronze at 5, silver at 10, gold at 15, crystal at 25, diamond at 40 and aurora at 60', { TIERS, got });
+      // the chip is one part of its own: anything can show one
+      const alone = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h); const c = new m.Combo(h, { count: 40, pips: false }); const d = c.debug(); c.remove(); h.remove(); return d })`);
+      ok(alone.tier === 'diamond' && alone.text === '×40' && alone.idle && alone.pips === null, 'the chip stands alone: drawn at 40 on a bare element, it is diamond, ×40, already idling', alone);
+      await f.tap('.review [data-go=review]');
+      await live();
+      let c0 = (await dbg()).chip;
+      ok(c0.tier === 'plain' && c0.text === '×0' && !c0.idle && c0.moving === 0, 'a run starts plain, at ×0, with nothing moving', c0);
+      const chipNow = async () => (await dbg()).chip;
+      for (const t of TIERS.slice(1)) {
+        await live();
+        await ev(`__primer.run.setCombo(${t.at - 1}); true`);
+        const before = await chipNow();
+        await answerStep(true);
+        const ticks = await ev('__primer.feel.tickCount()');
+        await press();
+        const vd2 = await verdict();
+        const mid = await chipNow();
+        await sleep(700);
+        const after = await chipNow();
+        const ticked = (await ev('__primer.feel.tickCount()')) - ticks;
+        ok(before.tier !== t.id && vd2.verdict === 'Right' && after.tier === t.id && after.text === `×${t.at}` && after.last && after.last.kind === 'rise' && after.last.tier === t.id && !after.last.still && ticked >= 2
+          && after.pips === 5 && after.pipTier.includes(`tier-${t.id}`) && after.idle && after.moving > 0 && !after.ghost && after.bits === 0,
+          `${t.at} in a row reaches ${t.id}: the chip swells into it with a burst and a tick (the Check press's and its own), its pips fill in its colour, and its idle motion starts`, { before: before.tier, mid, after, ticked });
+        if (t.id === 'gold' || t.id === 'aurora') await shot2(`49-combo-${t.id}`);
+        await press();
+      }
+      // a miss: the chip falls back to plain, softly
+      await live();
+      await ev(`__primer.run.setCombo(17); true`);
+      await answerStep(false);
+      await f.tap('.lfoot .btn');
+      await sleep(120);
+      const falling = await chipNow();
+      await sleep(900);
+      const fallen = await chipNow();
+      ok((await verdict()).verdict === 'Not quite' && falling.ghost && falling.tier === 'plain' && fallen.tier === 'plain' && fallen.text === '×0' && fallen.pips === 0 && !fallen.ghost && fallen.moving === 0 && fallen.last.kind === 'fall',
+        'a miss drops it to plain ×0: the gold chip sinks away and fades, then nothing moves', { falling, fallen });
+      await press();
+      // reduced motion: the tiers change colour, and nothing idles, swells or falls
+      await live();
+      await ev(`__primer.run.setCombo(42); true`);
+      await sleep(200);
+      const moving = (await chipNow()).moving;
+      await b.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+      await sleep(300);
+      const stilled = await chipNow();
+      ok(moving > 0 && stilled.tier === 'diamond' && stilled.moving === 0, `with the system's reduce motion on, the diamond chip keeps its look and its idle motion stops (${moving} moving before, ${stilled.moving} after)`, { moving, stilled });
+      await ev(`__primer.run.setCombo(59); true`);
+      await answerStep(true);
+      await f.tap('.lfoot .btn');
+      await sleep(80);
+      const stillUp = await chipNow();
+      ok(stillUp.tier === 'aurora' && stillUp.still && stillUp.moving === 0 && stillUp.bits === 0 && stillUp.last.kind === 'rise' && stillUp.last.still,
+        'and reaching aurora just changes its colour: no swell, no burst, nothing idling', stillUp);
+      await shot2('49-combo-aurora-still');
+      await press();
+      await live();
+      await answerStep(false);
+      await f.tap('.lfoot .btn');
+      await sleep(80);
+      const stillDown = await chipNow();
+      ok(stillDown.tier === 'plain' && stillDown.text === '×0' && !stillDown.ghost && stillDown.moving === 0, 'and a miss drops it to plain at once, with no fall', stillDown);
+      await b.send('Emulation.setEmulatedMedia', { features: [] });
+      await press();
+      // the run's best (60) shows its tier in the summary, on Practice and in Profile
+      await f.tap('[data-go=leave]');
+      await waitFor(`!!document.querySelector('.rend')`);
+      await sleep(400);
+      const best = (await dbg()).best;
+      ok(best === 60 && await ev(`document.querySelector('.rend .crownbig').classList.contains('tier-aurora') && document.querySelector('.rend .rays').classList.contains('tier-aurora') && document.querySelector('.rend .crownbig').innerText.includes('×60')`),
+        "the summary's crown, its number and the light behind it are in the best run's tier: aurora, ×60", best);
+      await shot2('49-combo-summary');
+      await press();
+      ok(await ev(`document.querySelector('.review .crownchip').classList.contains('tier-aurora') && document.querySelector('.review .crownchip').innerText.trim() === '×60'`), "Practice's crown chip is aurora, ×60");
+      await f.tap('.tab[data-tab=profile]');
+      await sleep(400);
+      ok(await ev(`document.querySelector('#bestcombo').classList.contains('tier-aurora') && document.querySelector('#bestcombo').innerText.trim() === '×60'`), "and so is Profile's best-combo tile");
+      await f.tap('.tab[data-tab=practice]');
+      await sleep(400);
+    }
 
     console.log('A review on the path');
     await ev(`__primer.app.setPref('topic','storms'); true`);

@@ -4,19 +4,20 @@
 // from the part's own description. Answer forms (Inputs) aren't tools: they get one quiet row under the
 // tools, "Answer forms", which opens every form with its settings, so dragging can be tried on the phone.
 import { esc, head } from '../ui.js';
-import { icon, svg, snippet, crown } from '../art.js';
+import { icon, svg, snippet } from '../art.js';
+import { tierClass, tierCrown } from '../combo.js';
 import * as parts from '../parts.js';
 import * as feel from '../feel.js';
 import * as data from '../data.js';
 import { subst } from '../rules.js';
 
-// The Review card's right side: its name, the best combo (a crown, no label), and Start; or, with nothing
-// due, the words "Nothing due" and Review anyway; or, before any lesson, nothing to start.
+// The Review card's right side: its name, the best combo (a crown in the best run's tier, no label), and
+// Start; or, with nothing due, the words "Nothing due" and Review anyway; or, before any lesson, nothing to start.
 function reviewSide() {
   const met = data.metFacts();
   const due = met.filter(x => x.due).length;
   const best = data.memoryNow().best;
-  const chip = best ? `<div class="crownchip">${svg(24, 20, `<g transform="scale(0.8)">${crown()}</g>`)}<span>×${best}</span></div>` : '';
+  const chip = best ? `<div class="crownchip ${tierClass(best)}">${svg(24, 20, `<g transform="scale(0.8)">${tierCrown(best)}</g>`)}<span>×${best}</span></div>` : '';
   if (!met.length) return `<p>Review</p><span class="soon">After a lesson</span><button class="btn" disabled data-sound="none">Start</button>`;
   if (!due) return `<p>Review</p>${chip}<span class="soon nothing">Nothing due</span><button class="btn anyway" data-go="review" data-anyway="1">Review anyway</button>`;
   return `<p>Review</p>${chip}<button class="btn" data-go="review">Start</button>`;

@@ -9,19 +9,20 @@
 //   taught it, and the fact comes back a few questions later (and, in the memory, sooner).
 //   A review on a path: the facts of the lessons before it, each once and a miss once more, then it's done.
 //
-// A combo counts right answers in a row: close holds it, wrong ends it. No lives and, until the shop, no
-// coins. The cross leaves, after a short summary of the run.
+// A combo counts right answers in a row: close holds it, wrong ends it. Its chip comes alive tier by tier as
+// it grows (js/combo.js). No lives and, until the shop, no coins. The cross leaves, after a short summary of
+// the run, its best combo under a crown in that run's tier.
 import { Run, rich } from './lesson.js';
 import * as feel from './feel.js';
 import * as data from './data.js';
 import * as clock from './clock.js';
-import { icon, svg, crown } from './art.js';
+import { icon, svg } from './art.js';
+import { Combo, tierClass, tierCrown } from './combo.js';
 import { askStep, chooseAsk, factKey, taughtAt } from './facts.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const COMEBACK = 3;        // a miss comes back after this many other questions
 const NODE_MOST = 12;      // a review on a path asks at most this many facts
-const PIPS = 5;            // the combo's pips: every five in a row fills them
 
 export class Review extends Run {
   // app: for media, lesson look-backs and the topics. pool: the facts to ask, as { fact, key, topic }.
@@ -48,11 +49,11 @@ export class Review extends Run {
 
   topRow() {
     return `<header class="ltop rtop"><button class="round mute" data-go="leave" aria-label="Close" data-sound="off">${icon.close(20)}</button>
-      <div class="combo" aria-label="Right in a row"><span>×<b>0</b></span></div>
-      <div class="cpips">${'<i></i>'.repeat(PIPS)}</div></header>`;
+      <div class="combohost"></div></header>`;
   }
 
   begin() {
+    this.meter = new Combo(this.root.querySelector('.combohost'), { count: this.combo });
     const first = this.nextStep();
     if (first) this.lesson.steps.push(first);
   }
@@ -108,13 +109,11 @@ export class Review extends Run {
     if (note && this.i === i) this.body.insertAdjacentHTML('afterbegin', `<p class="rnote">${esc(note)}</p>`);
   }
 
-  paintCombo(bump) {
-    const chip = this.root.querySelector('.combo');
-    chip.querySelector('b').textContent = this.combo;
-    chip.classList.toggle('on', this.combo > 0);
-    const filled = this.combo === 0 ? 0 : this.combo % PIPS || PIPS;
-    this.root.querySelectorAll('.cpips i').forEach((p, k) => p.classList.toggle('on', k < filled));
-    if (bump) feel.pop(chip, this.combo % PIPS === 0 ? 0.75 : 0.45);
+  // For the tests and the films: the combo jumped to n, as if that many had been right in a row.
+  setCombo(n) {
+    this.combo = n;
+    this.best = Math.max(this.best, n);
+    this.meter.set(n);
   }
 
   // ---- answering
@@ -133,7 +132,7 @@ export class Review extends Run {
     this.answered++;
     if (kind === 'right') { this.right++; this.combo++; this.best = Math.max(this.best, this.combo); }
     else if (kind === 'wrong') this.combo = 0;
-    this.paintCombo(kind === 'right');
+    this.meter.set(this.combo, { how: kind });
     if (kind !== 'wrong') return;
     const item = this.byKey.get(s.key);
     if (!this.missed.includes(item)) this.missed.push(item);
@@ -201,8 +200,9 @@ export class Review extends Run {
     const end = document.createElement('div');
     end.className = 'lend rend';
     const missed = this.missed.slice(0, 3).map(x => `<li>${rich(x.fact.text)}</li>`).join('');
-    end.innerHTML = `<div class="rays gold"></div>
-      <div class="crownbig">${svg(96, 78, `<g transform="translate(3 2) scale(3)">${crown()}</g>`)}<p class="gold-t">×${this.best}</p></div>
+    const tier = tierClass(this.best);
+    end.innerHTML = `<div class="rays tiered ${tier}"></div>
+      <div class="crownbig ${tier}" data-tier="${tier.slice(5)}">${svg(96, 78, `<g transform="translate(3 2) scale(3)">${tierCrown(this.best)}</g>`)}<p class="tierink">×${this.best}</p></div>
       <p class="big">${done ? 'Review done' : 'Review'}</p>
       <p class="tally">${this.right} of ${this.answered} right</p>
       ${missed ? `<ul class="missed">${missed}</ul>` : ''}`;
@@ -222,13 +222,14 @@ export class Review extends Run {
     if (how === 'closed' && this.answered && this.state !== 'ended') { this.end(); return; }
     this.gone = true;
     if (this.peeking) this.peeking.leave('closed');
+    if (this.meter) this.meter.remove();
     this.remove();
     this.onLeave(how, this.summary || null);
   }
 
   // For the tests: where the run is.
   debug() {
-    return { combo: this.combo, best: this.best, answered: this.answered, right: this.right, step: this.step ? { id: this.step.id, fact: this.step.fact, ask: this.step.askId, topic: this.step.topic, key: this.step.key } : null,
+    return { combo: this.combo, best: this.best, answered: this.answered, right: this.right, chip: this.meter ? this.meter.debug() : null, step:this.step ? { id: this.step.id, fact: this.step.fact, ask: this.step.askId, topic: this.step.topic, key: this.step.key } : null,
       again: this.again.map(a => ({ key: a.item.key, at: a.at })), planned: this.planned || null, ended: this.state === 'ended' };
   }
 }

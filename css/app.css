@@ -214,8 +214,10 @@ html.bare .sheet { padding-bottom: calc(var(--sab) + 18px); }
 .review .btn.anyway { font-size: 15px; padding: 0 8px; }
 .soon { display: inline-flex; margin-top: 6px; padding: 3px 10px; border-radius: 10px; background: var(--plate); border: 2px solid var(--line2); color: var(--muted); font-size: 12px; }
 .soon.nothing { color: var(--soft); }
-.crownchip { display: inline-flex; align-items: center; gap: 6px; height: 30px; margin-top: 5px; padding: 0 10px 0 7px; border-radius: 11px; background: #2c2850; border: 2px solid #6b5a2a; }
-.crownchip span { color: var(--gold); font-size: 15.5px; }
+/* the best combo: its plate, edge and number in the best run's tier (a tier-* class, css/combo.css) */
+.crownchip { display: inline-flex; align-items: center; gap: 6px; height: 30px; margin-top: 5px; padding: 0 10px 0 7px; border-radius: 11px;
+  background: var(--tier-plate, #2c2850); border: 2px solid var(--tier-line, #6b5a2a); }
+.crownchip span { color: var(--tier-ink, var(--gold)); font-size: 15.5px; }
 .h2 { font-size: 20px; margin: 22px 2px 12px; }
 .parts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pcard { display: block; text-align: left; height: 138px; overflow: hidden; padding: 0; transition: transform var(--press-out) ease-out, box-shadow var(--press-out) ease-out; }
