@@ -2044,9 +2044,13 @@ try {
   ok(d.state === 'playing' && d.id === 'turn' && d.at < 1, 'Watch again plays it from the start', { state: d.state, id: d.id, at: d.at });
   await dragTo((await scene()).total);
   ok(await sceneState('ended', 3000), 'dragged to the very end of the bar, it is at its end');
+  // what is under the finger, and every click and press, said if Next doesn't go on (it once didn't, only in a full run)
+  const nextAt = await f.rect('[data-sc=next]');
+  const under = await ev(`(()=>{window.__taps=[];for(const t of ['pointerdown','click'])document.addEventListener(t,e=>__taps.push(t+':'+e.target.tagName+'.'+String(e.target.className).slice(0,30)+(e.defaultPrevented?' prevented':'')),true);const e=document.elementFromPoint(${nextAt.x},${nextAt.y});return e?e.tagName+'.'+String(e.className).slice(0,40):null})()`);
   await f.tap('[data-sc=next]');
   await waitFor(`__primer.run && __primer.run.step && __primer.run.step.id === 'before'`);
-  ok(!(await ev('!!document.querySelector(".video")')) && (await stepId()) === 'before', 'Next goes on to the next node on the path: the lesson');
+  ok(!(await ev('!!document.querySelector(".video")')) && (await stepId()) === 'before', 'Next goes on to the next node on the path: the lesson',
+    { under, taps: await ev('window.__taps'), scene: await ev(`(()=>{const s=document.querySelector('.scene');return s?{cls:s.className,state:s.dataset.state}:null})()`), run: await ev('__primer.run ? (__primer.run.scene ? "scene" : "lesson") : null') });
   ok((await everyEvent()).filter(e => e.lesson === 'engine' && e.type === 'finish').length === 1, 'and the animation was finished once, for that viewing');
   await f.tap('[data-go=leave]');
   await sleep(400);

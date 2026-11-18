@@ -273,3 +273,11 @@ Their words are in primer-data `notes/answers-2026-11-18d.md`.
 - **Wording:** the ask "In a hurricane, when is the heat that drives it let out into the air?" reads badly. Every ask gets a wording pass: plain, short, one idea per question.
 - **The combo should come alive as it grows.** They offered flames, or tiers: nothing, bronze, silver, gold, crystal (purple), diamond and on. My call: tiers, since flames read as a streak, which is ruled out, and tiers sit with the crown and trophies. Each tier's chip is livelier than the last, calmly (nothing jarring).
 - **Avatar round 9:** Plump and Bean picked. Next: variants of those two, including changes to the face.
+
+## 2026-11-18: review read aloud (0.5.1)
+
+My calls, following their "voice in lessons too" and sent as deck `stage2-voice2` for the phone check:
+
+- **Every ask of a fact is voiced**, in review, in tests drawn from facts and in a look back from review, the same Reader and lit captions as lessons. Its lines are keyed by fact and ask (`<fact>.<ask>.<what>`), not by where it's asked, and live in the voice file of the lesson that declares the fact, so one clip serves every place the question shows up.
+- **The phone keeps only the narrator in use** for each topic: the one chosen for its subject in Profile, else the topic's own, else Heart. Clips are still made in all four on the PC, so a change is one download away. Changing narrator pulls straight away, with a note under the narrators. The pilot is 15 MB on the phone instead of 59 MB for all four.
+- **A clip not on the phone yet never breaks anything:** its line plays silently on the reading clock with its captions, never in another narrator's voice. Whether to keep the old narrator's voice until the new one is down instead is asked on the deck (my pick: keep it).

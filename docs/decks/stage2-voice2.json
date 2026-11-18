@@ -1,0 +1,32 @@
+{
+  "title": "Review read aloud",
+  "topic": "stage2",
+  "order": 6,
+  "cards": [
+    {
+      "id": "review-voice",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "Review read aloud",
+      "text": "Review questions are read aloud now, and the phone keeps only the voice you use. Mark each part.",
+      "why": "Review was the one silent part of 0.5. The smaller download means a quarter of the space, and a faster first open on cellular.",
+      "details": "To update: close Primer fully and open it again; Profile shows 0.5.1 at the bottom.\n\nEvery question in a review is read as it opens, with the words lighting as they're said, and the explanation after Check is read too, the same as in lessons. A test's questions and a look back at a lesson step from review are read the same way.\n\nThe hurricane topic's voice comes to about 15 MB on the phone now, down from 32 MB, even though review questions added more lines.",
+      "parts": [
+        { "id": "review", "title": "Questions read aloud", "text": "Each review question is read as it opens, in the narrator of its subject, and so is the explanation after Check. Does the first one start by itself after you tap Review? The later ones should, since each starts from your Continue tap.", "images": ["../stage2/shots-voice2/24-pilot-review-question.png", "../stage2/shots-voice2/24b-pilot-review-wrong.png"] },
+        { "id": "download", "title": "Only your narrator", "text": "Lines are still made in all four narrators, but the phone only brings down the one each subject uses, and deletes the others. Hurricanes: 15 MB instead of 59 MB for all four." },
+        { "id": "change", "title": "Changing narrator", "text": "Picking another narrator in Profile brings its voice down straight away, with a note under the narrators while it does and once it's done. How long does it take on cellular (about 15 MB), and does the note read well?", "images": ["../stage2/shots-voice2/41b-narrator-fetched.jpg"] }
+      ]
+    },
+    {
+      "id": "offline-change",
+      "kind": "question",
+      "rarity": "common",
+      "title": "New narrator, no signal",
+      "text": "If you pick a new narrator with no signal, what should play until its voice comes down?",
+      "why": "Now it plays with no voice, just the captions, and the note says so. The old narrator's clips are still on the phone until then, so it could keep using them instead.",
+      "pick": "Keep the old narrator's voice until the new one is fully down, then switch, with the note saying so.",
+      "details": "This only happens when you change narrator somewhere with no signal, or if the download stops partway. Once there's signal, the new voice comes down at the next check and the old one is deleted.",
+      "images": ["../stage2/shots-voice2/41c-narrator-offline.jpg"]
+    }
+  ]
+}
