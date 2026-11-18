@@ -674,6 +674,18 @@ class Voice(SceneWork):
         self.assertEqual(self.timing(dest, 'with-scene')['lines']['after.ask']['bella']['clip'], t['lines']['after.ask']['bella']['clip'])
 
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_a_clip_still_heard_wrong_can_be_tried_again(self):
+        dest = self.scene_topic(voice=False)
+        self.voice(dest, '--narrators', 'topic')
+        t = self.timing(dest, 'with-scene')
+        t['lines']['after.ask']['bella'].update(check='flag', takes=4)   # as if every take had come out wrong
+        (dest / 'voice' / 'with-scene.json').write_text(json.dumps(t), encoding='utf-8')
+        self.assertIn('0 clip(s) to make', self.voice(dest, '--narrators', 'topic'))
+        self.assertIn('1 clip(s) to make, 9 kept', self.voice(dest, '--narrators', 'topic', '--retry'))
+        entry = self.timing(dest, 'with-scene')['lines']['after.ask']['bella']
+        self.assertEqual((entry['check'], entry['takes']), ('ok', 5))
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
     def test_the_same_words_twice_are_made_once(self):
         dest = self.scene_topic(lesson_change=lambda L: L['steps'][2].update(why=L['steps'][2]['input']['options'][1]['why']), voice=False)
         out = self.voice(dest, '--narrators', 'topic')

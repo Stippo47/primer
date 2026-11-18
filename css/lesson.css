@@ -54,9 +54,10 @@
    yet said are a softer tone, said ones full white (stressed ones gold); the colour eases, nothing moves. */
 .ra .w { transition: color 180ms ease-out; }
 .ra.reading .w { color: #9aa2dc; }
-.ra.reading .w.said { color: var(--text); }
-.ra .key .w, .ra.reading .key .w.said { color: var(--gold); }
-.ra.reading .key .w { color: #c4a45e; }
+.ra.reading .w.said { color: inherit; }
+.sline .key { color: var(--gold); }
+.ltext.reading .key .w, .sline.reading .key .w { color: #c4a45e; }
+.ltext.reading .key .w.said, .sline.reading .key .w.said { color: inherit; }
 .ltext.ra, .lwhy.ra { cursor: pointer; }
 
 /* A narrated scene, played like a video (js/scene.js): the picture fills its box and takes no touches,

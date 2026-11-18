@@ -137,7 +137,8 @@ export class Scene {
     this.root.addEventListener('click', this.onTap);
     this.onBar = e => this.barDown(e);
     this.bar.addEventListener('pointerdown', this.onBar);
-    this.onHide = () => { if (document.visibilityState === 'hidden') this.pause(); };
+    // put away, it pauses, and comes back paused with its controls up
+    this.onHide = () => { if (document.visibilityState === 'hidden' && (this.state === 'playing' || this.state === 'gap')) { this.pause(); this.showUi(); } };
     document.addEventListener('visibilitychange', this.onHide);
     // The voice is fetched and made ready before the scene can start: a tap must start it at once.
     this.urls = await this.clipUrls();

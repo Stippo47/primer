@@ -1,6 +1,7 @@
-// Voice clips for narrated scenes. One clip per line, each a plain <audio> made fresh, and the clip's own
-// clock is the scene's clock: the picture follows wherever the sound has got to, so it can't drift, and an
-// action hung on a word stays on the word however late the sound starts.
+// Voice clips, for narrated scenes and for a lesson's words read aloud. One clip per line, each a plain
+// <audio> made fresh, and the clip's own clock is the clock: a scene's picture, and the words lit in a
+// read-along part, follow wherever the sound has got to, so they can't drift, and an action hung on a word
+// stays on the word however late the sound starts.
 //
 // Rules from the phone test (docs/DECISIONS.md, 2026-11-17 and 11-18):
 // - Every play gets a new player. An <audio> that has played before can end at once with no length after

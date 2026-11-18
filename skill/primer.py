@@ -1464,11 +1464,14 @@ def cmd_voice(a):
             for n in NARRATORS:
                 k = clip_key(n, said)
                 prev = None if a.again else have.get(k)
-                if prev:
+                retry = bool(prev) and a.retry and prev.get('check') == 'flag'
+                if prev and not retry:
                     keep.setdefault(line['id'], {})[n] = {**prev, 'said': said}  # a stress mark moved: the same clip
                 elif n in narrators:
                     if k not in wanted:
+                        # a clip still heard wrong, tried again: its takes carry on from the last, with new seeds and speeds
                         jobs.append({'id': f'j{len(jobs)}', 'scene': key, 'line': line['id'], 'narrator': n, 'text': spoken(said), 'said': said, 'key': k,
+                                     'first': int(prev.get('takes') or 0) if retry else 0,
                                      'engine': NARRATORS[n]['engine'], 'voice': NARRATORS[n]['voice'], 'settings': NARRATORS[n].get('settings', {})})
                     wanted.setdefault(k, []).append((key, line['id'], n, said))
         plans[key] = keep
@@ -1526,7 +1529,7 @@ def cmd_voice(a):
                 wav, clips = work / f'wav{take}', work / f'm4a{take}'
                 clips.mkdir(parents=True, exist_ok=True)
                 for engine in ('kokoro', 'chatterbox'):
-                    mine = [{**j, 'take': take} for j in todo if j['engine'] == engine]
+                    mine = [{**j, 'take': j.get('first', 0) + take} for j in todo if j['engine'] == engine]
                     if not mine:
                         continue
                     jf = work / f'{engine}{take}.json'
@@ -1545,7 +1548,7 @@ def cmd_voice(a):
                     res = heard.get(j['id'])
                     if j['id'] not in best or take_score(res) < take_score(best[j['id']]['res']):
                         best[j['id']] = {'res': res, 'file': clips / f'{j["id"]}.m4a', 'take': take}
-                    best[j['id']]['takes'] = take
+                    best[j['id']]['takes'] = j.get('first', 0) + take
                     if not take_good(res):
                         left.append(j)
                 if left and take < MAX_TAKES:
@@ -1814,6 +1817,7 @@ def main():
     s.add_argument('topic', help='the topic\'s folder')
     s.add_argument('--narrators', default='all', help='all (the default, so any can be chosen on the phone), topic (its own only), or a list: heart,george')
     s.add_argument('--again', action='store_true', help='make every clip again, even those whose words haven\'t changed')
+    s.add_argument('--retry', action='store_true', help='try again the clips still heard wrong, with fresh takes')
     s.add_argument('--tts', help='the folder holding the voice environments: kokoro, chatterbox and check')
     s.add_argument('--python', help=argparse.SUPPRESS)  # one Python for every engine: the tests, with PRIMER_VOICE_FAKE=1
     s.add_argument('--ffmpeg', help='ffmpeg, if it isn\'t on PATH')

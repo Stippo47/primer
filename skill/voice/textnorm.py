@@ -70,6 +70,10 @@ def words(text, spell=False, years=False):
     if spell:
         text = spell_numbers(text, years)
     text = strip_accents(text.lower()).replace("’", "'")
+    # "they're" and "there are" sound the same, and a recogniser writes either
+    text = re.sub(r"\bthey're\b", "there are", text)
+    # "four hundred and eighty" is how a number is said; "four hundred eighty" how it's spelled out here
+    text = re.sub(r"\b(hundred|thousand|million) and (?=(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b)", r"\1 ", text)
     text = re.sub(r"[-–—]", " ", text)
     text = re.sub(r"[^a-z0-9' ]", " ", text).replace("'", "")
     return [SAME.get(w, w) for w in text.split()]
