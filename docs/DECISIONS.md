@@ -223,3 +223,4 @@ The shell ran on the real phone: installed, connected to the private repo, playe
 ### Avatar
 
 - **The problem is the face: everyone is too happy.** And no style offered a side view. Next round: calmer faces with a range of expressions, and side-view characters.
+- **Round 7 (calmer faces, side views): neither landed.** Next: one crow in eight clearly distinct styles, each changing shape language, shading, limbs and eyes, standing in a cheated three-quarter pose turned slightly to the right (not full front, not full profile). "I'll know the look when I see it."
