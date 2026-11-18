@@ -1,0 +1,40 @@
+<!doctype html>
+<!--
+  Primer: the avatar, seventh round. A sketch to react to, not app code.
+  Stills only: no animation, no clothes, no accessories.
+
+  The sixth round's answer: everyone was too happy (big white eyes and an open grin on every face), and no
+  style had shown a character from the side. So:
+  - the person (the Blob body on noodle legs) with ten different faces, all at rest, none grinning, built
+    in different ways: dot eyes, whites, lids, cut eyes, closed eyes; brows or none; a mouth or none;
+  - side views (true profile): the person in Blob, in Noodle and in Blob + noodles, the Lamp monster, and
+    the hippo, each with a calm face, under the front views they are turned from.
+
+    index.html?pic=face-calm          one face. ids: calm, plain, thinking, sleepy, curious, unimpressed,
+                                      determined, shy, quiet, dry
+    index.html?pic=side-person-blob   one side view. ids: person-blob, person-noodle, person-blobnoodle,
+                                      lamp, hippo (front-<id> for the front view it turns from)
+    index.html?lineup=faces-lineup    the ten at room size, numbered
+    index.html?lineup=faces-close     the ten heads, larger, numbered
+    index.html?lineup=side-lineup     the side views under their front views, at room size
+    add &room=1 to a lineup to draw it at 1x, the size it would be on the phone
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/. The style rules are in ../avatar/STYLE-NOTES.md.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, faces and side views</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

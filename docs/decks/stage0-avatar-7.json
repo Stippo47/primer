@@ -1,0 +1,48 @@
+{
+  "title": "Faces and side views",
+  "topic": "stage0",
+  "order": 14,
+  "cards": [
+    {
+      "id": "faces-calmer",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Faces, calmer",
+      "text": "The same person with ten faces at rest. None of them grins. Tick the faces you like.",
+      "why": "Every face so far had big white eyes and an open grin. The face you pick is how the avatar looks while it just stands in your room, and it sets how its other moods get drawn. Only the face changes here: the body, colours and wave are the same in all ten.",
+      "pick": ["calm"],
+      "details": "The same person in all ten: the Blob body on bendy legs from last time, with the same hair, colours and wave. Only the face changes, and none has an open grin.\n\nThey differ in how they're built, not only in mood:\n1 Calm: small dark eyes with no white, set low and wide; short soft brows; a small closed smile.\n2 Plain: eyes with whites looking straight at you, their tops cut flat; straight brows; a flat mouth.\n3 Thinking: looking up and away, one brow up and the other drawn down; the mouth pursed off to one side.\n4 Sleepy: heavy lids that droop at the ends; brows sliding down; a slack little mouth.\n5 Curious: big whites with small pupils looking off to the side; brows up; a small round mouth.\n6 Unimpressed: lids flat across the middle; a side glance; flat brows resting on the lids; a flat mouth that dips at one end.\n7 Determined: dark eyes cut flat along the brows; thick brows angled down to the middle; a set mouth with one corner up.\n8 Shy: small dark eyes looking down and away; brows tipped up in the middle; a blush; a tiny mouth; everything set low.\n9 Quiet: tall dark eyes with a glint, set high. No brows and no mouth.\n10 Dry: eyes closed; one brow raised; a small lopsided smirk.\n\nThey come in two families. 2 to 6 have eyes with whites; 1 and 7 to 10 have dark eyes with no white. The faces in one family could be one character's moods.\n\nThe first picture on the front shows the ten heads larger, side by side. The second shows all ten at the size they'd stand in the room.\n\nMy pick is 1, Calm, as the face the avatar wears at rest. It's the furthest from the happy faces you turned down, it still reads at room size, and it turns to the side well: the side views use it. Faces 7 to 10 are built the same way, so they could be its other moods. My second is 6, Unimpressed, which has the most character.\n\nStill weak: 5 can read as surprised rather than curious; 8 has the smallest features and gets faint at room size; 7 sits between determined and smug. And the wave is cheerful in all ten, which fights the quieter faces a little. The pose was kept the same on purpose, so only the face changes.",
+      "images": ["../../stage0/avatar7/shots/faces-close.png", "../../stage0/avatar7/shots/faces-lineup.png"],
+      "items": [
+        { "id": "calm", "label": "1 Calm", "image": "../../stage0/avatar7/shots/face-calm.png", "text": "Small dark eyes with no white, set low and wide; soft brows; a small closed smile. My pick." },
+        { "id": "plain", "label": "2 Plain", "image": "../../stage0/avatar7/shots/face-plain.png", "text": "Eyes with whites, tops cut flat, looking straight at you; straight brows; a flat mouth." },
+        { "id": "thinking", "label": "3 Thinking", "image": "../../stage0/avatar7/shots/face-thinking.png", "text": "Looking up and away, one brow up, the other drawn down; the mouth pursed to one side." },
+        { "id": "sleepy", "label": "4 Sleepy", "image": "../../stage0/avatar7/shots/face-sleepy.png", "text": "Heavy drooping lids, brows sliding down at the ends, a slack little mouth." },
+        { "id": "curious", "label": "5 Curious", "image": "../../stage0/avatar7/shots/face-curious.png", "text": "Big whites with small pupils looking off to the side, brows up, a small round mouth." },
+        { "id": "unimpressed", "label": "6 Unimpressed", "image": "../../stage0/avatar7/shots/face-unimpressed.png", "text": "Lids flat across the middle, a side glance, flat brows on the lids, a flat mouth. My second." },
+        { "id": "determined", "label": "7 Determined", "image": "../../stage0/avatar7/shots/face-determined.png", "text": "Dark eyes cut flat along the brows, thick brows angled down, a set mouth." },
+        { "id": "shy", "label": "8 Shy", "image": "../../stage0/avatar7/shots/face-shy.png", "text": "Small dark eyes looking down and away, brows tipped up, a blush, a tiny mouth." },
+        { "id": "quiet", "label": "9 Quiet", "image": "../../stage0/avatar7/shots/face-quiet.png", "text": "Tall dark eyes with a glint, set high. No brows and no mouth at all." },
+        { "id": "dry", "label": "10 Dry", "image": "../../stage0/avatar7/shots/face-dry.png", "text": "Eyes closed, one brow raised, a small lopsided smirk. Pleased with itself." }
+      ]
+    },
+    {
+      "id": "side-views",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Side views",
+      "text": "Five characters seen from the side, each under the front view it turns from. Tick the ones that work.",
+      "why": "No round had shown anyone from the side. The side is how the avatar would walk across your room, so the shape you settle on has to work when it turns, not only from the front.",
+      "pick": ["person-noodle", "hippo"],
+      "details": "No round had tried a side view. These are built for the side, not squashed from the front: one eye shows; the nose and chin are in the outline; the ear sits in the middle of the head; the ponytail comes off the back of the crown; the near arm and leg are in front, and the far ones behind, a shade darker. All five face left, so the face stays on the lit side. The near arm is a touch lighter than the body, so it doesn't vanish into a body of the same colour.\n\n1 Blob: the one soft body you picked, from the side.\n2 Noodle: the round head and small body on bendy arms and legs.\n3 Blob + noodles: the build the ten faces are drawn on.\n4 Lamp, the raspberry monster from last round. I chose it because its stalk is made for the side: from the front the stalk had to bend off to one side, but from the side it arches forward and the lamp hangs in front of its face. Its grin is gone: a lidded eye looking up at the lamp, and a small closed mouth.\n5 Hippo, from the ten animals you liked. A hippo is known by its side: the long muzzle, the eye and ear up on top, the nostril at the front. It keeps its calm half-closed eyes.\n\nThe people wear face 1, Calm, from the other card. The picture on the front shows each side view under the front view it was turned from, at the size they'd stand in the room.\n\nMy pick is 2, Noodle. Its head is a shape of its own, so the chin, the back of the head and the ear all work, and its arms and legs stay clear of each other. My second is 5, the hippo, which has the clearest outline of the five.\n\nStill weak: Blob from the side is a tall sack with an arm laid on it, and its legs are only two lumps; the lighter near arm can look stuck on; the Lamp's light belly can read like a chin; the hippo's head sits straight on its body with no neck, as it does from the front.",
+      "images": ["../../stage0/avatar7/shots/side-lineup.png"],
+      "items": [
+        { "id": "person-blob", "label": "1 Blob, side", "image": "../../stage0/avatar7/shots/side-person-blob.png", "text": "The one soft Blob body from the side, a nub arm in front, two lumps for legs." },
+        { "id": "person-noodle", "label": "2 Noodle, side", "image": "../../stage0/avatar7/shots/side-person-noodle.png", "text": "Round head and small body on bendy limbs, from the side. My pick." },
+        { "id": "person-blobnoodle", "label": "3 Blob + noodles, side", "image": "../../stage0/avatar7/shots/side-person-blobnoodle.png", "text": "The Blob body on bendy legs, the build the ten faces are drawn on, from the side." },
+        { "id": "lamp", "label": "4 Lamp, side", "image": "../../stage0/avatar7/shots/side-lamp.png", "text": "The raspberry monster. Its stalk arches forward and the lamp hangs in front of its face." },
+        { "id": "hippo", "label": "5 Hippo, side", "image": "../../stage0/avatar7/shots/side-hippo.png", "text": "Long muzzle, eye and ear up on top, calm half-closed eyes. My second." }
+      ]
+    }
+  ]
+}
