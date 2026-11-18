@@ -1,0 +1,39 @@
+<!doctype html>
+<!--
+  Primer: the avatar, tenth round. A sketch to react to, not app code.
+  Stills only: no animation, no clothes.
+
+  Round nine's picks were 1 Plump and 7 Bean. This round draws six variants of each, still flat vector (flat
+  fills, at most a shade or two, a thin edge of light on some; no gradients, hatching, outlines or glows). Variant
+  1 of each family is round nine's crow unchanged, the reference. The others change the body a little and the
+  face more: eye size and spacing, a dark eye or one with a white, lid height and angle, a glint or none, a small
+  feather brow, the eye's colour, the beak, and how the far eye shows. Every face stays calm, with no mouth. All
+  stand in round nine's pose, room, light and scale. The twelve are in js/crows.js, each with a note.
+
+    index.html?pic=crow-plump-keen         one crow. ids: plump, plump-button, plump-drowse, plump-keen,
+                                           plump-amber, plump-smoke, bean, bean-pip, bean-nap, bean-scout,
+                                           bean-honey, bean-moon
+    index.html?lineup=crow-lineup-plump    one family's six at room size, at one scale (also crow-lineup-bean)
+    index.html?lineup=crow-faces-plump     one family's six heads, large (also crow-faces-bean)
+    index.html?lineup=crow-icons           all twelve at icon size, each fitted into a 64-point square
+    add &room=1 to a lineup to draw it at 1x instead of the phone's 2x
+
+  Modules need http, so serve this folder (any static server). tools/capture.mjs does that itself
+  and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, variants of Plump and Bean</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
