@@ -1,0 +1,26 @@
+{
+  "title": "Primer, on your phone",
+  "topic": "stage1",
+  "order": 1,
+  "priority": 1,
+  "tags": ["first"],
+  "cards": [
+    {
+      "id": "try-it",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The app, to try",
+      "text": "The real app is up, with one tiny lesson in it. Put it on your phone, connect it, and play the lesson. Mark each part.",
+      "why": "Nothing else gets built until this runs on your phone. A few things only your iPhone can answer: sound on silent, the tick, how smooth the globe is, and installing.",
+      "details": "Built: five tabs, the lesson player, two parts (answer forms, and the globe), the press feel (a soft sound, a tick and a spring), and the side on the PC that checks and sends lessons. Home, Shop and the Review run are placeholders for now; they come in later stages. It passed 125 checks in a desktop browser playing it like a phone, but it hasn't been on a real iPhone.\n\nThe lesson, \"Warm water and a spin\", is six steps about where hurricanes form, with its sources in the file. Try getting some wrong on purpose: the equator is meant to be a tempting wrong answer.\n\nThe key: Primer reads and writes your private primer-data repo, the same way Riffle reads riffle-data. You make the key; I never see it.",
+      "parts": [
+        { "id": "install", "title": "Put it on the phone", "text": "Open stippo47.github.io/primer in Safari, then Share, Add to Home Screen. Open it from the Home Screen from then on: Safari and the Home Screen app keep separate data." },
+        { "id": "connect", "title": "Connect it", "text": "Tap Connect. It opens GitHub's key page with most of it filled in. Under repository access pick Only select repositories, then primer-data. Contents must be Read and write. Make the key, copy it, paste it into Primer. It checks the key with a test write and says plainly if anything is wrong.", "images": ["../stage1/shots/tab-profile.png"] },
+        { "id": "lesson", "title": "Play the lesson", "text": "Learn shows Where hurricanes form. Play it through, and get at least one step wrong to see how being wrong looks.", "images": ["../stage1/shots/tab-learn.png", "../stage1/shots/step2-slider-wrong.png", "../stage1/shots/step3-play-wrong-equator.png", "../stage1/shots/step5-choice-right.png"] },
+        { "id": "sound", "title": "Sound and the tick", "text": "With the silent switch on, do presses still make their soft sound? If music is playing from another app, does Primer stop it? Is the tick felt on every press?" },
+        { "id": "globe", "title": "The globe", "text": "Drag it round. Is it smooth, or does it stutter? Practice, Playground, Globe opens it alone with its settings to play with.", "images": ["../stage1/shots/playground-globe.png", "../stage1/shots/tab-practice.png"] },
+        { "id": "offline", "title": "With no signal", "text": "Once it has opened with signal, turn on airplane mode, close it and open it again. It should still open, and the lesson should still play. Answers wait and go up when signal is back." }
+      ]
+    }
+  ]
+}
