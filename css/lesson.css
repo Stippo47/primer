@@ -40,6 +40,38 @@
   background: radial-gradient(200px 200px at 50% 44%, rgba(73, 198, 255, 0.16), transparent 70%); }
 .lsrc { font-size: 12px; color: var(--muted); font-weight: 700; line-height: 1.4; max-width: 340px; }
 
+/* a narrated scene: the picture, the caption under it, and back, play and skip. The parts on the picture
+   take no touches while it plays (a tap pauses); during a wait they do. */
+.lscene { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.scene { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+.sstage { display: flex; flex-direction: column; flex: 1 1 360px; max-height: 470px; }
+.spart { position: relative; flex: 1 1 0; min-height: 0; }
+.spart-in { position: absolute; inset: 0; }
+.scene:not(.waiting) .spart { pointer-events: none; }
+.sbig { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; padding-left: 5px;
+  display: none; align-items: center; justify-content: center; background: var(--cyan); color: var(--ink); box-shadow: 0 5px 0 var(--cyan-edge);
+  transition: transform 60ms ease-out, box-shadow 60ms ease-out; }
+.sbig.down { transform: translateY(4px); box-shadow: 0 1px 0 var(--cyan-edge); }
+.scene[data-state=ready] .sbig, .scene[data-state=paused] .sbig { display: flex; }
+.svoice { position: absolute; right: 10px; top: 10px; width: 38px; height: 38px; border-radius: 12px; }
+.svoice.off { color: var(--muted); }
+.scap { flex: none; display: flex; flex-direction: column; gap: 10px; }
+.spips { display: flex; gap: 5px; }
+.spips i { flex: 1; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.spips b { display: block; height: 100%; border-radius: 3px; background: var(--sky); transform-origin: 0 50%; transform: scaleX(0); }
+.sline { min-height: 2.6em; }
+.sline .w.key { color: var(--gold); }
+.scene.lit .sline .w { color: var(--muted); }
+.scene.lit .sline .w.said { color: var(--text); }
+.scene.lit .sline .w.key.said { color: var(--gold); }
+.snote { font-size: calc(13px * var(--ts)); color: var(--muted); font-weight: 700; line-height: 1.35; }
+.sctl { flex: none; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.sctl .sbtn { width: 56px; height: 56px; border-radius: 18px; }
+.scene[data-state=hold] [data-sc=skip] { color: var(--gold); border-color: var(--gold-edge); }
+.nrow { text-align: left; }
+.nrow .tickmark { width: 18px; display: flex; color: var(--teal); }
+.nrow .small { margin-left: auto; }
+
 /* a chest opened, or a placeholder (review, animation) visited */
 .visit .lend .tally { font-size: 16px; color: var(--muted); max-width: 300px; line-height: 1.35; }
 .lend .rays.gold { background: radial-gradient(220px 220px at 50% 42%, rgba(255, 200, 61, 0.2), transparent 70%); }

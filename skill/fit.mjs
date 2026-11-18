@@ -20,6 +20,10 @@ const lesson = JSON.parse(readFileSync(args.lesson, 'utf8'));
 const topic = { ...JSON.parse(readFileSync(join(TOPIC, 'topic.json'), 'utf8')), id: basename(TOPIC) };
 lesson.id = basename(args.lesson, '.json');
 lesson.topic = topic.id;
+// An animation's file is a scene: it plays as a lesson of that one step.
+if (!lesson.steps && Array.isArray(lesson.lines)) {
+  Object.assign(lesson, { kind: 'animation', steps: [{ id: lesson.id, kind: 'scene', title: lesson.title, parts: lesson.parts, lines: lesson.lines }] });
+}
 topic.lessons = [lesson];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
@@ -62,8 +66,27 @@ try {
     await b.ev(`window.__fitMedia = p => (p.startsWith('topics/') ? '/__data/' : '/__topic/') + p; true`);
     for (let i = 0; i < lesson.steps.length; i++) {
       const s = lesson.steps[i];
-      const plain = await b.ev(`__primer.fit(${JSON.stringify(topic)}, ${JSON.stringify(lesson)}, ${i}, __fitMedia)`);
+      let plain = await b.ev(`__primer.fit(${JSON.stringify(topic)}, ${JSON.stringify(lesson)}, ${i}, __fitMedia)`);
       let fed = null;
+      if (s.kind === 'scene') {
+        // a scene: every line's caption in its turn, and a wait's longest feedback; the worst is the step's
+        for (let j = 0; j < s.lines.length; j++) {
+          await b.ev(`__primer.run.scene.still(${j}); true`);
+          await sleep(60);
+          const m = await b.ev('__primer.run.measure()');
+          if (m.over >= plain.over) plain = { ...m, line: s.lines[j].id };
+          if (s.lines[j].wait) {
+            await b.ev(`__primer.run.preview('wrong', ${JSON.stringify(longestWhy(s.lines[j].wait))}); true`);
+            await sleep(60);
+            const mf = await b.ev('__primer.run.measure()');
+            if (!fed || mf.over > fed.over) fed = mf;
+            await b.ev(`__primer.run.foot.className = 'lfoot'; __primer.run.foot.querySelector('.lfeed').hidden = true; true`);
+          }
+          if (args.shots && sc.name === 'small') await b.shot(join(args.shots, `${String(i + 1).padStart(2, '0')}-${s.id}-${String(j + 1).padStart(2, '0')}-${s.lines[j].id}.png`));
+        }
+        results[i][sc.name] = { over: plain.over, stage: plain.stage, overWithFeedback: fed ? fed.over : 0, line: plain.line };
+        continue;
+      }
       if (s.kind !== 'explain') {
         await b.ev(`__primer.run.preview('wrong', ${JSON.stringify(longestWhy(s))}); true`);
         await sleep(60);
@@ -78,7 +101,8 @@ try {
     let verdict = 'fits', words = 'fits';
     if (sm.over > 0 || bg.over > 0) {
       verdict = 'scrolls';
-      words = `doesn't fit: it scrolls by ${Math.max(sm.over, bg.over)} px on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}. Cut words, or use a smaller form`;
+      const where = r.kind === 'scene' ? ` at line ${(sm.over > 0 ? sm : bg).line}` : '';
+      words = `doesn't fit${where}: it scrolls by ${Math.max(sm.over, bg.over)} px on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}. Cut words, or use a smaller form`;
     } else if (sm.overWithFeedback > 0 || bg.overWithFeedback > 0) {
       verdict = 'tight';
       words = `fits, but with its longest feedback showing it scrolls by ${Math.max(sm.overWithFeedback, bg.overWithFeedback)} px on the smallest iPhone: shorten that line`;

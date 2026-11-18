@@ -4,9 +4,11 @@ Everything the phone reads and writes lives in the private data repo, `primer-da
 
 ```
 index.json                              the list of topics, in order: the app reads it first
-topics/<topic>/topic.json               a topic: its title, level, look and its path of nodes
-topics/<topic>/<node>.json              a lesson, test or exam on the path: its steps and sources
-topics/<topic>/media/<file>             its pictures (and, later, sound)
+topics/<topic>/topic.json               a topic: its title, level, look, narrator and its path of nodes
+topics/<topic>/<node>.json              a lesson, test or exam on the path: its steps and sources; or an animation's scene
+topics/<topic>/media/<file>             its pictures
+topics/<topic>/voice/<scene>.json       a scene's timing file: each line's clip for each narrator, and when each word is said
+topics/<topic>/voice/<scene>/<clip>     its voice clips, one per line per narrator
 progress/<time>-<random>.json           what the phone sends: every attempt and answer, a new file each batch
 progress/connect-check-<time>-<random>.json   the app testing its key; ignore
 read.json                               the writer's note of when progress was last read
@@ -28,15 +30,18 @@ The app shows topics in this order. A topic folder not named here is not shown. 
 
 ```json
 { "v": 1, "title": "Where hurricanes form", "level": "tour", "colour": "cyan", "mark": "swirl",
+  "subject": "Earth science", "narrator": "heart",
   "about": "One sentence on what it covers.",
   "path": [
     { "kind": "lesson", "id": "warm-water", "unit": "Fuel, spin and paths" },
+    { "kind": "animation", "id": "the-engine" },
     { "kind": "lesson", "id": "spin-and-paths" },
     { "kind": "chest", "id": "first-chest" },
     { "kind": "test", "id": "checkup" }
   ] }
 ```
 
+- **subject** and **narrator:** each subject has its own narrator voice (ruled 2026-11-17). `subject` names it in a few words; `narrator` is the voice its scenes are told in: `heart`, `george`, `bella` or `chatterbox-a` (`heart` if left out). Topics of one subject should name the same narrator. On the phone, Profile lists each subject and lets another of the four be chosen for it; that choice wins over the topic's.
 - **level:** `glance` (1 lesson), `tour` (2 to 4), `solid` (5 to 9) or `deep` (10 to 15), counting the lessons on the path. One dial: each step up is both longer and deeper. The app shows it as one word.
 - **colour:** the topic's medallion, one of `orange`, `cyan`, `pink`, `yellow`, `purple`, `teal`.
 - **mark:** the symbol on it, one of `swirl`, `paw`, `bolt`, `flag`, `strings`, `drop`, `leaf`, `globe`, `book`, `star`.
@@ -53,11 +58,11 @@ Each node has a `kind` and an `id` (unique in the topic, and not `topic`). It ma
 | `exam` | A bigger test, at the end of a topic or a unit. At least 5 questions | `<id>.json`, the same shape | a cup, on a larger hexagon |
 | `chest` | A reward for reaching it. Opening it is a small celebration and is recorded; what's inside comes with the shop (stage 4) | none | the chest itself, closed, then open |
 | `review` | A review of everything before it on the path. A placeholder until review is built (stage 2): it says so, and visiting it lets the path go on | none | two arrows round |
-| `animation` | An animation on its own. A placeholder until narrated scenes arrive (stage 2); give it a `title` | none (stage 2 adds one) | a play mark with sound |
+| `animation` | A narrated animation on its own: a scene (below). Without its file it's a placeholder that says it comes later; give that one a `title` | `<id>.json`, a scene file | a play mark with sound |
 
-A lesson's, test's or exam's title is the `title` in its file; a chest, review or animation shows the node's `title` (or "A chest", "Review", "Animation"). A node is done once a lesson, test or exam has been played to its end, or a chest opened, or a review or animation visited; the next node not done is the one to do, and the ones after it can't be started yet. A lesson's own steps show inside it, on its thin bar, never on the path.
+A lesson's, test's, exam's or animation's title is the `title` in its file; a chest, review or placeholder shows the node's `title` (or "A chest", "Review", "Animation"). A node is done once a lesson, test, exam or animation has been played to its end, or a chest opened, or a review or placeholder visited; the next node not done is the one to do, and the ones after it can't be started yet. A lesson's own steps show inside it, on its thin bar, never on the path.
 
-`primer check` refuses a test or exam with no lesson before it, a review with nothing played before it, unknown kinds or fields, repeated ids, and a missing file; it warns about a chest at the very start, two chests in a row, an animation with no title, and a test or exam with too few questions or with explain steps.
+`primer check` refuses a test or exam with no lesson before it, a review with nothing played before it, unknown kinds or fields, repeated ids, and a missing file; it warns about a chest at the very start, two chests in a row, an animation without its scene file, and a test or exam with too few questions or with explain steps.
 
 A topic written before the path existed has `"lessons": ["a", "b"]` instead; the app still reads it (each lesson becomes a lesson node), but `primer check` asks for `path`.
 
@@ -88,6 +93,7 @@ A test or an exam is a file of exactly this shape, played the same way; its end 
 | `explain` | A short paragraph (`text`) and, if given, a `figure` | Nothing: Continue |
 | `check` | A question (`ask`), an optional `figure`, and the Inputs part set by `input` | The step's `answer`, through the Inputs part's marking rules |
 | `play` | A goal (`ask`) and a part to use (`play`) | `goal`, a rule over the part's state |
+| `scene` | A narrated animation on parts: `parts` and `lines`, as in a scene file (below) | Its waits, if it has any, as play steps; Continue wakes at its end. It isn't counted as a question |
 
 Words: `*like this*` stresses a word (drawn gold). A line break stays a line break. Keep `text` and `ask` under about 300 characters; `primer fit` says what really fits.
 
@@ -136,6 +142,56 @@ Words: `*like this*` stresses a word (drawn gold). A line break stays a line bre
 - The Check button wakes once the value the goal reads first exists (a tap has landed), or when the step's own `ready` rule holds.
 - **tries** are required: plausible inputs, as the part's state, and what each should be marked (`right`, `close` or `wrong`). At least one must be a realistic wrong one. `primer check` runs every try through the goal and refuses the lesson if any comes out otherwise, or if no try is wrong.
 
+## A scene
+
+A scene is a script: a list of **lines**. Each line is said by the topic's narrator and always shown as its caption, and the parts on screen do things **at its words**. It is the whole of an animation's file, and the same `parts` and `lines` make a `scene` step inside a lesson. A scene draws nothing itself: it uses the kit's parts, set up and called exactly as a figure is, so the globe that was just narrated at you is the same globe a play step hands you.
+
+```json
+{ "v": 1, "title": "The storm's engine", "version": 1, "minutes": 1,
+  "parts": { "globe": { "part": "globe", "settings": { "style": "warmth", "spin": "locked", "tap": "pin", "view": [5, 12] } } },
+  "lines": [
+    { "id": "late-summer", "text": "This is the Atlantic in late summer, coloured by how warm the sea is.",
+      "do": [ { "at": "Atlantic", "call": ["spinTo", [-45, 20], 1.6] } ] },
+    { "id": "fuel", "text": "A hurricane runs on warm water: about *27 °C* or more.",
+      "say": "A hurricane runs on warm water: about twenty-seven degrees Celsius or more.",
+      "do": [ { "at": "twenty-seven", "call": ["point", [-28, 11], "27 °C or more"] } ] },
+    { "id": "too-cool", "text": "Your turn: tap some sea that's too cool to feed one.",
+      "wait": { "goal": { "read": "tapped.lat", "absBetween": [32, 90] }, "right": "…", "misses": [ … ], "tries": [ … ] } }
+  ],
+  "sources": [ … ] }
+```
+
+- **parts:** the parts on screen, each named: `{ "<name>": { "part", "settings", "calls" } }`, as a figure is written. Two or more share the picture, one above the other.
+- **lines:** 2 to 30, in order. Each has:
+  - **id**, unique in the scene, lower case words joined by hyphens. Its clip is named by it.
+  - **text**, what is said, and its caption. `*stress*` a word as anywhere else. Keep it under about 200 characters: one or two sentences.
+  - **say**, optional: the line as it is read aloud, when that isn't the caption word for word: a number or a symbol read a certain way (`27 °C` said as "twenty-seven degrees Celsius"), a name spelled as it sounds. `primer check` asks for it when the caption has a symbol (°, %, /, &). A line with `say` is captioned whole, its words not lit one by one.
+  - **do**, the actions, each `{ "at": "<words>", "call": ["<name>", arg, …] }`. The call is one in the part's description, as in a figure's `calls`; with two or more parts, name the part before a dot: `["chart.mark", 26]`. **at** is a word, or a few words, of what's said (`say` if given, else `text`), compared without case or punctuation; the action happens as the first of them is said. `"rise#2"` is the second "rise" in the line; `"$start"` (the default, if `at` is left out) and `"$end"` are the line's ends.
+  - An action can run **across** a stretch instead: `{ "from": "<words>", "to": "<words>", "call": [ …, "$p", … ] }`. Every frame from the first word to the end of the last, the call is made again with `"$p"` replaced by how far through it is, from 0 to 1. For a call that takes a share of the way, such as moving a storm along its track; never for one that adds something each time it's called.
+  - **wait**, optional: after the line is said, the scene stops for the person to do something with a part, marked exactly like a play step: `on` (which part, if there are two or more), `goal`, `closeGoal`, `ready`, `right`, `why`, `misses`, `then` and `tries`, as a play step has them. The parts take no touches while the scene plays (a tap pauses it); during a wait they do, and Check wakes once the part has been used. Being wrong costs nothing; Continue carries the scene on either way.
+  - **hold**, optional: extra seconds of quiet after the line, up to 5.
+- **sources:** as a lesson's. A scene step in a lesson cites its lesson's sources in `src`.
+
+**How it plays.** With Voice on, each line is its own clip, and the clip's clock drives the picture: an action happens when the clip reaches its word, however late the sound starts, and pausing the sound pauses the picture. Lines follow one another with a short gap. With Voice off, or once no sound has played, each line runs on a reading clock instead (its words spread over the time they take to read) and waits for a tap at its end. Tapping the picture pauses and plays; back starts the line again (or goes to the one before, near a line's start); skip goes to the next, landing whatever is left of this one at once. Going back mounts the parts again and runs every action before that line at once, with an argument named `seconds` set to 0 and `$p` to 1, so any part works in a scene without a way to rewind of its own.
+
+**Voice.** `primer voice <topic>` makes the clips (see the skill): one per line per narrator, so a narrator chosen on the phone plays offline at once. Each is heard back by a speech recogniser and made again if it says the wrong words, and the time of every word is found by forced alignment. A line whose words have changed since it was voiced plays from its caption until it's voiced again: a clip never says something its caption doesn't. Its files, which `primer voice` writes and `primer send` sends:
+
+```
+voice/<scene>.json                                  the timing file. <scene> is the animation's id, or <lesson>.<step> for a scene step
+voice/<scene>/<line>.<narrator>.<key>.m4a           a clip: AAC-LC, mono, 24 kHz, 64 kbps, about -16 LUFS
+```
+
+```json
+{ "v": 1, "scene": "the-engine",
+  "lines": { "late-summer": { "heart": { "clip": "voice/the-engine/late-summer.heart.3fa2c1d0.m4a", "key": "3fa2c1d0…",
+      "said": "This is the Atlantic in late summer, coloured by how warm the sea is.", "seconds": 3.9,
+      "words": [["This", 0.06, 0.21], ["is", 0.21, 0.3], …], "check": "ok", "heard": "…", "takes": 1 } } } }
+```
+
+`words` has one entry per word of what's said, split on spaces, as written: `[word, start, end]` in seconds from the start of the clip. `key` is a hash of the engine, the voice, its settings, the words and how the clip is encoded: a clip is made again only when its key changes. `check` is `ok` or `flag` (still heard wrong after every take); `heard` is what the recogniser heard.
+
+`primer check` refuses an action whose call or part isn't there, whose `at`, `from` or `to` words aren't in the line, `$p` outside a stretch or a stretch without it, and a wait without a goal, tries or a wrong try; it warns about long captions, symbols without `say`, and lines not voiced yet or changed since.
+
 ### Rules
 
 A rule reads one value from a part's state and tests it. The phone (`js/rules.js`) and `primer check` evaluate them the same way.
@@ -169,10 +225,12 @@ Every event has `v`, `eid` (unique), `at`, `type` and `topic`. Events from playi
 |---|---|---|
 | `start` | `step` | A run of the lesson began, at this step |
 | `seen` | `step` | An Explain step was read and left with Continue |
-| `attempt` | `step`, `kind`, `form`, `value`, `right`, `close`, `why` | A Check or Play step was answered. `value` is what was given: on a check, the Inputs part's value; on a play, the part's whole state. `why` is the line they were shown |
-| `finish` | `right`, `of` | The lesson's end was reached, with that many right of the questions in it |
+| `attempt` | `step`, `kind`, `form`, `value`, `right`, `close`, `why`, and `line` for a scene | A Check or Play step was answered, or a scene's wait. `value` is what was given: on a check, the Inputs part's value; on a play or a wait, the part's whole state. `why` is the line they were shown. A wait's `kind` is `scene`, and `line` is the line that waited |
+| `finish` | `right`, `of` | The lesson's end was reached, with that many right of the questions in it (scenes aren't questions) |
 | `leave` | `step` | They closed the lesson at this step, before its end |
 | `open` | `node`, `kind` | A chest was opened, or a review or animation placeholder visited (no `lesson` or `version`) |
+
+An animation is played as a lesson of one step: its events carry `lesson` (the node's id) and `step` (the same id), and it sends `start`, `seen` when its scene was played to the end, any waits' `attempt`s, and `finish`, or `leave`. A scene step in a lesson is `seen` like an explain step.
 
 **Reading progress:** go through events by `at`. Drop any repeated `eid`: if the app closes mid-send, a batch can go out twice. Being wrong in a lesson costs nothing; read wrong answers for what they say about what was misunderstood.
 

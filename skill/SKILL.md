@@ -13,6 +13,7 @@ Every command is `python "$HOME/.claude/skills/primer/primer.py" <command>`, wri
 primer parts                       every part: its settings, calls, events and state
 primer check <topic folder>        the files, the parts, and the rules for getting it realistically wrong
 primer fit <topic folder>          draws each step on the smallest iPhone, and says what doesn't fit
+primer voice <topic folder>        voices its scenes: a clip per line per narrator, heard back, timed by word
 primer send <topic folder>         checks, shrinks pictures, copies into the data clone, commits and pushes
 primer progress                    what came back since you last read it (--all for everything, --topic t)
 primer progress --mark-read        the same, and records it as read, which their Profile shows
@@ -22,15 +23,29 @@ The file format is in `format.md`, next to this file. Read it before writing a l
 
 ## What a lesson is
 
-A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, worked through one after another: a **lesson**, a **test** (questions on the lessons before it), an **exam** (a bigger test), a **chest** (a reward for reaching it), a **review** of everything before it, or an **animation** on its own (review and animation are placeholders until stage 2). Its **level** is one word, counting the lessons: Glance (1 lesson), Tour (2 to 4), Solid (5 to 9), Deep (10 to 15). A lesson is 5 to 15 minutes: a run of **steps**, one screen each. A test or exam is a file of the same shape, of questions only. A node with a `unit` starts a new banner on the path.
+A **topic** (Where hurricanes form) is a **path** of nodes, each a whole thing, worked through one after another: a **lesson**, a **test** (questions on the lessons before it), an **exam** (a bigger test), a **chest** (a reward for reaching it), a **review** of everything before it (a placeholder for now), or an **animation** on its own: a narrated scene. Its **level** is one word, counting the lessons: Glance (1 lesson), Tour (2 to 4), Solid (5 to 9), Deep (10 to 15). A lesson is 5 to 15 minutes: a run of **steps**, one screen each. A test or exam is a file of the same shape, of questions only. A node with a `unit` starts a new banner on the path.
 
 | Step | What happens |
 |---|---|
 | `explain` | A short paragraph, with a figure: a part (the globe, set up) or a picture |
 | `check` | A quick question, answered with the Inputs part: choice, slider, number, order, match, or tap the spot |
 | `play` | A part with a goal, marked by reading the part's state: "tap where a hurricane would start" |
+| `scene` | A narrated animation on parts: lines said by the narrator and captioned, with actions hung on their words. It can wait for a goal, like a play step |
 
-Write a topic as a folder: `topic.json` with its `path`, one file per lesson, test or exam, and `media/` for pictures. Check it, fit it, send it. A sensible shape: lessons, a chest after a stretch of them, then a short test drawing on them all; an exam at the end of a big topic.
+Write a topic as a folder: `topic.json` with its `path`, one file per lesson, test, exam or animation, and `media/` for pictures. Check it, fit it, voice its scenes, send it. A sensible shape: lessons, a chest after a stretch of them, then a short test drawing on them all; an exam at the end of a big topic; an animation where motion explains something, between the lessons it joins.
+
+## Scenes
+
+A scene is a script (format.md, "A scene"): lines, each `{ "id", "text", "do": [ { "at": "word", "call": [...] } ] }`, on named parts. The writing rules:
+
+- **Voice only where it earns its place:** motion that explains something, a topic's opening overview, a pronunciation. Most steps stay silent text.
+- **One or two sentences a line.** A line is one clip and one caption, and back and skip move a line at a time. Hang each action on the word it illustrates ("at the word *Atlantic*, turn to it"), not on a guess of seconds.
+- **Every line works silent.** The caption is all a silent watcher gets: the picture must make sense with it alone.
+- **Ask before you tell** applies here too: a `wait` asks the person to do something before the scene goes on, marked like a play step, with `tries`. Don't let a scene give away the answer to a question coming up in the next lesson.
+- **Say how it's read.** A caption with a symbol or an awkward number gets `say`, the words as they should be spoken. The checker asks when it sees °, %, / or &.
+- **The narrator** is the topic's (`narrator` in topic.json, with its `subject`); each subject keeps one, and the phone can choose another per subject. Use the same parts the lesson uses next, so the picture carries on.
+
+`primer voice <topic folder>` makes every clip, in all four narrators so a choice on the phone plays offline: Heart, George and Bella with Kokoro, Chatterbox A with Chatterbox's built-in voice. Each clip is heard back by a speech recogniser and made again (up to four takes) if it says the wrong words; then encoded, and every word timed by forced alignment. It makes again only clips whose words, narrator or making changed, and clears clips nothing uses. `--narrators topic` makes the topic's narrator only; `--again` remakes everything. It needs the voice environments (`--tts <folder>` holding `kokoro`, `chatterbox` and `check`, or `PRIMER_TTS`, or `install.py --tts`) and ffmpeg. A clip still heard wrong after every take is flagged by `check`: listen to it, or reword the line. Run `voice` after any change to a scene's words, then `check` (it warns about lines changed since they were voiced), then `fit` (it draws every line's caption) and `send`.
 
 ## Parts
 
@@ -53,8 +68,8 @@ These are rules `primer check` enforces, not hopes:
 - **Facts are right, and sourced.** Every lesson has `sources`; each step cites them in `src`. A step with numbers and no source gets a warning. Say in `checked` when you read it, or `recalled` if you didn't. Say plainly what's known, disputed or wrong.
 - **North American words.** Counterclockwise, not anticlockwise; fall, not autumn; toward, not towards. Keep their Canadian spellings: colour, metres, vapour.
 - **Short.** `text` and `ask` under about 300 characters. `*stress*` a word or two. `primer fit` draws every step in the real app on the smallest iPhone and on theirs; fix anything it says scrolls, and shorten feedback it calls tight.
-- **Voice is for later** (stage 2), and only where it earns its place. Lessons now are silent text with sound effects from the app.
-- **Ids never change** once sent: progress refers to them. Raise the lesson's `version` when steps change in meaning.
+- **Voice only where it earns its place:** scenes (above). Steps are silent text, with sound effects from the app.
+- **Ids never change** once sent: progress refers to them. Raise the lesson's `version` when steps change in meaning. A scene's line ids name its clips: renaming one makes its clips again.
 
 ## Reading progress
 
@@ -62,4 +77,4 @@ These are rules `primer check` enforces, not hopes:
 
 ## Sending
 
-`primer send <topic folder>` refuses a topic with errors, copies its files and the media its lessons use into `topics/<topic>/` in the data clone (pictures shrunk to 1600 pixels on the long side), rewrites `index.json`, commits only those paths and pushes. It stops if the change would hold this computer's user name. `--no-push` commits without pushing.
+`primer send <topic folder>` refuses a topic with errors, copies its files, the media its lessons use and its scenes' voice (each timing file and the clips it names) into `topics/<topic>/` in the data clone (pictures shrunk to 1600 pixels on the long side), rewrites `index.json`, commits only those paths and pushes. It stops if the change would hold this computer's user name. `--no-push` commits without pushing.

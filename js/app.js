@@ -15,6 +15,7 @@ import { practiceScreen, partScreen } from './screens/practice.js';
 import { homeScreen, shopScreen } from './screens/home.js';
 import { profileScreen, connectScreen } from './screens/profile.js';
 import { visitNode } from './screens/node.js';
+import { DEFAULT_NARRATOR } from './scene.js';
 
 const VERSION = '0.2.0'; // keep in step with sw.js
 const root = document.getElementById('app');
@@ -49,7 +50,8 @@ const app = {
   VERSION, root, view, store, sync,
   topics: [],
   // Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen).
-  prefs: { v: 2, voice: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn' },
+  // narrators: the narrator chosen for a subject, overriding its topics' own: { "Earth science": "george" }.
+  prefs: { v: 2, voice: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn', narrators: {} },
   tab: 'learn',
   partNow: null,
   mustInstall: isIOS && !isInstalled,
@@ -75,6 +77,11 @@ const app = {
     try { localStorage.setItem('primer-prefs', JSON.stringify({ text: app.prefs.text })); } catch { /* it just flashes */ }
   },
 
+  // The narrator for a topic: the one chosen in Profile for its subject, else the topic's own.
+  narratorFor(topic) {
+    return (topic.subject && (app.prefs.narrators || {})[topic.subject]) || topic.narrator || DEFAULT_NARRATOR;
+  },
+
   async openLesson(topic, lesson, start = 0) {
     if (run) return;
     paintTabs();
@@ -83,15 +90,17 @@ const app = {
       record,
       media: path => sync.mediaUrl(data.mediaPath(topic.id, path)),
       onLeave: () => { run = null; app.go('learn'); },
+      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic) },
     });
     await run.open();
     return run;
   },
 
-  // A node on the path: a lesson, test or exam plays from `start`; a chest, review or animation opens.
+  // A node on the path: a lesson, test, exam or animation plays from `start`; a chest or review opens (and
+  // an animation without its scene file, as a placeholder).
   openNode(topic, node, start = 0) {
     if (run) return null;
-    if (data.PLAYED.has(node.kind)) return node.file ? app.openLesson(topic, node.file, start) : null;
+    if (data.isPlayed(node)) return node.file ? app.openLesson(topic, node.file, start) : null;
     return visitNode(app, topic, node, { record, onLeave: () => app.go('learn') });
   },
 
@@ -204,7 +213,8 @@ if (isLocalHost) {
     // Draws one lesson, without a data repo and without saving anything: for `primer fit`.
     async fit(topic, lesson, i, media = p => p) {
       if (run) { run.remove(); run = null; }
-      run = new lessonPlayer.Run(view, { topic, lesson, start: i, record: () => {}, media, onLeave: () => { run = null; } });
+      if (!lesson.steps && Array.isArray(lesson.lines)) lesson = data.sceneLesson(lesson, lesson.id, topic.id);
+      run = new lessonPlayer.Run(view, { topic, lesson, start: i, record: () => {}, media, onLeave: () => { run = null; }, voice: { on: () => false } });
       await run.open();
       await new Promise(r => setTimeout(r, 120));
       return run.measure();
