@@ -16,7 +16,7 @@ The top row names the topic, with its medallion. Tapping it opens the list of to
 
 **A chest** opens on a screen of its own: it pops in, its lid springs open with glints, and "What's inside comes with the shop." Opening it is saved and sent up (an `open` event), and the path goes on. Currency is a later stage.
 
-**A review or an animation**, for now, is a placeholder screen that says it comes later (review with stage 2, animations with the voices). Visiting it is saved and sent up, and the path goes on past it.
+**An animation** is a narrated scene on its own (see Scenes, below), played as a lesson of that one step: the cross leaves, the thin bar fills as the lines go by, and Continue at its end goes straight back to the path, the animation done. An animation without its scene file, and **a review** for now, is a placeholder screen that says it comes later; visiting it is saved and sent up, and the path goes on past it.
 
 With no topics yet, Learn says so, with Connect if the app isn't connected.
 
@@ -33,6 +33,32 @@ A thin bar along the top fills as the steps go by, with a spring, and a cross be
 **Checking** marks the answer and slides the feedback up from the bottom: **Right** in green, **Close** in gold, or **Not quite** in pink, with one line of why for the answer given. The answer stays on screen with the truth beside it: the right choice lit, the true value on the slider's scale, the right order numbered, the right partner under each wrong pair, the right spot ringed, and anything the lesson shows after an answer (the globe shades the band where hurricanes start). The button becomes Continue, in the feedback's colour. Being wrong costs nothing: there are no lives, and a wrong answer still moves the lesson on.
 
 **The end** of a lesson: its topic's medallion pops up, "Lesson done" ("Test done", "Exam done"), how many of its questions were right, and where its facts came from. Continue goes back to the path. Tests and exams play exactly as lessons do.
+
+## Scenes
+
+A scene is a narrated animation: a script of lines, each said by the topic's narrator and always shown as a caption, with the parts on the picture (the globe, for now) doing things as the words are said. It's a step in a lesson, or an animation on the path by itself. It uses the same parts as every other step, so nothing is drawn twice.
+
+- **On screen:** the picture on top, with a speaker in its corner; under it a pip for each line, filling as the line goes, and the caption, its words lit as the voice reaches them (a line read differently from its caption, through `say`, is lit whole); then back, play or pause, and skip. The big button at the bottom waits until the end (Continue), except while the scene waits for an answer.
+- **Starting:** it opens still, on its first line, with a big play button over the picture. Nothing sounds until that tap. Its clips were fetched from the phone's storage before the button showed, so the tap starts the voice at once.
+- **The voice is the clock.** Each line is one clip, and each frame reads where that clip has got to: whatever is hung on a word happens when the clip reaches the word. A slow start, a stall or a pause holds the picture with the sound; it never runs on by the time since the tap. Lines follow each other with a short gap (0.45 s, or more where the line asks for it).
+- **Taps:** the picture pauses and plays. Back starts the line again, or goes to the one before when the line has just begun (between lines it starts again the line just said); the picture is rebuilt as it stood at that line's start. Skip goes to the next line, everything left on this one landing at once. Once the end has been reached, Continue stays awake, even while a line is played again. Leaving by the cross stops the voice.
+- **Waits:** a line can stop the scene for the person to do something: "tap some sea that's too cool to feed one". Only then does the globe take touches (while the scene plays, a tap anywhere on the picture pauses it). Check wakes once the globe has been used; the answer is marked as a play step's is, with the same feedback, and Continue carries the scene on, right or wrong.
+- **Silent is a normal way to watch.** With Voice off, each line runs on a reading clock (its words spread over the time they take to read, about a third of a second a word) and the scene waits at the end of each line for a tap to go on: "Tap to go on". The speaker on the picture turns Voice on or off from there, carrying on from the same moment.
+- **When no sound plays** (the phone refuses to start a clip, or its clock stands still for about 2.5 seconds), the scene says so in a line under the caption and reads on from the captions for the rest of the run. The speaker tries the voice again. A clip that ends at once with no length, the fault seen on the phone after coming back to the app, is tried once more on a new player.
+- **A line changed after it was voiced** plays from its caption until it's voiced again: a clip never says something its caption doesn't.
+- **Saved and sent:** an animation sends `start`, any waits' answers, `seen` and `finish` like a lesson; a scene step is `seen` like an explain step, and isn't counted as a question.
+
+### Narration on the phone
+
+- **Players.** Every clip plays on a plain `<audio>`, a new one for every play: resuming after a pause, going back, trying the voice again all make a fresh player (the phone test's rule). An iPhone starts sound only from a tap, and a scene's later lines start by themselves, so at every tap that starts or carries on the scene, each clip still to come gets its new player then, started and stopped at once (nothing is heard), which lets it start later without a tap. If the phone refuses one anyway, the scene reads on from the captions, and a tap on the speaker tries again.
+- **The phone's sound is left alone.** Nothing sets `navigator.audioSession`; the tests check it's never touched. A plain `<audio>` played through the silent switch on the phone test without that claim, so narration should be heard with the switch on silent.
+- **Offline.** Clips are files in the data repo beside the lesson (`voice/`), so they come down with the lesson's media and are kept on the phone; a scene plays its voice with no signal. A clip that hasn't come down yet is read from its caption, and the line under it says the voice comes when there's signal.
+- **Narrators.** Each subject has its own narrator, named by its topics (Heart unless a topic says otherwise). Profile lists the subjects under Narrators, each with its narrator; tapping one offers all four (Heart, George, Bella, Chatterbox A), the topic's own marked. A choice is kept and wins for every scene in that subject. Clips are made in all four voices on the PC, so a new choice plays at once, offline too.
+- **What only the real phone can answer:**
+  - Whether a speaking clip **pauses the person's music** (WebKit may treat a playing `<audio>` as media and interrupt other audio), ducks it, or plays over it. And whether it resumes their music after the clip, or after the scene. If narration does stop their music, the choices are to accept it while a scene plays, or to play voice through Web Audio, which mixes with other audio but follows the silent switch.
+  - Whether the start-and-stop at the tap really lets the **later lines start by themselves** on iOS 18, or whether each line asks for a tap (it falls back to reading the captions, with a line saying so, rather than going quiet).
+  - How late the **first clip after installing** starts (the phone test saw 1.3 seconds once): the picture waits for it, by design; whether that wait feels broken.
+  - Whether a clip **survives the app being put away and brought back** mid-scene (the scene pauses when hidden; the next tap carries on, on a new player).
 
 Every step started, read, answered and finished is saved on the phone and queued to go up: see Storage and sync.
 
@@ -52,7 +78,9 @@ Two tiles: lessons finished, and questions answered right.
 
 **Knowledge** lists each topic with a bar and a number. Until review arrives, the number is its questions' last answers: right counts in full, close a half, wrong nothing, and each fades by half every two weeks since it was answered. The colour runs from blue (well remembered) to grey, and a topic under 50% that has been tried has a warning mark. There's no word for fading, and no streak. Tapping a topic opens its details: when it was last studied, how many were right last time, a dot for each question, and a button to its path.
 
-**Settings:** Voice, Effects and Music switches, and the text size (three sizes of A). Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear from a board). An install from before 0.2 has Effects turned off once, since its saved settings can't tell a chosen "on" from the old default; from 0.2 on, Effects is on only if the switch was turned on. Voice and Music have nothing to play yet.
+**Settings:** Voice, Effects and Music switches, and the text size (three sizes of A). Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear from a board). An install from before 0.2 has Effects turned off once, since its saved settings can't tell a chosen "on" from the old default; from 0.2 on, Effects is on only if the switch was turned on. Voice is the narration in scenes (on to start with); Music has nothing to play yet.
+
+**Narrators:** each subject the topics name, with its narrator: the topics' own, or one chosen here from the four (see Scenes).
 
 **Sending:** whether it's connected, Connect or Disconnect, what's waiting to send and what has been sent, Send now and Check for lessons, any problem in plain words, and when the writer last read the progress. Then whether the phone has promised to keep Primer's data, and the version.
 
@@ -67,9 +95,9 @@ One module (`js/feel.js`) gives every press the same three things:
 
 Rules from the phone test, kept everywhere: no live blur on anything that moves (the globe's glow is a soft gradient, a lifted order item's shadow is solid); popovers are placed by script; nothing depends on the tick. Anything dragged moves by transform on a layer of its own, at whole screen pixels, so nothing under it is repainted as it goes and nothing is left behind (the slivers seen on the phone).
 
-### Sound in stage 2: narration
+### Narration
 
-Voice clips will be plain `<audio>` elements, a new one made at each tap (the phone test's rule: every play gets a new player). The phone test heard such clips with the silent switch on, with the app claiming nothing (session `auto`), so narration can ignore the switch without the claim that stopped the music. Whether a speaking clip pauses the person's music, or ducks it, or plays over it, is for the phone to show: WebKit may treat a playing `<audio>` as media and interrupt other audio while it plays, and that has to be tried on the phone in stage 2 before narration leans on it. If it does pause the music, the choices then are to accept a pause while the voice speaks, or to play voice through Web Audio (which mixes, but follows the silent switch).
+Voice clips are plain `<audio>` elements, a new one for every play (the phone test's rule), and nothing claims the phone's sound: see Scenes, "Narration on the phone", for how it behaves and what only the phone can answer (above all, whether a speaking clip pauses the person's music).
 
 ## Parts
 
@@ -105,4 +133,6 @@ On a local test server only: `?api=` points the app at a stand-in for GitHub, `?
 
 ## The writer's side
 
-`skill/` holds the `primer` skill, installed with `python skill/install.py`: `parts`, `check`, `fit`, `send` and `progress`. `skill/SKILL.md` has the commands and the rules for writing. Its fit check draws each step in the real app, in headless Edge, rather than estimating, so it can't be the optimist.
+`skill/` holds the `primer` skill, installed with `python skill/install.py [--tts <folder>]`: `parts`, `check`, `fit`, `voice`, `send` and `progress`. `skill/SKILL.md` has the commands and the rules for writing. Its fit check draws each step in the real app, in headless Edge, rather than estimating, so it can't be the optimist; for a scene it draws every line's caption.
+
+`voice` makes a scene's clips on the PC's graphics card, in the voice environments stage 0 set up (a folder holding `kokoro`, `chatterbox` and `check`, named by `--tts`, `PRIMER_TTS` or `install.py --tts`; never written into the code): Kokoro for Heart, George and Bella, Chatterbox's built-in voice for Chatterbox A. Each take is encoded as stage 0's clips were (AAC-LC, mono, 24 kHz, 64 kbps, about -16 LUFS, trimmed to its sound), heard back with faster-whisper, made again up to four times if its words come out wrong, and timed word by word by forced alignment (wav2vec2) against the finished clip, so the times are the phone's. The scripts that load the models (`skill/voice/say.py` and `hear.py`) run inside those environments; the skill only calls them. A clip is made again only when its words, narrator or making change.

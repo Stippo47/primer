@@ -5,6 +5,7 @@ import { esc, head, sheet, when } from '../ui.js';
 import { icon, svg, medallion, hazard, MARK } from '../art.js';
 import * as data from '../data.js';
 import * as feel from '../feel.js';
+import { NARRATORS } from '../scene.js';
 
 export const LOW = 50;
 // well remembered is blue; forgotten is grey
@@ -37,6 +38,9 @@ export function profileScreen(app) {
       <div class="wn">${k.tried && k.pct < LOW ? svg(22, 22, hazard()) : ''}</div></button>`;
   }).join('');
   const toggle = (key, label) => `<div class="srow"><p>${label}</p><button class="toggle" data-pref="${key}" aria-pressed="${!!prefs[key]}" aria-label="${label}" data-sound="${prefs[key] ? 'off' : 'on'}"></button></div>`;
+  // Each subject has its own narrator, named by its topics; one chosen here speaks for the whole subject.
+  const subjects = [...new Map(app.topics.filter(t => t.subject).map(t => [t.subject, t])).values()];
+  const narrators = subjects.map(t => `<div class="srow"><p>${esc(t.subject)}</p><button class="btn sm ghost" data-narrator="${esc(t.subject)}" data-sound="select">${esc(NARRATORS[app.narratorFor(t)] || app.narratorFor(t))}</button></div>`).join('');
   const trouble = app.store.troubleNow();
   view.innerHTML = `<section class="screen profile">${head('<span class="title">Profile</span>')}
     <div class="tiles"><div class="plate">${book}<p class="sky-t" id="lessonsdone">${data.lessonsDone(app.topics)}</p></div><div class="plate">${tick}<p style="color:#7df0cf">${rightCount}</p></div></div>
@@ -46,6 +50,7 @@ export function profileScreen(app) {
       ${toggle('voice', 'Voice')}${toggle('effects', 'Effects')}${toggle('music', 'Music')}
       <div class="srow"><p>Text size</p><div class="seg" role="group" aria-label="Text size">${['s', 'm', 'l'].map((s, i) => `<button class="${prefs.text === s ? 'on' : ''}" data-size="${s}" data-sound="select" style="font-size:${[11, 13.5, 16][i]}px" aria-label="${['Small', 'Middle', 'Large'][i]} text">A</button>`).join('')}</div></div>
     </div>
+    ${narrators ? `<p class="over">Narrators</p><div class="plate settings" id="narrators">${narrators}</div>` : ''}
     <p class="over">Sending</p>
     <div class="plate settings">
       <div class="srow"><p>${icon.key(18).replace('<svg ', '<svg style="display:inline;vertical-align:-3px;margin-right:6px;color:#6fd6ff" ')}${st.connected ? `Connected to ${esc(app.sync.REPO)}` : 'Not connected'}</p>
@@ -78,6 +83,8 @@ export function profileScreen(app) {
     }
     const s = e.target.closest('.seg [data-size]');
     if (s) { app.setPref('text', s.dataset.size); profileScreen(app); return; }
+    const n = e.target.closest('[data-narrator]');
+    if (n) { pickNarrator(app, subjects.find(t => t.subject === n.dataset.narrator)); return; }
     const row = e.target.closest('[data-topic]');
     if (row) { topicDetail(app, app.topics.find(x => x.id === row.dataset.topic)); return; }
     const go = e.target.closest('[data-go]');
@@ -97,6 +104,25 @@ export function profileScreen(app) {
       if (last) last.remove();
     }
   };
+}
+
+// The four narrators for a subject. Its topics name one; choosing another speaks for every scene in it.
+// Clips are made in all four on the PC, so a choice plays offline at once.
+function pickNarrator(app, topic) {
+  if (!topic) return;
+  const now = app.narratorFor(topic), own = topic.narrator || '';
+  const s = sheet(app.root, `<p style="font-size:20px">${esc(topic.subject)}</p><p class="fine" style="padding-top:4px">Who narrates its animations.</p>
+    <div class="plate settings">${Object.entries(NARRATORS).map(([id, name]) => `<button class="srow nrow" data-pick="${esc(id)}" data-sound="select" aria-pressed="${id === now}" style="width:100%">
+      <p>${esc(name)}</p><span class="small">${id === own ? 'its topics\' own' : ''}</span><span class="tickmark">${id === now ? icon.check(18) : ''}</span></button>`).join('')}</div>`);
+  s.el.addEventListener('click', e => {
+    const b = e.target.closest('[data-pick]');
+    if (!b) return;
+    const chosen = { ...(app.prefs.narrators || {}) };
+    if (b.dataset.pick === own) delete chosen[topic.subject]; else chosen[topic.subject] = b.dataset.pick;
+    app.setPref('narrators', chosen);
+    s.close();
+    profileScreen(app);
+  });
 }
 
 function topicDetail(app, topic) {

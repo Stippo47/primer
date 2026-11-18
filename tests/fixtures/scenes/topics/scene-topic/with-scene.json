@@ -1,0 +1,25 @@
+{
+ "v": 1,
+ "title": "A lesson with a scene",
+ "version": 1,
+ "steps": [
+  { "id": "before", "kind": "explain", "title": "Before", "text": "A made-up step before the scene.", "src": ["made-up"] },
+  { "id": "tour", "kind": "scene", "title": "A short scene",
+    "parts": {
+     "globe": { "part": "globe", "settings": { "style": "day", "spin": "locked", "tap": "none", "view": [0, 30] } },
+     "warmth": { "part": "inputs", "settings": { "form": "slider", "min": 10, "max": 40, "unit": "°C", "start": 14, "picture": "warmth" } }
+    },
+    "lines": [
+     { "id": "one", "text": "Here is *France*.", "do": [ { "at": "France", "call": ["globe.highlight", ["France"], "pink"] } ] },
+     { "id": "two", "text": "And here is Peru, far away.", "say": "And here is Peru, far far away.",
+       "do": [ { "at": "Peru", "call": ["globe.spinTo", "Peru", 0.5] }, { "at": "away", "call": ["warmth.reveal", 27] } ] }
+    ],
+    "src": ["made-up"] },
+  { "id": "after", "kind": "check", "title": "After", "ask": "Which was lit up first?",
+    "input": { "form": "choice", "options": [
+     { "id": "france", "text": "France", "right": true },
+     { "id": "peru", "text": "Peru", "why": "Peru came second.", "tempting": "It was the last one seen." } ] },
+    "src": ["made-up"] }
+ ],
+ "sources": [ { "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" } ]
+}

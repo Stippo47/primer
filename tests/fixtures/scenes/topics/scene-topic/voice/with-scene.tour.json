@@ -1,0 +1,76 @@
+{
+ "v": 1,
+ "scene": "with-scene.tour",
+ "units": "seconds from the start of each clip; words are [word as written, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 64 kbps at about -16 LUFS.",
+ "lines": {
+  "one": {
+   "george": {
+    "clip": "voice/with-scene.tour/one.george.d6a39c3f.m4a",
+    "key": "d6a39c3f385b46ece402f57f7393678ab2873af6",
+    "said": "Here is *France*.",
+    "seconds": 1.023,
+    "words": [
+     ["Here", 0.15, 0.33],
+     ["is", 0.374, 0.554],
+     ["France.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Here is France.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene.tour/one.bella.5abacbc5.m4a",
+    "key": "5abacbc5cb3eee1bc6d682d06223d5c017ca8ea2",
+    "said": "Here is *France*.",
+    "seconds": 1.023,
+    "words": [
+     ["Here", 0.15, 0.33],
+     ["is", 0.374, 0.554],
+     ["France.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Here is France.",
+    "takes": 1
+   }
+  },
+  "two": {
+   "george": {
+    "clip": "voice/with-scene.tour/two.george.3879451b.m4a",
+    "key": "3879451b5595b83887baa7f317d405a62587dfdf",
+    "said": "And here is Peru, far far away.",
+    "seconds": 2.223,
+    "words": [
+     ["And", 0.15, 0.364],
+     ["here", 0.418, 0.632],
+     ["is", 0.685, 0.899],
+     ["Peru,", 0.953, 1.167],
+     ["far", 1.221, 1.435],
+     ["far", 1.488, 1.702],
+     ["away.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "And here is Peru, far far away.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/with-scene.tour/two.bella.658b2032.m4a",
+    "key": "658b203267eb481da0a8f7633e796f1da113373c",
+    "said": "And here is Peru, far far away.",
+    "seconds": 2.223,
+    "words": [
+     ["And", 0.15, 0.364],
+     ["here", 0.418, 0.632],
+     ["is", 0.685, 0.899],
+     ["Peru,", 0.953, 1.167],
+     ["far", 1.221, 1.435],
+     ["far", 1.488, 1.702],
+     ["away.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "And here is Peru, far far away.",
+    "takes": 1
+   }
+  }
+ }
+}

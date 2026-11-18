@@ -1,8 +1,10 @@
 // The lesson player, for every node that's played step by step: a lesson, a test or an exam (`kind` on
-// the file the library hands it). Each is a run of steps, one screen each:
+// the file the library hands it), and an animation, which is a lesson of one scene step. Each is a run of
+// steps, one screen each:
 //   explain  a short paragraph and a figure
 //   check    a quick question, answered with the Inputs part
 //   play     a part with a goal, marked by reading the part's state
+//   scene    a narrated animation on parts (js/scene.js), which can wait for a goal like a play step
 // A thin bar and a cross on top; a Check button that becomes Continue; plain feedback: right, close, or
 // wrong with the one line of why for the answer given. Being wrong costs nothing. Every attempt is handed
 // to `record`, which saves it and queues it to go up.
@@ -10,6 +12,7 @@ import * as parts from './parts.js';
 import * as feel from './feel.js';
 import { holds, read, subst } from './rules.js';
 import { icon, medallion } from './art.js';
+import { Scene, DEFAULT_NARRATOR } from './scene.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // *words* are stressed, as in the scene scripts; a line break stays a line break.
@@ -73,8 +76,9 @@ export function readyOf(step, state) {
 export class Run {
   // view: the element to draw in. topic, lesson: from the library. start: the step to begin at.
   // record(event): saves and queues an attempt. media(path): a media path's address. onLeave(how).
-  constructor(view, { topic, lesson, start = 0, record = () => {}, media = p => p, onLeave = () => {} }) {
-    Object.assign(this, { view, topic, lesson, record, media, onLeave });
+  // voice: for scenes, { on() (the Voice setting), set(on), narrator (chosen for the topic's subject) }.
+  constructor(view, { topic, lesson, start = 0, record = () => {}, media = p => p, onLeave = () => {}, voice = {} }) {
+    Object.assign(this, { view, topic, lesson, record, media, onLeave, voice });
     this.i = Math.max(0, Math.min(start, lesson.steps.length - 1));
     this.mounted = [];
     this.results = {};
@@ -120,7 +124,8 @@ export class Run {
   clearParts() {
     for (const p of this.mounted) try { p.remove(); } catch { /* already gone */ }
     this.mounted = [];
-    this.figure = this.input = this.play = null;
+    if (this.scene) this.scene.remove();
+    this.figure = this.input = this.play = this.scene = null;
   }
 
   // Mounts a part described by a step ({ part, settings, calls }) into el.
@@ -139,6 +144,7 @@ export class Run {
     this.progressTo(i / this.lesson.steps.length, i > 0);
     this.foot.className = 'lfoot';
     this.foot.querySelector('.lfeed').hidden = true;
+    if (s.kind === 'scene') return this.showScene(i);
     const text = s.kind === 'explain' ? s.text : s.ask;
     const fig = s.kind === 'play' ? s.play : s.figure;
     const small = s.kind === 'check' && s.input && s.input.form !== 'slider';
@@ -170,6 +176,51 @@ export class Run {
     this.view.dispatchEvent(new CustomEvent('stepshown', { detail: { i, id: s.id } }));
   }
 
+  // A scene step: the scene drives the big button (Check during a wait, Continue once it has ended) and
+  // the feedback, exactly as a play step's. An animation on the path is a lesson of this one step, and its
+  // scene fills the thin bar as it goes.
+  async showScene(i) {
+    const s = this.step;
+    this.body.innerHTML = '<div class="lscene"></div>';
+    this.body.scrollTop = 0;
+    this.setButton('continue', false);
+    const ids = { topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id };
+    const host = {
+      // null while it plays: Continue, asleep until the scene has once reached its end
+      button: (kind, enabled = false, colour = '') => {
+        this.setButton(kind || 'continue', kind ? enabled : !!(this.scene && this.scene.seenEnd));
+        if (colour) this.btn.className = `btn ${colour}`;
+      },
+      feedback: (kind, why) => this.feedback(kind, why),
+      clearFeedback: () => { this.foot.className = 'lfoot'; this.foot.querySelector('.lfeed').hidden = true; },
+      attempt: a => this.record({ type: 'attempt', ...ids, kind: 'scene', line: a.line, form: a.form, value: a.value, right: a.right, close: a.close, why: a.why }, { right: a.right, close: a.close }),
+      progress: this.lesson.steps.length === 1 ? share => { this.share = share; this.bar.style.transform = `scaleX(${share})`; } : null,
+      ended: () => { this.state = 'ready'; },
+    };
+    const scene = new Scene(this.body.querySelector('.lscene'), s, host, {
+      timing: s.timing || null,
+      narrator: this.voice.narrator || this.topic.narrator || DEFAULT_NARRATOR,
+      fallback: this.topic.narrator || DEFAULT_NARRATOR,
+      voice: () => (this.voice.on ? this.voice.on() : true),
+      setVoice: on => this.voice.set && this.voice.set(on),
+      media: this.media,
+    });
+    this.scene = scene;
+    await scene.open();
+    if (this.i !== i || this.scene !== scene) return;
+    this.view.dispatchEvent(new CustomEvent('stepshown', { detail: { i, id: s.id } }));
+  }
+
+  // The feedback, slid up from the bottom: right, close or not quite, and the one line of why.
+  feedback(kind, why) {
+    const feed = this.foot.querySelector('.lfeed');
+    feed.innerHTML = `<div class="badge">${kind === 'right' ? icon.check(22) : kind === 'close' ? icon.star(20) : icon.close(18)}</div>
+      <div><p class="lverdict">${{ right: 'Right', close: 'Close', wrong: 'Not quite' }[kind]}</p>${why ? `<p class="lwhy">${rich(why)}</p>` : ''}</div>`;
+    feed.hidden = false;
+    this.foot.className = `lfoot ${kind}`;
+    feel.glide(this.foot, v => `translateY(${v}px)`, 60, 0);
+  }
+
   setButton(kind, enabled) {
     const words = { check: 'Check', continue: 'Continue', finish: 'Continue' };
     this.btn.textContent = words[kind];
@@ -185,10 +236,15 @@ export class Run {
   }
 
   go() {
+    // during a scene's wait, the button is the scene's: Check, then Continue to carry the scene on
+    if (this.scene && (this.scene.state === 'wait' || this.scene.state === 'marked')) {
+      if (this.btn.dataset.kind !== 'check') feel.press(this.btn, 'tap');
+      return this.scene.button();
+    }
     if (this.btn.dataset.kind === 'check') return this.check();
     feel.press(this.btn, 'tap');
     const s = this.step;
-    if (s.kind === 'explain') {
+    if (s.kind === 'explain' || s.kind === 'scene') {
       this.results[s.id] = { seen: true };
       this.record({ type: 'seen', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, step: s.id }, { seen: true });
     }
@@ -214,12 +270,7 @@ export class Run {
     if (target) for (const c of s.then || []) target.run(c);
     feel.sound(kind);
     feel.tick();
-    const feed = this.foot.querySelector('.lfeed');
-    feed.innerHTML = `<div class="badge">${kind === 'right' ? icon.check(22) : kind === 'close' ? icon.star(20) : icon.close(18)}</div>
-      <div><p class="lverdict">${{ right: 'Right', close: 'Close', wrong: 'Not quite' }[kind]}</p>${res.why ? `<p class="lwhy">${rich(res.why)}</p>` : ''}</div>`;
-    feed.hidden = false;
-    this.foot.className = `lfoot ${kind}`;
-    feel.glide(this.foot, v => `translateY(${v}px)`, 60, 0);
+    this.feedback(kind, res.why);
     // The feedback takes room from the step: keep the answer and the truth beside it in view.
     if (this.input) requestAnimationFrame(() => this.body.scrollTo({ top: this.body.scrollHeight, behavior: 'smooth' }));
     this.setButton(this.i + 1 < this.lesson.steps.length ? 'continue' : 'finish', true);
@@ -234,9 +285,11 @@ export class Run {
     this.state = 'ended';
     this.clearParts();
     this.progressTo(1);
-    const asked = this.lesson.steps.filter(s => s.kind !== 'explain');
+    const asked = this.lesson.steps.filter(s => s.kind === 'check' || s.kind === 'play');
     const right = asked.filter(s => this.results[s.id] && this.results[s.id].right).length;
     this.record({ type: 'finish', topic: this.topic.id, lesson: this.lesson.id, version: this.lesson.version || 1, right, of: asked.length }, null, 'finish');
+    // An animation on its own goes straight back to the path: its scene was the whole of it.
+    if (this.lesson.kind === 'animation') { this.leave('finished'); return; }
     feel.sound('done');
     feel.tick();
     const sources = (this.lesson.sources || []).map(x => x.by || x.title).filter(Boolean);

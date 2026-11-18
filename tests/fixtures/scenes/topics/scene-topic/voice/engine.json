@@ -1,0 +1,170 @@
+{
+ "v": 1,
+ "scene": "engine",
+ "units": "seconds from the start of each clip; words are [word as written, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 64 kbps at about -16 LUFS.",
+ "lines": {
+  "turn": {
+   "george": {
+    "clip": "voice/engine/turn.george.d9a05567.m4a",
+    "key": "d9a05567bab6c4f0298cc0a73d825335a2a57528",
+    "said": "First the globe turns to *Brazil*, and then it lights up.",
+    "seconds": 3.424,
+    "words": [
+     ["First", 0.15, 0.374],
+     ["the", 0.429, 0.653],
+     ["globe", 0.709, 0.932],
+     ["turns", 0.988, 1.212],
+     ["to", 1.268, 1.491],
+     ["Brazil,", 1.547, 1.771],
+     ["and", 1.826, 2.05],
+     ["then", 2.106, 2.329],
+     ["it", 2.385, 2.609],
+     ["lights", 2.665, 2.888],
+     ["up.", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "First the globe turns to Brazil, and then it lights up.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/engine/turn.bella.8b9dfcf1.m4a",
+    "key": "8b9dfcf1fbf3ebdcab2a43c90f47a676d49caba2",
+    "said": "First the globe turns to *Brazil*, and then it lights up.",
+    "seconds": 3.424,
+    "words": [
+     ["First", 0.15, 0.374],
+     ["the", 0.429, 0.653],
+     ["globe", 0.709, 0.932],
+     ["turns", 0.988, 1.212],
+     ["to", 1.268, 1.491],
+     ["Brazil,", 1.547, 1.771],
+     ["and", 1.826, 2.05],
+     ["then", 2.106, 2.329],
+     ["it", 2.385, 2.609],
+     ["lights", 2.665, 2.888],
+     ["up.", 2.944, 3.168]
+    ],
+    "check": "ok",
+    "heard": "First the globe turns to Brazil, and then it lights up.",
+    "takes": 1
+   }
+  },
+  "storm": {
+   "george": {
+    "clip": "voice/engine/storm.george.16d77f3e.m4a",
+    "key": "16d77f3eeb444268e0eb8975bd95a4959113a6fe",
+    "said": "A storm appears over the open sea.",
+    "seconds": 2.223,
+    "words": [
+     ["A", 0.15, 0.364],
+     ["storm", 0.418, 0.632],
+     ["appears", 0.685, 0.899],
+     ["over", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["open", 1.488, 1.702],
+     ["sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "A storm appears over the open sea.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/engine/storm.bella.943b89d8.m4a",
+    "key": "943b89d8e528b6e5a11b6a59449ed36c6dea5553",
+    "said": "A storm appears over the open sea.",
+    "seconds": 2.223,
+    "words": [
+     ["A", 0.15, 0.364],
+     ["storm", 0.418, 0.632],
+     ["appears", 0.685, 0.899],
+     ["over", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["open", 1.488, 1.702],
+     ["sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "A storm appears over the open sea.",
+    "takes": 1
+   }
+  },
+  "tap": {
+   "george": {
+    "clip": "voice/engine/tap.george.7b1ab976.m4a",
+    "key": "7b1ab976b1056c0a4ae99db0923a5927ff5d09c7",
+    "said": "Now tap anywhere on the sea.",
+    "seconds": 1.924,
+    "words": [
+     ["Now", 0.15, 0.36],
+     ["tap", 0.412, 0.622],
+     ["anywhere", 0.675, 0.884],
+     ["on", 0.937, 1.147],
+     ["the", 1.199, 1.409],
+     ["sea.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Now tap anywhere on the sea.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/engine/tap.bella.570abdca.m4a",
+    "key": "570abdca966af148482483eed7ba82480ecf87e1",
+    "said": "Now tap anywhere on the sea.",
+    "seconds": 1.924,
+    "words": [
+     ["Now", 0.15, 0.36],
+     ["tap", 0.412, 0.622],
+     ["anywhere", 0.675, 0.884],
+     ["on", 0.937, 1.147],
+     ["the", 1.199, 1.409],
+     ["sea.", 1.461, 1.671]
+    ],
+    "check": "ok",
+    "heard": "Now tap anywhere on the sea.",
+    "takes": 1
+   }
+  },
+  "end": {
+   "george": {
+    "clip": "voice/engine/end.george.3d5714b6.m4a",
+    "key": "3d5714b6d80b317fe4a81b87ce7382dfeeb61bfd",
+    "said": "And that is the end of the made-up scene.",
+    "seconds": 2.824,
+    "words": [
+     ["And", 0.15, 0.37],
+     ["that", 0.425, 0.645],
+     ["is", 0.7, 0.92],
+     ["the", 0.975, 1.194],
+     ["end", 1.249, 1.469],
+     ["of", 1.524, 1.744],
+     ["the", 1.799, 2.019],
+     ["made-up", 2.074, 2.294],
+     ["scene.", 2.349, 2.569]
+    ],
+    "check": "ok",
+    "heard": "And that is the end of the made-up scene.",
+    "takes": 1
+   },
+   "bella": {
+    "clip": "voice/engine/end.bella.0dbcfb26.m4a",
+    "key": "0dbcfb266ffdfcb0f880640b30c0bba5cb54baaa",
+    "said": "And that is the end of the made-up scene.",
+    "seconds": 2.824,
+    "words": [
+     ["And", 0.15, 0.37],
+     ["that", 0.425, 0.645],
+     ["is", 0.7, 0.92],
+     ["the", 0.975, 1.194],
+     ["end", 1.249, 1.469],
+     ["of", 1.524, 1.744],
+     ["the", 1.799, 2.019],
+     ["made-up", 2.074, 2.294],
+     ["scene.", 2.349, 2.569]
+    ],
+    "check": "ok",
+    "heard": "And that is the end of the made-up scene.",
+    "takes": 1
+   }
+  }
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "v": 1,
+ "title": "Scene topic",
+ "level": "glance",
+ "colour": "teal",
+ "mark": "globe",
+ "subject": "Test science",
+ "narrator": "bella",
+ "about": "Made-up test data: a narrated animation on the path, and a lesson with a scene step in it.",
+ "path": [
+  { "kind": "animation", "id": "engine", "unit": "Scenes" },
+  { "kind": "lesson", "id": "with-scene" }
+ ]
+}

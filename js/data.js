@@ -9,17 +9,31 @@ export const levelRank = level => Math.max(0, LEVELS.indexOf(level)) + 1;
 const json = f => { try { return JSON.parse(f.data); } catch { return null; } };
 
 // The kinds of node on a topic's path. Lessons, tests and exams are played step by step and have a file
-// each; a chest, a review and an animation are the node alone (review and animation are placeholders
-// until stage 2).
+// each. An animation has a file too, a scene, and is played as a lesson of one scene step (sceneLesson);
+// without its file it's a placeholder. A chest and a review are the node alone (review is a placeholder
+// until it's built).
 export const NODE_KINDS = ['lesson', 'test', 'exam', 'chest', 'review', 'animation'];
 export const PLAYED = new Set(['lesson', 'test', 'exam']);
+export const isPlayed = n => PLAYED.has(n.kind) || !!n.file;
 export const KIND_WORDS = { lesson: 'Lesson', test: 'Test', exam: 'Exam', chest: 'Chest', review: 'Review', animation: 'Animation' };
 const DEFAULT_TITLES = { chest: 'A chest', review: 'Review', animation: 'Animation' };
+
+// A scene file (an animation on the path) as a lesson of one step, so it plays, saves and is marked done
+// exactly as a lesson is. Its voice file is voice/<node>.json.
+export function sceneLesson(file, id, topic) {
+  const { parts, lines, title } = file;
+  return { ...file, id, topic, kind: 'animation', steps: [{ id, kind: 'scene', title, parts, lines, voiceKey: id }] };
+}
+
+// Where a scene's voice is: voice/<node>.json for an animation, voice/<lesson>.<step>.json for a scene
+// step in a lesson. It lists each line's clip for each narrator, and when each word is said.
+export const voicePath = (topicId, key) => `topics/${topicId}/voice/${key}.json`;
 
 // The library: every topic in the index, in its order. Each has its path (the nodes in order, a played
 // one carrying its file as `file`) and its lessons (every played file, in path order). A topic written
 // before the path existed lists "lessons" only, and each becomes a lesson node. Files that can't be read
-// leave their node with nothing to start, and the path goes on past it.
+// leave their node with nothing to start, and the path goes on past it. Scene steps carry their voice
+// file as `timing`.
 export async function library() {
   const files = new Map((await store.files.words()).map(f => [f.path, f]));
   const index = files.has('index.json') ? json(files.get('index.json')) : null;
@@ -33,9 +47,16 @@ export async function library() {
     const given = Array.isArray(t.path) ? t.path : (t.lessons || []).map(lid => ({ kind: 'lesson', id: lid }));
     const path = given.filter(n => n && typeof n.id === 'string' && NODE_KINDS.includes(n.kind)).map(n => {
       let file = null;
-      if (PLAYED.has(n.kind)) {
-        const l = files.has(`topics/${id}/${n.id}.json`) ? json(files.get(`topics/${id}/${n.id}.json`)) : null;
-        file = l && Array.isArray(l.steps) && l.steps.length ? { ...l, id: n.id, topic: id, kind: n.kind } : null;
+      const own = PLAYED.has(n.kind) || n.kind === 'animation';
+      const l = own && files.has(`topics/${id}/${n.id}.json`) ? json(files.get(`topics/${id}/${n.id}.json`)) : null;
+      if (PLAYED.has(n.kind)) file = l && Array.isArray(l.steps) && l.steps.length ? { ...l, id: n.id, topic: id, kind: n.kind } : null;
+      if (n.kind === 'animation') file = l && Array.isArray(l.lines) && l.lines.length ? sceneLesson(l, n.id, id) : null;
+      if (file) {
+        file.steps = file.steps.map(s => {
+          if (!s || s.kind !== 'scene') return s;
+          const v = voicePath(id, s.voiceKey || `${n.id}.${s.id}`);
+          return { ...s, timing: files.has(v) ? json(files.get(v)) : null };
+        });
       }
       return { kind: n.kind, id: n.id, unit: typeof n.unit === 'string' ? n.unit : null, title: (file && file.title) || n.title || DEFAULT_TITLES[n.kind] || n.id, file };
     });
@@ -107,7 +128,7 @@ export function pathOf(topic) {
   let current = null;
   const nodes = topic.path.map((n, i) => {
     const out = { node: n, i, done: false, started: false, share: 0, resume: 0, broken: false };
-    if (PLAYED.has(n.kind)) {
+    if (isPlayed(n)) {
       if (!n.file) { out.broken = true; return out; }
       const st = lessonState(topic.id, n.id);
       const steps = n.file.steps;
