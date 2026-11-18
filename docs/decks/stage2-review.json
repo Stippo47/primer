@@ -1,0 +1,23 @@
+{
+  "title": "Review that remembers",
+  "topic": "stage2",
+  "order": 2,
+  "cards": [
+    {
+      "id": "review",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Review that remembers",
+      "text": "Primer 0.4 tracks what you know and asks it back just before you would forget. Try it, then mark each part.",
+      "why": "This is what makes a lesson stick weeks later instead of a day. How it feels to use can only be judged on your phone, with real answers over a few days.",
+      "details": "To update: close Primer fully and open it again. Profile should say 0.4.0 at the bottom.\n\nThe hurricane topic now lists 17 facts, things worth knowing afterwards, each asked at least two different ways (a dial, a map tap, a sort, a choice and so on). Lesson steps count as asking them. Facts from lessons you've already finished are counted as met, so Review has something to ask straight away.\n\nThe animation player, voice in lessons, the reordered topic and your answer-form notes are still being made. This is only the review piece. Some pictures here are from the tests, with a made-up topic.",
+      "parts": [
+        { "id": "run", "title": "The review run", "text": "Practice, Review, Start. It asks what's due first, then what's closest to slipping, mixing topics and never asking a fact the same way twice in a row. Endless; the cross ends it with a summary.", "images": ["../stage2/shots-review/24-pilot-review-question.png", "../stage2/shots-review/44-review-summary.png", "../stage2/shots-review/45-review-nothing-due.png"] },
+        { "id": "combo", "title": "The combo", "text": "Right answers in a row fill five pips, and the chip shows the count. Your best combo is kept, with a crown, on the Review card and in Profile.", "images": ["../stage2/shots-review/41-review-question-combo.png"] },
+        { "id": "miss", "title": "When you miss", "text": "You see the right answer and why, and a link that opens the lesson step that taught it, over the run. The fact comes back three questions later, and again the next day.", "images": ["../stage2/shots-review/24b-pilot-review-wrong.png"] },
+        { "id": "profile", "title": "Knowledge in Profile", "text": "Each topic's figure is now how much of it you'd remember today, blue fading to grey. Tap a topic: one dot per fact, when you last studied it, and a button to review just that topic.", "images": ["../stage2/shots-review/46-profile.png", "../stage2/shots-review/48-profile-detail.png"] },
+        { "id": "calls", "title": "Small calls I made", "text": "The warning mark shows under 70% (memory fades slowly, so under 50% would almost never show). A close answer keeps the combo going. Facts you've met but never been asked show as open dots and don't lower the figure." }
+      ]
+    }
+  ]
+}
