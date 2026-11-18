@@ -109,7 +109,7 @@ const openNode = async id => {
   await f.tap(`.node[data-node=${id}]`);
   await sleep(300);
   await f.tap('.callout [data-go=start]');
-  await sceneState('ready');
+  await waitFor(`__primer.run && __primer.run.scene && __primer.run.scene.state !== 'loading'`);
 };
 
 try {
@@ -1142,44 +1142,42 @@ try {
         continue;
       }
       if (node.kind === 'animation') {
-        // The pilot's scene, voiced for real: played through with its own clips, its wait answered.
+        // The pilot's animations, voiced for real and played like a video. The first plays through on its
+        // own clips, every action checked against its word; the next is run to its end from the bar.
         const file = JSON.parse(readFileSync(join(dir, `${node.id}.json`), 'utf8'));
         const timing = JSON.parse(readFileSync(join(dir, 'voice', `${node.id}.json`), 'utf8'));
+        const narrator = topicFile.narrator || 'heart';
         await ev(`__primer.app.setPref('voice', true); true`);
         await openNode(node.id);
         const first = await scene();
-        ok(first.narrators.every(n => n === (topicFile.narrator || 'heart')), `${node.id}: every line has its clip, in the topic's narrator`, first.narrators);
-        await f.tap('.sbig');
-        const waitLine = file.lines.find(x => x.wait);
-        ok(await sceneState('wait', 90000), `${node.id}: played on its voice, line by line, to its wait`);
-        await shot(`21-pilot-${node.id}-wait`);
-        const tr = waitLine.wait.tries.find(x => x.marked === 'right').state.tapped;
-        const p = await ev(`__primer.run.scene.handles.globe.where([${tr.lon},${tr.lat}])`);
-        await f.tapAt(p.x, p.y);
-        await sleep(300);
-        await press();
-        const vd = await verdict();
-        ok(vd.verdict === 'Right', `${node.id}: its wait, answered right`, vd);
-        await press();
-        await sceneState('ended', 90000);
-        const fired = (await scene()).fired;
-        const want = file.lines.reduce((n, x) => n + (x.do || []).length, 0);
-        const lags = fired.map(x => +(x.at - x.want).toFixed(3));
-        ok(fired.length === want && fired.every(x => x.voiced) && lags.every(x => x >= -0.001 && x < 0.05), `${node.id}: all ${want} actions fired on their words, on the voice's clock (late by ${lags.join(', ')} s)`, fired);
-        const said = file.lines.filter(x => (x.do || []).length).every(x => (x.do || []).every((a, n) => {
-          const f0 = fired.find(y => y.line === x.id && y.n === n);
-          const ws = timing.lines[x.id][topicFile.narrator || 'heart'].words;
-          const words = (x.say || x.text).split(/\s+/).map(w => w.replace(/[*’]/g, m => (m === '’' ? "'" : '')).toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''));
-          const k = words.indexOf(String(a.at).toLowerCase().split(/\s+/)[0]);
-          return f0 && k >= 0 && Math.abs(f0.want - ws[k][1]) < 0.001;
-        }));
-        ok(said, `${node.id}: each at the time its word is said in the clip, by the timing file`);
+        ok(first.narrators.every(n => n === narrator), `${node.id}: every line has its clip, in the topic's narrator`, first.narrators);
+        ok(first.total >= 55 && first.total <= 100, `${node.id}: it runs ${first.total.toFixed(0)} seconds in ${narrator}'s voice`, first.total);
+        ok(await waitFor(`__primer.run.scene.state === 'playing'`, 4000), `${node.id}: it starts by itself, full screen`);
+        await shot(`21-pilot-${node.id}-playing`);
+        if (!played) {
+          ok(await sceneState('ended', 150000), `${node.id}: played through on its voice, line by line`);
+          const fired = (await scene()).fired;
+          const want = file.lines.reduce((n, x) => n + (x.do || []).length, 0);
+          const lags = fired.map(x => +(x.at - x.want).toFixed(3));
+          ok(fired.length === want && fired.every(x => x.voiced) && lags.every(x => x >= -0.001 && x < 0.05), `${node.id}: all ${want} actions fired on their words, on the voice's clock (late by at most ${Math.max(...lags)} s)`, fired);
+          const said = file.lines.filter(x => (x.do || []).length).every(x => (x.do || []).every((a, n) => {
+            const f0 = fired.find(y => y.line === x.id && y.n === n);
+            const ws = timing.lines[x.id][narrator].words;
+            const words = (x.say || x.text).split(/\s+/).map(w => w.replace(/[*’]/g, m => (m === '’' ? "'" : '')).toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''));
+            const k = words.indexOf(String(a.at || a.from).toLowerCase().split(/\s+/)[0].replace(/[^\p{L}\p{N}'-]/gu, ''));
+            return f0 && k >= 0 && Math.abs(f0.want - ws[k][1]) < 0.001;
+          }));
+          ok(said, `${node.id}: each at the time its word is said in the clip, by the timing file`);
+        } else {
+          await ev(`__primer.run.scene.seekTo(__primer.run.scene.total, false); true`);
+          ok(await sceneState('ended', 8000), `${node.id}: dragged to its end`);
+        }
+        ok(JSON.stringify(await ev(`[...document.querySelectorAll('.send:not([hidden]) [data-sc]')].map(b=>b.textContent.trim())`)) === '["Watch again","Next"]', `${node.id}: it stops on its last picture, with Watch again and Next`);
         await shot(`21-pilot-${node.id}-end`);
-        await press();
+        await f.tap('[data-sc=close]');
         await sleep(400);
         ok(await ev(`document.querySelector('.node[data-node=${node.id}]').classList.contains('done')`), `${node.id}: done, and the path goes on`);
         played++;
-        asked += file.lines.filter(x => x.wait).length;
         continue;
       }
       if (node.kind === 'review') {
@@ -1264,41 +1262,55 @@ try {
     console.log('(no --pilot given: the pilot was not played)');
   }
 
-  console.log('Narrated scenes: the voice is the clock');
+  console.log('An animation plays like a video');
   // As on an iPhone: a page can say what kind its sound is. A spy notes every attempt to say so.
   await b.send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{let t='auto';window.__sessionSets=[];Object.defineProperty(navigator,'audioSession',{configurable:true,value:{get type(){return t},set type(v){window.__sessionSets.push(v);t=v}}})})()` });
   const SCENES = join(ROOT, 'tests', 'fixtures', 'scenes');
   const engineVoice = JSON.parse(readFileSync(join(SCENES, 'topics', 'scene-topic', 'voice', 'engine.json'), 'utf8'));
   // In the page, so it's quick: waits for a line to be playing on its clip, and holds the clip's <audio> still.
   const holdClip = id => ev(`new Promise(r=>{const iv=setInterval(()=>{const s=__primer.run.scene;if(s.debug().id===${JSON.stringify(id)}&&s.clip&&s.clip.status==='playing'){s.clip.el.pause();clearInterval(iv);r(s.clip.time)}},4)})`);
+  const picture = () => f.rect('.sstage');
+  const tapPicture = async () => { const r = await picture(); await f.tapAt(r.x, r.top + r.h * 0.3); await sleep(250); };
+  const control = async sc => { if (!(await scene()).ui) await tapPicture(); await f.tap(`[data-sc=${sc}]`); await sleep(250); };
+  // The bar: dragged by touch from where its knob is to moment T of the timeline.
+  const dragTo = async T => {
+    if (!(await scene()).ui) await tapPicture();
+    const tr = await f.rect('.strack'), k = await f.rect('.sknob'), total = (await scene()).total;
+    await f.drag(k.x, tr.y, tr.left + (T / total) * tr.w - k.x, 0, { steps: 12, ms: 360 });
+    await waitFor(`!__primer.run.scene.busy && __primer.run.scene.state !== 'loading'`);
+    await sleep(150);
+  };
   await api(`/__reset?data=${encodeURIComponent(SCENES)}`);
   await go();
   await ev(`__primer.store.del('progress')`);
   await ev('__primer.data.loadProgress()');
   await ev('__primer.sync.pull()');
   await reloadLibrary();
-  await ev(`__primer.app.setPref('topic','scene-topic'); __primer.app.setPref('voice', true); __primer.app.setPref('narrators', {}); true`);
+  await ev(`__primer.app.setPref('topic','scene-topic'); __primer.app.setPref('voice', true); __primer.app.setPref('captions', true); __primer.app.setPref('narrators', {}); true`);
   await f.tap('.tab[data-tab=practice]');
   await f.tap('.tab[data-tab=learn]');
   await sleep(400);
   ok(JSON.stringify(await ev(`[...document.querySelectorAll('.node')].map(n=>n.dataset.kind+':'+n.className.split(' ')[1])`)) === '["animation:now","lesson:todo"]', 'an animation with its scene file is a node to play, like a lesson');
-  ok((await ev(`__primer.store.files.all().then(a=>a.filter(f=>f.path.includes('/voice/')&&f.path.endsWith('.m4a')&&f.data instanceof Blob).length)`)) === 12, 'its clips came down with the lesson\'s media, to play offline');
+  ok((await ev(`__primer.store.files.all().then(a=>a.filter(f=>f.path.includes('/voice/')&&f.path.endsWith('.m4a')&&f.data instanceof Blob).length)`)) === 20, "its clips, and the lesson's, came down with the media, to play offline");
   await openNode('engine');
   let d = await scene();
-  ok(await bare() && (await text()).includes('First the globe turns to Brazil') && await ev(`!!document.querySelector('.scene[data-state=ready] .sbig') && document.querySelectorAll('.spips i').length === 4`), 'it opens on its first line, captioned, with a play button and a pip per line');
-  ok((await btn()).disabled && (await btn()).text === 'Continue', 'Continue waits for the end');
-  ok(d.narrators.every(n => n === 'bella') && await ev(`__primer.run.scene.urls.every(u => u && u.url.startsWith('blob:'))`), "the topic's narrator, Bella, with every clip made ready before the tap", d.narrators);
-  ok((await ev('__primer.run.scene.clips.length')) === 0, 'no player is made before the tap');
-  await shot('30-scene-ready');
-  await f.tap('.sbig');
+  const frame = await ev(`(()=>{const s=document.querySelector('.sstage').getBoundingClientRect();return {top:s.top,bottom:s.bottom,w:s.width,video:!!document.querySelector('.video .scene[data-mode=video]'),bar:!!document.querySelector('.lfoot, .ltop, .lbar'),tabs:getComputedStyle(document.querySelector('.tabs')).display}})()`);
+  ok(await bare() && frame.video && !frame.bar && frame.tabs === 'none', 'it plays full screen: no header, no tab bar, no Continue bar', frame);
+  ok(frame.top >= SAT && frame.bottom <= H - SAB && frame.w === W && frame.bottom - frame.top >= H - SAT - SAB - 1, 'the picture fills the screen, within the safe areas', frame);
+  ok(d.narrators.every(n => n === 'bella') && await ev(`__primer.run.scene.urls.every(u => u && u.url.startsWith('blob:'))`), "the topic's narrator, Bella, with every clip made ready before it starts", d.narrators);
+  ok(await waitFor(`__primer.run.scene.state === 'playing' && __primer.run.scene.debug().sound`, 4000), 'it starts by itself, with the voice: the tap on Start was enough');
   await waitFor(`__primer.run.scene.debug().fired.length >= 2`, 10000);
   d = await scene();
-  ok(d.sound && d.voiced && d.clip && ['playing', 'ended'].includes(d.clip.status), "the tap starts the voice, and the line follows its clip's clock", d.clip);
+  ok(d.sound && d.voiced && d.clip && ['playing', 'ended'].includes(d.clip.status), "the line follows its clip's clock", d.clip);
   const lags = d.fired.map(x => +(x.at - x.want).toFixed(3));
   ok(d.fired.every(x => x.voiced) && lags.every(x => x >= -0.001 && x < 0.05), `actions fire at their words, within a frame or two of the clip's clock (late by ${lags.join(', ')} s)`, d.fired);
   const wantTurn = engineVoice.lines.turn.bella.words;
   ok(Math.abs(d.fired[0].want - wantTurn[5][1]) < 0.001 && Math.abs(d.fired[1].want - wantTurn[9][1]) < 0.001, 'each at the time its word is said in the timing file ("Brazil", then "lights")');
-  await shot('31-scene-turn');
+  ok(d.ui, 'the controls are up as it opens');
+  await shot('30-video-playing');
+  ok(await waitFor(`!__primer.run.scene.debug().ui`, 4500), 'and fade after about three seconds without a touch, while it plays');
+  await sleep(300);
+  ok(await ev(`getComputedStyle(document.querySelector('.sui')).opacity === '0' && getComputedStyle(document.querySelector('.spart')).pointerEvents === 'none'`), 'gone, the picture is all there is, and it takes no touches');
   // The clip is the clock: held still, the picture waits for it.
   const heldAt = await holdClip('storm');
   await sleep(1000);
@@ -1308,92 +1320,126 @@ try {
   await waitFor(`__primer.run.scene.debug().fired.filter(x=>x.line==='storm').length >= 2`, 6000);
   const stormLags = (await scene()).fired.filter(x => x.line === 'storm').map(x => x.at - x.want);
   ok(stormLags.every(x => x >= -0.001 && x < 0.05), 'let go, its words come and the actions with them, still on time', stormLags);
-  // Pause with a tap on the picture, and carry on, on a fresh player.
-  await waitFor(`(d=>d.id==='tap'&&d.state==='playing'&&d.t>0.25)(__primer.run.scene.debug())`, 6000);
-  await ev(`window.__before = __primer.run.scene.clip; window.__beforeEl = __primer.run.scene.clip.el; true`);
-  await f.tap('.sstage');
-  await sleep(100);
-  const p0 = await scene(), t0 = await ev('__beforeEl.currentTime');
+  // The caption lights word by word, in order, as the clip says them.
+  await waitFor(`__primer.run.scene.debug().id === 'track' && __primer.run.scene.debug().t > 0.3`, 8000);
+  const litSeen = [];
+  for (let k = 0; k < 8; k++) { litSeen.push((await scene()).lit.lit); await sleep(220); }
+  const capWords = await ev(`[...document.querySelectorAll('.sline .w')].map((w,i)=>w.classList.contains('said'))`);
+  ok(litSeen.every((x, k) => k === 0 || x >= litSeen[k - 1]) && litSeen.at(-1) > litSeen[0] && litSeen[0] > 0, `the caption's words light in order as they're said (${litSeen.join(', ')} of ${capWords.length})`, litSeen);
+  ok(capWords.indexOf(false) === -1 || capWords.slice(capWords.indexOf(false)).every(x => !x), 'every word said so far is lit, none after it', capWords);
+  await shot('31-video-caption-lit');
+  // A tap on the picture brings the controls up, over it; they go again by themselves.
+  await tapPicture();
+  d = await scene();
+  ok(d.ui && d.state === 'playing' && await ev(`getComputedStyle(document.querySelector('.sui')).pointerEvents === 'auto'`), 'a tap on the picture brings the controls up, and it plays on', d.state);
+  await sleep(300);
+  await shot('32-video-overlay');
+  ok(await waitFor(`!__primer.run.scene.debug().ui`, 4500), 'they fade again after a few seconds');
+  // Pause and play.
+  await control('play');
+  await ev(`window.__before = __primer.run.scene.clip; window.__beforeEl = __primer.run.scene.clip && __primer.run.scene.clip.el; true`);
+  const p0 = await scene(), t0 = await ev('__beforeEl ? __beforeEl.currentTime : -1');
   await sleep(700);
   const p1 = await scene(), t1 = await ev('__beforeEl ? __beforeEl.currentTime : -1');
-  ok(p0.state === 'paused' && p1.state === 'paused' && t1 === t0, 'a tap on the picture pauses the voice and the picture both', [p0.state, p1.state, t0, t1]);
-  await shot('32-scene-paused');
-  await f.tap('.sstage');
+  ok(p0.state === 'paused' && p1.state === 'paused' && t1 === t0 && Math.abs(p1.at - p0.at) < 0.001, 'pause stops the voice and the picture both', [p0.state, p1.state, t0, t1]);
+  await sleep(3200);
+  ok((await scene()).ui, 'paused, the controls stay');
+  await shot('33-video-paused');
+  await f.tap('[data-sc=play]');
   await sleep(400);
   const p2 = await scene();
-  ok(p2.state === 'playing' && p2.clip.time >= t0 - 0.01 && await ev(`__primer.run.scene.clip !== __before && __primer.run.scene.clip.el !== __beforeEl`), 'another tap carries on from where it was, on a new player: every play gets a fresh <audio>', [p2.state, p2.clip, t0]);
-  // The wait: the scene stops for the person to do something with the globe.
-  await sceneState('wait');
-  ok((await btn()).text === 'Check' && (await btn()).disabled && (await text()).includes('Now tap anywhere on the sea'), 'a line can wait for the person: Check, asleep until the globe is used');
-  ok(await ev(`getComputedStyle(document.querySelector('.spart')).pointerEvents === 'auto'`) && !(await ev(`getComputedStyle(document.querySelector('.scene')).pointerEvents === 'none'`)), 'and only then does the globe take touches');
-  const land = await ev(`__primer.run.scene.handles.globe.where([-50,-10])`);
-  await f.tapAt(land.x, land.y);
-  await sleep(300);
-  ok(!(await btn()).disabled, 'a tap on it wakes Check');
-  await press();
-  let vd = await verdict();
-  ok(vd.verdict === 'Not quite' && vd.why === "That's land: tap the sea.", 'and it is marked like a play step, with the line of why', vd);
-  await shot('33-scene-wait-marked');
-  await press();
-  await sceneState('ended');
+  ok(['playing', 'gap'].includes(p2.state) && p2.at >= p0.at - 0.05 && await ev(`__primer.run.scene.clip !== __before && (!__primer.run.scene.clip || __primer.run.scene.clip.el !== __beforeEl)`), 'play carries on from where it was, on a new player: every play gets a fresh <audio>', [p2.state, p2.at, p0.at]);
+  // The line before and the next.
   d = await scene();
-  ok(d.fired.some(x => x.line === 'end' && x.at - x.want < 0.05 && x.at >= x.want - 0.001), 'Continue carries the scene on to its last line ("end" there is a word like any other)');
-  ok(!(await btn()).disabled, 'at its end, Continue wakes');
-  await shot('34-scene-end');
-  await press();
-  await sleep(400);
-  ok(!(await bare()) && await ev(`document.querySelector('.node[data-node=engine]').classList.contains('done') && document.querySelector('.node[data-node=with-scene]').classList.contains('now')`), 'and goes straight back to the path, the animation done');
-  const sceneEvents = (await everyEvent()).filter(e => e.topic === 'scene-topic' && e.lesson === 'engine');
-  ok(JSON.stringify(sceneEvents.map(e => e.type)) === '["start","attempt","seen","finish"]' && sceneEvents[1].kind === 'scene' && sceneEvents[1].line === 'tap' && sceneEvents[1].right === false && sceneEvents[1].value.tapped.land === true,
-    'it is saved and sent like a lesson: a start, the wait\'s attempt, seen, finished', sceneEvents.map(e => `${e.type}${e.line ? ':' + e.line : ''}`));
-
-  console.log('Back, skip and leaving');
-  await openNode('engine');
-  await f.tap('.sbig');
-  await waitFor(`__primer.run.scene.debug().id === 'storm' && __primer.run.scene.debug().t > 0.5`, 10000);
-  await f.tap('[data-sc=back]');
+  await dragTo(d.starts[2] + 0.4);
+  await waitFor(`__primer.run.scene.state === 'playing'`, 4000);
+  await control('back');
   await waitFor(`__primer.run.scene.state === 'playing'`, 4000);
   d = await scene();
   const centreBack = await ev('__primer.run.scene.handles.globe.state().centre');
-  ok(d.id === 'turn' && Math.abs(centreBack[0] + 40) < 3 && Math.abs(centreBack[1] - 10) < 3, 'back, early in a line, goes to the line before, with the picture rebuilt as it was then (the globe back where it started)', { id: d.id, centreBack });
-  await waitFor(`__primer.run.scene.debug().t > 1.8`, 6000);
-  await f.tap('[data-sc=back]');
-  await waitFor(`__primer.run.scene.state === 'playing'`, 4000);
-  ok((await scene()).id === 'turn', 'back, later in a line, starts that line again');
-  await f.tap('[data-sc=skip]');
-  await sleep(150);
+  ok(d.id === 'storm' && Math.abs(d.at - d.starts[1]) < 0.6 && Math.abs(centreBack[0] + 53) < 9 && Math.abs(centreBack[1] + 10) < 9, 'the line before, early in a line, goes back to its start, the picture as it was then (the globe at Brazil)', { id: d.id, at: d.at, centreBack });
+  await control('skip');
   d = await scene();
-  const centreSkip = await ev('__primer.run.scene.handles.globe.state().centre');
-  ok(d.id === 'storm' && Math.abs(centreSkip[0] + 53) < 9 && Math.abs(centreSkip[1] + 10) < 9 && await ev(`__primer.run.scene.debug().fired.length >= 0`), 'skip goes to the next line, everything left on this one landing at once (the globe already at Brazil)', { id: d.id, centreSkip });
-  await f.tap('[data-sc=skip]');
-  await sleep(150);
-  ok((await scene()).state === 'wait' || (await scene()).id === 'tap', 'skip again, and the wait comes up');
+  ok(d.id === 'track' && d.state === 'playing' && Math.abs(d.at - d.starts[2]) < 0.4, 'the next line starts at once', { id: d.id, at: d.at });
+  await control('skip');
+  d = await scene();
+  ok(d.id === 'end' && Math.abs(d.at - d.starts[3]) < 0.4 && (await ev('__primer.run.scene.handles.globe.debug().routes[0].progress')) === 1, 'and what was left of the line before lands at once (the storm at the end of its track)', { id: d.id, at: d.at });
+  // The bar, dragged to a moment: the picture is rebuilt as it was then, and it plays on from there.
+  const tw = engineVoice.lines.track.bella.words;
+  const span0 = tw[2][1], span1 = tw[tw.length - 1][2];
+  const T = d.starts[2] + span0 + (span1 - span0) * 0.5;
+  await dragTo(T);
+  await waitFor(`__primer.run.scene.state === 'playing'`, 4000);
+  d = await scene();
+  const rebuilt = await ev(`(()=>{const g=__primer.run.scene.handles.globe;return {routes:g.debug().routes,centre:g.state().centre}})()`);
+  ok(d.id === 'track' && Math.abs(d.at - T) < 0.35 && d.clip && Math.abs(d.clip.time - (T - d.starts[2])) < 0.35, `dragging the bar to ${T.toFixed(2)} s plays on from there, in that line's clip`, { id: d.id, at: d.at, clip: d.clip });
+  ok(rebuilt.routes.length === 1 && Math.abs(rebuilt.routes[0].progress - 0.5) < 0.12 && Math.abs(rebuilt.centre[0] + 53) < 9 && Math.abs(rebuilt.centre[1] + 10) < 9, 'and the picture is rebuilt as it was then: the globe at Brazil, the storm halfway along its track', rebuilt);
+  ok(await ev(`[...document.querySelectorAll('.strack .sticks i')].length === 3`), 'the bar marks where each line starts');
+  await shot('34-video-dragged');
+  // Captions off, and remembered.
+  await control('captions');
+  ok(await ev(`document.querySelector('.scene').classList.contains('nocap') && getComputedStyle(document.querySelector('.scap')).opacity === '0'`) && (await ev(`__primer.store.get('prefs')`)).captions === false, 'captions can be turned off, and the choice is kept');
+  await control('captions');
+  ok(!(await ev(`document.querySelector('.scene').classList.contains('nocap')`)) && (await ev(`__primer.store.get('prefs')`)).captions === true, 'and on again');
+  await control('captions');
+  // The end: it stops on the last picture, with Watch again and Next.
+  await dragTo((await scene()).total);
+  d = await scene();
+  const endButtons = await ev(`[...document.querySelectorAll('.send:not([hidden]) [data-sc]')].map(b=>b.textContent.trim())`);
+  ok(d.state === 'ended' && JSON.stringify(endButtons) === '["Watch again","Next"]' && d.ui, 'at the end it stops on the last picture, with Watch again and Next', { state: d.state, endButtons });
+  await shot('35-video-end');
+  let vEvents = (await everyEvent()).filter(e => e.topic === 'scene-topic' && e.lesson === 'engine');
+  ok(JSON.stringify(vEvents.map(e => e.type)) === '["start","seen","finish"]' && vEvents.every(e => e.step === 'engine' || e.type === 'finish'), 'it is saved and sent like a lesson of one step: a start, seen, finished', vEvents.map(e => e.type));
+  await f.tap('[data-sc=again]');
+  await sleep(600);
+  d = await scene();
+  ok(d.state === 'playing' && d.id === 'turn' && d.at < 1, 'Watch again plays it from the start', { state: d.state, id: d.id, at: d.at });
+  await dragTo((await scene()).total);
+  await f.tap('[data-sc=next]');
+  await waitFor(`__primer.run && __primer.run.step && __primer.run.step.id === 'before'`);
+  ok(!(await ev('!!document.querySelector(".video")')) && (await stepId()) === 'before', 'Next goes on to the next node on the path: the lesson');
+  ok((await everyEvent()).filter(e => e.lesson === 'engine' && e.type === 'finish').length === 1, 'and the animation was finished once, for that viewing');
   await f.tap('[data-go=leave]');
   await sleep(400);
-  ok(!(await bare()) && (await ev(`__primer.run`)) === null, 'the cross leaves mid-scene, and the voice stops with it');
-  ok((await everyEvent()).some(e => e.type === 'leave' && e.lesson === 'engine'), 'leaving early is saved, and the scene stays done from before');
+  ok(await ev(`document.querySelector('.node[data-node=engine]').classList.contains('done')`), 'on the path, the animation is done');
+  // The choice is kept for the next time.
+  await openNode('engine');
+  ok(await ev(`document.querySelector('.scene').classList.contains('nocap')`), 'captions turned off stay off the next time');
+  await control('close');
+  await sleep(400);
+  ok(!(await bare()) && (await ev(`__primer.run`)) === null, 'the close button leaves, and the voice stops with it');
+  ok((await everyEvent()).some(e => e.type === 'leave' && e.lesson === 'engine'), 'leaving before the end is saved too');
 
-  console.log('Silent: Voice off, captions at reading speed, taps to go on');
+  console.log('Voice off: it plays straight through, captions always on');
   await ev(`__primer.app.setPref('voice', false); true`);
+  await openNode('engine');
+  d = await scene();
+  ok(d.state === 'playing' && !d.sound && (await ev('__primer.run.scene.clips.length')) === 0, 'with Voice off it starts by itself, on the reading clock, with no player made', d);
+  ok(!(await ev(`document.querySelector('.scene').classList.contains('nocap')`)) && await ev(`document.querySelector('[data-sc=captions]').hidden`), 'its captions are on, though turned off with the voice, and their button is gone', await scene());
+  const readLit = [];
+  for (let k = 0; k < 6; k++) { readLit.push((await scene()).lit.lit); await sleep(250); }
+  ok(readLit.at(-1) > readLit[0], `the words light at reading pace (${readLit.join(', ')})`, readLit);
+  await shot('36-video-voice-off');
+  ok(await sceneState('ended', 30000), 'and it plays to the end with no taps at all');
+  d = await scene();
+  ok(d.fired.length === 6 && d.fired.every(x => !x.voiced), 'every action on its word, on the reading clock', d.fired);
+  await control('close');
+  await sleep(400);
+  await ev(`__primer.app.setPref('captions', true); true`);
+
+  console.log('A scene step in a lesson plays through too');
   await f.tap('.node[data-node=with-scene]');
   await sleep(300);
   await f.tap('.callout [data-go=start]');
   await waitFor(`__primer.run && __primer.run.step.id === 'before'`);
+  ok(!(await ev(`!!document.querySelector('.ltext.reading')`)) && (await ev('__primer.run.reader.heard.length')) === 0, 'with Voice off, a step is read silently: its words are simply there');
   await press();
-  await sceneState('ready');
-  ok((await ev(`document.querySelector('.svoice').getAttribute('aria-pressed')`)) === 'false', 'a scene step inside a lesson, with Voice off: its speaker shows off');
-  ok(await ev(`document.querySelectorAll('.spart').length === 2 && !!document.querySelector('.spart[data-part=globe] canvas') && !!document.querySelector('.spart[data-part=warmth] .pi')`), 'two parts share the picture, one above the other, each named in the calls ("warmth.reveal")');
-  await f.tap('.sbig');
-  await sceneState('hold');
-  d = await scene();
-  ok(!d.sound && !d.voiced && (await ev('__primer.run.scene.clips.length')) === 0 && d.fired.length === 1 && !d.fired[0].voiced, 'it runs from the caption at reading speed, the action on its word, no player made', d);
-  ok((await ev(`document.querySelector('.snote').textContent`)).includes('Tap to go on') && (await btn()).disabled, 'and at the end of the line it waits for a tap to go on');
-  await shot('35-scene-silent-hold');
-  await sleep(800);
-  ok((await scene()).state === 'hold', 'it waits as long as it takes');
-  await f.tap('.scap');
-  await sceneState('ended');
-  ok((await scene()).fired.length === 3 && !(await ev(`document.querySelector('.spart[data-part=warmth] .pi-chip.truth').hidden`)), 'a tap goes on to the next line, its calls reach both parts, and at the last line\'s end the scene is done');
+  await waitFor(`__primer.run.scene && __primer.run.scene.state !== 'loading'`);
+  ok(await ev(`document.querySelectorAll('.spart').length === 2 && !!document.querySelector('.spart[data-part=globe] canvas') && !!document.querySelector('.spart[data-part=warmth] .pi') && document.querySelector('.scene').dataset.mode === 'step'`), 'the same player sits inside the step: two parts share the picture, each named in the calls ("warmth.reveal")');
+  ok((await btn()).disabled && (await btn()).text === 'Continue', 'Continue waits for its end');
+  ok(await sceneState('ended', 20000), 'it plays through, with nothing to answer');
+  ok((await scene()).fired.length === 3 && !(await ev(`document.querySelector('.spart[data-part=warmth] .pi-chip.truth').hidden`)) && !(await btn()).disabled, "its calls reach both parts, and at its end Continue wakes");
+  await shot('37-scene-step-end');
   await press();
   await waitFor(`__primer.run.step.id === 'after' && __primer.run.input`);
   await f.tap('.pi-opt[data-id=france]');
@@ -1403,31 +1449,69 @@ try {
   await press();
   ok((await everyEvent()).some(e => e.type === 'seen' && e.lesson === 'with-scene' && e.step === 'tour'), 'a scene step is saved as seen, like an explain step');
 
-  console.log('When no sound plays, it reads on by itself');
-  await ev(`__primer.app.setPref('voice', true); window.__realPlay = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { return Promise.resolve(); }; true`);
+  console.log('Voice in lessons: each step read aloud, its words lit');
+  await ev(`__primer.app.setPref('voice', true); true`);
+  await f.tap('.node[data-node=with-scene]');
+  await sleep(300);
+  await f.tap('.callout [data-go=start]');
+  await waitFor(`__primer.run && __primer.run.step.id === 'before'`);
+  ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === 'before.text') && __primer.run.reader.now() && __primer.run.reader.now().status === 'playing'`, 5000), 'as a step opens, its words are read aloud, in the narrator', await ev('__primer.run.reader.heard'));
+  const lessonLit = [];
+  for (let k = 0; k < 6; k++) { lessonLit.push(await ev(`__primer.run.textRa.state().lit`)); await sleep(200); }
+  ok(lessonLit.every((x, k) => k === 0 || x >= lessonLit[k - 1]) && lessonLit.at(-1) > lessonLit[0] && await ev(`!!document.querySelector('.ltext.ra.reading .w.said')`), `its words light up in place as they're said, in order (${lessonLit.join(', ')})`, lessonLit);
+  // "27 °C" is read as "twenty-seven degrees Celsius": the written words still light in time with it
+  const said = await ev(`(()=>{const ra=__primer.run.textRa,w=ra.words;return {at:ra.times[w.indexOf('at')],deg:ra.times[w.indexOf('27')],c:ra.times[w.indexOf('°C')],and:ra.times[w.indexOf('and')]}})()`);
+  ok(said.at[1] <= said.deg[0] && said.deg[1] <= said.c[1] && said.c[1] <= said.and[0] + 0.001, 'a word read differently ("27 °C", said as words) lights while those words are said', said);
+  await shot('38-lesson-read-aloud');
+  await ev(`window.__readClip = __primer.run.reader.clip; true`);
+  await press();
+  ok(await ev(`__readClip.status === 'idle' && __readClip.el === null && !document.querySelector('.ltext.reading')`), 'moving on stops it');
+  await waitFor(`__primer.run.scene && __primer.run.scene.state !== 'loading'`);
+  ok(await waitFor(`__primer.run.scene.state === 'playing' && __primer.run.scene.debug().sound`, 4000), 'the scene step starts by itself, voiced');
+  await ev(`__primer.run.scene.seekTo(__primer.run.scene.total, false); true`);
+  await sceneState('ended', 8000);
+  await press();
+  await waitFor(`__primer.run.step.id === 'after' && __primer.run.input`);
+  ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === 'after.ask')`, 4000), "a question is read as it opens");
+  await f.tap('.pi-opt[data-id=peru]');
+  await sleep(150);
+  ok(!(await btn()).disabled && await ev(`!!__primer.run.reader.clip`), 'answering never waits for the voice: Check is awake while the question is read', await btn());
+  await press();
+  ok(await waitFor(`__primer.run.reader.heard.at(-1).id === 'after.option-peru' && __primer.run.reader.now() && __primer.run.reader.now().status === 'playing'`, 3000), 'after an answer, the line of why shown is read aloud', await ev('__primer.run.reader.heard'));
+  await waitFor(`__primer.run.whyRa.state().lit > 2`, 3000);
+  ok(await ev(`!!document.querySelector('.lwhy.ra.reading .w.said')`), 'its words lit as they are said');
+  await shot('39-lesson-why-read');
+  const heardBefore = await ev('__primer.run.reader.heard.length');
+  await f.tap('.ltext');
+  ok(await waitFor(`__primer.run.reader.heard.length === ${heardBefore + 1} && __primer.run.reader.heard.at(-1).id === 'after.ask'`, 3000), 'tapping the words reads them again');
+  await press();
+  await press();
+  await waitFor(`!__primer.run`, 3000);
+
+  console.log('When no sound plays');
+  await ev(`window.__realPlay = HTMLMediaElement.prototype.play; HTMLMediaElement.prototype.play = function () { return Promise.reject(new DOMException('Not allowed', 'NotAllowedError')); }; true`);
   await openNode('engine');
-  await f.tap('.sbig');
+  await sleep(500);
+  d = await scene();
+  ok(d.state === 'ready' && !d.failed && d.ui && await ev(`getComputedStyle(document.querySelector('[data-sc=play]')).display !== 'none'`), 'a phone that wants a tap before any sound: it waits on its first picture, with play showing', d);
+  await shot('40-video-wants-a-tap');
+  await f.tap('[data-sc=play]');
+  await sleep(500);
+  d = await scene();
+  ok(d.failed === 'refused' && !d.sound && d.state === 'playing' && (await ev(`document.querySelector('.snote').hidden`)) === false, 'refused even from a tap, it reads on from its captions at once, and says so', d);
+  await ev(`HTMLMediaElement.prototype.play = function () { return Promise.resolve(); }; true`);
+  await control('voice');
   await sleep(1200);
-  ok((await scene()).sound && !(await scene()).failed, 'a clip whose clock stands still is not called silent at once');
+  ok((await scene()).sound && !(await scene()).failed, 'the speaker tries the voice again; a clip whose clock stands still is not called silent at once');
   await waitFor(`__primer.run.scene.debug().failed`, 5000);
   d = await scene();
   ok(d.failed === 'silent' && !d.sound && (await ev(`document.querySelector('.snote').textContent`)).includes('No sound played'), 'after about 2.5 seconds it is, and says so, and the line reads on from its caption', d);
-  await sceneState('hold');
-  ok((await scene()).fired.filter(x => x.line === 'turn').length === 2, 'what hangs on the line still happens, on the reading clock');
-  await shot('36-scene-no-sound');
-  await ev(`HTMLMediaElement.prototype.play = function () { return Promise.reject(new DOMException('Not allowed', 'NotAllowedError')); }; true`);
-  await f.tap('[data-sc=voice]');
-  await sleep(300);
-  await f.tap('[data-sc=back]');
-  await sleep(600);
-  d = await scene();
-  ok(d.failed === 'refused' && !d.sound && (await ev(`document.querySelector('.snote').hidden`)) === false, 'a clip the phone refuses to start falls back to the caption at once', d);
   await ev(`HTMLMediaElement.prototype.play = window.__realPlay; true`);
-  await f.tap('[data-sc=voice]');
+  await control('voice');
   await sleep(1200);
   d = await scene();
   ok(d.sound && !d.failed && d.clip && d.clip.status === 'playing', 'the speaker tries the voice again, from the same moment', d.clip);
-  await f.tap('[data-go=leave]');
+  await control('close');
   await sleep(300);
 
   console.log('A narrator per subject');
@@ -1439,7 +1523,7 @@ try {
   await sleep(400);
   const picks = await ev(`[...document.querySelectorAll('.sheet [data-pick]')].map(b=>b.innerText.replace(/\\s+/g,' ').trim())`);
   ok(picks.length === 4 && picks[0].startsWith('Heart') && picks.some(p => p.startsWith('Bella') && p.includes("own")) && picks.some(p => p.startsWith('Chatterbox A')), 'the four narrators, the topic\'s own marked', picks);
-  await shot('37-narrators');
+  await shot('41-narrators');
   await f.tap('.sheet [data-pick=george]');
   await sleep(400);
   ok((await ev(`__primer.store.get('prefs')`)).narrators['Test science'] === 'george' && (await narratorRow()) === 'Test science / George', 'choosing George is kept, for the whole subject');
@@ -1447,6 +1531,12 @@ try {
   await sleep(300);
   await openNode('engine');
   ok((await scene()).narrators.every(n => n === 'george'), 'and its scenes speak with George\'s clips');
+  await control('close');
+  await sleep(300);
+  await f.tap('.node[data-node=with-scene]');
+  await sleep(300);
+  await f.tap('.callout [data-go=start]');
+  ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === 'before.text' && h.narrator === 'george')`, 5000), 'and its lessons too', await ev('__primer.run.reader.heard'));
   await f.tap('[data-go=leave]');
   await sleep(300);
 
@@ -1454,9 +1544,13 @@ try {
   await b.send('Network.enable');
   await b.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await openNode('engine');
-  await f.tap('.sbig');
   await waitFor(`__primer.run.scene.debug().clip && __primer.run.scene.debug().clip.time > 0.6`, 6000);
   ok((await scene()).voiced, 'with no signal, the clips play from the phone');
+  await control('close');
+  await f.tap('.node[data-node=with-scene]');
+  await sleep(300);
+  await f.tap('.callout [data-go=start]');
+  ok(await waitFor(`__primer.run.reader.now() && __primer.run.reader.now().time > 0.3`, 5000), "and a lesson's words are read with no signal too");
   await f.tap('[data-go=leave]');
   await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   const changed = JSON.parse(readFileSync(join(SCENES, 'topics', 'scene-topic', 'engine.json'), 'utf8'));
@@ -1467,7 +1561,7 @@ try {
   await sleep(300);
   await openNode('engine');
   ok(JSON.stringify((await scene()).narrators) === '["george",null,"george","george"]', 'a line changed after it was voiced plays from its caption, never with a clip that says something else', (await scene()).narrators);
-  await f.tap('[data-go=leave]');
+  await control('close');
   ok((await ev('window.__sessionSets.length')) === 0 && (await ev('navigator.audioSession.type')) === 'auto', "through all of it, the phone's sound was never claimed (audioSession left alone)", await ev('window.__sessionSets'));
   await api('/__reset?data=fixtures');
   await ev('__primer.sync.pull()');

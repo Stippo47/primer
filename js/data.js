@@ -25,8 +25,9 @@ export function sceneLesson(file, id, topic) {
   return { ...file, id, topic, kind: 'animation', steps: [{ id, kind: 'scene', title, parts, lines, voiceKey: id }] };
 }
 
-// Where a scene's voice is: voice/<node>.json for an animation, voice/<lesson>.<step>.json for a scene
-// step in a lesson. It lists each line's clip for each narrator, and when each word is said.
+// Where a voice file is: voice/<node>.json for an animation, or for a lesson's own words (its steps' text and
+// feedback), and voice/<lesson>.<step>.json for a scene step in a lesson. It lists each line's clip for each
+// narrator, and when each word is said.
 export const voicePath = (topicId, key) => `topics/${topicId}/voice/${key}.json`;
 
 // The library: every topic in the index, in its order. Each has its path (the nodes in order, a played
@@ -57,6 +58,8 @@ export async function library() {
           const v = voicePath(id, s.voiceKey || `${n.id}.${s.id}`);
           return { ...s, timing: files.has(v) ? json(files.get(v)) : null };
         });
+        // a lesson's own words, read aloud: voice/<lesson>.json
+        if (PLAYED.has(n.kind)) { const v = voicePath(id, n.id); file.timing = files.has(v) ? json(files.get(v)) : null; }
       }
       return { kind: n.kind, id: n.id, unit: typeof n.unit === 'string' ? n.unit : null, title: (file && file.title) || n.title || DEFAULT_TITLES[n.kind] || n.id, file };
     });

@@ -14,7 +14,9 @@ ORDINAL = {"one": "first", "two": "second", "three": "third", "five": "fifth", "
 SAME = {"kilometers": "kilometres", "km": "kilometres", "kilometer": "kilometre", "meters": "metres", "meter": "metre",
         "centre": "center", "colour": "color", "colours": "colors", "coloured": "colored", "vapour": "vapor", "ok": "okay",
         "see": "sea", "seas": "sea", "sees": "sea", "too": "to", "two": "to", "their": "there", "theyre": "there",
-        "hear": "here", "its": "it's", "whether": "weather", "whole": "hole", "for": "four", "right": "write", "knew": "new"}
+        "hear": "here", "its": "it's", "whether": "weather", "whole": "hole", "for": "four", "right": "write", "knew": "new",
+        # names a recogniser writes the way it knows them, said the way `say` spells them
+        "noaa": "noah"}
 
 
 def number_words(n):
@@ -52,6 +54,7 @@ def ordinal_words(n):
 
 def spell_numbers(text, years=False):
     text = re.sub(r"(?<=\d),(?=\d{3})", "", text)
+    text = re.sub(r"\s*(?:1⁄2|½)", " and a half", text)  # 26 1/2 (as a recogniser writes it): twenty-six and a half
     text = re.sub(r"(\d+)(st|nd|rd|th)\b", lambda m: ordinal_words(int(m.group(1))), text)
     text = re.sub(r"(\d+)\.(\d+)", lambda m: number_words(int(m.group(1))) + " point " + " ".join(ONES[int(d)] for d in m.group(2)), text)
     text = text.replace("%", " percent")
