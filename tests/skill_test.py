@@ -85,13 +85,27 @@ class Parts(unittest.TestCase):
                      'settled { centre, zoom }',
                      'zoom: How close',
                      'picture (choice none, warmth, depth, wind',
-                     'form (choice choice, slider, dial, number, pile, order, string, sort, snap, match, spot',
+                     'form (choice choice, slider, dial, number, pile, order, string, sort, snap, match;',
+                     'look (choice slider: auto, plain, thermometer, sea; number: auto, keys, wheels, tape, abacus',
+                     'direction (choice auto, right, up, down',
+                     'start (number -1000000 to 1000000; default null) (forms: slider, dial, pile, number)',
                      'thing (choice dot, storm, drop, leaf, star, coin',
                      'bins (list',
                      '(forms: string, snap, match)',
                      'per (number 2 to 10',
                      'thingImage (media'):
             self.assertIn(word, out)
+
+    def test_spot_is_resting_so_the_catalogue_does_not_offer_it(self):
+        out = run('parts', check=True).stdout
+        inputs = out[out.index('inputs: Inputs'):]
+        self.assertNotIn(', spot', inputs.split('\n  calls:')[0].split('form (choice')[1].split(';')[0])
+        self.assertNotIn('figure (media', inputs)
+        self.assertNotIn('aspect (number', inputs)
+        self.assertNotIn('spot: {"read"', inputs)
+        desc = json.loads(run('parts', '--json', check=True).stdout)['inputs']
+        self.assertIn('spot', desc['settings']['form']['options'])   # its code stays for the redo
+        self.assertEqual(desc['settings']['form']['hidden'], ['spot'])
 
     def test_every_form_has_settings_marking_and_an_example_with_a_wrong_try(self):
         desc = json.loads(run('parts', '--json', check=True).stdout)['inputs']
@@ -332,6 +346,11 @@ class Check(Work):
         self.assertEqual(r.returncode, 0, r.stdout)
         self.assertIn('match still plays, but String is the newer way to pair things', r.stdout)
 
+    def test_spot_still_checks_but_is_not_offered(self):
+        r = run('check', FIXTURE)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("spot is being redone and isn't offered for new lessons: it still plays here, but use another form", r.stdout)
+
 
 class Forms(Work):
     """The newer answer forms: dial, pile, string, sort and snap."""
@@ -388,6 +407,30 @@ class Forms(Work):
         self.assertIn("media/gone.svg isn't in the topic's folder", out)
         out = self.errors(lambda L: step(L, 'sort-bins')['input']['items'][0].update(colour='red'))
         self.assertIn('no field "colour" here (it may have image)', out)
+
+    def test_a_look_is_one_the_form_has(self):
+        out = self.errors(lambda L: step(L, 'slide-wind')['input'].update(look='wheels'))
+        self.assertIn('"wheels" isn\'t one the slider form has: auto, plain, thermometer, sea', out)
+        out = self.errors(lambda L: step(L, 'number-wheels')['input'].update(look='sea'))
+        self.assertIn('"sea" isn\'t one the number form has: auto, keys, wheels, tape, abacus', out)
+        out = self.errors(lambda L: step(L, 'slide-down')['input'].update(direction='sideways'))
+        self.assertIn('"sideways" isn\'t one of auto, right, up, down', out)
+        r = run('check', self.forms(lambda L: step(L, 'slide-wind')['input'].update(look='thermometer', direction='up')))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        # a dial has no look or direction of its own: said anyway, it's a warning
+        self.assertIn("direction: isn't used by the dial form", run('check', self.forms(lambda L: step(L, 'dial-wind')['input'].update(direction='up'))).stdout)
+
+    def test_a_number_that_holds_a_value_must_not_start_on_its_answer(self):
+        out = self.errors(lambda L: step(L, 'number-wheels')['input'].update(start=119))
+        self.assertIn('the number starts, which is already marked right: it gives the answer away', out)
+        out = self.errors(lambda L: step(L, 'number-abacus').update(answer=0, tries=[]))
+        self.assertIn('the number starts at 0, which is already marked right', out)
+        out = self.errors(lambda L: step(L, 'number-tape')['input'].update(start=80))
+        self.assertIn("the number's start, 80, is off the scale (0 to 40)", out)
+        # keys start empty: a start is never used, and nothing is given away
+        r = run('check', self.forms(lambda L: step(L, 'number-wheels')['input'].update(look='keys', start=119)))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("a number's keys start empty, so \"start\" is never used", r.stdout)
 
     def test_tries_on_every_form_are_run(self):
         def change(L):

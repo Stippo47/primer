@@ -77,6 +77,42 @@
    "why": "It was 28.",
    "tries": [{ "state": { "value": 12, "answered": true }, "marked": "wrong" }, { "state": { "value": 28, "answered": true }, "marked": "right" }],
    "src": ["made-up"]
+  },
+  {
+   "id": "slide-down", "kind": "check", "title": "A slider that runs down",
+   "ask": "Set the made-up depth: 60 m, on a plain slider stood on its end.",
+   "input": { "form": "slider", "min": 0, "max": 100, "step": 1, "unit": "m", "start": 10, "ticks": 6, "direction": "down" },
+   "answer": 60, "within": 3, "close": 10,
+   "why": "It was 60.",
+   "tries": [{ "state": { "value": 20, "answered": true }, "marked": "wrong" }, { "state": { "value": 61, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "number-wheels", "kind": "check", "title": "Roll the wheels",
+   "ask": "Roll the wheels to the made-up wind speed: 119 km/h.",
+   "input": { "form": "number", "look": "wheels", "min": 0, "max": 250, "step": 1, "unit": "km/h", "start": 20 },
+   "answer": 119, "within": 2, "close": 10,
+   "why": "It was 119.",
+   "tries": [{ "state": { "value": 64, "answered": true }, "marked": "wrong" }, { "state": { "value": 127, "answered": true }, "marked": "close" }, { "state": { "value": 119, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "number-tape", "kind": "check", "title": "Slide the tape",
+   "ask": "Slide the tape to the made-up warmth: 26.5 °C.",
+   "input": { "form": "number", "look": "tape", "min": 0, "max": 40, "step": 0.5, "unit": "°C", "start": 12 },
+   "answer": 26.5, "within": 0.5, "close": 2,
+   "why": "It was 26.5.",
+   "tries": [{ "state": { "value": 20, "answered": true }, "marked": "wrong" }, { "state": { "value": 26, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
+  },
+  {
+   "id": "number-abacus", "kind": "check", "title": "Count on the beads",
+   "ask": "Set the beads to the made-up count: 345.",
+   "input": { "form": "number", "look": "abacus", "min": 0, "max": 999, "step": 1 },
+   "answer": 345, "within": 0, "close": 20,
+   "why": "It was 345.",
+   "tries": [{ "state": { "value": 132, "answered": true }, "marked": "wrong" }, { "state": { "value": 350, "answered": true }, "marked": "close" }, { "state": { "value": 345, "answered": true }, "marked": "right" }],
+   "src": ["made-up"]
   }
  ],
  "sources": [{ "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" }]

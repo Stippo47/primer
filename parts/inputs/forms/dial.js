@@ -1,10 +1,10 @@
 // Dial: the slider bent round a window. It reads the same settings as the slider (min, max, step, scale,
 // unit, start, ticks, picture), so a lesson can swap one for the other, and its picture sits in the window,
-// following the value. Turn the knob round the ring, or touch anywhere on the dial. The knob rides on a
+// following the value and moving on its own (clouds racing, a flame flickering). Turn the knob round the ring, or touch anywhere on the dial. The knob rides on a
 // layer of its own and moves by transform at whole device pixels; the ring's fill is one stroke whose
 // length changes. It starts at a real value (`start`, or the middle of its scale), as the slider does.
 import { esc, devicePx, numberScale } from '../kit.js';
-import { PICTURES, pictureSvg, pictureK, setPicture, windowBox } from '../pictures.js';
+import { PICTURES, pictureSvg, pictureK, setPicture, livePicture, windowBox } from '../pictures.js';
 
 // The drawing's own units: a 300 x 300 box.
 const CX = 150, CY = 150, PLATE = 146, TR = 106, TW = 22, WR = 84, LR = 129;
@@ -67,6 +67,8 @@ export function mount(f) {
   const dialbox = root.querySelector('.pi-dialbox'), svg = dialbox.querySelector('svg'), knob = root.querySelector('.pi-knob');
   const fill = svg.querySelector('.fill'), shine = svg.querySelector('.shine'), picEl = pic ? svg.querySelector(`svg.pic-${pic}`) : null;
   const reading = svg.querySelector('.pi-dialread'), chips = root.querySelector('.pi-chips');
+  // the picture in the window moves on the inputs' clock (the wind blows, the waves roll), not only when turned
+  if (picEl) f.cleanup(livePicture(pic, picEl));
   // where the drawing sits in its box: meet, centred
   const frame = () => { const r = dialbox.getBoundingClientRect(), s = Math.min(r.width, r.height) / 300; return { r, s, ox: (r.width - 300 * s) / 2, oy: (r.height - 300 * s) / 2 }; };
   let shown = null;
@@ -132,6 +134,7 @@ export function mount(f) {
       knob.classList.add(kind);
       for (const c of chips.querySelectorAll('.given')) c.classList.add(kind);
     },
+    debug: () => ({ picture: pic }),
     reset() {
       dialbox.className = 'pi-dialbox';
       knob.className = 'pi-knob';

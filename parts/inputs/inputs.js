@@ -16,6 +16,7 @@
 //
 // mount(el, settings, ctx) -> { calls, state, on, remove }.
 import { BASE_CSS, clone } from './kit.js';
+import { clockInfo } from './clock.js';
 import * as choice from './forms/choice.js';
 import * as slider from './forms/slider.js';
 import * as dial from './forms/dial.js';
@@ -72,6 +73,8 @@ export function mount(el, settings, ctx = {}) {
     },
     state: () => ({ value: clone(value), answered }),
     on: (name, fn) => { if (name === 'change') { fns.add(fn); return () => fns.delete(fn); } return () => {}; },
+    // For the tests: the form, what it says of itself (its look, its direction, its picture) and the clock.
+    debug: () => ({ form, ...(api.debug ? api.debug() : {}), clock: clockInfo() }),
     remove: () => { for (const c of cleanups) try { c(); } catch { /* already gone */ } fns.clear(); root.remove(); },
   };
 }

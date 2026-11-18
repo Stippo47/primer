@@ -1,0 +1,40 @@
+{
+  "title": "Answer forms, round two",
+  "topic": "stage2",
+  "order": 3,
+  "cards": [
+    {
+      "id": "forms-notes",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your answer form notes",
+      "text": "The thermometer, the sea, the wind moving again, Number, Pile and Spot, as you asked. Mark each part.",
+      "why": "Each part is one of your notes. The clips show what moves; on the phone it all moves at the same calm pace.",
+      "details": "To try them: Practice, Answer forms. The thermometer and the sea are also in the first hurricane lesson and in the checkup.\n\nA lesson only has to say which picture a slider has: the warmth picture brings the thermometer with it, and the depth picture turns the slider into the sea. Any slider can also stand up or lie down, and be plain, a thermometer or the sea; Practice has all of them to try.\n\nThe Number designs are on the board after this card.",
+      "parts": [
+        { "id": "thermometer", "title": "Temperature: a thermometer", "text": "The slider is a thermometer standing up beside the ball. Its liquid rises and turns from icy blue to red as it warms, and the handle is a ring at the top of the liquid. The ball moves now: frost creeps round it and glints, it drips as it melts, and when it's hot the fire flickers and heat shimmers up from it.", "images": ["../stage2/forms/how-warm.png", "../stage2/forms/how-warm-hot.png"], "videos": ["../stage2/forms/thermometer.mp4"] },
+        { "id": "sea", "title": "Depth: down into the sea", "text": "The depth slider runs down into the sea. The handle hangs on a line from a float, the warm top layer reaches down to it, and the water darkens with depth. Waves roll, bubbles rise and now and then a fish swims past. Once checked, a gold line shows how deep the warm water really goes.", "images": ["../stage2/forms/how-deep.png", "../stage2/forms/how-deep-checked.png"], "videos": ["../stage2/forms/sea.mp4"] },
+        { "id": "wind", "title": "The dial's wind moves again", "text": "It stopped when the dial came over from the sketch into the app: the picture was redrawn to change only when the dial turned, and everything that moved by itself was left out. Now the clouds race past, the waves roll, the fronds flutter and the rain drives in, faster the harder it blows. A check now fails if it ever stands still again.", "videos": ["../stage2/forms/wind.mp4"] },
+        { "id": "number", "title": "Number: four designs to pick from", "text": "The keypad is redrawn, and there are three new ways to give an exact number: wheels, a tape and an abacus. They're on the board after this card.", "images": ["../stage2/forms/number-keys.png"] },
+        { "id": "pile", "title": "Pile: the count in the handle", "text": "The count sits in the handle, between its arrows, and every storm added or taken away is a tick under your thumb. In the clip the yellow flash marks each tick; it isn't in the app. Taking hold of the handle no longer jumps the count. If you don't feel the ticks while dragging, say so: the phone may only allow them on a tap.", "images": ["../stage2/forms/pile.png"], "videos": ["../stage2/forms/pile.mp4"] },
+        { "id": "spot", "title": "Spot is out", "text": "Tap the spot is gone from Practice and isn't offered for new lessons. It's kept, to be redone when a lesson needs it.", "images": ["../stage2/forms/practice-forms.png"] }
+      ]
+    },
+    {
+      "id": "number-looks",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Number: pick a design",
+      "text": "Four ways to give an exact number. Which should lessons use?",
+      "why": "All four are checked and show the answer the same way, and a lesson could still use any of them. The clips show each one in use.",
+      "pick": ["wheels"],
+      "details": "My pick is the wheels. They give a number digit by digit, so they're unlike the slider and the dial, which are for about how much. Each digit is a tick under your thumb, and they suit a year like 1969 as well as a count or a temperature with a point.\n\nThe tape is a close second: the most fun to flick, but it's a scale again, like the slider. The keys are the quickest for a long number but the plainest. The abacus is playful, but slow for big numbers and harder to read at a glance.",
+      "items": [
+        { "id": "keys", "label": "Keys", "video": "../stage2/forms/number-keys.mp4", "text": "The keypad, redrawn: a deep screen the digits drop into, and chunky keys that sink when pressed. Nothing is set until you type." },
+        { "id": "wheels", "label": "Wheels", "video": "../stage2/forms/number-wheels.mp4", "text": "A drum for each digit, like a combination lock. Roll one with your finger or tap its arrows; each digit ticks as it passes." },
+        { "id": "tape", "label": "Tape", "video": "../stage2/forms/number-tape.mp4", "text": "A ruler you slide under a gold needle. Drag it, or flick it and let it run on and settle; each step ticks. The number is written large above." },
+        { "id": "abacus", "label": "Abacus", "video": "../stage2/forms/number-abacus.mp4", "text": "A rod of nine beads for each digit, the biggest on the left. Tap a bead to send it up with the ones above it; the digit is written under each rod." }
+      ]
+    }
+  ]
+}

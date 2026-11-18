@@ -59,6 +59,20 @@ Add one line to `PROJECTIONS` in `views.js` (any d3-geo projection symmetric abo
 - Shapes are built once: bands, warmth, tables and the four-colour groups when they're made; projected paths once per view, shared by every layer.
 - A still map asks for no frames and redraws nothing. While it moves, the base picture is redrawn and the small things drawn over it; a turning storm or a moving track redraws only the top.
 
+## The answer forms, as a second example
+
+Inputs (`parts/inputs/`) is one part with many forms, each a file in `forms/` that's only what's its own; `kit.js` holds what they share (the number scale, labels, carrying tiles, the verdict colours). A form that can look several ways keeps one behaviour and takes its look from a setting:
+
+| File | Knows | Knows nothing of |
+|---|---|---|
+| `pictures.js` | The pictures a number drives (warmth, depth, wind): each drawn once, then set to a value's k and the time | Which form shows it |
+| `clock.js` | The one frame loop for everything that moves on its own, 30 frames a second, stopped when nothing's on screen; `hold` and `pin` for tests and films | What's drawn |
+| `tracks.js` | The slider's looks: plain, thermometer, sea. A look draws around the line the handle runs along | The finger, the chip, the truth |
+| `forms/slider.js` | The one slider, across, up or down, in any look: the finger, the value's chip, the numbers, the truth | How a track is drawn |
+| `number/*.js` | The number's looks: keys, wheels, tape, abacus, each a whole way of entering a number, sharing `common.js` (digits, where it starts, the truth line) | Each other |
+
+To add a slider look: one entry in `TRACKS` and its name in `look`'s `byForm.slider` in `part.json`. A picture: one entry in `PICTURES`, its name in `picture`, and `look` if a slider should take a look with it. A number look: a file in `number/`, a line in `LOOKS` in `forms/number.js`, and its name in `byForm.number`. A form being redone is listed in `form`'s `hidden`: it still plays, but Practice and `primer parts` don't offer it.
+
 ## Rules that keep the kit small
 
 - A lesson never carries code. If it needs something the kit can't do, the kit grows: a setting, a call, a layer, a preset, or a new part, built general enough for the next lesson.

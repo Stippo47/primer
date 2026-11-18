@@ -80,7 +80,8 @@ PICTURES = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 MEDIA_TYPES = PICTURES | {'.svg', '.m4a', '.mp3'}
 # The answer forms, by how they answer (parts/inputs/part.json has their settings and marking).
 NUMBER_FORMS = ('slider', 'dial', 'number', 'pile')
-STARTS = {'slider': 'middle', 'dial': 'middle', 'pile': 'fewest'}  # these start at a real value, and can be checked as they are
+STARTS = {'slider': 'middle', 'dial': 'middle', 'pile': 'fewest', 'number': 'zero'}  # these start at a real value, and can be checked as they are
+NUMBER_HOLDS = ('wheels', 'tape', 'abacus')  # a number's looks that always hold a value (keys start empty)
 PAIR_FORMS = ('string', 'snap', 'match')
 PILE_MOST = 60
 LIST_SETTINGS = ('options', 'items', 'left', 'right', 'bins')
@@ -435,6 +436,9 @@ def check_settings(desc, settings, where, rep, kit, base, form=None, writer_keys
             continue
         if form and spec.get('forms') and form not in spec['forms']:
             rep.warn(f'{where}.{k}', f'isn\'t used by the {form} form')
+        elif form and spec.get('byForm') and form in spec['byForm'] and v not in spec['byForm'][form]:
+            rep.err(f'{where}.{k}', f'"{v}" isn\'t one the {form} form has: {", ".join(spec["byForm"][form])}')
+            continue
         value = v
         if k in LIST_SETTINGS and isinstance(v, list):
             value = [{kk: vv for kk, vv in o.items() if kk not in writer_keys} if isinstance(o, dict) else o for o in v]
@@ -539,14 +543,19 @@ def check_answer_shape(step, inputs_desc, where, rep):
             rep.err(where, f'the answer {ans} is off the scale ({lo} to {hi})')
         if form in ('slider', 'dial') and not step.get('within'):
             rep.warn(where, f'a {form} with "within" 0 is right only on the exact value: give it some room')
-        if form in STARTS:
-            # These start at a real value (start, or the middle of the scale; a pile at its fewest) and can be
-            # checked as they are, so where they start must not give the answer away.
-            log = form != 'pile' and inp.get('scale') == 'log' and lo > 0 and hi > lo
+        holds = form != 'number' or inp.get('look') in NUMBER_HOLDS
+        if form == 'number' and 'start' in inp and not holds:
+            rep.warn(where, 'a number\'s keys start empty, so "start" is never used: it\'s for wheels, tape and abacus')
+        if form in STARTS and holds:
+            # These start at a real value (start, or the middle of the scale; a pile at its fewest; a number's
+            # wheels, tape or abacus at 0) and can be checked as they are, so where they start must not give
+            # the answer away.
+            log = form in ('slider', 'dial') and inp.get('scale') == 'log' and lo > 0 and hi > lo
             mid = (lo * hi) ** 0.5 if log else (lo + hi) / 2
-            first = mid if STARTS[form] == 'middle' else max(0, min(lo, hi))
+            low, high = min(lo, hi), max(lo, hi)
+            first = mid if STARTS[form] == 'middle' else max(0, low) if STARTS[form] == 'fewest' else (0 if low <= 0 <= high else low)
             start = inp.get('start', first)
-            said = 'starts' if 'start' in inp else (f'starts in the middle of its scale, at {mid:g}' if STARTS[form] == 'middle' else f'starts at its fewest, {first:g}')
+            said = 'starts' if 'start' in inp else (f'starts in the middle of its scale, at {mid:g}' if STARTS[form] == 'middle' else f'starts at its fewest, {first:g}' if STARTS[form] == 'fewest' else f'starts at {first:g}')
             if _num(start) is not None:
                 if not (min(lo, hi) <= start <= max(lo, hi)):
                     rep.err(where, f'the {form}\'s start, {start}, is off the scale ({lo} to {hi})')
@@ -580,6 +589,8 @@ def check_answer_shape(step, inputs_desc, where, rep):
     elif form == 'spot':
         if not (isinstance(ans, dict) and all(_num(ans.get(k)) is not None and 0 <= ans[k] <= 1 for k in ('x', 'y', 'r'))):
             rep.err(where, 'the answer is { "x", "y", "r" }, each from 0 to 1')
+    if form in ((inputs_desc.get('settings') or {}).get('form') or {}).get('hidden', []):
+        rep.warn(where, f'{form} is being redone and isn\'t offered for new lessons: it still plays here, but use another form')
     if len(rep.errors) == errors_before and ans is not None:
         # the answer itself must be marked right, or the step can't be passed
         state = {'value': {'x': ans['x'], 'y': ans['y']} if form == 'spot' else ans, 'answered': True}
@@ -1551,9 +1562,16 @@ def cmd_parts(a):
         print(f'{name}: {d["title"]}')
         print(f'  {d["about"]}')
         print('  settings:')
+        hidden = set((d['settings'].get('form') or {}).get('hidden', [])) if name == 'inputs' else set()
         for k, s in d['settings'].items():
-            rng = f' {", ".join(map(str, s["options"]))}' if s['type'] == 'choice' else f' {s.get("min")} to {s.get("max")}' if s['type'] == 'number' else ''
-            forms = f' (forms: {", ".join(s["forms"])})' if s.get('forms') else ''
+            # what's resting (a hidden form, and settings only it uses) isn't offered
+            if s.get('forms') and set(s['forms']) <= hidden:
+                continue
+            opts = [o for o in s.get('options', []) if o not in s.get('hidden', [])]
+            rng = f' {", ".join(map(str, opts))}' if s['type'] == 'choice' else f' {s.get("min")} to {s.get("max")}' if s['type'] == 'number' else ''
+            if s.get('byForm'):
+                rng = ' ' + '; '.join(f'{f}: {", ".join(o)}' for f, o in s['byForm'].items())
+            forms = f' (forms: {", ".join(f for f in s["forms"] if f not in hidden)})' if s.get('forms') else ''
             print(f'    {k} ({s["type"]}{rng}; default {json.dumps(s.get("default"), ensure_ascii=False)}){forms}: {s.get("about", "")}')
         print('  calls:')
         for k, c in d.get('calls', {}).items():
@@ -1563,7 +1581,7 @@ def cmd_parts(a):
             print('  events: ' + '; '.join(f'{k} {e.get("gives", "")}' for k, e in d['events'].items()))
         print('  state: ' + '; '.join(f'{k}: {s.get("about", s.get("type", ""))}' for k, s in d.get('state', {}).items()))
         if d.get('marking'):
-            print('  marking: ' + '; '.join(f'{k}: {json.dumps(m["rule"], ensure_ascii=False)}' for k, m in d['marking'].items() if k != 'about'))
+            print('  marking: ' + '; '.join(f'{k}: {json.dumps(m["rule"], ensure_ascii=False)}' for k, m in d['marking'].items() if k != 'about' and k not in hidden))
         print(f'  needs: {d.get("needs", {}).get("weight", "")}')
         print()
 
