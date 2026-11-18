@@ -1,0 +1,30 @@
+{
+  "title": "Avatar shapes",
+  "topic": "stage0",
+  "order": 11,
+  "cards": [
+    {
+      "id": "avatar-4",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Avatar shapes",
+      "text": "Ten new base shapes, no clothes yet. Tick the ones you'd like me to take further.",
+      "why": "You liked the raccoon and the frog but weren't fully happy, and asked for more designs, shapes first. Three build on those two, four try new kinds, and three push the shape further. What you tick decides which one gets variations, and then a hat and shirt.",
+      "pick": ["hippo"],
+      "details": "What stays the same in all ten is the build you liked in the raccoon and the frog: a few simple blocks, big white eyes set close together, feet floating just under the body, flat colour, and one broad shadow down the right side with a hard edge. No outlines and no thin lines of shine.\n\nWhat changes is the overall shape, so you can see which kind of body you like: tall and sleek (otter), squat and blocky (hippo), a big head on a thin body (gecko), one round-topped mass (cockatiel), a ball (bee), a cloud (sheep), top-heavy with wings (bat), a big bell with the face high up (walrus), and a small body on long legs (flamingo). The person is there to check whether a person drawn this way works for you, since the two in the last round didn't.\n\nMy pick is the hippo (2). It builds most directly on the frog, its chunky shape reads clearly at room size, its half-closed eyes give it a calm, slightly smug look, and its flat head and barrel of a body would take a hat and shirt easily. My second is the sheep (7), the cleanest outline on the board.\n\nStill weak: the flamingo's face gets small at room size; the bat's face on its own looks a little like a fox, and it's the wings that make it a bat; the person is fine but plain; the otter is the least striking of the three that build on your favourites.\n\nThe two pictures on the front show all ten at the size they'd stand in the room, five to a picture. The names are only for this card. None is copied from any studio's character.",
+      "images": ["../../stage0/avatar4/shots/lineup-a.png", "../../stage0/avatar4/shots/lineup-b.png"],
+      "items": [
+        { "id": "otter", "label": "1 Otter", "image": "../../stage0/avatar4/shots/otter.png", "text": "Builds on the raccoon. Head and body are one sleek shape, paws held together, a thick tail on the floor." },
+        { "id": "hippo", "label": "2 Hippo", "image": "../../stage0/avatar4/shots/hippo.png", "text": "Builds on the frog. Eyes high on a small head, a wide muzzle below, no legs, half-closed eyes. My pick." },
+        { "id": "gecko", "label": "3 Gecko", "image": "../../stage0/avatar4/shots/gecko.png", "text": "Builds on the frog. A broad flat head wider than the body, a wide grin, a tail curled into a spiral." },
+        { "id": "cockatiel", "label": "4 Cockatiel", "image": "../../stage0/avatar4/shots/cockatiel.png", "text": "New: a bird drawn the in-between way. One round-topped body with the face on its front, a crest, a hooked beak." },
+        { "id": "bee", "label": "5 Bee", "image": "../../stage0/avatar4/shots/bee.png", "text": "New: a small round one. One rounded block with two stripes, and wings and feelers sticking out of it." },
+        { "id": "person", "label": "6 Person", "image": "../../stage0/avatar4/shots/person.png", "text": "New: a person drawn the in-between way. A big head, hair pulled back into one round bun, a pear-shaped body." },
+        { "id": "sheep", "label": "7 Sheep", "image": "../../stage0/avatar4/shots/sheep.png", "text": "New: fluffy, with a clean outline. The wool is one cloud of equal bumps, the face a dark block. My second." },
+        { "id": "bat", "label": "8 Bat", "image": "../../stage0/avatar4/shots/bat.png", "text": "Bolder: the head and ears are two thirds of its height, on a small body with its wings held open." },
+        { "id": "walrus", "label": "9 Walrus", "image": "../../stage0/avatar4/shots/walrus.png", "text": "Bolder: one big bell of a body with the face high on it, a huge moustache and tusks." },
+        { "id": "flamingo", "label": "10 Flamingo", "image": "../../stage0/avatar4/shots/flamingo.png", "text": "Bolder: a round body on very long legs, with a bent beak. Its face gets small at room size." }
+      ]
+    }
+  ]
+}
