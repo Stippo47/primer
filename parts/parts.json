@@ -1,0 +1,4 @@
+{
+  "about": "Every part in the kit, by folder name. Each folder holds part.json (its description) and the module it names.",
+  "parts": ["globe", "inputs"]
+}

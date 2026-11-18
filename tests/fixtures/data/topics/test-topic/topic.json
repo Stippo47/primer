@@ -1,0 +1,9 @@
+{
+ "v": 1,
+ "title": "Test topic",
+ "level": "tour",
+ "colour": "orange",
+ "mark": "star",
+ "about": "Made-up test data: every kind of step and every way of answering.",
+ "lessons": ["every-kind", "second"]
+}

@@ -1,0 +1,12 @@
+{
+ "v": 1,
+ "title": "A second lesson",
+ "steps": [
+  { "id": "read", "kind": "explain", "title": "Words", "text": "A made-up second lesson.", "src": ["made-up"] },
+  { "id": "pick", "kind": "check", "title": "Pick", "ask": "Pick the made-up right one.", "input": { "form": "choice", "options": [
+   { "id": "a", "text": "This one", "right": true },
+   { "id": "b", "text": "That one", "why": "Not that one.", "tempting": "It looks like this one." }
+  ] }, "src": ["made-up"] }
+ ],
+ "sources": [{ "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" }]
+}

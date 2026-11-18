@@ -1,0 +1,2 @@
+{ "v": 1, "title": "The only lesson", "steps": [ { "id": "read", "kind": "explain", "title": "Words", "text": "Made-up words in a second topic.", "src": ["made-up"] } ],
+  "sources": [{ "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" }] }

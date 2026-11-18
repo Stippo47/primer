@@ -1,0 +1,86 @@
+{
+ "v": 1,
+ "title": "Every kind of step",
+ "version": 1,
+ "minutes": 5,
+ "steps": [
+  {
+   "id": "read-globe", "kind": "explain", "title": "A globe to read by",
+   "text": "Made-up words beside a globe, to read. *These words* are stressed.",
+   "figure": { "part": "globe", "settings": { "style": "day", "spin": "auto", "tap": "none" }, "calls": [["point", [2.35, 48.85], "Paris"]] },
+   "src": ["made-up"]
+  },
+  {
+   "id": "read-picture", "kind": "explain", "title": "A picture to read by",
+   "text": "Made-up words beside a picture from the topic's media.",
+   "figure": { "image": "media/target.svg", "alt": "Two dots" },
+   "src": ["made-up"]
+  },
+  {
+   "id": "pick", "kind": "check", "title": "Pick one",
+   "ask": "Which of these is the made-up right answer?",
+   "input": { "form": "choice", "options": [
+    { "id": "a", "text": "The right one", "right": true },
+    { "id": "b", "text": "A wrong one", "why": "Wrong, for a made-up reason.", "tempting": "It sounds right." },
+    { "id": "c", "text": "Another one", "why": "Also wrong, for another reason.", "tempting": "It's next to the right one." }
+   ] },
+   "src": ["made-up"]
+  },
+  {
+   "id": "slide", "kind": "check", "title": "Slide it",
+   "ask": "Set the slider to the made-up truth.",
+   "input": { "form": "slider", "min": 1, "max": 1000, "scale": "log", "step": 1, "unit": "km" },
+   "answer": 100, "within": 10, "close": 40,
+   "misses": [{ "when": { "read": "value", "between": [0, 90] }, "why": "Too small." }],
+   "why": "Too big.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "type", "kind": "check", "title": "Type it",
+   "ask": "Type the made-up number.",
+   "input": { "form": "number", "min": 0, "max": 100, "step": 1 },
+   "answer": 7, "within": 0,
+   "why": "It was 7.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "order", "kind": "check", "title": "In order",
+   "ask": "Put these in the made-up order.",
+   "input": { "form": "order", "items": [{ "id": "one", "text": "One" }, { "id": "two", "text": "Two" }, { "id": "three", "text": "Three" }], "ends": ["First", "Last"] },
+   "answer": ["one", "two", "three"],
+   "why": "One, two, three.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "match", "kind": "check", "title": "Matched",
+   "ask": "Match each to its made-up partner.",
+   "input": { "form": "match", "left": [{ "id": "x", "text": "Ex" }, { "id": "y", "text": "Why" }], "right": [{ "id": "p", "text": "Pea" }, { "id": "q", "text": "Queue" }] },
+   "answer": { "x": "p", "y": "q" },
+   "why": "Ex with pea, why with queue.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "spot", "kind": "check", "title": "The spot",
+   "ask": "Tap the gold dot.",
+   "input": { "form": "spot", "figure": "media/target.svg", "aspect": 0.625 },
+   "answer": { "x": 0.75, "y": 0.3, "r": 0.1 },
+   "why": "The gold dot is top right.",
+   "src": ["made-up"]
+  },
+  {
+   "id": "brazil", "kind": "play", "title": "Find Brazil",
+   "ask": "Tap Brazil.",
+   "play": { "part": "globe", "settings": { "style": "day", "spin": "free", "tap": "country", "labels": "none", "view": [-50, -10] } },
+   "goal": { "read": "selected", "is": "Brazil" },
+   "misses": [{ "when": { "read": "tapped.land", "is": false }, "why": "That's the sea." }],
+   "why": "That's another country.",
+   "then": [["highlight", ["Brazil"]]],
+   "tries": [
+    { "state": { "selected": "Brazil", "tapped": { "lon": -50, "lat": -10, "land": true, "country": "Brazil" } }, "marked": "right" },
+    { "state": { "selected": "Peru", "tapped": { "lon": -75, "lat": -10, "land": true, "country": "Peru" } }, "marked": "wrong" }
+   ],
+   "src": ["made-up"]
+  }
+ ],
+ "sources": [{ "id": "made-up", "by": "Nobody", "title": "Made-up test data", "checked": "never" }]
+}

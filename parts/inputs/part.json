@@ -1,0 +1,55 @@
+{
+  "name": "inputs",
+  "title": "Inputs",
+  "about": "Every way of answering a question: pick one of several answers, set a slider on a scale, type a number, put things in order, match pairs, or tap the spot on a figure. It knows nothing about the question; a lesson says what to show and what counts as right.",
+  "module": "inputs.js",
+  "thumb": "thumb.svg",
+  "settings": {
+    "form": { "type": "choice", "options": ["choice", "slider", "number", "order", "match", "spot"], "default": "choice", "about": "Which way of answering." },
+    "options": { "type": "list", "forms": ["choice"], "of": { "id": "text", "text": "text" }, "minItems": 2, "maxItems": 5, "maxText": 60, "default": [], "about": "The answers to pick from. Each has an id and its words." },
+    "shuffle": { "type": "bool", "forms": ["choice", "order", "match"], "default": true, "about": "Mix the answers up each time, so their place gives nothing away. Order always starts out of order." },
+    "min": { "type": "number", "forms": ["slider", "number"], "min": -1000000, "max": 1000000, "default": 0, "about": "The low end of the scale. On a number, the lowest that can be typed." },
+    "max": { "type": "number", "forms": ["slider", "number"], "min": -1000000, "max": 1000000, "default": 100, "about": "The high end of the scale. On a number, the highest that can be typed." },
+    "step": { "type": "number", "forms": ["slider", "number"], "min": 0.001, "max": 100000, "default": 1, "about": "What the value moves in: 1, 0.5, 0.1 and so on." },
+    "scale": { "type": "choice", "forms": ["slider"], "options": ["linear", "log"], "default": "linear", "about": "Log stretches the scale, for answers that run over powers of ten. Needs min above 0." },
+    "unit": { "type": "text", "forms": ["slider", "number"], "maxLength": 12, "default": "", "about": "Shown after the value, like °C or km." },
+    "ticks": { "type": "number", "forms": ["slider"], "min": 0, "max": 10, "step": 1, "default": 5, "about": "How many numbers to write under the scale." },
+    "items": { "type": "list", "forms": ["order"], "of": { "id": "text", "text": "text" }, "minItems": 2, "maxItems": 6, "maxText": 48, "default": [], "about": "The things to put in order." },
+    "ends": { "type": "list", "forms": ["order"], "of": "text", "minItems": 0, "maxItems": 2, "maxText": 20, "default": [], "about": "Words for the two ends of the order, like First and Last." },
+    "left": { "type": "list", "forms": ["match"], "of": { "id": "text", "text": "text" }, "minItems": 2, "maxItems": 5, "maxText": 32, "default": [], "about": "The left column." },
+    "right": { "type": "list", "forms": ["match"], "of": { "id": "text", "text": "text" }, "minItems": 2, "maxItems": 5, "maxText": 32, "default": [], "about": "The right column. Each left one pairs with exactly one of these." },
+    "figure": { "type": "media", "forms": ["spot"], "default": "", "about": "The picture to tap on: a path to a picture in the topic. Left empty, a sample drawing." },
+    "aspect": { "type": "number", "forms": ["spot"], "min": 0.3, "max": 2, "default": 0.62, "about": "The picture's height over its width, so the space is kept before it loads." }
+  },
+  "calls": {
+    "reveal": { "args": [{ "name": "answer", "type": "answer" }], "about": "Shows the truth beside what was given: the right choice, the true value on the scale, the right order or pairs, the right spot." },
+    "mark": { "args": [{ "name": "kind", "type": "choice", "options": ["right", "close", "wrong"] }], "about": "Colours the answer given on a slider or a number: right, close or wrong." },
+    "lock": { "args": [], "about": "Stops any more changes, once an answer has been checked." },
+    "reset": { "args": [], "about": "Clears the answer and starts again." }
+  },
+  "events": {
+    "change": { "gives": "{ value, answered }", "about": "Whenever the answer changes." }
+  },
+  "state": {
+    "value": { "type": "depends on form", "about": "choice: the id picked. slider and number: the number. order: the ids in order. match: { leftId: rightId }. spot: { x, y } from 0 to 1 across and down the picture." },
+    "answered": { "type": "bool", "about": "Whether there is enough of an answer to check: something picked, the slider moved, a number typed, every pair made, a spot tapped. Order counts as answered from the start." }
+  },
+  "marking": {
+    "about": "How a Check step's answer becomes a rule (see docs/format.md). $answer is the step's answer, $within its tolerance, $close its wider tolerance for 'close'.",
+    "choice": { "answer": "the id of the right option", "rule": { "read": "value", "is": "$answer" } },
+    "slider": { "answer": "a number", "rule": { "read": "value", "near": "$answer", "within": "$within" }, "close": { "read": "value", "near": "$answer", "within": "$close" } },
+    "number": { "answer": "a number", "rule": { "read": "value", "near": "$answer", "within": "$within" }, "close": { "read": "value", "near": "$answer", "within": "$close" } },
+    "order": { "answer": "the ids in the right order", "rule": { "read": "value", "same": "$answer" } },
+    "match": { "answer": "{ leftId: rightId } for every left one", "rule": { "read": "value", "pairs": "$answer" } },
+    "spot": { "answer": "{ x, y, r } from 0 to 1", "rule": { "read": "value", "inCircle": "$answer" } }
+  },
+  "needs": { "data": [], "weight": "Light: a few dozen elements, no canvas, nothing to download." },
+  "example": {
+    "choice": { "settings": { "form": "choice", "options": [{ "id": "a", "text": "Anticlockwise" }, { "id": "b", "text": "Clockwise" }, { "id": "c", "text": "Either way" }] }, "answer": "a", "state": { "value": "a" } },
+    "slider": { "settings": { "form": "slider", "min": 0, "max": 40, "step": 0.5, "unit": "°C" }, "answer": 26.5, "within": 1, "state": { "value": 26.5 } },
+    "number": { "settings": { "form": "number", "min": 0, "max": 100, "step": 1, "unit": "" }, "answer": 7, "within": 1, "state": { "value": 7 } },
+    "order": { "settings": { "form": "order", "items": [{ "id": "a", "text": "Thunderstorms gather" }, { "id": "b", "text": "Tropical depression" }, { "id": "c", "text": "Tropical storm" }, { "id": "d", "text": "Hurricane" }], "ends": ["First", "Last"] }, "answer": ["a", "b", "c", "d"], "state": { "value": ["a", "b", "c", "d"] } },
+    "match": { "settings": { "form": "match", "left": [{ "id": "h", "text": "Hurricane" }, { "id": "t", "text": "Typhoon" }, { "id": "c", "text": "Cyclone" }], "right": [{ "id": "atl", "text": "North Atlantic" }, { "id": "nwp", "text": "Northwest Pacific" }, { "id": "ind", "text": "Indian Ocean" }] }, "answer": { "h": "atl", "t": "nwp", "c": "ind" }, "state": { "value": { "h": "atl", "t": "nwp", "c": "ind" } } },
+    "spot": { "settings": { "form": "spot" }, "answer": { "x": 0.5, "y": 0.52, "r": 0.09 }, "state": { "value": { "x": 0.5, "y": 0.5 } } }
+  }
+}

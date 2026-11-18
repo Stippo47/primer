@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="170" height="96" viewBox="0 0 170 96">
+  <!-- The Inputs part's card picture: two answers to pick from and a slider on a scale. -->
+  <rect x="22" y="12" width="126" height="22" rx="8" fill="#2f3678"/>
+  <rect x="22" y="10" width="126" height="22" rx="8" fill="#1b2250" stroke="#364090" stroke-width="2"/>
+  <rect x="32" y="18" width="62" height="6" rx="3" fill="#7f88c8"/>
+  <rect x="22" y="40" width="126" height="22" rx="8" fill="#1b8fd1"/>
+  <rect x="22" y="38" width="126" height="22" rx="8" fill="#222a60" stroke="#6fd6ff" stroke-width="2"/>
+  <rect x="32" y="46" width="80" height="6" rx="3" fill="#dde4ff"/>
+  <rect x="24" y="74" width="122" height="7" rx="3.5" fill="#2a3168"/>
+  <rect x="24" y="74" width="78" height="7" rx="3.5" fill="#49c6ff"/>
+  <circle cx="102" cy="79.5" r="9" fill="#b9c2ee"/>
+  <circle cx="102" cy="77.5" r="9" fill="#ffffff"/>
+</svg>

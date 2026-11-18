@@ -1,0 +1,51 @@
+{
+  "name": "globe",
+  "title": "Globe",
+  "about": "The Earth as a flat-shaded ball in the house style, drawn from Natural Earth's country shapes. Drag to turn it. It can colour the sea by warmth, light up countries and bands of latitude, and show points, pins and a turning hurricane. A tap reports where it landed: the place, whether it is land, and which country.",
+  "module": "globe.js",
+  "thumb": "thumb.svg",
+  "settings": {
+    "spin": { "type": "choice", "options": ["free", "auto", "locked"], "default": "free", "about": "free: drag to turn, and it carries on a little when let go. auto: turns slowly by itself, and can still be dragged. locked: stays where it is put; taps still work." },
+    "labels": { "type": "choice", "options": ["none", "countries"], "default": "none", "about": "countries: the names of the bigger countries facing you, and the name of a tapped country." },
+    "style": { "type": "choice", "options": ["day", "warmth", "muted"], "default": "day", "about": "day: blue sea, green land. warmth: the sea coloured by surface temperature, warmest near the equator (a simplified northern late summer). muted: grey, for a globe that isn't the point." },
+    "tap": { "type": "choice", "options": ["country", "pin", "none"], "default": "country", "about": "What a tap does. country: lifts the country tapped. pin: drops a pin where the finger lands. none: nothing shows, though the tap is still reported." },
+    "view": { "type": "lonlat", "default": [-40, 15], "about": "Where it faces at the start: [longitude, latitude]." },
+    "zoom": { "type": "number", "min": 1, "max": 3, "step": 0.1, "default": 1, "about": "1 shows the whole ball; 3 is close in." },
+    "equator": { "type": "bool", "default": false, "about": "Draws the equator as a dotted line, with its name." }
+  },
+  "calls": {
+    "spinTo": { "args": [{ "name": "place", "type": "place" }, { "name": "seconds", "type": "number", "min": 0, "max": 5, "optional": true }], "about": "Turns to face a place: [longitude, latitude] or a country's name. Takes about a second unless told." },
+    "highlight": { "args": [{ "name": "countries", "type": "list", "of": "country" }, { "name": "colour", "type": "colour", "optional": true }], "about": "Fills these countries with a colour (gold unless told)." },
+    "band": { "args": [{ "name": "from", "type": "number", "min": 0, "max": 90 }, { "name": "to", "type": "number", "min": 0, "max": 90 }, { "name": "colour", "type": "colour", "optional": true }], "about": "Shades the latitudes from..to degrees, north and south of the equator both." },
+    "point": { "args": [{ "name": "place", "type": "place" }, { "name": "label", "type": "text", "optional": true, "maxLength": 28 }], "about": "A dot at a place, with a label if given." },
+    "marker": { "args": [{ "name": "place", "type": "place" }, { "name": "kind", "type": "choice", "options": ["ring", "pin", "storm"] }, { "name": "label", "type": "text", "optional": true, "maxLength": 28 }], "about": "A ring, a pin, or a hurricane (the Disc drawing) turning the way it would there: anticlockwise north of the equator, clockwise south of it." },
+    "clear": { "args": [], "about": "Takes away every highlight, band, point, marker and pin, and lets go of the selected country." }
+  },
+  "colours": ["gold", "pink", "cyan", "teal", "purple", "orange", "white"],
+  "events": {
+    "tapped": { "gives": "{ lon, lat, land, country }", "about": "A tap on the ball. country is null on the sea." },
+    "turned": { "gives": "{ centre }", "about": "It came to rest after being dragged." }
+  },
+  "state": {
+    "selected": { "type": "text", "about": "The country tapped last, with tap set to country; null if none." },
+    "tapped": { "type": "{ lon, lat, land, country }", "about": "Where the last tap landed, whatever tap is set to; null before any." },
+    "centre": { "type": "lonlat", "about": "The [longitude, latitude] facing you." }
+  },
+  "needs": {
+    "data": ["vendor/countries-110m.json", "vendor/d3-geo.min.mjs", "vendor/d3-array.min.mjs", "vendor/topojson-client.min.js"],
+    "weight": "About 170 KB of shapes and scripts, kept on the phone. One canvas; the ball is redrawn only while it turns, and a turning hurricane redraws only itself."
+  },
+  "example": {
+    "settings": { "style": "warmth", "spin": "free", "tap": "pin", "equator": true, "view": [-40, 15] },
+    "calls": [["band", 5, 20], ["marker", [-45, 14], "storm"]],
+    "state": { "tapped": { "lon": -40, "lat": 12, "land": false, "country": null }, "selected": null, "centre": [-40, 15] }
+  },
+  "try": [
+    { "label": "Atlantic", "call": ["spinTo", [-40, 18]] },
+    { "label": "Pacific", "call": ["spinTo", [160, 10]] },
+    { "label": "Storm", "call": ["marker", [-45, 14], "storm"] },
+    { "label": "5° to 20°", "call": ["band", 5, 20] },
+    { "label": "Brazil", "call": ["highlight", ["Brazil"]] },
+    { "label": "Clear", "call": ["clear"] }
+  ]
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- Draws the app's icon and the Globe part's card picture, for tools/make-art.mjs. Not part of the app. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script type="importmap">{ "imports": { "d3-array": "../vendor/d3-array.min.mjs", "d3-geo": "../vendor/d3-geo.min.mjs" } }</script>
+<script src="../vendor/topojson-client.min.js"></script>
+<style>html,body{margin:0;background:#141a3c}svg{display:block}</style>
+</head>
+<body>
+<div id="out"></div>
+<script type="module">
+import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo';
+import { stepButton } from '../js/art.js';
+
+const world = await fetch('../vendor/countries-110m.json').then(r => r.json());
+const { feature } = globalThis.topojson;
+
+// The mini globe on the Globe part's card: the stage 0 sketch's globe, small, with its glow.
+function globeThumb() {
+  const cx = 85, cy = 48, r = 38;
+  const proj = geoOrthographic().scale(r).translate([cx, cy]).rotate([50, -22, 0]).clipAngle(90).precision(0.4);
+  const path = geoPath(proj);
+  const land = feature(world, world.objects.land);
+  // to half a pixel, without points that land on the one before: a card this small needs no more
+  const short = s => s.replace(/-?\d+\.\d+/g, m => String(Math.round(parseFloat(m) * 2) / 2))
+    .replace(/L(-?[\d.]+),(-?[\d.]+)(?=L\1,\2)/g, '');
+  const d = short(path(land));
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="170" height="96" viewBox="0 0 170 96">
+  <defs><clipPath id="c"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
+  <radialGradient id="s" cx="0.36" cy="0.3" r="0.8"><stop offset="0.55" stop-color="#070a2e" stop-opacity="0"/><stop offset="1" stop-color="#070a2e" stop-opacity="0.55"/></radialGradient>
+  <radialGradient id="g"><stop offset="0.78" stop-color="#4f7cff" stop-opacity="0.55"/><stop offset="1" stop-color="#4f7cff" stop-opacity="0"/></radialGradient></defs>
+  <circle cx="${cx}" cy="${cy}" r="${r * 1.22}" fill="url(#g)"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#1b2a80"/>
+  <g clip-path="url(#c)"><path d="${short(path(geoGraticule().step([30, 30])()))}" fill="none" stroke="#fff" stroke-opacity="0.06"/>
+  <path d="${d}" fill="#127a85" transform="translate(0 2)"/><path d="${d}" fill="#2bc4a4"/>
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#s)"/></g>
+  <circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="none" stroke="#7fb0ff" stroke-opacity="0.5" stroke-width="1.5"/>
+</svg>`;
+}
+
+// The app's icon: one raised step from the path, the one to do next, on the night ground.
+function appIcon(size) {
+  const k = size / 120;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 120 120">
+  <defs><radialGradient id="b1"><stop offset="0" stop-color="#5b2bd6" stop-opacity="0.55"/><stop offset="1" stop-color="#5b2bd6" stop-opacity="0"/></radialGradient>
+  <radialGradient id="b2"><stop offset="0" stop-color="#0fa3b1" stop-opacity="0.35"/><stop offset="1" stop-color="#0fa3b1" stop-opacity="0"/></radialGradient></defs>
+  <rect width="120" height="120" fill="#141a3c"/><circle cx="20" cy="22" r="70" fill="url(#b1)"/><circle cx="104" cy="104" r="64" fill="url(#b2)"/>
+  <circle cx="98" cy="20" r="1.4" fill="#d6e2ff" opacity="0.7"/><circle cx="16" cy="92" r="1.1" fill="#d6e2ff" opacity="0.6"/><circle cx="104" cy="58" r="0.9" fill="#d6e2ff" opacity="0.6"/>
+  <g transform="translate(60 57) scale(0.98)">${stepButton({ kind: 'explain', state: 'now', progress: 0.62 })}</g>
+</svg>`;
+}
+
+window.globeThumb = globeThumb;
+window.appIcon = appIcon;
+window.show = svg => { document.getElementById('out').innerHTML = svg; };
+window.ready = true;
+</script>
+</body>
+</html>
