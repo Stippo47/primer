@@ -208,6 +208,8 @@ export const files = {
   set: (key, val) => run('files', 'readwrite', s => s.put(val, key)).then(v => { if (v === NO_DB) memoryFiles.set(key, val); }),
   del: key => run('files', 'readwrite', s => s.delete(key)).then(v => { if (v === NO_DB) memoryFiles.delete(key); }),
   all: () => run('files', 'readonly', s => s.getAll()).then(v => (v === NO_DB ? [...memoryFiles.values()] : v), () => []),
+  // Just the paths: what's here, without reading any of it.
+  paths: () => run('files', 'readonly', s => s.getAllKeys()).then(v => (v === NO_DB ? [...memoryFiles.keys()] : v), () => []),
   // Just the words. Media can be big, and the library has no use for them.
   words: async () => {
     try {

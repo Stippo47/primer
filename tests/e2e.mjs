@@ -1567,6 +1567,11 @@ try {
     await live();
     ok(await bare() && (await ev(`document.querySelector('.combo').innerText.trim()`)) === '×0' && (await ev(`document.querySelectorAll('.cpips i').length`)) === 5, 'a run hides the tab bar: a cross, the combo at ×0 and its five pips');
     const asked = [];
+    // Each ask is read aloud, in its topic's narrator, by the fact and the ask whatever the run calls the step
+    await live();
+    const first = (await dbg()).step;
+    ok(first.id !== `${first.fact}.${first.ask}` && await waitFor(`__primer.run.reader.heard.some(h => h.id === ${JSON.stringify(`${first.fact}.${first.ask}.ask`)} && h.narrator === 'heart')`, 5000)
+      && await waitFor(`__primer.run.textRa.state().lit > 0`, 3000), `a review's question is read aloud as it opens, its words lit: ${first.fact}.${first.ask}.ask (the step is ${first.id})`, await ev('__primer.run.reader.heard'));
     for (let k = 0; k < 3; k++) {
       await live();
       asked.push((await dbg()).step);
@@ -1590,6 +1595,10 @@ try {
     ok(vd.verdict === 'Not quite' && vd.why.length > 0 && d.combo === 0 && d.best === 3 && (await ev(`document.querySelector('.combo').innerText.trim()`)) === '×0', 'a miss: Not quite, its line of why, and the combo back to ×0 (the best stays 3)', { vd, d });
     const link = await ev(`(()=>{const l=document.querySelector('.lfoot .taught');return l?l.innerText.trim():null})()`);
     ok(!!link, 'with a link back to the lesson step that taught it', link);
+    const missLine = `${missed.fact}.${missed.ask}.${await ev('__primer.run.whyLine')}`;
+    ok(await waitFor(`__primer.run.reader.heard.at(-1).id === ${JSON.stringify(missLine)} && !!document.querySelector('.lwhy.ra')`, 3000), `and its line of why is read aloud: ${missLine}`, await ev('__primer.run.reader.heard.slice(-2)'));
+    // the next ask is chosen as soon as this one is marked, so the tap on Continue can start its voice at once
+    ok(await ev(`!!__primer.run.ahead && !!__primer.run.ahead.step`), 'the next question is ready before Continue is pressed');
     c = await cards();
     const now0 = await ev('__primer.clock.now()');
     const rightKey = asked.find(x => x.key !== missed.key).key;
@@ -1601,6 +1610,7 @@ try {
     const peek = await ev(`(()=>{const r=__primer.run.peeking;return r?{id:r.step.id,lesson:r.lesson.id,text:document.querySelector('.peekhost').innerText}:null})()`);
     const taught = await ev(`__primer.facts.taughtAt(__primer.app.topics.find(t=>t.id===${JSON.stringify(missed.topic)}).facts.facts.get(${JSON.stringify(missed.fact)}))`);
     ok(peek && peek.id === taught.step && peek.lesson === taught.lesson, 'the link opens that lesson step over the run', { peek, taught });
+    ok(await waitFor(`__primer.run.peeking.reader.heard.some(h => h.id.startsWith(${JSON.stringify(`${taught.step}.`)}))`, 4000), 'and the step looked back at is read aloud too', await ev('__primer.run.peeking.reader.heard'));
     await shot('43-review-peek');
     await f.tap('.peekhost [data-go=leave]');
     await sleep(400);
@@ -1790,6 +1800,7 @@ try {
     const drawnSteps = await ev(`__primer.run.lesson.steps.map(s => ({ id: s.id, fact: s.fact, ask: s.askId, way: __primer.facts.wayOf(s) }))`);
     const ways = await ev(`Object.fromEntries([...__primer.app.topics.find(t=>t.id==='storms').facts.facts.values()].map(f => [f.id, f.taughtBy.map(t => t.way).filter(Boolean)]))`);
     ok(drawnSteps.length === 4 && drawnSteps.every(s => s.fact && s.ask && s.id === `${s.fact}.${s.ask}` && !ways[s.fact].includes(s.way)), 'it draws four facts of its unit, each asked a way its lesson didn\'t use', { drawnSteps, ways });
+    ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === ${JSON.stringify(`${drawnSteps[0].id}.ask`)})`, 5000), "each is read aloud from its own lesson's voice, though the test has none of its own", await ev('__primer.run.reader.heard'));
     for (let k = 0; k < 4; k++) {
       await live();
       await answerStep(true);
@@ -1903,7 +1914,9 @@ try {
   const dragTo = async T => {
     if (!(await scene()).ui) await tapPicture();
     const tr = await f.rect('.strack'), k = await f.rect('.sknob'), total = (await scene()).total;
-    await f.drag(k.x, tr.y, tr.left + (T / total) * tr.w - k.x, 0, { steps: 12, ms: 360 });
+    // to the end: a finger runs past the bar's end, as a thumb does
+    const to = T >= total ? tr.right + 8 : tr.left + (T / total) * tr.w;
+    await f.drag(k.x, tr.y, to - k.x, 0, { steps: 12, ms: 360 });
     await waitFor(`!__primer.run.scene.busy && __primer.run.scene.state !== 'loading'`);
     await sleep(150);
   };
@@ -1918,7 +1931,8 @@ try {
   await f.tap('.tab[data-tab=learn]');
   await sleep(400);
   ok(JSON.stringify(await ev(`[...document.querySelectorAll('.node')].map(n=>n.dataset.kind+':'+n.className.split(' ')[1])`)) === '["animation:now","lesson:todo"]', 'an animation with its scene file is a node to play, like a lesson');
-  ok((await ev(`__primer.store.files.all().then(a=>a.filter(f=>f.path.includes('/voice/')&&f.path.endsWith('.m4a')&&f.data instanceof Blob).length)`)) === 20, "its clips, and the lesson's, came down with the media, to play offline");
+  ok((await ev(`__primer.store.files.all().then(a=>a.filter(f=>f.path.includes('/voice/')&&f.path.endsWith('.bella.'+f.path.split('.').at(-2)+'.m4a')&&f.data instanceof Blob).length)`)) === 10
+    && (await ev(`__primer.store.files.paths().then(a=>a.filter(p=>p.endsWith('.m4a')).length)`)) === 10, "its clips, and the lesson's, came down with the media, to play offline: the narrator's in use only (Bella's, 10 of 20)");
   await openNode('engine');
   let d = await scene();
   const frame = await ev(`(()=>{const s=document.querySelector('.sstage').getBoundingClientRect();return {top:s.top,bottom:s.bottom,w:s.width,video:!!document.querySelector('.video .scene[data-mode=video]'),bar:!!document.querySelector('.lfoot, .ltop, .lbar'),tabs:getComputedStyle(document.querySelector('.tabs')).display}})()`);
@@ -2022,6 +2036,7 @@ try {
   d = await scene();
   ok(d.state === 'playing' && d.id === 'turn' && d.at < 1, 'Watch again plays it from the start', { state: d.state, id: d.id, at: d.at });
   await dragTo((await scene()).total);
+  ok(await sceneState('ended', 3000), 'dragged to the very end of the bar, it is at its end');
   await f.tap('[data-sc=next]');
   await waitFor(`__primer.run && __primer.run.step && __primer.run.step.id === 'before'`);
   ok(!(await ev('!!document.querySelector(".video")')) && (await stepId()) === 'before', 'Next goes on to the next node on the path: the lesson');
@@ -2141,10 +2156,14 @@ try {
   await control('close');
   await sleep(300);
 
-  console.log('A narrator per subject');
+  console.log('A narrator per subject, and only its voice on the phone');
+  // the clips on the phone, by narrator
+  const voiceOnPhone = () => ev(`__primer.store.files.paths().then(a => { const n = {}; for (const p of a) { const c = __primer.sync.clipOf(p); if (c) n[c.narrator] = (n[c.narrator] || 0) + 1; } return JSON.stringify(n); })`);
+  ok((await voiceOnPhone()) === '{"bella":10}', "only the narrator in use has its clips on the phone: Bella's, the topic's own, a quarter of its voice", await voiceOnPhone());
   await f.tap('.tab[data-tab=profile]');
   await sleep(400);
   const narratorRow = () => ev(`(()=>{const r=document.querySelector('#narrators .srow');return r?r.querySelector('p').textContent+' / '+r.querySelector('button').textContent:null})()`);
+  const narratorNote = () => ev(`(document.querySelector('#narratornote')||{}).textContent || ''`);
   ok((await narratorRow()) === 'Test science / Bella', "Profile lists each subject with its narrator, the topic's own to start with", await narratorRow());
   await f.tap('[data-narrator="Test science"]');
   await sleep(400);
@@ -2152,12 +2171,15 @@ try {
   ok(picks.length === 4 && picks[0].startsWith('Heart') && picks.some(p => p.startsWith('Bella') && p.includes("own")) && picks.some(p => p.startsWith('Chatterbox A')), 'the four narrators, the topic\'s own marked', picks);
   await shot('41-narrators');
   await f.tap('.sheet [data-pick=george]');
-  await sleep(400);
+  await sleep(150);
   ok((await ev(`__primer.store.get('prefs')`)).narrators['Test science'] === 'george' && (await narratorRow()) === 'Test science / George', 'choosing George is kept, for the whole subject');
+  ok(await waitFor(`(document.querySelector('#narratornote')||{}).textContent === "George's voice is on this phone."`, 15000), "his voice comes down then, and it says so", await narratorNote());
+  ok((await voiceOnPhone()) === '{"george":10}', "and Bella's clips go, as no subject uses her now", await voiceOnPhone());
+  await shot('41b-narrator-fetched');
   await f.tap('.tab[data-tab=learn]');
   await sleep(300);
   await openNode('engine');
-  ok((await scene()).narrators.every(n => n === 'george'), 'and its scenes speak with George\'s clips');
+  ok((await scene()).narrators.every(n => n === 'george') && await waitFor(`__primer.run.scene.debug().voiced`, 4000), 'its scenes speak with George\'s clips');
   await control('close');
   await sleep(300);
   await f.tap('.node[data-node=with-scene]');
@@ -2166,7 +2188,42 @@ try {
   ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === 'before.text' && h.narrator === 'george')`, 5000), 'and its lessons too', await ev('__primer.run.reader.heard'));
   await f.tap('[data-go=leave]');
   await sleep(300);
-
+  // A change with no signal: it's kept, it says plainly the voice comes later, and meanwhile the words play on.
+  await b.send('Network.enable');
+  await b.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await f.tap('.tab[data-tab=profile]');
+  await sleep(400);
+  await f.tap('[data-narrator="Test science"]');
+  await sleep(400);
+  await f.tap('.sheet [data-pick=bella]');
+  ok(await waitFor(`(document.querySelector('#narratornote')||{}).textContent.startsWith('No signal')`, 15000) && (await narratorRow()) === 'Test science / Bella',
+    'with no signal, the change still takes, and it says plainly the voice comes when there is signal', await narratorNote());
+  await shot('41c-narrator-offline');
+  ok((await voiceOnPhone()) === '{"george":10}', 'nothing could come down, so the phone still holds what it had', await voiceOnPhone());
+  await f.tap('.tab[data-tab=learn]');
+  await sleep(300);
+  await openNode('engine');
+  d = await scene();
+  ok(d.narrators.every(n => n === 'bella') && !d.voiced && !d.clip && d.state === 'playing', "its clips not here, every line plays from its words on the reading clock, never in the old narrator's voice", d);
+  ok((await ev(`document.querySelector('.snote').textContent`)).includes('comes down when there is signal'), 'and a line says the voice comes down when there is signal');
+  ok(await sceneState('ended', 30000) && (await scene()).fired.length === 6, 'a missing clip never breaks it: it plays to its end, every action on its word');
+  await control('close');
+  await sleep(300);
+  await f.tap('.node[data-node=with-scene]');
+  await sleep(300);
+  await f.tap('.callout [data-go=start]');
+  await waitFor(`__primer.run && __primer.run.step.id === 'before'`);
+  await sleep(800);
+  ok((await ev('__primer.run.reader.heard.length')) === 0 && !(await ev(`!!document.querySelector('.ltext.reading')`)) && (await ev(`document.querySelector('.ltext').textContent`)).includes('made-up step'), "and a lesson's words are simply there, unread");
+  await f.tap('[data-go=leave]');
+  await sleep(300);
+  await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await ev('__primer.app.pullNow()');
+  ok((await voiceOnPhone()) === '{"bella":10}', "with signal back, the next check brings Bella's voice and lets George's go", await voiceOnPhone());
+  await openNode('engine');
+  ok(await waitFor(`__primer.run.scene.debug().voiced && __primer.run.scene.debug().narrators.every(n => n === 'bella')`, 4000), 'and it speaks again');
+  await control('close');
+  await sleep(300);
   console.log('Offline, a line changed since voicing, and the phone\'s sound left alone');
   await b.send('Network.enable');
   await b.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
@@ -2187,7 +2244,7 @@ try {
   await reloadLibrary();
   await sleep(300);
   await openNode('engine');
-  ok(JSON.stringify((await scene()).narrators) === '["george",null,"george","george"]', 'a line changed after it was voiced plays from its caption, never with a clip that says something else', (await scene()).narrators);
+  ok(JSON.stringify((await scene()).narrators) === '["bella",null,"bella","bella"]', 'a line changed after it was voiced plays from its caption, never with a clip that says something else', (await scene()).narrators);
   await control('close');
   ok((await ev('window.__sessionSets.length')) === 0 && (await ev('navigator.audioSession.type')) === 'auto', "through all of it, the phone's sound was never claimed (audioSession left alone)", await ev('window.__sessionSets'));
   await api('/__reset?data=fixtures');

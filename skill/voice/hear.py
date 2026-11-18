@@ -104,13 +104,19 @@ def real(jobs, clips, ffmpeg):
                         tokens.append(vocab[ch])
                         owner.append(i)
         words = []
+        spans = None
         if tokens:
             x = torch.from_numpy((audio - audio.mean()) / (audio.std() + 1e-7)).unsqueeze(0).to(device)
             with torch.inference_mode():
                 log_probs = torch.log_softmax(aligner(x).logits, dim=-1)
             step = seconds / log_probs.shape[1]
-            path, scores = AF.forced_align(log_probs, torch.tensor([tokens], device=device), blank=blank)
-            spans = AF.merge_tokens(path[0], scores[0].exp(), blank=blank)
+            try:
+                path, scores = AF.forced_align(log_probs, torch.tensor([tokens], device=device), blank=blank)
+                spans = AF.merge_tokens(path[0], scores[0].exp(), blank=blank)
+            except RuntimeError as e:
+                # far too short for its words (a take cut off): no times, so it counts as a bad take and is made again
+                print(j["id"], "can't be aligned:", str(e).splitlines()[-1][:160], file=sys.stderr, flush=True)
+        if spans is not None:
             last_end = 0.0
             for i, word in enumerate(written):
                 mine = [s for s, o in zip(spans, owner) if o == i]

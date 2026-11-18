@@ -1,0 +1,835 @@
+{
+ "v": 1,
+ "scene": "spin",
+ "units": "seconds from the start of each clip; words are [word as said, start, end]",
+ "how": "Made by primer voice: Kokoro (Heart, George, Bella) or Chatterbox (Chatterbox A); heard back with faster-whisper; words found by forced alignment (wav2vec2); AAC-LC mono 24 kHz 96 kbps at about -13 LUFS, true peaks under -1 dB.",
+ "lines": {
+  "which-way.ask": {
+   "heart": {
+    "clip": "voice/spin/which-way.ask.heart.1d6c2cf5.m4a",
+    "key": "1d6c2cf5b9107f5c30eeadf4e862c2eb39370624",
+    "said": "Which way does a made-up storm turn?",
+    "seconds": 2.223,
+    "words": [
+     ["Which", 0.15, 0.364],
+     ["way", 0.418, 0.632],
+     ["does", 0.685, 0.899],
+     ["a", 0.953, 1.167],
+     ["made-up", 1.221, 1.435],
+     ["storm", 1.488, 1.702],
+     ["turn?", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Which way does a made-up storm turn?",
+    "takes": 1
+   }
+  },
+  "which-way.right": {
+   "heart": {
+    "clip": "voice/spin/which-way.right.heart.66080fe3.m4a",
+    "key": "66080fe36725a3658ca8b2a478d7866b6e1bdf53",
+    "said": "Yes: *left*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["left.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: left.",
+    "takes": 1
+   }
+  },
+  "which-way.option-right": {
+   "heart": {
+    "clip": "voice/spin/which-way.option-right.heart.ea073873.m4a",
+    "key": "ea073873d84e8aab47ed2d30c5ddca8d0463fbd8",
+    "said": "No: they turn *left*.",
+    "seconds": 1.324,
+    "words": [
+     ["No:", 0.15, 0.345],
+     ["they", 0.393, 0.588],
+     ["turn", 0.637, 0.832],
+     ["left.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "No: they turn left.",
+    "takes": 1
+   }
+  },
+  "start.ask": {
+   "heart": {
+    "clip": "voice/spin/start.ask.heart.e37a2c3d.m4a",
+    "key": "e37a2c3dcbf8d3de28be4ee549c8b4bce5bb5827",
+    "said": "Tap the country where made-up storms start.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["where", 0.953, 1.167],
+     ["made-up", 1.221, 1.435],
+     ["storms", 1.488, 1.702],
+     ["start.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country where made-up storms start.",
+    "takes": 1
+   }
+  },
+  "start.right": {
+   "heart": {
+    "clip": "voice/spin/start.right.heart.050151cd.m4a",
+    "key": "050151cd00ad1cfc53857735abb6f5074ebe02b4",
+    "said": "Yes: *Brazil*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Brazil.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Brazil.",
+    "takes": 1
+   }
+  },
+  "start.why": {
+   "heart": {
+    "clip": "voice/spin/start.why.heart.ef9418bd.m4a",
+    "key": "ef9418bd64511bc437493aa456f4b7737f2bb7ae",
+    "said": "They start in *Brazil*.",
+    "seconds": 1.324,
+    "words": [
+     ["They", 0.15, 0.345],
+     ["start", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Brazil.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "They start in Brazil.",
+    "takes": 1
+   }
+  },
+  "seas.text": {
+   "heart": {
+    "clip": "voice/spin/seas.text.heart.5d50a313.m4a",
+    "key": "5d50a31388bde833497f5a3a41848881c518ca31",
+    "said": "A made-up storm has a different name in each sea.",
+    "seconds": 3.123,
+    "words": [
+     ["A", 0.15, 0.372],
+     ["made-up", 0.427, 0.649],
+     ["storm", 0.705, 0.927],
+     ["has", 0.982, 1.204],
+     ["a", 1.259, 1.481],
+     ["different", 1.537, 1.759],
+     ["name", 1.814, 2.036],
+     ["in", 2.091, 2.313],
+     ["each", 2.369, 2.591],
+     ["sea.", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "A made-up storm has a different name in each sea.",
+    "takes": 1
+   }
+  },
+  "turn.pick.ask": {
+   "heart": {
+    "clip": "voice/spin/turn.pick.ask.heart.1504c9e5.m4a",
+    "key": "1504c9e5ba1dc432ae0b6c859ef216b36e209a87",
+    "said": "Seen from above, a made-up storm turns which way?",
+    "seconds": 2.824,
+    "words": [
+     ["Seen", 0.15, 0.37],
+     ["from", 0.425, 0.645],
+     ["above,", 0.7, 0.92],
+     ["a", 0.975, 1.194],
+     ["made-up", 1.249, 1.469],
+     ["storm", 1.524, 1.744],
+     ["turns", 1.799, 2.019],
+     ["which", 2.074, 2.294],
+     ["way?", 2.349, 2.569]
+    ],
+    "check": "ok",
+    "heard": "Seen from above, a made-up storm turns which way?",
+    "takes": 1
+   }
+  },
+  "turn.pick.right": {
+   "heart": {
+    "clip": "voice/spin/turn.pick.right.heart.66080fe3.m4a",
+    "key": "66080fe36725a3658ca8b2a478d7866b6e1bdf53",
+    "said": "Yes: *left*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["left.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: left.",
+    "takes": 1
+   }
+  },
+  "turn.pick.option-r": {
+   "heart": {
+    "clip": "voice/spin/turn.pick.option-r.heart.b294581d.m4a",
+    "key": "b294581d3288f0ac9638a146655263ca7fdd1654",
+    "said": "They turn *left*.",
+    "seconds": 1.023,
+    "words": [
+     ["They", 0.15, 0.33],
+     ["turn", 0.374, 0.554],
+     ["left.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "They turn left.",
+    "takes": 1
+   }
+  },
+  "turn.pick.option-e": {
+   "heart": {
+    "clip": "voice/spin/turn.pick.option-e.heart.94e61dac.m4a",
+    "key": "94e61dacf1fd1e74443f438f16b2e4d6742191da",
+    "said": "Always *left*.",
+    "seconds": 0.724,
+    "words": [
+     ["Always", 0.15, 0.299],
+     ["left.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Always left.",
+    "takes": 1
+   }
+  },
+  "turn.string.ask": {
+   "heart": {
+    "clip": "voice/spin/turn.string.ask.heart.60295314.m4a",
+    "key": "60295314cad8ca6215d8cb40b770840a023c89ea",
+    "said": "Pair each storm with the way it turns.",
+    "seconds": 2.523,
+    "words": [
+     ["Pair", 0.15, 0.367],
+     ["each", 0.422, 0.639],
+     ["storm", 0.693, 0.911],
+     ["with", 0.965, 1.182],
+     ["the", 1.237, 1.454],
+     ["way", 1.508, 1.726],
+     ["it", 1.78, 1.997],
+     ["turns.", 2.052, 2.269]
+    ],
+    "check": "ok",
+    "heard": "Pair each storm with the way it turns.",
+    "takes": 1
+   }
+  },
+  "turn.string.right": {
+   "heart": {
+    "clip": "voice/spin/turn.string.right.heart.a588f919.m4a",
+    "key": "a588f919ecd54f9484cd8ce9d9bc95d7aa369602",
+    "said": "Yes.",
+    "seconds": 0.425,
+    "words": [
+     ["Yes.", 0.15, 0.21]
+    ],
+    "check": "ok",
+    "heard": "Yes.",
+    "takes": 1
+   }
+  },
+  "turn.string.why": {
+   "heart": {
+    "clip": "voice/spin/turn.string.why.heart.a4a4f3fd.m4a",
+    "key": "a4a4f3fdbce53572f066c8c50af258b557ec4836",
+    "said": "Made-up storms turn *left*.",
+    "seconds": 1.324,
+    "words": [
+     ["Made-up", 0.15, 0.345],
+     ["storms", 0.393, 0.588],
+     ["turn", 0.637, 0.832],
+     ["left.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Made-up storms turn left.",
+    "takes": 1
+   }
+  },
+  "where.tap.ask": {
+   "heart": {
+    "clip": "voice/spin/where.tap.ask.heart.c0b319a9.m4a",
+    "key": "c0b319a9327f88a83f8c1cf82bd45d31803ad046",
+    "said": "Tap the country made-up storms start in.",
+    "seconds": 2.223,
+    "words": [
+     ["Tap", 0.15, 0.364],
+     ["the", 0.418, 0.632],
+     ["country", 0.685, 0.899],
+     ["made-up", 0.953, 1.167],
+     ["storms", 1.221, 1.435],
+     ["start", 1.488, 1.702],
+     ["in.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Tap the country made-up storms start in.",
+    "takes": 1
+   }
+  },
+  "where.tap.right": {
+   "heart": {
+    "clip": "voice/spin/where.tap.right.heart.050151cd.m4a",
+    "key": "050151cd00ad1cfc53857735abb6f5074ebe02b4",
+    "said": "Yes: *Brazil*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Brazil.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Brazil.",
+    "takes": 1
+   }
+  },
+  "where.tap.why": {
+   "heart": {
+    "clip": "voice/spin/where.tap.why.heart.ef9418bd.m4a",
+    "key": "ef9418bd64511bc437493aa456f4b7737f2bb7ae",
+    "said": "They start in *Brazil*.",
+    "seconds": 1.324,
+    "words": [
+     ["They", 0.15, 0.345],
+     ["start", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Brazil.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "They start in Brazil.",
+    "takes": 1
+   }
+  },
+  "where.pick.ask": {
+   "heart": {
+    "clip": "voice/spin/where.pick.ask.heart.05e63b12.m4a",
+    "key": "05e63b122d73115f34843073f89e330fa00eed20",
+    "said": "Which country do made-up storms start in?",
+    "seconds": 2.223,
+    "words": [
+     ["Which", 0.15, 0.364],
+     ["country", 0.418, 0.632],
+     ["do", 0.685, 0.899],
+     ["made-up", 0.953, 1.167],
+     ["storms", 1.221, 1.435],
+     ["start", 1.488, 1.702],
+     ["in?", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "Which country do made-up storms start in?",
+    "takes": 1
+   }
+  },
+  "where.pick.right": {
+   "heart": {
+    "clip": "voice/spin/where.pick.right.heart.050151cd.m4a",
+    "key": "050151cd00ad1cfc53857735abb6f5074ebe02b4",
+    "said": "Yes: *Brazil*.",
+    "seconds": 0.724,
+    "words": [
+     ["Yes:", 0.15, 0.299],
+     ["Brazil.", 0.337, 0.486]
+    ],
+    "check": "ok",
+    "heard": "Yes: Brazil.",
+    "takes": 1
+   }
+  },
+  "where.pick.option-pe": {
+   "heart": {
+    "clip": "voice/spin/where.pick.option-pe.heart.ef9418bd.m4a",
+    "key": "ef9418bd64511bc437493aa456f4b7737f2bb7ae",
+    "said": "They start in *Brazil*.",
+    "seconds": 1.324,
+    "words": [
+     ["They", 0.15, 0.345],
+     ["start", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Brazil.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "They start in Brazil.",
+    "takes": 1
+   }
+  },
+  "where.pick.option-cl": {
+   "heart": {
+    "clip": "voice/spin/where.pick.option-cl.heart.ef9418bd.m4a",
+    "key": "ef9418bd64511bc437493aa456f4b7737f2bb7ae",
+    "said": "They start in *Brazil*.",
+    "seconds": 1.324,
+    "words": [
+     ["They", 0.15, 0.345],
+     ["start", 0.393, 0.588],
+     ["in", 0.637, 0.832],
+     ["Brazil.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "They start in Brazil.",
+    "takes": 1
+   }
+  },
+  "seas-north.name.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-north.name.ask.heart.9bd10aae.m4a",
+    "key": "9bd10aaed2afe32920ba555ec45632f075c72ac4",
+    "said": "What is a made-up storm called in the North Sea?",
+    "seconds": 3.123,
+    "words": [
+     ["What", 0.15, 0.372],
+     ["is", 0.427, 0.649],
+     ["a", 0.705, 0.927],
+     ["made-up", 0.982, 1.204],
+     ["storm", 1.259, 1.481],
+     ["called", 1.537, 1.759],
+     ["in", 1.814, 2.036],
+     ["the", 2.091, 2.313],
+     ["North", 2.369, 2.591],
+     ["Sea?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "What is a made-up storm called in the North Sea?",
+    "takes": 1
+   }
+  },
+  "seas-north.name.right": {
+   "heart": {
+    "clip": "voice/spin/seas-north.name.right.heart.9b833f80.m4a",
+    "key": "9b833f80bbb7cf89eefbe9a64b62905fe3cfa89f",
+    "said": "Yes: a *Gale*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["a", 0.374, 0.554],
+     ["Gale.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: a Gale.",
+    "takes": 1
+   }
+  },
+  "seas-north.name.option-south": {
+   "heart": {
+    "clip": "voice/spin/seas-north.name.option-south.heart.22985959.m4a",
+    "key": "229859592698509e1b927767b1f6f1a3c69e6141",
+    "said": "That's its name in the South Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["South", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the South Sea.",
+    "takes": 1
+   }
+  },
+  "seas-north.name.option-east": {
+   "heart": {
+    "clip": "voice/spin/seas-north.name.option-east.heart.b143dc87.m4a",
+    "key": "b143dc876a7936fe7db0106e4b747f00f2b62373",
+    "said": "That's its name in the East Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["East", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the East Sea.",
+    "takes": 1
+   }
+  },
+  "seas-north.sea.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-north.sea.ask.heart.1a76f8c6.m4a",
+    "key": "1a76f8c61f6de9910597e4731843263650a0010a",
+    "said": "In which sea is a made-up storm called a Gale?",
+    "seconds": 3.123,
+    "words": [
+     ["In", 0.15, 0.372],
+     ["which", 0.427, 0.649],
+     ["sea", 0.705, 0.927],
+     ["is", 0.982, 1.204],
+     ["a", 1.259, 1.481],
+     ["made-up", 1.537, 1.759],
+     ["storm", 1.814, 2.036],
+     ["called", 2.091, 2.313],
+     ["a", 2.369, 2.591],
+     ["Gale?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "In which sea is a made-up storm called a Gale?",
+    "takes": 1
+   }
+  },
+  "seas-north.sea.right": {
+   "heart": {
+    "clip": "voice/spin/seas-north.sea.right.heart.dec4edda.m4a",
+    "key": "dec4edda36aab27216a3a1f875f33d4e39e44a27",
+    "said": "Yes: the North Sea.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["the", 0.393, 0.588],
+     ["North", 0.637, 0.832],
+     ["Sea.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: the North Sea.",
+    "takes": 1
+   }
+  },
+  "seas-north.sea.option-south": {
+   "heart": {
+    "clip": "voice/spin/seas-north.sea.option-south.heart.40a58e0e.m4a",
+    "key": "40a58e0ee25629f23334ff539c6502e6ce8c759b",
+    "said": "There it's a Squall.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Squall.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Squall.",
+    "takes": 1
+   }
+  },
+  "seas-north.sea.option-east": {
+   "heart": {
+    "clip": "voice/spin/seas-north.sea.option-east.heart.f779633d.m4a",
+    "key": "f779633d1bd5e94abf4442a26adba903e8e63d5b",
+    "said": "There it's a Whirl.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Whirl.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Whirl.",
+    "takes": 1
+   }
+  },
+  "seas-south.name.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-south.name.ask.heart.2c94ae54.m4a",
+    "key": "2c94ae54c741152edeb75fad13f732fa3662e4fe",
+    "said": "What is a made-up storm called in the South Sea?",
+    "seconds": 3.123,
+    "words": [
+     ["What", 0.15, 0.372],
+     ["is", 0.427, 0.649],
+     ["a", 0.705, 0.927],
+     ["made-up", 0.982, 1.204],
+     ["storm", 1.259, 1.481],
+     ["called", 1.537, 1.759],
+     ["in", 1.814, 2.036],
+     ["the", 2.091, 2.313],
+     ["South", 2.369, 2.591],
+     ["Sea?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "What is a made-up storm called in the South Sea?",
+    "takes": 1
+   }
+  },
+  "seas-south.name.right": {
+   "heart": {
+    "clip": "voice/spin/seas-south.name.right.heart.20e9ede5.m4a",
+    "key": "20e9ede5d4f9d054b68b1dd52fda15c4a5975ff3",
+    "said": "Yes: a *Squall*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["a", 0.374, 0.554],
+     ["Squall.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: a Squall.",
+    "takes": 1
+   }
+  },
+  "seas-south.name.option-north": {
+   "heart": {
+    "clip": "voice/spin/seas-south.name.option-north.heart.d9bfa61e.m4a",
+    "key": "d9bfa61e4c002ef7f51fb6f1a7f8c85f0951d093",
+    "said": "That's its name in the North Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["North", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the North Sea.",
+    "takes": 1
+   }
+  },
+  "seas-south.name.option-east": {
+   "heart": {
+    "clip": "voice/spin/seas-south.name.option-east.heart.b143dc87.m4a",
+    "key": "b143dc876a7936fe7db0106e4b747f00f2b62373",
+    "said": "That's its name in the East Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["East", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the East Sea.",
+    "takes": 1
+   }
+  },
+  "seas-south.sea.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-south.sea.ask.heart.8ba6c1db.m4a",
+    "key": "8ba6c1db169e2022f7329094e02ce2cb1d2c9626",
+    "said": "In which sea is a made-up storm called a Squall?",
+    "seconds": 3.123,
+    "words": [
+     ["In", 0.15, 0.372],
+     ["which", 0.427, 0.649],
+     ["sea", 0.705, 0.927],
+     ["is", 0.982, 1.204],
+     ["a", 1.259, 1.481],
+     ["made-up", 1.537, 1.759],
+     ["storm", 1.814, 2.036],
+     ["called", 2.091, 2.313],
+     ["a", 2.369, 2.591],
+     ["Squall?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "In which sea is a made-up storm called a Squall?",
+    "takes": 1
+   }
+  },
+  "seas-south.sea.right": {
+   "heart": {
+    "clip": "voice/spin/seas-south.sea.right.heart.28ad2020.m4a",
+    "key": "28ad2020d30dfaa89c7ff0ea84237dacc444a4e4",
+    "said": "Yes: the South Sea.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["the", 0.393, 0.588],
+     ["South", 0.637, 0.832],
+     ["Sea.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: the South Sea.",
+    "takes": 1
+   }
+  },
+  "seas-south.sea.option-north": {
+   "heart": {
+    "clip": "voice/spin/seas-south.sea.option-north.heart.3c7d9f55.m4a",
+    "key": "3c7d9f556bd2fd0a7e6e74e7a4fc76da4e8d4fda",
+    "said": "There it's a Gale.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Gale.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Gale.",
+    "takes": 1
+   }
+  },
+  "seas-south.sea.option-east": {
+   "heart": {
+    "clip": "voice/spin/seas-south.sea.option-east.heart.f779633d.m4a",
+    "key": "f779633d1bd5e94abf4442a26adba903e8e63d5b",
+    "said": "There it's a Whirl.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Whirl.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Whirl.",
+    "takes": 1
+   }
+  },
+  "seas-east.name.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-east.name.ask.heart.64e022aa.m4a",
+    "key": "64e022aa41cc6adefafeb81d28619b366e5ec86f",
+    "said": "What is a made-up storm called in the East Sea?",
+    "seconds": 3.123,
+    "words": [
+     ["What", 0.15, 0.372],
+     ["is", 0.427, 0.649],
+     ["a", 0.705, 0.927],
+     ["made-up", 0.982, 1.204],
+     ["storm", 1.259, 1.481],
+     ["called", 1.537, 1.759],
+     ["in", 1.814, 2.036],
+     ["the", 2.091, 2.313],
+     ["East", 2.369, 2.591],
+     ["Sea?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "What is a made-up storm called in the East Sea?",
+    "takes": 1
+   }
+  },
+  "seas-east.name.right": {
+   "heart": {
+    "clip": "voice/spin/seas-east.name.right.heart.c816eca8.m4a",
+    "key": "c816eca87448ccd8fbc69db3e8833398fb46f66a",
+    "said": "Yes: a *Whirl*.",
+    "seconds": 1.023,
+    "words": [
+     ["Yes:", 0.15, 0.33],
+     ["a", 0.374, 0.554],
+     ["Whirl.", 0.599, 0.778]
+    ],
+    "check": "ok",
+    "heard": "Yes: a Whirl.",
+    "takes": 1
+   }
+  },
+  "seas-east.name.option-north": {
+   "heart": {
+    "clip": "voice/spin/seas-east.name.option-north.heart.d9bfa61e.m4a",
+    "key": "d9bfa61e4c002ef7f51fb6f1a7f8c85f0951d093",
+    "said": "That's its name in the North Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["North", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the North Sea.",
+    "takes": 1
+   }
+  },
+  "seas-east.name.option-south": {
+   "heart": {
+    "clip": "voice/spin/seas-east.name.option-south.heart.22985959.m4a",
+    "key": "229859592698509e1b927767b1f6f1a3c69e6141",
+    "said": "That's its name in the South Sea.",
+    "seconds": 2.223,
+    "words": [
+     ["That's", 0.15, 0.364],
+     ["its", 0.418, 0.632],
+     ["name", 0.685, 0.899],
+     ["in", 0.953, 1.167],
+     ["the", 1.221, 1.435],
+     ["South", 1.488, 1.702],
+     ["Sea.", 1.756, 1.97]
+    ],
+    "check": "ok",
+    "heard": "That's its name in the South Sea.",
+    "takes": 1
+   }
+  },
+  "seas-east.sea.ask": {
+   "heart": {
+    "clip": "voice/spin/seas-east.sea.ask.heart.9fb97ba4.m4a",
+    "key": "9fb97ba469de4747b7fa9cb050b6cfa135bb8a1e",
+    "said": "In which sea is a made-up storm called a Whirl?",
+    "seconds": 3.123,
+    "words": [
+     ["In", 0.15, 0.372],
+     ["which", 0.427, 0.649],
+     ["sea", 0.705, 0.927],
+     ["is", 0.982, 1.204],
+     ["a", 1.259, 1.481],
+     ["made-up", 1.537, 1.759],
+     ["storm", 1.814, 2.036],
+     ["called", 2.091, 2.313],
+     ["a", 2.369, 2.591],
+     ["Whirl?", 2.646, 2.868]
+    ],
+    "check": "ok",
+    "heard": "In which sea is a made-up storm called a Whirl?",
+    "takes": 1
+   }
+  },
+  "seas-east.sea.right": {
+   "heart": {
+    "clip": "voice/spin/seas-east.sea.right.heart.e83f5bef.m4a",
+    "key": "e83f5bef86d140d4d97d2789cef83e3801213428",
+    "said": "Yes: the East Sea.",
+    "seconds": 1.324,
+    "words": [
+     ["Yes:", 0.15, 0.345],
+     ["the", 0.393, 0.588],
+     ["East", 0.637, 0.832],
+     ["Sea.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "Yes: the East Sea.",
+    "takes": 1
+   }
+  },
+  "seas-east.sea.option-north": {
+   "heart": {
+    "clip": "voice/spin/seas-east.sea.option-north.heart.3c7d9f55.m4a",
+    "key": "3c7d9f556bd2fd0a7e6e74e7a4fc76da4e8d4fda",
+    "said": "There it's a Gale.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Gale.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Gale.",
+    "takes": 1
+   }
+  },
+  "seas-east.sea.option-south": {
+   "heart": {
+    "clip": "voice/spin/seas-east.sea.option-south.heart.40a58e0e.m4a",
+    "key": "40a58e0ee25629f23334ff539c6502e6ce8c759b",
+    "said": "There it's a Squall.",
+    "seconds": 1.324,
+    "words": [
+     ["There", 0.15, 0.345],
+     ["it's", 0.393, 0.588],
+     ["a", 0.637, 0.832],
+     ["Squall.", 0.88, 1.075]
+    ],
+    "check": "ok",
+    "heard": "There it's a Squall.",
+    "takes": 1
+   }
+  }
+ }
+}

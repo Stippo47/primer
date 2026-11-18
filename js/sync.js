@@ -320,6 +320,58 @@ export async function mediaUrl(path) {
 // note of what's been read. Nothing else (the writer's notes, the phone's own progress) comes down.
 const wanted = path => path === 'index.json' || path === 'read.json' || path.startsWith('topics/');
 
+// ---------- voice: only the narrator in use
+// Every line is voiced in all four narrators, so any can be chosen, but a topic plays in one: the one chosen
+// for its subject in Profile, else the topic's own (else Heart). Only that one's clips come down, about a
+// quarter of a topic's voice; the others stay out of storage, and a narrator's clips go once no topic uses
+// it. A clip not here (not down yet, or no signal after a change) is never an error: its line plays from its
+// words, as with Voice off (js/narration.js, clipFor).
+
+// The narrator chosen in Profile for a subject, if any: set by the app.
+let chosenFor = () => null;
+export const setNarratorChoice = fn => { chosenFor = fn; };
+
+// A voice clip's topic and narrator, from its path: topics/<topic>/voice/<key>/<line>.<narrator>.<hash>.m4a
+export function clipOf(path) {
+  const m = /^topics\/([^/]+)\/voice\/.+\/[^/]+\.([a-z0-9-]+)\.[0-9a-f]{8}\.m4a$/.exec(path);
+  return m ? { topic: m[1], narrator: m[2] } : null;
+}
+
+// For each topic with clips in `paths`: the narrator whose clips it keeps. Of the one chosen for its subject,
+// its own, then Heart, the first it has clips in; if it has clips in none of those, any it has.
+export async function voiceInUse(paths) {
+  const has = new Map();
+  for (const p of paths) {
+    const c = clipOf(p);
+    if (!c) continue;
+    if (!has.has(c.topic)) has.set(c.topic, new Set());
+    has.get(c.topic).add(c.narrator);
+  }
+  const out = new Map();
+  for (const [topic, voiced] of has) {
+    const f = await store.files.get(`topics/${topic}/topic.json`).catch(() => null);
+    let t = null;
+    try { t = f ? JSON.parse(f.data) : null; } catch { t = null; }
+    const order = [t && chosenFor(t.subject), t && t.narrator, 'heart'].filter(Boolean);
+    out.set(topic, order.find(n => voiced.has(n)) || [...voiced].sort()[0]);
+  }
+  return out;
+}
+const keepClip = (path, inUse) => { const c = clipOf(path); return !c || !inUse.has(c.topic) || inUse.get(c.topic) === c.narrator; };
+
+// The repo's files at the last pull that could see them: what the voice in use is counted against.
+let lastTree = null;
+
+// How much of the voice in use for these topics is on this phone: { have, of, narrators }. Worked out from
+// the last look at the repo; `of` is null if there hasn't been one since the app opened.
+export async function voiceHere(topicIds) {
+  if (!lastTree) return { have: 0, of: null, narrators: [] };
+  const inUse = await voiceInUse(lastTree);
+  const want = lastTree.filter(p => { const c = clipOf(p); return c && topicIds.includes(c.topic) && inUse.get(c.topic) === c.narrator; });
+  const here = new Set(await store.files.paths());
+  return { have: want.filter(p => here.has(p)).length, of: want.length, narrators: topicIds.map(id => inUse.get(id)).filter(Boolean) };
+}
+
 // Brings down whatever changed: words first, so new lessons show straight away, then media, so lessons
 // work offline. Says whether any words changed, and tells `onWords` as soon as they have.
 export async function pull(onWords = () => {}) {
@@ -347,7 +399,13 @@ export async function pull(onWords = () => {}) {
     if (!live.has(path)) { await store.files.del(path); mediaUrls.delete(path); changed = true; }
   }
   if (changed) await onWords();
-  await eachAtOnce(todo.filter(t => !t.path.endsWith('.json')), 3, bring);
+  // the words are down, so each topic's narrator is known: only its clips are kept
+  lastTree = tree.map(t => t.path);
+  const inUse = await voiceInUse(lastTree);
+  for (const path of have.keys()) {
+    if (live.has(path) && !keepClip(path, inUse)) { await store.files.del(path); mediaUrls.delete(path); }
+  }
+  await eachAtOnce(todo.filter(t => !t.path.endsWith('.json') && keepClip(t.path, inUse)), 3, bring);
   await readWhen();
   state.pulledAt = Date.now();
   state.pullProblem = missed ? `${missed} file${missed === 1 ? '' : 's'} didn't come down. It will try again.` : null;

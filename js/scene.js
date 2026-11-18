@@ -602,7 +602,9 @@ export class Scene {
     const track = this.root.querySelector('.strack');
     const at = ev => {
       const r = track.getBoundingClientRect();
-      const k = Math.max(0, Math.min(1, (ev.clientX - r.left) / Math.max(1, r.width)));
+      let k = Math.max(0, Math.min(1, (ev.clientX - r.left) / Math.max(1, r.width)));
+      // within a few pixels of either end is that end: a finger can't hit its last pixel
+      if (k * r.width >= r.width - 4) k = 1; else if (k * r.width <= 4) k = 0;
       this.drag.T = k * this.total;
       this.paintBar(this.drag.T);
     };

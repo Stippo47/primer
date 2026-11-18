@@ -93,6 +93,20 @@ const app = {
     return (topic.subject && (app.prefs.narrators || {})[topic.subject]) || topic.narrator || DEFAULT_NARRATOR;
   },
 
+  // After a narrator is chosen for a subject: its clips come down now, and the old one's go. Says how it
+  // went, in words for Profile: { words, here } (here: every clip of it is on this phone).
+  async fetchVoice(subject, name) {
+    await app.pullNow();
+    const ids = app.topics.filter(t => t.subject === subject).map(t => t.id);
+    const v = await sync.voiceHere(ids);
+    const problem = sync.status().pullProblem;
+    if (v.of !== null && v.have === v.of) return { here: true, words: `${name}'s voice is on this phone.` };
+    if (v.of === null || (problem && v.have === 0)) {
+      return { here: false, words: `No signal: ${name}'s voice comes down when there is. Until then, ${subject} plays from its words, with no voice.` };
+    }
+    return { here: false, words: `${v.of - v.have} of ${name}'s clips aren't down yet. They come at the next check; until then those lines play from their words.` };
+  },
+
   async openLesson(topic, lesson, start = 0) {
     if (run) return;
     paintTabs();
@@ -160,6 +174,8 @@ const app = {
     run = new review.Review(view, {
       app, pool, node, scope, anyway, record,
       onLeave: () => { run = null; app.go(back); },
+      // each ask read aloud in its own topic's narrator (review.js, voiceFor)
+      voice: { on: () => app.prefs.voice !== false },
     });
     await run.open();
     return run;
@@ -286,6 +302,8 @@ async function start() {
   await reloadLibrary();
   navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {});
   sync.onChange(paintTabs);
+  // only the clips of the narrator each topic uses come down (js/sync.js): the one chosen for its subject
+  sync.setNarratorChoice(subject => (subject && (app.prefs.narrators || {})[subject]) || null);
   sync.onPulled(maybeRebuild);
   app.tab = SCREENS[app.prefs.tab] ? app.prefs.tab : 'learn';
   app.go(app.tab);
