@@ -1,0 +1,10 @@
+{
+  "id": "stage2",
+  "kind": "question",
+  "rarity": "rare",
+  "title": "Start stage 2?",
+  "text": "The shell works on your phone. Shall stage 2 start once your fixes are in, beginning with narrated animations?",
+  "why": "Stage 2 is the big one: animations with a voice, review that remembers what you've learned, and more parts to build lessons from. About 25 to 35 agent-hours, done in pieces, each shown to you as it's ready.",
+  "pick": "Yes. Voice and animation first, then review, then new parts as lessons need them.",
+  "details": "In order:\n\n1. Narrated animations. A scene is a script read one line at a time; the picture moves on the words, and it works with the sound off as captions. Each subject gets its own narrator from your four voices, and you can override any. The hurricane scene from stage 0 becomes the first one, inside the pilot.\n\n2. Facts and review. Every lesson lists what's worth remembering, each asked at least two ways. The Review run picks what you're about to forget, with the combo. Tests and exams draw on the same facts.\n\n3. New parts as lessons ask for them: a network of boxes and moving packets, a stage with moving figures, charts you can draw a guess on, and flash cards with pictures and sounds.\n\nThe fixes from your phone notes come first and are being made now: the path with one node per lesson, test, chest or review; a longer pilot; the slider with a picture; the globe's flicker and its two new settings; and no press sounds and no stopping your music."
+}

@@ -162,3 +162,36 @@ The test page ran on the real phone: an iPhone 11 on iOS 18.7.7, opened from the
 - **Rooms join by panning.** You drag straight through from one room to the next; no door needs tapping.
 - **The avatar: shapes first.** Two of the six were liked but not enough (my reading: the raccoon and the frog, the two my notes named). Next is a board of about ten base shapes as stills: no animation, no clothes. Clothes and accessories come after a base is chosen.
 - **"Shapes" meant shape styles, not species.** Next: one person drawn in ten different shape styles, and one monster drawn in ten. The ten animals from round 4 are liked and kept (`stage0/avatar4/`), with every earlier round's too.
+
+## 2026-11-18: the shell on the phone
+
+The shell ran on the real phone: installed, connected to the private repo, played the pilot, opened with no signal. Overall "looked really good". What they asked for:
+
+### The path
+
+- **Each node on the path is a whole thing, not a step of a lesson.** A lesson, a test, an exam, a chest (you get a reward when you reach it), a review of everything before it, or an animation on its own. You work from node to node.
+
+### Lessons
+
+- **The pilot was a good start but short, even for a glimpse.** Lessons need more to them.
+- **Counterclockwise, not anticlockwise.** (My note: their own spelling is Canadian, "colour"; where North American and British words differ, use the North American word.)
+- **A slider gets something to look at.** For temperature, a thermometer, or a ball that turns smoothly from a snowflake to a fire as the value moves. A slider starts at a real value with its fill showing, never at "?".
+- **Voice is wanted** (it comes with stage 2).
+
+### Sound
+
+- **The press sounds are disliked.** They're off until better ones are chosen by ear from a board.
+- **Opening Primer must not stop their music.** The app no longer claims the phone's sound for itself when it opens. (From the phone test: a voice clip plays with the silent switch on even without that claim, so narration can still ignore the switch.)
+
+### The globe
+
+- Good overall. Country labels flicker; the dotted lines are sometimes drawn under the land and sometimes over it.
+- **Two new settings:** borders on or off, and countries coloured in four colours, the way a political map is.
+
+### Answer forms
+
+- Order: good. Number: "meh". Match: disliked. Tap the spot: "just weird". Dragging leaves slivers behind. Alternatives for number, match and spot go on a board before any is built in.
+
+### Avatar
+
+- **The person: Blob and Noodle** were the shape styles picked. **The monster: none** of the ten.
