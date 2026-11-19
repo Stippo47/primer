@@ -91,11 +91,12 @@ export const css = `
 .pi-was.wrong { background: #ee4b7a; color: #fff; box-shadow: 0 3px 0 #8f1f44; }
 .pi-was.close { background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; }
 .pi-was.right { background: #2bc4a4; color: #fff; box-shadow: 0 3px 0 #127a85; }
-.pi-nread { display: flex; align-items: baseline; justify-content: center; gap: 6px; height: 50px; margin-bottom: 10px; }
+/* the number as it's read out, its unit beside it in the same weight and colour, one phrase: "119 km/h" */
+.pi-nread { display: flex; align-items: baseline; justify-content: center; gap: 8px; height: 50px; margin-bottom: 10px; color: #fff; }
 .pi-nread b { font-size: 40px; font-weight: 900; line-height: 1; }
-.pi-nread .u { font-size: 19px; color: #7f88c8; }
-.pi-nread.right b { color: #7df0cf; }
-.pi-nread.close b { color: #ffc83d; }
-.pi-nread.wrong b { color: #ff8fb0; }
-.pi-nread.truth b, .pi-nread.truth.wrong b, .pi-nread.truth.close b { color: #ffc83d; }
+.pi-nread .u { font-size: 30px; font-weight: 900; line-height: 1; white-space: nowrap; }
+.pi-nread.right { color: #7df0cf; }
+.pi-nread.close { color: #ffc83d; }
+.pi-nread.wrong { color: #ff8fb0; }
+.pi-nread.truth, .pi-nread.truth.wrong, .pi-nread.truth.close { color: #ffc83d; }
 `;

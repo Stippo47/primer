@@ -810,7 +810,18 @@ try {
   // the tape shows its unit; a wheel's side is darker than the shading at the foot of its drum, and the drum
   // is a cylinder: nothing laid over its digits, the ones either side squashed as they turn away
   await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
-  ok((await ev(`(document.querySelector('.partstage .pi-tape .pi-nread .u')||{}).textContent`)) === 'km/h', 'the tape writes its unit beside the number');
+  // the unit reads with the number in every state: as the lesson spells it, on the same line, just after it,
+  // in the same weight and colour, plainly sized and inside the tape
+  const unitNow = () => ev(`(()=>{const r=document.querySelector('.partstage .pi-tape'),b=r.querySelector('.pi-nread b'),u=r.querySelector('.pi-nread .u');if(!u)return null;
+    const bs=getComputedStyle(b),us=getComputedStyle(u),br=b.getBoundingClientRect(),ur=u.getBoundingClientRect(),tr=r.getBoundingClientRect();
+    return {text:u.textContent,weight:[bs.fontWeight,us.fontWeight],colour:[bs.color,us.color],size:parseFloat(us.fontSize),gap:Math.round(ur.left-br.right),line:Math.abs(ur.bottom-br.bottom)<8,inside:ur.left>=tr.left&&ur.right<=tr.right,shown:us.visibility!=='hidden'&&Number(us.opacity)>0.9}})()`);
+  const unitOk = (u, state) => ok(u && u.text === 'km/h' && u.weight[0] === u.weight[1] && u.colour[0] === u.colour[1] && u.size >= 24 && u.gap >= 2 && u.gap <= 16 && u.line && u.inside && u.shown,
+    `the tape's unit reads with its number while ${state}: km/h, just after it, same weight and colour`, u);
+  await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
+  unitOk(await unitNow(), 'picking');
+  await ev(`(h=>{h.run(['lock']);h.run(['reveal',h.state().value]);h.run(['mark','right'])})(__primer.app.partNow)`); await sleep(300);
+  unitOk(await unitNow(), 'marked right');
+  await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
   await f.tap('[data-set=look][data-v=wheels]'); await sleep(400);
   const side = await ev(`(()=>{const m=getComputedStyle(document.querySelector('.partstage .pi-dwin')).boxShadow.match(/rgb\\((\\d+), (\\d+), (\\d+)\\)/);return m?[1,2,3].map(i=>Number(m[i])):null})()`);
   ok(side && side[0] + side[1] + side[2] < 0xc3 + 0xc9 + 0xef - 200, "each wheel's side under it is darker than its body, shading and all", side);
@@ -826,6 +837,9 @@ try {
   await sleep(1300);
   const tapeTruth = await ev(`(()=>{const r=document.querySelector('.partstage .pi-tape');return {read:r.querySelector('.pi-nread b').textContent,gold:r.querySelector('.pi-nread').classList.contains('truth'),given:!!r.querySelector('.given').getAttribute('d'),tag:(document.querySelector('.partstage .pi-was')||{}).textContent,value:__primer.app.partNow.state().value}})()`);
   ok(tapeTruth.read === '119' && tapeTruth.gold && tapeTruth.given && tapeTruth.tag === '0 km/h' && tapeTruth.value === 0, 'a wrong tape glides to the truth under its needle, in gold, the given number still marked on the ruler and on its tag', tapeTruth);
+  const unitTruth = await unitNow();
+  unitOk(unitTruth, 'showing the truth');
+  ok(unitTruth && unitTruth.colour[1] === 'rgb(255, 200, 61)', 'and there the unit is gold with the true number', unitTruth && unitTruth.colour);
   await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
   ok(await ev(`!document.querySelector('.partstage .pi-was') && !document.querySelector('.partstage .pi-nread.truth')`), 'and Again clears it');
   // its glide to the truth is paced on the clock: off slowly, picking up speed, there within a second
@@ -836,14 +850,22 @@ try {
   await clock('m.pin(null)');
   ok(tp[0] < 119 * 0.1 && tp[1] > 119 * 0.4 && tp[1] < 119 * 0.6 && tp[2] > 119 * 0.9 && tp[3] === 119, 'the tape sets off slowly towards the truth, picks up speed and is there within a second', tp);
   await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
-  // the abacus shows the truth a bead at a time, quickly, each one snapping into place
+  // the abacus shows the truth a bead at a time, each one sliding along its rod and snapping into place
   await f.tap('[data-set=look][data-v=abacus]'); await sleep(400);
-  const beadsAt = async t => { await clock(`m.pin(${t})`); await sleep(150); return (await ev('__primer.app.partNow.debug()')).digits.join(''); };
+  const beadsAt = async t => { await clock(`m.pin(${t})`); await sleep(150); const d = await ev('__primer.app.partNow.debug()'); return { digits: d.digits.join(''), ys: d.ys, travel: d.travel }; };
   await beadsAt(200);
+  const beadTicks0 = await ev('__primer.feel.tickCount()');
   await ev(`(h=>{h.run(['lock']);h.run(['reveal',119])})(__primer.app.partNow)`);
-  const bd = [await beadsAt(200), await beadsAt(200.08), await beadsAt(200.4), await beadsAt(201)];
+  const bd =[await beadsAt(200), await beadsAt(200.05), await beadsAt(200.13), await beadsAt(200.5), await beadsAt(201)];
+  const beadTicks1 = await ev('__primer.feel.tickCount()');
   await clock('m.pin(null)');
-  ok(bd[0] === '100' && bd[1] === '110' && bd[2] > '110' && bd[2] < '119' && bd[3] === '119', 'a wrong abacus moves its beads to the truth one at a time, rod by rod, all within a second', bd);
+  ok(bd[0].digits === '000' && bd[2].digits === '100' && bd[3].digits > '110' && bd[3].digits < '119' && bd[4].digits === '119', 'a wrong abacus moves its beads to the truth one at a time, rod by rod, all within a second', bd.map(b => b.digits));
+  // the first bead (rod one, bead one) is part way along its rod at 50 ms, between where it rests and the bar,
+  // and up at the bar by 130 ms; halfway through, some bead on the last rod is mid-slide too
+  const [top, rest] = bd[0].travel, mid = y => y > top + 3 && y < rest - 3;
+  ok(bd[0].ys[0][0] === rest && mid(bd[1].ys[0][0]) && bd[2].ys[0][0] === top && bd[3].ys[2].some((y, b) => mid(y - b * 20)),
+    'each bead slides along its rod through the points between, not a jump', { first: bd.map(b => b.ys[0][0]), last: bd[3].ys[2] });
+  ok(beadTicks1 - beadTicks0 === 11, 'and each of the eleven beads ticks as it lands', beadTicks1 - beadTicks0);
   await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
   await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
   // Pile: the count is in the handle, and every thing added or taken away is a tick
@@ -1034,6 +1056,11 @@ try {
       await f.drag(r.x, r.top + 10, 0, r.h * 0.7, { steps: 20, ms: 500 });
       await f.drag(r.x, r.top + r.h * 0.7, 0, -r.h * 0.4, { steps: 20, ms: 500 });
       ok((await ev('__primer.app.partNow.debug()')).digits.at(-1) > 0 && await ev(`[...document.querySelectorAll('.partstage .pi-bead')].every(s=>getComputedStyle(s).willChange==='transform')`), 'beads are pulled up a rod by finger, moving on their own layers');
+      // a finger's tap slides the beads there too, not a jump: the move is still running just after it
+      const fb = await f.rect('.partstage .pi-rod:first-of-type .pi-bead[data-b="4"]');
+      await f.tapAt(fb.x, fb.y);
+      const sliding = await ev(`[...document.querySelectorAll('.partstage .pi-rod:first-of-type .pi-bead')].some(s=>s.getAnimations().some(a=>a.transitionProperty==='transform'&&a.playState==='running'))`);
+      ok(sliding && await ev(`parseFloat(getComputedStyle(document.querySelector('.partstage .pi-bead')).transitionDuration)>=0.15`), "a finger's tap slides its beads along the rod", sliding);
     } else if (form === 'order') {
       const a = await f.rect('.pi-item');
       await f.drag(a.x, a.y, 0, 130, { steps: 20, ms: 500 });

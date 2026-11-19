@@ -350,3 +350,9 @@ Their words are in primer-data `notes/answers-2026-11-19d.md`.
 - **Combo tiers kept (23), low to high:** wood, tin, copper, silver, gold, platinum, emerald, sapphire, crystal, ruby, diamond, obsidian, opal, titanium, aurora, nebula, celestial, eternal, supernova, eclipse, singularity, multiverse, void. Bronze wasn't ticked: copper takes its place (my reading). Similar tiers must differ by more than colour (tin and copper, for one), and the thresholds are spread out.
 - **Shields refill on reaching a new tier** (my pick, GO). Shields, cracks and the shatter: good, but both the crack and the shatter sound are bad and get redone.
 - **Forms round four:** wind sand, wheels and tape good. The abacus beads must actually slide, one at a time, not jump. The sea's tint: decent, no note. The tape: "Km/hr?" (check the unit shows and reads plainly).
+
+### Forms, round five (my calls, sent as deck `stage2-forms5`)
+
+- **The abacus reveal slides each bead along its rod**, drawn frame by frame from one `tween` on the inputs' one clock (the old 90 ms CSS snap ran off the clock, so it read as a jump and films missed it). Bead m sets off `gap × m` ms in; a few beads slide 220 ms each, clear of each other; many slide 110 ms, each starting just before the one ahead lands; the last is home inside a second, and each ticks as it lands. A finger's moves keep their CSS slide (230 ms), as before.
+- **The tape's unit reads with its number**: right after it as one phrase, in the same weight (900) and colour in every state (white picking, the mark's colour, gold for the truth), a little smaller (30 px to 40). Spelled as the lesson gives it (km/h); no lesson data changed.
+- **The sea's tint: unchanged**; nothing clearly off at phone size.
