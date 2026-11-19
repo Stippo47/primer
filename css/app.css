@@ -19,7 +19,11 @@ html[data-text="s"] { --ts: 0.9; }
 html[data-text="l"] { --ts: 1.14; }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; background: var(--ground); overscroll-behavior: none; }
+/* The page's own ground, under the app's box: the tab bar's dark on the tabs, the screen's ground with no tab
+   bar, the video's dark while one plays (css/lesson.css, html.vid). An edge the box doesn't cover can only
+   ever show the colour already there. */
+html, body { margin: 0; height: 100%; background: var(--bar); overscroll-behavior: none; }
+html.bare, html.bare body { background: var(--ground); }
 body {
   color: var(--text); font-family: "Nunito", system-ui, sans-serif; font-weight: 800; font-size: 14px; line-height: 1.25;
   -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%; overflow: hidden;
@@ -39,11 +43,11 @@ button:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
     radial-gradient(230px 230px at calc(100% - 34px) 560px, rgba(15, 163, 177, 0.15), transparent 70%),
     radial-gradient(150px 150px at calc(100% - 64px) 130px, rgba(224, 67, 154, 0.11), transparent 70%);
 }
-/* The app's box reaches the very bottom of the screen, safe areas included. Installed on an iPhone with a
-   see-through status bar, the page can be laid out a status bar short of the screen, which left a band of
-   the page's ground in the home bar's strip under a video (2026-11-18): there --apph, set from the screen's
-   own height by js/app.js (fitScreen), takes over. */
-#app { position: fixed; top: 0; left: 0; right: 0; height: var(--apph, 100%); overflow: hidden; }
+/* The app's box is the whole window, the standard way for an installed web app: fixed to its four edges,
+   with no height of its own (none worked out from the screen: 0.5.5's --apph made the band worse). The page
+   runs under the status bar and the home bar (viewport-fit=cover in index.html), and the safe areas are
+   padding inside the box (--sat, --sab), never a smaller box. */
+#app { position: fixed; inset: 0; overflow: hidden; background: var(--ground); }
 #view { position: absolute; inset: 0; z-index: 1; }
 
 .screen {

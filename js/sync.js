@@ -316,9 +316,29 @@ export async function mediaUrl(path) {
   return url;
 }
 
-// What the app reads from the data repo: the index, topics and their lessons and media, and the writer's
-// note of what's been read. Nothing else (the writer's notes, the phone's own progress) comes down.
-const wanted = path => path === 'index.json' || path === 'read.json' || path.startsWith('topics/');
+// What the app reads from the data repo: the index, topics and their lessons and media, the narrators'
+// samples, and the writer's note of what's been read. Nothing else (the writer's notes, the phone's own
+// progress) comes down.
+const wanted = path => path === 'index.json' || path === 'read.json' || path.startsWith('topics/') || path.startsWith('narrators/');
+
+// ---------- the narrators' samples
+// Each narrator saying who it is ("Hello, I'm Heart…"): narrators/samples.json and the clips it names. They
+// are kept on the phone always, whichever narrator is in use (the rule below only ever drops a topic's own
+// clips), so a narrator can be heard in Profile before it's chosen and before its clips come down.
+export const SAMPLES = 'narrators/samples.json';
+// { narrator: { clip, said, seconds, url } } for every sample on this phone; url is its address here.
+export async function samples() {
+  const rec = await store.files.get(SAMPLES).catch(() => null);
+  let list = {};
+  try { list = (JSON.parse(rec.data) || {}).samples || {}; } catch { return {}; }
+  const out = {};
+  for (const [id, s] of Object.entries(list)) {
+    if (!s || !s.clip) continue;
+    const url = await mediaUrl(s.clip);
+    if (url) out[id] = { clip: s.clip, said: s.said, seconds: s.seconds, url };
+  }
+  return out;
+}
 
 // ---------- voice: only the narrator in use
 // Every line is voiced in all four narrators, so any can be chosen, but a topic plays in one: the one chosen

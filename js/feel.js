@@ -17,7 +17,8 @@ import { spring as springAt, back } from './ease.js';
 
 export const MOTION = { bounce: 0.425, overshoot: 0.675, pop: 1.175, squash: 0.13 };
 
-const prefs = { voice: true, effects: false, music: false };
+// animSounds: an animation's own sound effects (js/sfx.js), on unless turned off; effects: the press sounds only.
+const prefs = { voice: true, effects: false, music: false, animSounds: true };
 export const setPrefs = p => Object.assign(prefs, p);
 export const getPrefs = () => ({ ...prefs });
 

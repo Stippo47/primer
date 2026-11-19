@@ -11,6 +11,10 @@
 // resized once); one that comes or goes does so by the cut's kind. Every transition is driven by the frame
 // clock (performance.now), never CSS timing, so a seek lands exactly and a film renders the same each time.
 //
+// A title is the director's caption card: a few big words laid over the top of the picture (a key term, a
+// number, a span of dates) while the line needs them, faded in and out on the same frame clock; "none"
+// takes it away. Unlike the caption, which follows the voice, it stays put, so it reads like a film's title.
+//
 // The kinds of cut, and the sound each makes unless the action names its own (js/sfx.js):
 //   cut   at once, the new picture settling in from a touch closer     ("cut", a soft puff)
 //   fade  one picture dissolving into the other                        (no sound)
@@ -21,8 +25,8 @@ import { soft, clamp01 } from './ease.js';
 
 export const CUTS = ['cut', 'fade', 'push', 'back', 'zoom'];
 export const CORNERS = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
-export const SHOT_SOUND = { cut: 'cut', fade: null, push: 'whoosh', back: 'whoosh', zoom: 'whoosh', split: 'whoosh', inset: 'pop' };
-const MS = { cut: 900, fade: 650, push: 750, back: 750, zoom: 800, move: 750, inset: 550 };
+export const SHOT_SOUND = { cut: 'cut', fade: null, push: 'whoosh', back: 'whoosh', zoom: 'whoosh', split: 'whoosh', inset: 'pop', title: null };
+const MS = { cut: 900, fade: 650, push: 750, back: 750, zoom: 800, move: 750, inset: 550, title: 600 };
 
 export class Shots {
   // stage: the box the parts are in (.sstage). names: the parts, in order. opening: the first layout, as a
@@ -33,6 +37,7 @@ export class Shots {
     this.moves = new Map(); // part -> { kind, t0, ms, from, to }
     this.raf = 0;
     this.log = [];        // for the tests: every shot taken
+    this.titles = [];     // the title card showing and any fading out: { el, text, t0, out }
     stage.classList.add('shots');
   }
 
@@ -41,6 +46,8 @@ export class Shots {
   // Back to the opening layout, at once (building the picture for a moment).
   reset() {
     this.moves.clear();
+    for (const t of this.titles) t.el.remove();
+    this.titles = [];
     this.layout = {};
     this.place({}, true);
     const [kind, ...args] = this.opening;
@@ -49,6 +56,7 @@ export class Shots {
 
   // A shot call: cut, split or inset. now: at once (seeking). Returns the sound it makes, or null.
   run(kind, args, now = false) {
+    if (kind === 'title') { this.log.push({ kind, args, now }); this.setTitle(args[0], now); return null; }
     const known = n => this.names.includes(n);
     let next = { ...this.layout }, how = 'cut';
     if (kind === 'cut') {
@@ -113,6 +121,22 @@ export class Shots {
     this.loop();
   }
 
+  // The title card: a new one fades in over the last as it fades out; "none" (or nothing) takes it away.
+  setTitle(text, now) {
+    const t0 = performance.now();
+    for (const t of this.titles) if (!t.out) t.out = t0;
+    if (text && text !== 'none') {
+      const el = document.createElement('div');
+      el.className = 'stitlecard';
+      el.textContent = String(text);
+      this.stage.append(el);
+      this.titles.push({ el, text: String(text), t0: now ? t0 - 1e6 : t0, out: null });
+    }
+    if (now) { for (const t of this.titles) if (t.out) t.el.remove(); this.titles = this.titles.filter(t => !t.out); }
+    this.frame(t0);
+    this.loop();
+  }
+
   // A part's box inside the stage, as it is now: x, y, width, height.
   box(n) {
     const el = this.el(n), s = this.stage.getBoundingClientRect();
@@ -136,6 +160,16 @@ export class Shots {
 
   // Every moving part at `now`. True while any still moves.
   frame(now) {
+    let titling = false;
+    for (const t of this.titles) {
+      const kin = soft(clamp01((now - t.t0) / MS.title)), kout = t.out ? soft(clamp01((now - t.out) / (MS.title * 0.7))) : 0;
+      t.el.style.opacity = String((kin * (1 - kout)).toFixed(3));
+      t.el.style.transform = `translate(-50%, ${(10 * (1 - kin)).toFixed(2)}px) scale(${(0.96 + 0.04 * kin).toFixed(4)})`;
+      if (t.out && kout >= 1) t.gone = true;
+      else if (kin < 1 || t.out) titling = true;
+    }
+    for (const t of this.titles) if (t.gone) t.el.remove();
+    this.titles = this.titles.filter(t => !t.gone);
     for (const [n, mv] of this.moves) {
       const el = this.el(n);
       const k = clamp01((now - mv.t0) / mv.ms), e = soft(k), out = 1 - e;
@@ -174,7 +208,7 @@ export class Shots {
       }
       if (k >= 1) this.moves.delete(n);
     }
-    return this.moves.size > 0;
+    return this.moves.size > 0 || titling;
   }
 
   corner(n) {
@@ -187,12 +221,15 @@ export class Shots {
 
   // Which parts show, and where: for the tests and the film.
   state() {
-    return { layout: { ...this.layout }, moving: [...this.moves.keys()], off: this.names.filter(n => { const el = this.el(n); return el && el.hasAttribute('data-off'); }) };
+    return { layout: { ...this.layout }, moving: [...this.moves.keys()], off: this.names.filter(n => { const el = this.el(n); return el && el.hasAttribute('data-off'); }),
+      title: (this.titles.find(t => !t.out) || {}).text || null };
   }
 
   remove() {
     this.gone = true;
     if (this.raf) cancelAnimationFrame(this.raf);
     this.raf = 0;
+    for (const t of this.titles) t.el.remove();
+    this.titles = [];
   }
 }

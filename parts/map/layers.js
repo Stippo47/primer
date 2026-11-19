@@ -190,8 +190,11 @@ const finish = {
 
 // ---------------------------------------------------------------- top layers: drawn every frame things move
 
-// Arcs, tracks and flows: a line along its smooth curve, drawn as far as its progress, on a flat shadow. A
-// flow, and a track ridden by an arrow, end in an arrowhead pointing the way it goes.
+// Arcs, tracks, flows and spirals: a line along its smooth curve, drawn as far as its progress, on a flat
+// shadow. A flow, a dotted arc, a spiral's arrows and a track ridden by an arrow end in an arrowhead pointing
+// the way they go. In a scene a flow and a spiral, once drawn, carry bright dashes running along them the way
+// the air goes (pulses), so a wind is seen blowing, not only drawn. A route with a label has its name beside
+// its middle, once it's drawn that far.
 const routes = {
   id: 'routes', base: false,
   draw(d) {
@@ -206,17 +209,160 @@ const routes = {
       if (!line || a <= 0.003) continue;
       const path = new Path2D();
       d.pathTo(path)(line);
-      const wide = rt.kind === 'flow' ? 3.6 : 3;
+      const wide = rt.kind === 'flow' ? 3.6 : rt.dotted ? 4 : 3;
       c.globalAlpha = a;
-      c.save(); c.translate(1, 2 * k); c.strokeStyle = 'rgba(6,8,48,0.4)'; c.lineWidth = (wide + 2) * k; c.stroke(path); c.restore();
-      c.strokeStyle = rt.col; c.lineWidth = wide * k; c.stroke(path);
-      if (rt.kind === 'flow' || rt.rider === 'arrow') arrowhead(d, rt, p, rt.col, wide);
+      if (rt.dotted) {
+        c.setLineDash([0.1, 10 * k]);
+        c.save(); c.translate(1, 2 * k); c.strokeStyle = 'rgba(6,8,48,0.4)'; c.lineWidth = (wide + 1.5) * k; c.stroke(path); c.restore();
+        c.strokeStyle = rt.col; c.lineWidth = wide * k; c.stroke(path);
+        c.setLineDash([]);
+      } else {
+        c.save(); c.translate(1, 2 * k); c.strokeStyle = 'rgba(6,8,48,0.4)'; c.lineWidth = (wide + 2) * k; c.stroke(path); c.restore();
+        c.strokeStyle = rt.col; c.lineWidth = wide * k; c.stroke(path);
+      }
+      if (rt.kind === 'flow' || rt.rider === 'arrow' || rt.dotted) arrowhead(d, rt, p, rt.col, wide);
+      if (rt.kind === 'flow' && d.soft && p >= 1) { pulses(d, screenLine(d, rt.pts), rt.col, wide, now - rt.born, a); busy = true; }
+      c.globalAlpha = 1;
+    }
+    for (const sp of m.spirals) {
+      const a = shown(sp, d), drawn = sp.draw.at(now), bend = sp.bend.at(now);
+      if (sp.draw.moving(now) || sp.bend.moving(now) || sp.out || (d.soft && now - sp.born < 520)) busy = true;
+      if (a <= 0.003 || drawn <= 0) continue;
+      c.globalAlpha = a;
+      for (const arm of spiralArms(sp, bend)) {
+        const n = Math.max(2, Math.round(arm.length * drawn));
+        const line = { type: 'LineString', coordinates: arm.slice(0, n) };
+        const path = new Path2D();
+        d.pathTo(path)(line);
+        c.save(); c.translate(1, 2 * k); c.strokeStyle = 'rgba(6,8,48,0.4)'; c.lineWidth = 5.6 * k; c.stroke(path); c.restore();
+        c.strokeStyle = sp.col; c.lineWidth = 3.6 * k; c.stroke(path);
+        pointHead(d, arm[n - 1], arm[n - 2], sp.col, 3.6);
+        if (d.soft && drawn >= 1) { pulses(d, screenLine(d, arm), sp.col, 3.6, now - sp.born, a); busy = true; }
+      }
       c.globalAlpha = 1;
     }
     c.restore();
     return busy;
   },
 };
+
+// Routes' names, over the marks, so a storm riding by never hides one.
+const routeNames = {
+  id: 'route-names', base: false,
+  draw(d) {
+    const placed = [];
+    for (const rt of d.m.routes) if (rt.label) routeLabel(d, rt, placed);
+    return false;
+  },
+};
+
+// A route's name, on a plate beside its middle, once it's drawn past there. Plates keep clear of each other:
+// one that would cover another slides along its line (a little on, a little back) until it's clear.
+function routeLabel(d, rt, placed) {
+  const { c, view: v, now } = d, p = progressOf(rt, now);
+  if (p < 0.5) return;
+  c.save();
+  c.font = '800 13px "Nunito", system-ui, sans-serif';
+  const tw = c.measureText(rt.label).width + 22, th = 26;
+  c.restore();
+  let best = null;
+  for (const f of [0.5, 0.66, 0.34, 0.8, 0.2]) {
+    const mid = headOf(rt, f);
+    if (!v.visible(mid)) continue;
+    const [x, y] = v.proj(mid);
+    // the plate sits off the line, never on it: above it where it can be
+    const before = v.proj(headOf(rt, Math.max(0, f - 0.08))), after = v.proj(headOf(rt, Math.min(1, f + 0.08)));
+    let nx = -(after[1] - before[1]), ny = after[0] - before[0];
+    const l = Math.hypot(nx, ny) || 1;
+    nx /= l; ny /= l;
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    const cx = Math.max(tw / 2 + 6, Math.min(v.w - tw / 2 - 6, x + nx * 26)), cy = y + ny * 26;
+    const box = [cx - tw / 2 - 4, cy - th / 2 - 4, cx + tw / 2 + 4, cy + th / 2 + 4];
+    const clear = !placed.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1]);
+    if (!best) best = { cx, cy, box };
+    if (clear) { best = { cx, cy, box }; break; }
+  }
+  if (!best) return;
+  placed.push(best.box);
+  const a = shown(rt, d, false) * softEase(clamp01((p - 0.5) / 0.25));
+  if (a <= 0.01) return;
+  c.save(); c.globalAlpha = a;
+  chip(c, rt.label, best.cx, best.cy, { k: 1, width: v.w });
+  c.restore();
+}
+
+// A route's or an arm's places, as points on the screen with the distance along to each, the hidden side of a
+// globe left out (where a line goes round the back, the pulses stop there).
+function screenLine(d, pts) {
+  const v = d.view, out = [];
+  let run = 0, last = null;
+  for (const p of pts) {
+    if (!v.visible(p)) { last = null; out.push(null); continue; }
+    const [x, y] = v.proj(p);
+    if (last) run += Math.hypot(x - last[0], y - last[1]);
+    out.push([x, y, run]);
+    last = [x, y];
+  }
+  return out;
+}
+
+// Bright dashes running along a line the way it goes: a short light stroke over the line every so many pixels,
+// each fading in and out along its way, moving at an easy walking pace across the screen.
+function pulses(d, sl, col, wide, ms, alpha) {
+  const { c, k } = d;
+  const pts = sl.filter(Boolean);
+  if (pts.length < 2) return;
+  const total = pts[pts.length - 1][2];
+  if (total < 24) return;
+  const gap = Math.max(46, Math.min(90, total / 3)), dash = Math.min(18, gap * 0.32), speed = 34;   // pixels, pixels a second
+  const shift = ((ms / 1000) * speed) % gap;
+  c.save();
+  c.lineCap = 'round';
+  c.strokeStyle = mix(col, '#ffffff', 0.72);
+  c.lineWidth = Math.max(1.6, wide * 0.55) * k;
+  for (let s = shift - gap; s < total; s += gap) {
+    const s0 = Math.max(0, s), s1 = Math.min(total - 6 * k, s + dash);
+    if (s1 <= s0) continue;
+    const mid = (s0 + s1) / 2;
+    c.globalAlpha = alpha * Math.sin(Math.PI * clamp01(mid / total)) ** 0.6;
+    c.beginPath();
+    let on = false;
+    for (let i = 1; i < sl.length; i++) {
+      const p0 = sl[i - 1], p1 = sl[i];
+      if (!p0 || !p1) { on = false; continue; }
+      if (p1[2] < s0 || p0[2] > s1) continue;
+      const seg = p1[2] - p0[2] || 1;
+      const a0 = clamp01((s0 - p0[2]) / seg), a1 = clamp01((s1 - p0[2]) / seg);
+      const x0 = p0[0] + (p1[0] - p0[0]) * a0, y0 = p0[1] + (p1[1] - p0[1]) * a0;
+      const x1 = p0[0] + (p1[0] - p0[0]) * a1, y1 = p0[1] + (p1[1] - p0[1]) * a1;
+      if (!on) { c.moveTo(x0, y0); on = true; }
+      c.lineTo(x1, y1);
+    }
+    c.stroke();
+  }
+  c.restore();
+}
+
+// An arrowhead at a place, pointing away from the place behind it, on the screen.
+function pointHead(d, head, back, col, wide) {
+  const { c, view: v, k } = d;
+  if (!head || !back || !v.visible(head)) return;
+  const [x, y] = v.proj(head), [bx, by] = v.proj(back);
+  let dx = x - bx, dy = y - by;
+  const l = Math.hypot(dx, dy);
+  if (l < 0.01) return;
+  dx /= l; dy /= l;
+  const s = (wide * 2.2 + 3) * k;
+  const tri = (ox, oy, colour) => {
+    c.fillStyle = colour; c.beginPath();
+    c.moveTo(x + ox + dx * s, y + oy + dy * s);
+    c.lineTo(x + ox - dx * s * 0.55 - dy * s * 0.8, y + oy - dy * s * 0.55 + dx * s * 0.8);
+    c.lineTo(x + ox - dx * s * 0.55 + dy * s * 0.8, y + oy - dy * s * 0.55 - dx * s * 0.8);
+    c.closePath(); c.fill();
+  };
+  tri(1, 2 * k, 'rgba(6,8,48,0.4)');
+  tri(0, 0, col);
+}
 
 // An arrowhead at a route's head, pointing along the way it's going on the screen.
 function arrowhead(d, rt, p, col, wide) {
@@ -298,17 +444,33 @@ const names = {
       }
       g.restore();
     }
+    // the equator's name, then each parallel's: a name that would overlap one already written moves along
+    // its line, left or right, until it's clear (5° N, the equator and 5° S, close together, side by side)
+    const lineNames = [];
+    g.save(); g.font = '800 12px "Nunito", system-ui, sans-serif';
+    const room = (x, y, text) => {
+      const tw = g.measureText(text).width + 10;
+      for (const step of [0, 1, -1, 2, -2, 3, -3]) {
+        const cx = x + step * (tw + 12), box = [cx - tw / 2, y + 4, cx + tw / 2, y + 22];
+        if (step && (box[0] < 6 || box[2] > v.w - 6)) continue;
+        if (!lineNames.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) { lineNames.push(box); return cx; }
+      }
+      return x;
+    };
+    g.restore();
     if (eqAt) {
       const [x, y] = eqAt;
       g.save(); g.font = '800 12px "Nunito", system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.9)'; g.textAlign = 'center'; g.textBaseline = 'top';
-      g.fillText('Equator', x, y + 6); g.restore();
+      g.fillText('Equator', room(x, y, 'Equator'), y + 6); g.restore();
     }
     for (const pl of m.parallels) {
       const at = [v.centre[0], pl.lat], a = shown(pl, d);
       if (pl.out || (d.soft && d.now - pl.born < 520)) fading = true;
       if (!pl.label || a <= 0.01 || !v.visible(at)) continue;
-      const [x, y] = v.proj(at);
-      g.save(); g.globalAlpha = a; g.font = '800 12px "Nunito", system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.9)'; g.textAlign = 'center'; g.textBaseline = 'top';
+      const [x0, y] = v.proj(at);
+      g.save(); g.font = '800 12px "Nunito", system-ui, sans-serif';
+      const x = room(x0, y, pl.label);
+      g.globalAlpha = a; g.fillStyle = 'rgba(255,255,255,0.9)'; g.textAlign = 'center'; g.textBaseline = 'top';
       g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = 'rgba(12,20,80,0.6)'; g.strokeText(pl.label, x, y + 6);
       g.fillText(pl.label, x, y + 6); g.restore();
     }
@@ -414,8 +576,37 @@ const marks = {
   },
 };
 
+// A key to the style's colours, on a plate along the top, clear of the status bar in a scene: in warmth, the
+// sea's colours from the coolest to the warmest, named at each end. Only a style with a key draws one.
+const KEYS = { warmth: { colours: SST, low: 'Cool', high: 'Warm', title: 'Sea surface' } };
+const key = {
+  id: 'key', base: false,
+  draw(d) {
+    const { c, m, now, view: v } = d;
+    const K = KEYS[d.styleName];
+    if (!m.key || !K) return false;
+    const a = shown(m.key, d, false) * (d.soft ? softEase(clamp01((now - m.key.born) / 600)) : 1);
+    if (a <= 0.01) return !!m.key.out;
+    const wd = Math.min(250, v.w - 40), x = (v.w - wd) / 2, y = d.safeTop + 14, h = 50;
+    c.save();
+    c.globalAlpha = a;
+    c.fillStyle = 'rgba(6,8,40,0.5)'; c.beginPath(); c.roundRect(x, y + 3, wd, h, 14); c.fill();
+    c.fillStyle = 'rgba(14,18,60,0.88)'; c.beginPath(); c.roundRect(x, y, wd, h, 14); c.fill();
+    const bx = x + 50, bw = wd - 100, by = y + 28, bh = 12;
+    const grad = c.createLinearGradient(bx, 0, bx + bw, 0);
+    K.colours.forEach((col, i) => grad.addColorStop(i / (K.colours.length - 1), col));
+    c.fillStyle = grad; c.beginPath(); c.roundRect(bx, by, bw, bh, 6); c.fill();
+    c.font = '800 12px "Nunito", system-ui, sans-serif'; c.textBaseline = 'middle';
+    c.fillStyle = '#9fb4ff'; c.textAlign = 'right'; c.fillText(K.low, bx - 8, by + bh / 2);
+    c.fillStyle = '#ffc27a'; c.textAlign = 'left'; c.fillText(K.high, bx + bw + 8, by + bh / 2);
+    c.fillStyle = 'rgba(255,255,255,0.86)'; c.textAlign = 'center'; c.fillText(K.title, x + wd / 2, y + 13);
+    c.restore();
+    return a < 1 || !!m.key.out;
+  },
+};
+
 // The stack, bottom to top.
-export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, routes, names, marks];
+export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, routes, names, marks, routeNames, key];
 
 // ---------------------------------------------------------------- shapes used by more than one call
 
@@ -469,6 +660,36 @@ export function curveThrough(places) {
   const cum = [0];
   for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + geoDistance(pts[i - 1], pts[i]));
   return { pts, cum, total: cum[cum.length - 1] };
+}
+
+// A spiral of air rushing in toward a place from four sides (the map's spiral call). Its bend glides; its arms
+// are worked out from the bend each frame (a few dozen points each, cheap). The bend is the Earth's own:
+// scaled by how far from the equator the place is (the Coriolis effect grows with the sine of the latitude;
+// full strength from about 20 degrees out, none on the equator), and the turn goes the hemisphere's way, so
+// air bending right north of the equator swirls counterclockwise, and left south of it, clockwise.
+export function makeSpiral(at, { bend = 1, size = 9, seconds = 1.4, now = 0, col = '#49c6ff' } = {}) {
+  return { at, size, col, born: now, bend: new Glide(seconds > 0 ? bend : bend).go(bend, 0, now), draw: new Glide(seconds > 0 ? 0 : 1).go(1, seconds * 1000, now) };
+}
+const SPIRAL_ARMS = 4, SPIRAL_STEPS = 28;
+export function spiralArms(sp, bend) {
+  const [lon0, lat0] = sp.at, R = sp.size;
+  const strength = clamp01(Math.abs(Math.sin(lat0 * RAD)) / Math.sin(20 * RAD));
+  const turn = (lat0 >= 0 ? 1 : -1) * clamp01(bend) * strength;
+  const k = Math.cos(lat0 * RAD) || 1;
+  const arms = [];
+  for (let i = 0; i < SPIRAL_ARMS; i++) {
+    const a0 = (i / SPIRAL_ARMS) * TAU + 0.35;
+    const arm = [];
+    for (let j = 0; j <= SPIRAL_STEPS; j++) {
+      const s = j / SPIRAL_STEPS;
+      // inward, bending more as it goes; aimed straight, it stops short of the middle with its head on it
+      const r = R * (1 - s * (0.78 - 0.2 * Math.abs(turn)));
+      const a = a0 + turn * 2.1 * Math.pow(s, 1.25);
+      arm.push([lon0 + (r * Math.cos(a)) / k, lat0 + r * Math.sin(a)]);
+    }
+    arms.push(arm);
+  }
+  return arms;
 }
 
 // kind: 'arc', 'track' or 'flow'. progress: how far it's drawn; it glides there from `from` over `seconds`.

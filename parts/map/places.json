@@ -14,7 +14,7 @@
     "South China Sea": { "kind": "sea", "at": [[114, 14]] },
     "Coral Sea": { "kind": "sea", "at": [[155, -17]] },
     "Gulf of Guinea": { "kind": "sea", "at": [[3, 1]] },
-    "Africa": { "kind": "continent", "at": [[18, 7]] },
+    "Africa": { "kind": "continent", "at": [[18, 7], [2, 21]] },
     "Europe": { "kind": "continent", "at": [[18, 51]] },
     "Asia": { "kind": "continent", "at": [[90, 47]] },
     "North America": { "kind": "continent", "at": [[-100, 44]] },

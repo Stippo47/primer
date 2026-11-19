@@ -111,7 +111,7 @@ export class Scene {
     this.gapLeft = 0;
     this.pos = 0;
     // shots, when any action takes one or the scene opens on one
-    this.usesShots = this.partNames.length > 1 && (Array.isArray(scene.shot) || this.lines.some(l => (l.do || []).some(a => Array.isArray(a.call) && String(a.call[0]).startsWith('shot.'))));
+    this.usesShots = (this.partNames.length > 1 && Array.isArray(scene.shot)) || this.lines.some(l => (l.do || []).some(a => Array.isArray(a.call) && String(a.call[0]).startsWith('shot.')));
     this.sfx = new Effects(opts.effects ? { on: opts.effects } : {});
   }
 

@@ -23,7 +23,7 @@ import { visitNode } from './screens/node.js';
 import { playVideo } from './screens/video.js';
 import { DEFAULT_NARRATOR, NARRATORS } from './scene.js';
 
-const VERSION = '0.5.7'; // keep in step with sw.js
+const VERSION = '0.5.8'; // keep in step with sw.js
 const root = document.getElementById('app');
 const view = document.getElementById('view');
 const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
@@ -34,24 +34,35 @@ const params = new URLSearchParams(location.search);
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isInstalled = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
-// The app's box reaches the bottom of the screen. Installed on an iPhone, with the status bar see-through,
-// the page can be laid out a status bar's height short of the screen, which showed as a band of a lighter
-// ground in the home bar's strip under a video (2026-11-18). An installed app always has the whole screen,
-// so there the box takes the screen's own height whenever the page reports less (css/app.css, --apph).
-export function fitScreen(win = window, root = document.documentElement, ios = isIOS) {
-  const installed = win.navigator.standalone === true || (win.matchMedia && win.matchMedia('(display-mode: standalone)').matches);
-  const portrait = win.innerHeight >= win.innerWidth;
-  const full = portrait ? Math.max(win.screen.height, win.screen.width) : Math.min(win.screen.height, win.screen.width);
-  const short = installed && ios && full - win.innerHeight > 1 && full - win.innerHeight < 120;
-  if (short) root.style.setProperty('--apph', `${full}px`); else root.style.removeProperty('--apph');
-  return short;
+// The app's box is the whole screen, the standard way for an installed web app (css/app.css): the page is
+// laid out under the status bar and the home bar (viewport-fit=cover), the box is fixed to the window's four
+// edges with no height worked out from the screen, the safe areas are padding inside it, and the page's own
+// ground under it is the app's dark (the video's while one plays), so nothing lighter can show at an edge.
+// 0.5.5 sized the box from the screen's height instead (fitScreen, --apph), a guess that made the band at
+// the bottom worse on the phone (2026-11-19): it's gone. If a band still shows, Profile's hidden panel (tap
+// the version five times) says what the phone reports (screenFacts).
+export function screenFacts(win = window, doc = document) {
+  const probe = doc.createElement('div');
+  probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+  doc.body.append(probe);
+  const cs = win.getComputedStyle(probe), px = v => Math.round(parseFloat(v) || 0);
+  const insets = { top: px(cs.paddingTop), right: px(cs.paddingRight), bottom: px(cs.paddingBottom), left: px(cs.paddingLeft) };
+  probe.remove();
+  const box = sel => { const e = doc.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height) }; };
+  const vv = win.visualViewport;
+  return {
+    innerHeight: win.innerHeight, innerWidth: win.innerWidth, outerHeight: win.outerHeight,
+    screenHeight: win.screen.height, screenWidth: win.screen.width, availHeight: win.screen.availHeight,
+    visualViewport: vv ? { height: Math.round(vv.height), offsetTop: Math.round(vv.offsetTop), scale: vv.scale } : null,
+    documentHeight: doc.documentElement.clientHeight, scrollHeight: doc.documentElement.scrollHeight, bodyHeight: Math.round(doc.body.getBoundingClientRect().height),
+    app: box('#app'), insets,
+    standalone: win.navigator.standalone === true, displayMode: ['standalone', 'fullscreen', 'minimal-ui', 'browser'].find(m => win.matchMedia && win.matchMedia(`(display-mode: ${m})`).matches) || null,
+    devicePixelRatio: win.devicePixelRatio, ua: win.navigator.userAgent,
+  };
 }
 
 function trackViewport() {
   document.addEventListener('gesturestart', e => e.preventDefault());
-  fitScreen();
-  addEventListener('resize', () => fitScreen());
-  addEventListener('orientationchange', () => setTimeout(() => fitScreen(), 300));
   // On a local test server only: pretend to have an iPhone's safe areas, to check the true spacing.
   const fake = isLocalHost && params.get('insets');
   if (fake) {
@@ -72,10 +83,12 @@ let updateReady = false;
 const app = {
   VERSION, root, view, store, sync,
   topics: [],
-  // Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen).
+  // Effects start off (ruled 2026-11-18: the press sounds are disliked until better ones are chosen) and cover
+  // button presses only. Animation sounds, an animation's own sound effects, have their own switch, on unless
+  // turned off (ruled 2026-11-19).
   // narrators: the narrator chosen for a subject, overriding its topics' own: { "Earth science": "george" }.
   // captions: an animation's captions, on or off (with no voice they're always on).
-  prefs: { v: 2, voice: true, captions: true, effects: false, music: false, text: 'm', topic: null, tab: 'learn', narrators: {} },
+  prefs: { v: 2, voice: true, captions: true, effects: false, animSounds: true, music: false, text: 'm', topic: null, tab: 'learn', narrators: {} },
   tab: 'learn',
   partNow: null,
   mustInstall: isIOS && !isInstalled,
@@ -96,7 +109,7 @@ const app = {
   setPref(k, v) {
     app.prefs[k] = v;
     store.set('prefs', app.prefs);
-    feel.setPrefs({ voice: app.prefs.voice, effects: app.prefs.effects, music: app.prefs.music });
+    feel.setPrefs({ voice: app.prefs.voice, effects: app.prefs.effects, music: app.prefs.music, animSounds: app.prefs.animSounds !== false });
     document.documentElement.dataset.text = app.prefs.text || 'm';
     try { localStorage.setItem('primer-prefs', JSON.stringify({ text: app.prefs.text })); } catch { /* it just flashes */ }
   },
@@ -224,6 +237,7 @@ const app = {
   },
 
   showConnect() { connectScreen(app, () => app.go('profile')); },
+  screenFacts: () => screenFacts(),
 
   troubleWords(t) {
     if (t.kind === 'memory') return "Not saving on this phone. This looks like a private window, or storage is blocked, so nothing here survives closing.";
@@ -377,6 +391,6 @@ if (isLocalHost) {
       await new Promise(r => setTimeout(r, 120));
       return run.scene.measure();
     },
-    esc, fitScreen,
+    esc, screenFacts,
   };
 }
