@@ -1,0 +1,133 @@
+{
+  "title": "Pills lying down, and the gecko's styles",
+  "topic": "stage0",
+  "order": 14,
+  "cards": [
+    {
+      "id": "crow-pills-lying",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Button, pills lying down",
+      "text": "Button's white pill eyes turned on their side, plain and with a shadow. Tick the ones you like.",
+      "why": "You picked the solid white pill with no rim, asked for it the other way round, and for a version with a shadow on the eye. Only the eyes changed: body, pose, light and size are as before. Pin anything that looks wrong.",
+      "pick": [
+        "button-lying-shade-low"
+      ],
+      "details": "Button with the same white capsule eyes as last round, turned to lie on their side: about twice as wide as tall, solid white, no pupil, no rim of light. The far eye is the same capsule seen at a slant, so it shows as a short rounded tab above the beak.\n\nThree versions:\n- Flat white: the capsule as it is.\n- Shade below: a flat band of cooler grey-lilac along the lower right of the eye. The room's light comes from the upper left, and the bird's body is shaded the same way, so the eye now reads as a small rounded form like the rest of it.\n- Shade on top: a flat band across the top of the eye, as if the head above casts it. It gives a calmer, slightly hooded look.\n\nThe front shows the heads large, with last round's standing pill first for comparison, then all of them at icon size.\n\nMy pick is shade below. Lying down, the plain white pill reads as a calm, half-shut eye, which suits Button. The shadow below gives it roundness that matches the body's own shading, without adding a pupil. Shade on top is the most sleepy-looking of the three, and the band can read as a lid. At icon size the three are close to the same; the shadow only shows from about thumbnail size up. My second is flat white, the cleanest.\n\nStill weak: the far eye is a small round tab, which on its own doesn't say \"capsule\".",
+      "images": [
+        "../../stage0/avatar13/shots/crow-faces.png",
+        "../../stage0/avatar13/shots/crow-icons.png"
+      ],
+      "items": [
+        {
+          "id": "button-lying",
+          "label": "Lying, flat white",
+          "image": "../../stage0/avatar13/shots/crow-button-lying.png",
+          "text": "The solid white capsule on its side, no shadow, no rim. My second."
+        },
+        {
+          "id": "button-lying-shade-low",
+          "label": "Lying, shade below",
+          "image": "../../stage0/avatar13/shots/crow-button-lying-shade-low.png",
+          "text": "A flat grey-lilac band along the lower right, away from the room's light, like the body's own shading. My pick."
+        },
+        {
+          "id": "button-lying-shade-top",
+          "label": "Lying, shade on top",
+          "image": "../../stage0/avatar13/shots/crow-button-lying-shade-top.png",
+          "text": "A flat band across the top, as if the head casts it. Calmer, a little hooded."
+        }
+      ]
+    },
+    {
+      "id": "gecko-styles",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Gecko in ten styles",
+      "text": "The round 4 gecko drawn ten ways, none more realistic. Tick the styles you like.",
+      "why": "Last round read \"grown-up\" as more lifelike, which was wrong. These keep the gecko as simple as before and change only the style: shapes, colours and finish. The one you tick sets the look for every character after. Pin anything that looks wrong.",
+      "pick": [
+        "geometric",
+        "poster",
+        "papercut"
+      ],
+      "details": "The same gecko ten times: same pose (standing square on, arms out and down, tail curled up behind on the right), same idea (a wide head, a belly, a spotted curled tail) and about as few shapes as round 4. None is more lifelike than round 4. What changes is the style's voice: the kinds of shapes it's built from, its colours, and its finish. Every one has the same calm, curious face: eyes on you, lids just lowered, no grin, no open mouth.\n\n1. Geometric glow: built only from circles, half circles and boxes. A small lamp glows in the dark to the upper left; the gecko has broad violet shadows on the far side and a thin warm edge of light on the near. Closest to Kurzgesagt.\n2. Graphic poster: three flat colours and nothing else. The gecko is one solid silhouette and every detail is cut through it. A cream disc behind the head.\n3. Papercut: each shape a separate sheet of paper with slightly uneven cut edges and a soft shadow under it. Muted sage, cream and terracotta on kraft.\n4. Mid-century: the angular shapes of 1950s print. A six-sided head, almond eyes, fine dark toes, dry-brush texture. Teal, mustard and burnt orange.\n5. Chunky: Duolingo's heavy rounded build and big eyes close together, without the grin. Flat colour, no shading.\n6. Monoline: one even ink line round every shape, with pale fills printed a little off the lines.\n7. Faceted: flat low-poly, every form cut into triangles shaded by which way they face.\n8. Blobby minimal: five soft shapes in all, no lines on the face, no belly, no toes.\n9. Risograph: three grainy spot inks printed slightly out of line with each other, overlapping into new colours.\n10. Linocut: a two-colour block print. Dark ink with carved lines for the lit side, red showing through the carved belly.\n\nThe front shows all ten side by side, then all ten at icon size.\n\nMy picks are 1, 2 and 3. Geometric glow sits closest to the app's own flat Kurzgesagt-like art and has the clearest voice of its own. Graphic poster is the most grown-up and the strongest at icon size: you know it's a gecko from the outline alone. Papercut has the most warmth without looking like a children's cartoon. Chunky is the nearest to round 4 and still the most child-like. The textured styles (4, 9, 10) look good still, but grain and print texture shimmer when a character moves, so they'd cost more to animate.",
+      "images": [
+        "../../stage0/avatar13/shots/gecko-sheet.png",
+        "../../stage0/avatar13/shots/gecko-icons.png"
+      ],
+      "items": [
+        {
+          "id": "geometric",
+          "label": "1. Geometric glow",
+          "image": "../../stage0/avatar13/shots/gecko-geometric.png",
+          "text": "Circles, half circles and boxes; a small lamp glowing in the dark; violet shadows and a warm edge of light. My pick."
+        },
+        {
+          "id": "poster",
+          "label": "2. Graphic poster",
+          "image": "../../stage0/avatar13/shots/gecko-poster.png",
+          "text": "Three flat colours, one solid silhouette, details cut through it; no lines, no shading. My pick."
+        },
+        {
+          "id": "papercut",
+          "label": "3. Papercut",
+          "image": "../../stage0/avatar13/shots/gecko-papercut.png",
+          "text": "Layered cut paper with uneven edges and soft shadows; sage, cream and terracotta on kraft. My pick."
+        },
+        {
+          "id": "midcentury",
+          "label": "4. Mid-century",
+          "image": "../../stage0/avatar13/shots/gecko-midcentury.png",
+          "text": "Angular 1950s print shapes, almond eyes, fine dark toes, dry-brush texture; teal, mustard, burnt orange."
+        },
+        {
+          "id": "chunky",
+          "label": "5. Chunky",
+          "image": "../../stage0/avatar13/shots/gecko-chunky.png",
+          "text": "Heavy rounded blocks, feet apart from the legs, big eyes close together; flat colour, one brow lifted."
+        },
+        {
+          "id": "monoline",
+          "label": "6. Monoline",
+          "image": "../../stage0/avatar13/shots/gecko-monoline.png",
+          "text": "One even ink line round every shape, pale fills printed a little off the lines; sage, peach, coral."
+        },
+        {
+          "id": "faceted",
+          "label": "7. Faceted",
+          "image": "../../stage0/avatar13/shots/gecko-faceted.png",
+          "text": "Flat low-poly: every form cut into triangles shaded by which way they face; emerald and amber on slate."
+        },
+        {
+          "id": "blobby",
+          "label": "8. Blobby minimal",
+          "image": "../../stage0/avatar13/shots/gecko-blobby.png",
+          "text": "Five soft shapes in all: one for the body, one for the tail, one shade, two small dark eyes."
+        },
+        {
+          "id": "riso",
+          "label": "9. Risograph",
+          "image": "../../stage0/avatar13/shots/gecko-riso.png",
+          "text": "Three grainy inks, teal, pink and yellow, printed slightly out of line and overlapping into new colours."
+        },
+        {
+          "id": "linocut",
+          "label": "10. Linocut",
+          "image": "../../stage0/avatar13/shots/gecko-linocut.png",
+          "text": "A two-colour block print: dark ink with carved lines for light, red showing through the belly; worn edges."
+        }
+      ]
+    },
+    {
+      "id": "more-unique",
+      "kind": "question",
+      "rarity": "rare",
+      "title": "What \"more unique\" means",
+      "text": "When you said more unique, not child-book, what did you mean?",
+      "why": "Last round I took it as \"more realistic\", which was wrong. Knowing what you meant steers every character after this, not just the gecko. Add a comment in your own words if my reading is off.",
+      "pick": "A style with its own voice: a clear shape language and palette, calm faces instead of grins, still simple and flat, not more realistic.",
+      "details": "What you said about the gecko: it \"could be used if made more unique and not like Cartoon Network / child book\". About the softer people: \"too happy, too much child cartoon vibe\". And on the style dial: \"Not what I meant. I don't mean more realistic.\"\n\nMy reading now: the problem isn't how simple the characters are, it's that they look generic. Big glossy eyes, wide grins, soft candy colours and rounded everything is the default look of children's TV, and any studio could have drawn it. A style with its own voice picks a few things and commits to them: one kind of shape (geometric, cut paper, angular print), a palette of its own, and calm faces that let the pose do the acting. It stays flat and simple, like the app's Kurzgesagt-like art.\n\nThe board of ten styles in this deck is built on that reading. If you meant something else, say what, even roughly: a word, a show or an artist you like, or a style on the board that's close."
+    }
+  ]
+}
