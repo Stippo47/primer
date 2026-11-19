@@ -361,3 +361,8 @@ Their words are in primer-data `notes/answers-2026-11-19e.md`.
 - **The bottom band is worse** after 0.5.5's fix. The guessed cause (a screen-height fit) was wrong; it gets undone and the band fixed properly.
 - **Animation sounds get their own switch** (my pick, GO): on by default; Effects stays off and covers button presses only.
 - **Each narrator keeps a "Hello, I'm …" sample on the phone at all times**, played when you choose a voice, so a choice can be heard before its clips come down.
+### Forms, round five (my calls, sent as deck `stage2-forms5`)
+
+- **The abacus reveal slides each bead along its rod**, drawn frame by frame from one `tween` on the inputs' one clock (the old 90 ms CSS snap ran off the clock, so it read as a jump and films missed it). Bead m sets off `gap × m` ms in; a few beads slide 220 ms each, clear of each other; many slide 110 ms, each starting just before the one ahead lands; the last is home inside a second, and each ticks as it lands. A finger's moves keep their CSS slide (230 ms), as before.
+- **The tape's unit reads with its number**: right after it as one phrase, in the same weight (900) and colour in every state (white picking, the mark's colour, gold for the truth), a little smaller (30 px to 40). Spelled as the lesson gives it (km/h); no lesson data changed.
+- **The sea's tint: unchanged**; nothing clearly off at phone size.

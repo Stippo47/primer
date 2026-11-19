@@ -2,7 +2,8 @@
 // on and settle; tap a mark to go to it. Each step that passes the needle gives a tick, and the number at
 // the needle is written large above it. It always holds a real number (`start`, else 0), as the slider
 // does, and stops at the ends of its range with a little give. Only the ruler's marks are redrawn as it
-// moves; nothing slides over anything else. The unit is written beside the number. Once checked and
+// moves; nothing slides over anything else. The unit is written beside the number, as the lesson spells
+// it, in the number's own weight and colour in every state, so the two read as one. Once checked and
 // wrong, the tape glides until the true number is under the needle, written in gold, with what was given
 // still marked on the ruler and on a tag at the corner: it sets off slowly, picks up speed and comes in
 // gently, taking longer the further it goes but never more than a second.
@@ -16,7 +17,6 @@ export const css = `
 .pi-tape.close { border-color: #ffc83d; box-shadow: 0 5px 0 #c98a00; }
 .pi-tape.wrong { border-color: #ee4b7a; box-shadow: 0 5px 0 #8f1f44; }
 .pi-tape .pi-nread { margin-bottom: 12px; }
-.pi-tape .pi-nread .u { font-size: 22px; color: #9aa3d6; }
 .pi-tband { position: relative; height: 78px; touch-action: none; }
 .pi-tband svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
 .pi-tband::before, .pi-tband::after { content: ""; position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1; pointer-events: none; }
