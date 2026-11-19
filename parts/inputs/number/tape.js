@@ -4,8 +4,9 @@
 // does, and stops at the ends of its range with a little give. Only the ruler's marks are redrawn as it
 // moves; nothing slides over anything else. The unit is written beside the number. Once checked and
 // wrong, the tape glides until the true number is under the needle, written in gold, with what was given
-// still marked on the ruler and on a tag at the corner.
-import { esc } from '../kit.js';
+// still marked on the ruler and on a tag at the corner: it sets off slowly, picks up speed and comes in
+// gently, taking longer the further it goes but never more than a second.
+import { esc, easeInOut } from '../kit.js';
 import { range, tidy, startOf, show, differs, givenTag, markGiven, clearGiven } from './common.js';
 import { time } from '../clock.js';
 
@@ -79,10 +80,13 @@ export function mount(f) {
   // glides to a step, slowing as it comes in. Its time is the inputs' one clock (in ms), so a film or a
   // test that holds the clock holds the tape too; with reduced motion asked for, it's there at once.
   const ms = () => time() * 1000;
-  const glide = (target, to = go) => {
+  // A finger's glide is quick; the truth's (`reveal`) is the paced one.
+  const glide = (target, to = go, reveal = false) => {
     stop();
-    const s0 = pos, t0 = ms(), span = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : Math.min(420, 160 + Math.abs(target - s0) * 18);
-    const frame = () => { const k = Math.min(1, Math.max(0, (ms() - t0) / span)), e = 1 - (1 - k) ** 3; to(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
+    const s0 = pos, t0 = ms(), far = Math.abs(target - s0);
+    const span = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : reveal ? Math.min(1000, 500 + far * px * 0.4) : Math.min(420, 160 + far * 18);
+    const ease = reveal ? easeInOut : k => 1 - (1 - k) ** 3;
+    const frame = () => { const k = Math.min(1, Math.max(0, (ms() - t0) / span)), e = ease(k); to(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
     anim = requestAnimationFrame(frame);
   };
   // a flick runs on and slows down, then settles on the nearest step
@@ -121,7 +125,7 @@ export function mount(f) {
       givenS = f.value() === null ? null : (f.value() - lo) / step;
       givenTag(root, tape, S, f.value(), feel);
       root.querySelector('.pi-nread').classList.add('truth');
-      glide(truthS, place);
+      glide(truthS, place, true);
     },
     mark(kind) {
       tape.classList.add(kind);

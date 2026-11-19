@@ -9,7 +9,7 @@
 // use it. Each says its size (w, h), whether it's `round` (drawn as a disc filling its box, so the dial's
 // round window can show all of it; any other picture sits whole inside the window), and may say the look
 // a slider takes with it when the lesson doesn't say (`look`: the warmth picture goes with a thermometer).
-import { mixHex, ramp, smooth, attr, lerp, clamp01, SKY, sun, waves, warmLayer, WARM } from './kit.js';
+import { mixHex, ramp, smooth, attr, lerp, clamp01, SKY, sun, waves, warmLayer, WARM, WARM_TINT } from './kit.js';
 import { onFrame, now } from './clock.js';
 
 let count = 0;
@@ -122,7 +122,7 @@ export const PICTURES = {
   },
 
   // The sea cut away: a warm layer on top of cold water, as deep as the value, under a sky with the sun.
-  // Its waves roll, filled with the warm water's colour; the two warm tones meet along a slow wave; bubbles
+  // The warm layer tints the water rather than hiding it. Its waves roll, filled with the warm colour; the two warm tones meet along a slow wave; bubbles
   // rise, and the warm layer's edge glints. For how deep something goes. A slider takes the sea look with
   // it, where the sea itself is the track (tracks.js); this drawing is for a dial's window or a slider set
   // to another look.
@@ -135,7 +135,7 @@ export const PICTURES = {
         <g clip-path="url(#${id})">
           <rect x="12" y="10" width="196" height="108" fill="#1b2a80"/>
           <rect x="12" y="80" width="196" height="38" fill="#16216a"/>
-          <g class="warm"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
+          <g class="warm" opacity="${WARM_TINT}"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
           <path class="edge" d="M12 36H208" stroke="#ffe9a6" stroke-width="2.4" stroke-dasharray="0.1 7" stroke-linecap="round"/>
           <g class="bubbles" fill="none" stroke="#b3ebff" stroke-width="1.6" opacity="0.7"><circle r="2.4"/><circle r="1.8"/><circle r="2.8"/></g>
           <g class="rolling"><path d="${surf}V0H${-this.WL}z" fill="${SKY}"/>
@@ -162,7 +162,7 @@ export const PICTURES = {
 
   // A palm on an island in a round window, for wind: still and drooping at the low end, its trunk bowed
   // and every frond streaming downwind at the high end, with the sea getting up, the clouds racing in and,
-  // near the top, driving rain. It moves all the time, faster the harder it blows: clouds drift past,
+  // near the top, driving rain. The island is two flat tones of sand, with no line drawn on it. It moves all the time, faster the harder it blows: clouds drift past,
   // waves roll, streaks of wind run downwind, the fronds flutter and the trunk sways. The near water, the
   // darker band, lies in front of the island's foot.
   wind: {
@@ -182,8 +182,7 @@ export const PICTURES = {
           ${cloud('c1')}${cloud('c2')}${cloud('c3')}${cloud('c4')}
           <g class="sea"><path class="sea-t" fill="#3651c8"/><path class="sea-lit" fill="none" stroke="#7fa0ff" stroke-width="2.4" stroke-linecap="round"/></g>
           <path d="M34 162Q60 125 104 128Q134 131 144 162Z" fill="#d9a865"/>
-          <path d="M34 162Q60 122 102 125Q128 128 137 147L133 162Z" fill="#f5d59a"/>
-          <path d="M48 142Q64 129 92 128" fill="none" stroke="#fff0cf" stroke-width="3" stroke-linecap="round"/>
+          <path d="M34 162Q60 122 102 125Q119 127 124 139Q119 150 121 162Z" fill="#f5d59a"/>
           <g class="palm"><path class="trunk-s" fill="#7c4a26"/><path class="trunk" fill="#b27744"/><path class="trunk-l" fill="none" stroke="#d29a62" stroke-width="2.4" stroke-linecap="round"/>
             <g class="rings" fill="none" stroke="#7c4a26" stroke-width="2" stroke-linecap="round">${n(5)}</g>
             <path d="M64 143Q80 132 97 143Z" fill="#f5d59a"/>

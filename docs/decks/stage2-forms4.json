@@ -1,0 +1,23 @@
+{
+  "title": "Answer forms, round four",
+  "topic": "stage2",
+  "order": 9,
+  "cards": [
+    {
+      "id": "forms4-notes",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your notes on round three",
+      "text": "The sea, the sand on the wind's island, the abacus, the wheels and the tape. Mark each part.",
+      "why": "Each part is one of your notes. The clips show what moves. The heat lines stay off, as you chose.",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom. To try them: Practice, Answer forms. The sea is also in the first hurricane lesson and in the checkup.\n\nThe sea in a dial's window got the same tint as the sea slider, since the two share one drawing.\n\nThe wheels, the tape and the abacus now all move on the forms' one clock, so they keep the same calm pace as everything else and stand still if the phone asks for reduced motion.",
+      "parts": [
+        { "id": "sea", "title": "Sea: a see-through tint", "text": "The warm layer is see-through now, so it tints the water instead of covering it: the water's shading and the light rays show through, only warmer. The colours are a touch stronger so they still read as warm through the tint.", "images": ["../stage2/shots-forms4/sea.png", "../stage2/shots-forms4/sea-in-dial.png"], "videos": ["../stage2/shots-forms4/sea.mp4"] },
+        { "id": "wind-sand", "title": "Wind: no line on the sand", "text": "The yellow line was a highlight drawn on the sand, and its ends poked out past the island's edge. It's gone. The island is two flat tones now: light sand, and a clear shaded side on the right, where before only a thin sliver of it peeked out. The first close-up is before, the second after.", "images": ["../stage2/shots-forms4/wind-calm-before-close.png", "../stage2/shots-forms4/wind-calm-after-close.png", "../stage2/shots-forms4/wind.png"], "videos": ["../stage2/shots-forms4/wind.mp4"] },
+        { "id": "abacus", "title": "Abacus: a bead at a time", "text": "On a wrong answer the beads now move to the right number one at a time, quickly, each one snapping into place with a tick. They go rod by rod from the left, and it's always done within a second. In the clip, 42 becomes 119.", "images": ["../stage2/shots-forms4/number-abacus-reveal.png"], "videos": ["../stage2/shots-forms4/number-abacus-reveal.mp4"] },
+        { "id": "wheels", "title": "Wheels: a real drum", "text": "What looked off: a blue-grey fade was laid over the top and bottom of each drum, on top of the digits, so the digits either side looked washed out, as if seen through fog. A real drum doesn't fade: its digits turn away from you, so they get squashed flat as they go over the top and bottom. Now each drum is drawn that way. The digit facing you is full size, the ones either side are squashed, and nothing covers them. The shading is three flat bands, lighter at the top where the drum turns up to the light and darker at the foot, with a darker side underneath. The corners are less rounded, so it reads as a drum, not a button. Each set of pictures and clips is before, then after.", "images": ["../stage2/shots-forms4/number-wheels-before-close.png", "../stage2/shots-forms4/number-wheels-after-close.png", "../stage2/shots-forms4/number-wheels-before.png", "../stage2/shots-forms4/number-wheels-after.png", "../stage2/shots-forms4/number-wheels-after-reveal.png"], "videos": ["../stage2/shots-forms4/number-wheels-before.mp4", "../stage2/shots-forms4/number-wheels-after.mp4"] },
+        { "id": "tape", "title": "Tape: paced to the truth", "text": "On a wrong answer the tape now sets off slowly, picks up speed and eases in at the right number. It takes longer the further it has to go, but never more than a second. In the clip it runs from 12 to 119, the full second.", "images": ["../stage2/shots-forms4/number-tape-reveal.png"], "videos": ["../stage2/shots-forms4/number-tape-reveal.mp4"] }
+      ]
+    }
+  ]
+}

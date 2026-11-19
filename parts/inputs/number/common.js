@@ -2,6 +2,7 @@
 // value starts, and how the truth is shown in its field once it's checked. Each look is one file beside
 // this one, a mount(f) -> { reveal, mark, reset } like any form; forms/number.js picks one by `look`.
 import { esc, fmt } from '../kit.js';
+import { time } from '../clock.js';
 
 export const decimals = step => { const s = String(step); return s.includes('.') ? Math.min(4, s.split('.')[1].length) : 0; };
 export const range = S => [Math.min(S.min, S.max), Math.max(S.min, S.max)];
@@ -48,6 +49,37 @@ export const markGiven = (root, kind) => { const t = root.querySelector('.pi-was
 export const clearGiven = root => { for (const t of root.querySelectorAll('.pi-was')) t.remove(); };
 // A number as its digits, held to the range and the step's decimals, for writing in a field.
 export const digitsText = (S, v) => tidy(S, v).toFixed(decimals(S.step));
+
+// Motion a look sets going itself (a drum settling, the tape gliding to the truth, beads moving one by
+// one), on the inputs' one clock, so a film or a test that holds the clock holds it too. With reduced
+// motion asked for, it's there at once.
+const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// draw(v) for v running from `from` to `to` over `ms` milliseconds, eased by ease(k); then done(). Returns
+// a function that stops it where it is.
+export function tween(from, to, ms, ease, draw, done) {
+  let raf = 0;
+  const t0 = time();
+  const frame = () => {
+    const k = still() || ms <= 0 ? 1 : Math.min(1, Math.max(0, ((time() - t0) * 1000) / ms));
+    draw(from + (to - from) * ease(k));
+    if (k < 1) raf = requestAnimationFrame(frame); else { raf = 0; if (done) done(); }
+  };
+  frame();
+  return () => { if (raf) cancelAnimationFrame(raf); raf = 0; };
+}
+// each(i) for i from 0 to n - 1, the first at once and then one every `gap` milliseconds; then done().
+// Returns a function that stops it.
+export function oneByOne(n, gap, each, done) {
+  let raf = 0, i = 0;
+  const t0 = time();
+  const frame = () => {
+    const due = still() ? n : Math.min(n, 1 + Math.floor(((time() - t0) * 1000) / gap));
+    while (i < due) each(i++);
+    if (i < n) raf = requestAnimationFrame(frame); else { raf = 0; if (done) done(); }
+  };
+  frame();
+  return () => { if (raf) cancelAnimationFrame(raf); raf = 0; };
+}
 
 export const css = `
 .pi.form-number { padding-top: 4px; }
