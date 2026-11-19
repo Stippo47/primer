@@ -350,3 +350,14 @@ Their words are in primer-data `notes/answers-2026-11-19d.md`.
 - **Combo tiers kept (23), low to high:** wood, tin, copper, silver, gold, platinum, emerald, sapphire, crystal, ruby, diamond, obsidian, opal, titanium, aurora, nebula, celestial, eternal, supernova, eclipse, singularity, multiverse, void. Bronze wasn't ticked: copper takes its place (my reading). Similar tiers must differ by more than colour (tin and copper, for one), and the thresholds are spread out.
 - **Shields refill on reaching a new tier** (my pick, GO). Shields, cracks and the shatter: good, but both the crack and the shatter sound are bad and get redone.
 - **Forms round four:** wind sand, wheels and tape good. The abacus beads must actually slide, one at a time, not jump. The sea's tint: decent, no note. The tape: "Km/hr?" (check the unit shows and reads plainly).
+
+## 2026-11-19: the cast, and the directed animations on the phone
+
+Their words are in primer-data `notes/answers-2026-11-19e.md`.
+
+- **Cast in geometric glow: "good enough for now".** Fox and axolotl picked. Fix the fox's ears; make the eyes normal (my reading: plain round eyes with a pupil, no lid cut across). The avatar rests here until it's needed.
+- **Animations:** smoother motion and labels good. Cuts and views "just meh, I see flaws": they want better, more thorough explanations in the pictures, and the script itself reworded (it reads weirdly), so it gets re-voiced.
+- **Sound effects must be attached to the deck** so they can be heard there (my miss: Riffle cards carry `audio`). Every sound sent from now on goes on its card.
+- **The bottom band is worse** after 0.5.5's fix. The guessed cause (a screen-height fit) was wrong; it gets undone and the band fixed properly.
+- **Animation sounds get their own switch** (my pick, GO): on by default; Effects stays off and covers button presses only.
+- **Each narrator keeps a "Hello, I'm …" sample on the phone at all times**, played when you choose a voice, so a choice can be heard before its clips come down.
