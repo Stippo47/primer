@@ -416,7 +416,9 @@ try {
   ok((await ev('__primer.run.input.state()')).value === 9, 'the keypad types a number');
   await press();
   v = await verdict();
-  ok(v.verdict === 'Not quite' && v.why === 'It was 7.' && (await ev(`document.querySelector('.pi-truthline').textContent`)) === '7', 'a wrong number shows the truth', v);
+  const inField = await ev(`(()=>{const d=document.querySelector('.lbody .pi-display'),t=document.querySelector('.lbody .pi-was');return {shown:d.querySelector('.d').textContent,truth:d.classList.contains('truth'),wrong:d.classList.contains('wrong'),gold:getComputedStyle(d.querySelector('.d')).color,tag:t?t.textContent:null,tagWrong:!!t&&t.classList.contains('wrong'),struck:!!(t&&t.querySelector('s')),value:__primer.run.input.state().value}})()`);
+  ok(v.verdict === 'Not quite' && v.why === 'It was 7.' && inField.shown === '7' && inField.truth && inField.gold === 'rgb(255, 200, 61)' && inField.wrong, 'a wrong number shows the truth in its own field, in gold', { v, inField });
+  ok(inField.tag === '9' && inField.tagWrong && inField.struck && inField.value === 9, "and what was typed stays on a struck-through tag at the field's corner, the answer given unchanged", inField);
   await press();
   // order: drag into the right order, then check
   ok((await stepId()) === 'order', 'on to the order');
@@ -535,10 +537,10 @@ try {
   await press();
   await waitFor(`__primer.run.step.id === 'q-warm' && __primer.run.input`);
   await sleep(200);
-  const sliderNow = () => ev(`(()=>{const r=document.querySelector('.lbody .pi.form-slider'),q=s=>r.querySelector(s),th=q('.pi-thumb'),d=__primer.run.input.debug(),at=(s,a)=>Number((q(s)||{getAttribute:()=>0}).getAttribute(a)),tb=q('.pi-track').getBoundingClientRect(),hb=th.getBoundingClientRect();
+  const sliderNow = () => ev(`(()=>{const r=document.querySelector('.lbody .pi.form-slider'),q=s=>r.querySelector(s),th=q('.pi-thumb'),d=__primer.run.input.debug(),at=(s,a)=>Number((q(s)||{getAttribute:()=>0}).getAttribute(a)),bb=s=>{const e=q(s);return e?e.getBBox():{x:0,y:0,width:0,height:0}},tb=q('.pi-track').getBoundingClientRect(),hb=th.getBoundingClientRect();
     return {chip:q('.pi-chip').textContent,look:d.look,dir:d.direction,pic:q('.pi-pic svg') ? q('.pi-pic svg').getAttribute('class') : null,body:(q('.pi-pic .body')||{getAttribute:()=>null}).getAttribute('fill'),
-    snow:at('.pi-pic .snow','opacity'),flame:at('.pi-pic .flame','opacity'),liquid:at('.pi-look .col','width'),liquidColour:(q('.pi-look .col')||{getAttribute:()=>null}).getAttribute('fill'),
-    warm:at('.pi-look .w1','height'),warmEnd:tb.top+at('.pi-look .w1','y')+at('.pi-look .w1','height'),thumbY:hb.top+hb.height/2,picLeft:q('.pi-pic svg') ? q('.pi-pic svg').getBoundingClientRect().left : null,trackRight:tb.left+d.run.x0,
+    snow:at('.pi-pic .snow','opacity'),flame:at('.pi-pic .flame','opacity'),liquid:bb('.pi-look .liq').width,liquidColour:(q('.pi-look .liq')||{getAttribute:()=>null}).getAttribute('fill'),
+    warm:bb('.pi-look .w1').height,warmEnd:tb.top+bb('.pi-look .w1').y+bb('.pi-look .w1').height,thumbY:hb.top+hb.height/2,picLeft:q('.pi-pic svg') ? q('.pi-pic svg').getBoundingClientRect().left : null,trackRight:tb.left+d.run.x0,
     state:__primer.run.input.state(),awake:!document.querySelector('.lfoot .btn').disabled,left:th.style.left,transform:th.style.transform,willChange:getComputedStyle(th).willChange}})()`);
   let sl = await sliderNow();
   ok(sl.chip === '5°C' && sl.liquid > 10 && sl.state.value === 5 && sl.state.answered && sl.awake, 'a slider starts at a real value with its fill showing, and Check awake: never "?"', sl);
@@ -618,7 +620,7 @@ try {
       sort: { wrong: `document.querySelectorAll('.pi-sorttile.truth').length === 1 && document.querySelectorAll('.pi-sorttile.right').length === 3`, right: `document.querySelectorAll('.pi-sorttile.right').length === 4` },
       snap: { wrong: `document.querySelectorAll('.pi-piece.truth').length === 2 && document.querySelectorAll('.pi-card.wrong').length === 2 && document.querySelectorAll('.pi-piece.docked').length === 3`, right: `document.querySelectorAll('.pi-card.right').length === 3` },
       slider: { wrong: `!document.querySelector('.pi-chip.truth').hidden`, right: `!document.querySelector('.pi-chip.truth').hidden` },
-      number: { wrong: `!document.querySelector('.pi-truthline').hidden && !!document.querySelector('.pi-truthline .pi-read.truth') && !!document.querySelector('.form-number .wrong')`, right: `!!document.querySelector('.form-number .right')` },
+      number: { wrong: `!!document.querySelector('.form-number .pi-was.wrong s') && !!document.querySelector('.form-number :is(.pi-display, .pi-dwin, .pi-nread, .pi-adig).truth') && !!document.querySelector('.form-number .wrong:not(.pi-was)')`, right: `!!document.querySelector('.form-number .right') && !document.querySelector('.form-number .pi-was')` },
     };
     await f.tap('[data-go=topics]');
     await sleep(400);
@@ -805,6 +807,22 @@ try {
     ok(d.look === look && await ev(`!!document.querySelector('.partstage .form-number.look-${look}')`), `the number as ${look}`, d);
     await shot(`17e-number-${look}`);
   }
+  // the tape shows its unit; a wheel's side is darker than the shading at the foot of its drum
+  await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
+  ok((await ev(`(document.querySelector('.partstage .pi-tape .pi-nread .u')||{}).textContent`)) === 'km/h', 'the tape writes its unit beside the number');
+  await f.tap('[data-set=look][data-v=wheels]'); await sleep(400);
+  const side = await ev(`(()=>{const m=getComputedStyle(document.querySelector('.partstage .pi-dwin')).boxShadow.match(/rgb\\((\\d+), (\\d+), (\\d+)\\)/);return m?[1,2,3].map(i=>Number(m[i])):null})()`);
+  ok(side && side[0] + side[1] + side[2] < 0x7d + 0x88 + 0xcc - 60, "each wheel's side under it is darker than its body, shading and all", side);
+  // a wrong number on the tape: the tape glides until the truth is under the needle, the given one still marked
+  await ev(`(h=>{h.run(['lock']);h.run(['reveal',119]);h.run(['mark','wrong'])})(__primer.app.partNow)`);
+  await sleep(300);
+  await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
+  await ev(`(h=>{h.run(['lock']);h.run(['reveal',119]);h.run(['mark','wrong'])})(__primer.app.partNow)`);
+  await sleep(800);
+  const tapeTruth = await ev(`(()=>{const r=document.querySelector('.partstage .pi-tape');return {read:r.querySelector('.pi-nread b').textContent,gold:r.querySelector('.pi-nread').classList.contains('truth'),given:!!r.querySelector('.given').getAttribute('d'),tag:(document.querySelector('.partstage .pi-was')||{}).textContent,value:__primer.app.partNow.state().value}})()`);
+  ok(tapeTruth.read === '119' && tapeTruth.gold && tapeTruth.given && tapeTruth.tag === '0 km/h' && tapeTruth.value === 0, 'a wrong tape glides to the truth under its needle, in gold, the given number still marked on the ruler and on its tag', tapeTruth);
+  await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
+  ok(await ev(`!document.querySelector('.partstage .pi-was') && !document.querySelector('.partstage .pi-nread.truth')`), 'and Again clears it');
   await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
   // Pile: the count is in the handle, and every thing added or taken away is a tick
   await f.tap('[data-set=form][data-v=pile]'); await sleep(500);
@@ -846,6 +864,34 @@ try {
   await moving('.partstage .pi-pic svg.pic-warmth', "the thermometer's warmth ball");
   await f.tap('[data-set=look][data-v=sea]'); await sleep(500);
   await moving('.partstage .pi-look', 'the sea');
+  // The notes on 0.5's forms (round forms3): the sea fills its waves with the warm colour, under a sun
+  const seaNow = await ev(`(()=>{const L=document.querySelector('.partstage .pi-look'),w1=L.querySelector('.w1').getBBox(),w2=L.querySelector('.w2').getAttribute('d'),roll=L.querySelector('.rolling path:last-child');
+    return {warmTop:w1.y,crestTop:roll.getBBox().y,skyRect:[...L.querySelectorAll('rect')].some(r=>Number(r.getAttribute('height'))===34),split:/q/.test(w2),rays:(L.querySelector('.sun-g path').getAttribute('d').match(/M/g)||[]).length,wl:Math.round(roll.getBBox().width)}})()`);
+  ok(seaNow.warmTop < seaNow.crestTop + 1 && !seaNow.skyRect, "the sea's warm colour reaches up into its waves: nothing of the sky's sits under a crest", seaNow);
+  ok(seaNow.split && seaNow.rays === 8, 'the two warm tones meet along a wave, and the round thing in the sky is a sun with rays', seaNow);
+  await f.tap('[data-set=look][data-v=thermometer]'); await sleep(400);
+  const thermo = await ev(`(()=>{const L=document.querySelector('.partstage .pi-look'),th=document.querySelector('.partstage .pi-thumb');
+    return {circles:L.querySelectorAll('circle').length,rects:L.querySelectorAll('rect').length,liquid:L.querySelectorAll('.liq').length,thumbBg:getComputedStyle(th).backgroundColor,ring:th.classList.contains('ring')}})()`);
+  ok(thermo.circles === 0 && thermo.rects === 0 && thermo.liquid === 1, "the thermometer's glass is one shape, bulb and tube, and so is its liquid, its shaded edge running round both as one", thermo);
+  ok(thermo.thumbBg === 'rgb(255, 255, 255)' && !thermo.ring, "the thermometer's handle is a solid disc", thermo);
+  const hotEnd = await ev(`(()=>{const g=__primer.app.partNow.debug().run,r=document.querySelector('.partstage .pi-track').getBoundingClientRect();return {x:r.left+g.x0+(g.x1-g.x0)*0.95,y:r.top+g.y0+(g.y1-g.y0)*0.95}})()`);
+  await f.tapAt(hotEnd.x, hotEnd.y); await sleep(300);
+  const heat = on => ev(`import('/primer/parts/inputs/pictures.js').then(m=>{m.PICTURES.warmth.heatLines=${on};return new Promise(r=>setTimeout(()=>r(Number(document.querySelector('.partstage .pi-pic .shimmer').getAttribute('opacity'))),200))})`);
+  const heatOff = await heat(false), heatOn = await heat(true);
+  await heat(false);
+  ok(heatOff === 0 && heatOn > 0.5, 'at the hot end the heat lines are off unless switched on (the designer picks)', { heatOff, heatOn });
+  await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
+  await f.tap('[data-set=form][data-v=dial]'); await sleep(300);
+  await f.tap('[data-set=picture][data-v=wind]'); await sleep(500);
+  const windAt = async k => ev(`import('/primer/parts/inputs/pictures.js').then(m=>{const s=document.querySelector('.partstage svg.pic-wind');m.setPicture('wind',s,${k});const kids=[...s.querySelectorAll('[clip-path] > *')],i=c=>kids.findIndex(e=>e.matches(c)),xs=[...s.querySelectorAll('.rain path')].map(p=>Number(p.getAttribute('d').slice(1).split(' ')[0]));
+    const bins=new Set(xs.map(x=>Math.floor((x+40)/40)));return {caps:!!s.querySelector('.caps'),front:i('.sea-b')>i('.palm')&&i('.palm')>i('.sea'),rays:(s.querySelector('.sun-g path').getAttribute('d').match(/M/g)||[]).length,bins:bins.size,mound:[...s.querySelectorAll('.palm > path')].filter(p=>p.getAttribute('stroke')==='#fff0cf').length}})`);
+  const gale = await windAt(1);
+  ok(!gale.caps && gale.front && gale.mound === 0, "the wind's sea has no white caps, its darker near water lies in front of the island, and nothing is drawn across the foot of the tree", gale);
+  ok(gale.bins >= 5 && gale.rays === 8, 'its rain is scattered across the window rather than in rows, and its sun has rays', gale);
+  await windAt(0.3);
+  await f.tap('[data-set=picture][data-v=warmth]'); await sleep(300);
+  await f.tap('[data-set=form][data-v=slider]'); await sleep(300);
+  await f.tap('[data-set=look][data-v=sea]'); await sleep(400);
   await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
   await f.tap('[data-set=form][data-v=dial]'); await sleep(300);
   await f.tap('[data-set=picture][data-v=wind]'); await sleep(300);
@@ -959,7 +1005,7 @@ try {
       await f.drag(t.x - 100, t.y, 120, 3, { steps: 20, ms: 500, hold: 200 });
       ok((await ev('__primer.app.partNow.state()')).value > 0, 'the tape slides by finger');
     } else if (which === 'number/abacus') {
-      const r = await f.rect('.partstage .pi-rod:last-child .pi-rodbox');
+      const r = await f.rect('.partstage .pi-rod:last-of-type .pi-rodbox');
       await f.drag(r.x, r.top + 10, 0, r.h * 0.7, { steps: 20, ms: 500 });
       await f.drag(r.x, r.top + r.h * 0.7, 0, -r.h * 0.4, { steps: 20, ms: 500 });
       ok((await ev('__primer.app.partNow.debug()')).digits.at(-1) > 0 && await ev(`[...document.querySelectorAll('.partstage .pi-bead')].every(s=>getComputedStyle(s).willChange==='transform')`), 'beads are pulled up a rod by finger, moving on their own layers');
@@ -1074,7 +1120,7 @@ try {
         if (form === 'number') {
           const look = (await ev('__h.debug()')).look;
           if (look === 'keys') await f.tap('#bench .pi-key[data-k="7"]');
-          if (look === 'wheels') await f.tap('#bench .pi-drum:last-child .pi-roll[data-d="1"]');
+          if (look === 'wheels') await f.tap('#bench .pi-drum:last-of-type .pi-roll[data-d="1"]');
           if (look === 'tape') { const t = await f.rect('#bench .pi-tband'); await f.tapAt(t.x + 70, t.y); await sleep(500); }
           if (look === 'abacus') await f.tap('#bench .pi-rod:last-of-type .pi-bead[data-b="2"]');
         }

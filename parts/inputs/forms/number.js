@@ -6,7 +6,7 @@
 //   abacus   a rod of beads for each digit
 // Every look reads the same settings (min, max, step, unit; start, for the three that always hold a
 // number), answers with the same number and is checked, marked and shown the truth the same way: the true
-// number as a gold chip under it. A new look is a file in number/, a line in LOOKS and an option in
+// number in gold in the look's own field, what was given on a tag at its corner (number/common.js). A new look is a file in number/, a line in LOOKS and an option in
 // part.json's `look`.
 import * as keys from '../number/keys.js';
 import * as wheels from '../number/wheels.js';

@@ -1,0 +1,38 @@
+{
+  "title": "Answer forms, round three",
+  "topic": "stage2",
+  "order": 7,
+  "cards": [
+    {
+      "id": "forms3-notes",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your notes on the forms",
+      "text": "The thermometer, the sea, the wind, Number's answer in its field, the wheels and the tape. Mark each part.",
+      "why": "Each part is one of your notes. The clips show what moves; on the phone it all moves at the same calm pace. Pile and Spot are left as they were.",
+      "details": "To try them: Practice, Answer forms. The thermometer and the sea are also in the first hurricane lesson and in the checkup.\n\nThe sea in a dial's window got the same changes as the sea slider: its waves are filled with the warm colour, the two warm tones meet along a wave, and the sun has rays. The sky, the sun and the waves are now one shared drawing, so the sea and the wind's island look like the same place.\n\nWhether the hot ball keeps its heat lines is on the board after this card.",
+      "parts": [
+        { "id": "thermometer", "title": "Thermometer: one shape", "text": "The bulb and the tube are one shape now, joined by a smooth neck, and so is the liquid inside: its shaded edge runs round the bulb and up the tube as one, so no tube shadow lies over the bulb. The handle is a solid white disc. In these pictures the heat lines are off (they're on the board after this card).", "images": ["../stage2/shots-forms3/thermometer.png", "../stage2/shots-forms3/thermometer-hot-without-heat-lines.png"], "videos": ["../stage2/shots-forms3/thermometer.mp4"] },
+        { "id": "sea", "title": "Sea: warm waves, a sun", "text": "The warm colour fills the waves right up to the surface line. The waves are about two and a half times as long. Yellow-orange meets deep orange along a slow, rolling wave. The round thing was meant as the sun, but on the night-dark sky it read as a moon: the sky is daytime blue now and the sun has rays. Shown as the lesson's depth question, in metres.", "images": ["../stage2/shots-forms3/sea.png"], "videos": ["../stage2/shots-forms3/sea.mp4"] },
+        { "id": "wind", "title": "Wind: no white waves", "text": "The white waves are gone. The rain falls in a scatter, each drop at its own speed, coming in somewhere new every time, so it never lines up in bands. The stray line at the foot of the tree (a highlight across the trunk) is gone. The darker water lies in front of the island now, and in a gale it laps the shore without swamping it. The sun has rays, like the sea's.", "images": ["../stage2/shots-forms3/wind.png"], "videos": ["../stage2/shots-forms3/wind.mp4"] },
+        { "id": "number-reveal", "title": "Number: answer in the field", "text": "A wrong number now shows the right one in its own field, in gold: the keys type it into the screen, the wheels roll to it, the tape glides until it's under the needle, the beads move. What you gave stays on a small struck-through tag at the field's corner. All four looks are kept. In the clips the answer is 119 km/h.", "images": ["../stage2/shots-forms3/number-keys-reveal.png", "../stage2/shots-forms3/number-abacus-reveal.png"], "videos": ["../stage2/shots-forms3/number-keys-reveal.mp4", "../stage2/shots-forms3/number-abacus-reveal.mp4"] },
+        { "id": "wheels", "title": "Wheels: a darker side", "text": "The side under each drum is darker than the drum's shaded foot now, so it reads as the drum's edge. On a wrong answer, the drums that roll to the truth turn gold.", "images": ["../stage2/shots-forms3/number-wheels.png", "../stage2/shots-forms3/number-wheels-reveal.png"], "videos": ["../stage2/shots-forms3/number-wheels-reveal.mp4"] },
+        { "id": "tape", "title": "Tape: its unit", "text": "The tape writes its unit beside the number, a little bigger than before. It had none last time only because the Practice example had none; that example is in km/h now. On a wrong answer the given number stays marked on the ruler in pink.", "images": ["../stage2/shots-forms3/number-tape.png", "../stage2/shots-forms3/number-tape-reveal.png"], "videos": ["../stage2/shots-forms3/number-tape-reveal.mp4"] }
+      ]
+    },
+    {
+      "id": "heat-lines",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Heat lines: keep them?",
+      "text": "The wavy lines rising off the hot ball. Tick the one to keep.",
+      "why": "You weren't sure about them. Both are ready; the lesson code doesn't change either way, it's one switch.",
+      "pick": ["without"],
+      "details": "My pick is without. The flame inside and the fire on top already say hot, and the lines were the one thing above the ball that didn't sit on it, so the picture is calmer without them.",
+      "items": [
+        { "id": "without", "label": "Without", "video": "../stage2/shots-forms3/heat-lines-without.mp4", "text": "The fire and the flame alone." },
+        { "id": "with", "label": "With", "video": "../stage2/shots-forms3/heat-lines-with.mp4", "text": "Three wavy lines of heat rising off the fire." }
+      ]
+    }
+  ]
+}

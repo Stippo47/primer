@@ -38,9 +38,7 @@ export const css = `
 /* the thumb and its chip ride on their own layers and move by transform (no repaint under them) */
 .pi-thumb { position: absolute; left: 0; top: 0; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; background: #fff; box-shadow: 0 4px 0 #b9c2ee;
   will-change: transform; backface-visibility: hidden; }
-.pi-thumb.ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; background: transparent; border: 7px solid #fff; }
 .pi.held .pi-thumb { background: #e8f8ff; }
-.pi.held .pi-thumb.ring { background: transparent; border-color: #e8f8ff; }
 .pi-chip { position: absolute; left: 0; top: 0; padding: 5px 10px; border-radius: 12px; background: #fff; color: #1b1f5e;
   box-shadow: 0 3px 0 #b9c2ee; font-size: 15px; white-space: nowrap; will-change: transform; backface-visibility: hidden; }
 .pi-chip.truth { will-change: auto; background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; z-index: 2; }
@@ -77,7 +75,7 @@ export function mount(f) {
   const picHtml = showPic ? `<div class="pi-pic" ${vert ? '' : 'data-grow="116"'} aria-hidden="true">${pictureSvg(pic)}</div>` : '';
   const trackHtml = `<div class="pi-track${look.line ? ' fills' : ''}" data-look="${name}" data-dir="${dir}"><div class="pi-look" aria-hidden="true"></div>
       <div class="pi-gap" hidden></div><div class="pi-mark" hidden></div>
-      <div class="pi-thumb${look.thumb ? ` ${look.thumb}` : ''}"></div><div class="pi-chip"></div><div class="pi-chip truth" hidden></div>
+      <div class="pi-thumb"></div><div class="pi-chip"></div><div class="pi-chip truth" hidden></div>
       ${vert ? `<div class="pi-ticks${look.labels === 'inside' ? ' inside' : ''}"></div>` : ''}</div>`;
   root.innerHTML = vert
     ? `<div class="pi-vert${showPic || look.line ? '' : ' alone'}" data-grow="140">${trackHtml}${picHtml}</div>`

@@ -301,3 +301,9 @@ Their words are in primer-data `notes/answers-2026-11-19a.md`.
 - **Crow:** Button with white eyes (my pick). Unsure the light rim on its left side fits. Next: pill-shaped eyes, like 2D capsules, solid white.
 - **The cast board (98 characters):** they ticked 15 with "some merit/charm", none they're sold on: fox, capybara, axolotl (round 2), puffin and tall person (3), gecko, sheep, walrus, flamingo (4), cut-out person (5), softer person, soft noodle person, Flop and Hug (6), Plump crow (9). The round 7 faces are "ok". The gecko "could be used if made more unique and not like Cartoon Network/child book"; the softer and noodle people are "too happy, too much child cartoon vibe". So the direction is less child-book, more grown-up and unique, keeping charm.
 - **Next round (my call):** Button with pill eyes, rim and no rim; and a spectrum from child-book to grown-up for two of the liked characters (the gecko and the cut-out person), so they can point at where on it the style should sit, before any species is settled.
+### Forms, round three (my calls, sent as deck `stage2-forms3`)
+
+- **Heat lines: off**, behind one switch (`heatLines` on the warmth picture), asked on the deck's board (my pick: without).
+- **The sea's round thing is the sun**: a daytime sky and rays, one sun drawing shared with the wind's island. "Wave between the oranges" read as the line where the two warm tones meet, now a slow wave.
+- **A wrong number shows the truth in its own field**, in gold (keys type it, wheels roll, the tape glides, beads move), and what was given stays on a small struck-through tag at the field's corner, coloured by its mark. A number given exactly right is left as it is.
+- **The tape's unit**: it was always shown when a lesson gives one; the Practice example had none, and now has km/h.
