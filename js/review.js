@@ -9,8 +9,9 @@
 //   taught it, and the fact comes back a few questions later (and, in the memory, sooner).
 //   A review on a path: the facts of the lessons before it, each once and a miss once more, then it's done.
 //
-// A combo counts right answers in a row: close holds it, wrong ends it. Its chip comes alive tier by tier as
-// it grows (js/combo.js). No lives and, until the shop, no coins. The cross leaves, after a short summary of
+// A combo counts right answers in a row: close holds it, and wrong ends it unless the tier has a shield left,
+// which cracks the chip instead (js/combo.js has the rule). Its chip comes alive tier by tier as it grows.
+// A missed fact comes back the same way whether a shield took the miss or not. No lives and, until the shop, no coins. The cross leaves, after a short summary of
 // the run, its best combo under a crown in that run's tier.
 import { Run, rich } from './lesson.js';
 import * as feel from './feel.js';
@@ -141,9 +142,9 @@ export class Review extends Run {
 
   marked(res, kind, s) {
     this.answered++;
-    if (kind === 'right') { this.right++; this.combo++; this.best = Math.max(this.best, this.combo); }
-    else if (kind === 'wrong') this.combo = 0;
-    this.meter.set(this.combo, { how: kind });
+    // the combo's rule (shields, cracks, the shatter) is the chip's: it says where the count is now
+    this.combo = this.meter.answer(kind).n;
+    if (kind === 'right') { this.right++; this.best = Math.max(this.best, this.combo); }
     if (kind !== 'wrong') { this.pickAhead(); return; }
     const item = this.byKey.get(s.key);
     if (!this.missed.includes(item)) this.missed.push(item);

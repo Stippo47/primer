@@ -33,13 +33,7 @@ function engine() {
   try {
     if (!ctx || ctx.state === 'closed') {
       ctx = new AC();
-      const soft = ctx.createBiquadFilter();
-      soft.type = 'lowpass';
-      soft.frequency.value = 2400;
-      soft.Q.value = 0.4;
-      out = ctx.createGain();
-      out.gain.value = 0.5;
-      out.connect(soft).connect(ctx.destination);
+      out = chain(ctx);
     }
     // Suspended at first, and "interrupted" after a call or coming back to the app: a press wakes it.
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
@@ -49,9 +43,21 @@ function engine() {
   return ctx;
 }
 
+// Every sound goes out through the same gentle low-pass, at half level.
+function chain(c) {
+  const soft = c.createBiquadFilter();
+  soft.type = 'lowpass';
+  soft.frequency.value = 2400;
+  soft.Q.value = 0.4;
+  const g = c.createGain();
+  g.gain.value = 0.5;
+  g.connect(soft).connect(c.destination);
+  return g;
+}
+
 // One soft mallet note: a sine with a quick swell and a slow fade, and a faint high partial that fades
 // faster, which is what makes it sound struck rather than beeped.
-function note(c, at, freq, { level = 0.2, decay = 0.35, partial = 0.06 } = {}) {
+function note(c, at, freq, { level = 0.2, decay = 0.35, partial = 0.06 } = {}, dest = out) {
   for (const [ratio, amount, fade] of [[1, level, decay], [3.9, level * partial, decay * 0.35]]) {
     const osc = c.createOscillator();
     const env = c.createGain();
@@ -60,13 +66,31 @@ function note(c, at, freq, { level = 0.2, decay = 0.35, partial = 0.06 } = {}) {
     env.gain.setValueAtTime(0.0001, at);
     env.gain.linearRampToValueAtTime(amount, at + 0.006);
     env.gain.exponentialRampToValueAtTime(0.0001, at + fade);
-    osc.connect(env).connect(out);
+    osc.connect(env).connect(dest);
     osc.start(at);
     osc.stop(at + fade + 0.05);
   }
 }
 
-// Each sound is a few notes: [delay in seconds, frequency, options].
+// A breath of noise through a band: the grit of something cracking. Seeded, so it sounds the same each time.
+function grit(c, at, freq, { level = 0.12, decay = 0.08, q = 1.2 } = {}, dest = out) {
+  const len = Math.ceil(c.sampleRate * (decay + 0.05)), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+  let x = 12345;
+  for (let i = 0; i < len; i++) { x = (x * 1103515245 + 12345) & 0x7fffffff; d[i] = x / 0x3fffffff - 1; }
+  const src = c.createBufferSource(), band = c.createBiquadFilter(), env = c.createGain();
+  src.buffer = buf;
+  band.type = 'bandpass';
+  band.frequency.value = freq;
+  band.Q.value = q;
+  env.gain.setValueAtTime(0.0001, at);
+  env.gain.linearRampToValueAtTime(level, at + 0.003);
+  env.gain.exponentialRampToValueAtTime(0.0001, at + decay);
+  src.connect(band).connect(env).connect(dest);
+  src.start(at);
+  src.stop(at + decay + 0.05);
+}
+
+// Each sound is a few notes: [delay in seconds, frequency, options], or [delay, 'grit', centre, options].
 const SOUNDS = {
   tap: [[0, 392, { level: 0.11, decay: 0.12 }]],
   select: [[0, 523.25, { level: 0.1, decay: 0.16 }]],
@@ -77,6 +101,12 @@ const SOUNDS = {
   wrong: [[0, 349.23, { level: 0.16, decay: 0.42, partial: 0.03 }], [0.13, 293.66, { level: 0.14, decay: 0.6, partial: 0.03 }]],
   done: [[0, 523.25, { level: 0.15, decay: 0.8 }], [0.1, 659.25, { level: 0.14, decay: 0.85 }], [0.2, 783.99, { level: 0.14, decay: 0.95 }], [0.32, 1046.5, { level: 0.12, decay: 1.3 }]],
   pop: [[0, 659.25, { level: 0.1, decay: 0.18 }]],
+  // the combo: a shield taking a miss (a small crack and a knock), and the chip shattering (a crunch, then
+  // glassy bits falling away, high to low)
+  crack: [[0, 'grit', 1900, { level: 0.22, decay: 0.07, q: 1.4 }], [0.004, 196, { level: 0.14, decay: 0.16, partial: 0.02 }], [0.03, 'grit', 3200, { level: 0.08, decay: 0.05, q: 2 }]],
+  shatter: [[0, 'grit', 2300, { level: 0.3, decay: 0.16, q: 0.9 }], [0, 147, { level: 0.14, decay: 0.22, partial: 0.02 }], [0.02, 'grit', 3600, { level: 0.14, decay: 0.12, q: 1.6 }],
+    [0.05, 2093, { level: 0.07, decay: 0.2, partial: 0.3 }], [0.1, 1760, { level: 0.065, decay: 0.22, partial: 0.3 }], [0.16, 2349.3, { level: 0.05, decay: 0.18, partial: 0.3 }],
+    [0.23, 1568, { level: 0.05, decay: 0.24, partial: 0.3 }], [0.31, 1975.5, { level: 0.04, decay: 0.2, partial: 0.3 }], [0.4, 1318.5, { level: 0.035, decay: 0.26, partial: 0.3 }]],
 };
 export const SOUND_NAMES = Object.keys(SOUNDS);
 
@@ -86,9 +116,25 @@ export function sound(name) {
   if (!prefs.effects || !SOUNDS[name]) return false;
   const c = engine();
   if (!c) return false;
-  const t0 = c.currentTime + 0.01;
-  for (const [delay, freq, o] of SOUNDS[name]) note(c, t0 + delay, freq, o);
+  play(c, out, c.currentTime + 0.01, name);
   return true;
+}
+
+function play(c, dest, t0, name) {
+  for (const [delay, freq, a, b] of SOUNDS[name]) {
+    if (freq === 'grit') grit(c, t0 + delay, a, b, dest);
+    else note(c, t0 + delay, freq, a, dest);
+  }
+}
+
+// For films: a sound rendered to samples (mono, 48 kHz), the same as it plays, Effects on or not.
+export async function renderSound(name, seconds = 1.5) {
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!OAC || !SOUNDS[name]) return null;
+  const c = new OAC(1, Math.ceil(48000 * seconds), 48000);
+  play(c, chain(c), 0.01, name);
+  const buf = await c.startRendering();
+  return Array.from(buf.getChannelData(0));
 }
 
 // ---------- the tick
