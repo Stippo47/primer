@@ -1,0 +1,131 @@
+{
+  "title": "Pill eyes, and a style dial",
+  "topic": "stage0",
+  "order": 13,
+  "cards": [
+    {
+      "id": "crow-pill-eyes",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Button with pill eyes",
+      "text": "Button with solid white pill eyes, with the light rim and without. Tick the ones you like.",
+      "why": "You asked for pill eyes like 2D capsules, solid white, and weren't sure the light rim fits. Only the eyes and the rim changed: body, pose, light and size are round 10's. A third adds a small pupil, to compare.",
+      "pick": [
+        "button-pill"
+      ],
+      "details": "Button with pill eyes: an upright capsule, about twice as tall as it is wide, solid white, no pupil, no lid, no glint. The far eye is the same capsule seen at a slant, a narrow sliver peeking past the edge of the head above the beak.\n\nTwo versions, as asked: with the thin edge of light along the upper left of the head, back, wing and tail (the rim), and without it. Same room, pose, light and size as rounds 10 and 11.\n\nA third version adds a small dark pupil inside the same capsule, set toward the beak. I added it to answer one question side by side: does the solid white eye read as blind? My answer is no, not quite. Large, it reads as a calm, blank eye in the way some flat-vector birds draw theirs. But it has no gaze, so the bird isn't looking at anything, and the far eye on its own reads as a white tab at the edge of the head rather than an eye. The pupil fixes both, at the cost of looking more cartoon.\n\nThe front shows the heads large with round 11's round-eyed Button first, then all of them at icon size.\n\nMy pick is the solid white pill without the rim. It's the cleanest and the most grown-up of the set, which is where the other two cards are heading too. Without the rim Button still reads on the blue wall, even at icon size, because the wall is a mid blue and the bird is near black. The rim made it look lit from one side by a light the room doesn't have. My second is the pill with a pupil, if the white one feels empty on the phone.\n\nStill weak: the far eye. On all three it's a sliver that can read as a notch in the head. It could go entirely: many flat birds show only the near eye in a three-quarter view.",
+      "images": [
+        "../../stage0/avatar12/shots/crow-faces.png",
+        "../../stage0/avatar12/shots/crow-icons.png"
+      ],
+      "items": [
+        {
+          "id": "button-pill-rim",
+          "label": "Pill eyes, rim",
+          "image": "../../stage0/avatar12/shots/crow-button-pill-rim.png",
+          "text": "Solid white capsule eyes, with round 10's thin edge of light on the upper left."
+        },
+        {
+          "id": "button-pill",
+          "label": "Pill eyes, no rim",
+          "image": "../../stage0/avatar12/shots/crow-button-pill.png",
+          "text": "Solid white capsule eyes, no edge of light. My pick."
+        },
+        {
+          "id": "button-pill-pupil",
+          "label": "Pill eyes with a pupil",
+          "image": "../../stage0/avatar12/shots/crow-button-pill-pupil.png",
+          "text": "The same capsule with a small dark pupil toward the beak, no rim. To compare: it gives the bird a gaze. My second."
+        }
+      ]
+    },
+    {
+      "id": "gecko-dial",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Gecko, style dial",
+      "text": "The round 4 gecko in five steps, from as it was to grown-up. Tick where the style should sit.",
+      "why": "This finds the style before the species. You liked the gecko but not its Cartoon Network, child-book look. Same pose throughout, so only the style moves. Tick one step, or two if it sits between them.",
+      "pick": [
+        "gecko-4"
+      ],
+      "details": "One drawing with a style dial, shown at five points on it. Step 1 is round 4's gecko exactly. Step 5 is my idea of it as grown-up, distinctive flat vector, the kind of drawing found in editorial or explainer illustration. The pose never changes: standing square on, arms out and down, the tail curled up behind on the right. Each step is drawn the same height.\n\nWhat moves along the dial:\n- Proportion: the head shrinks and flattens, the body and legs grow longer and slimmer.\n- Head: the soft rounded box becomes a broad, flat, six-sided gecko head, widest at the eyes.\n- Eyes: the big white eyes close together slide out to the sides of the head and shrink. They lose the glint and the white, and end as amber eyes with an upright slit and a level lid, sitting in small bulges that break the head's outline.\n- Mouth: the wide grin flattens into a long, nearly straight gecko mouth line.\n- Hands and feet: the round mittens and pill feet grow splayed toes with round pads.\n- Tail: the tight spiral loosens into one broad hook, thicker at the root.\n- Markings: two orange dots become dark bands across the tail and a few spots on the crown.\n- Colour: mint, lemon and orange move to a restrained sage, bone and amber, with one dark for the marks.\n- Shading: the broad band that follows every outline narrows, and from step 4 is one straight cut down the right side.\n\nThe character comes from the silhouette (the flat head with its eye bulges, the toe pads, the banded tail) rather than from a smile. I kept it away from any well-known cartoon gecko: muted colour, slit eyes, no grin.\n\nMy pick is step 4. It has everything that makes it a gecko and not a cartoon: slit eyes, toe pads, the banded tail, the flat mouth. The head is still big enough to carry some charm. Step 5 is more distinctive but lankier, and its heavy-lidded look edges toward unimpressed. Steps 2 and 3 still read as a children's book.",
+      "items": [
+        {
+          "id": "gecko-1",
+          "label": "Step 1: as in round 4",
+          "image": "../../stage0/avatar12/shots/gecko-1.png",
+          "text": "Round 4's gecko, unchanged."
+        },
+        {
+          "id": "gecko-2",
+          "label": "Step 2",
+          "image": "../../stage0/avatar12/shots/gecko-2.png",
+          "text": "A smaller head and eyes, a shallower grin, a third tail dot, a narrower shadow."
+        },
+        {
+          "id": "gecko-3",
+          "label": "Step 3",
+          "image": "../../stage0/avatar12/shots/gecko-3.png",
+          "text": "The middle: a flatter six-sided head, amber eyes with a slit, small toes, bands on the tail, softer colour."
+        },
+        {
+          "id": "gecko-4",
+          "label": "Step 4",
+          "image": "../../stage0/avatar12/shots/gecko-4.png",
+          "text": "Eyes at the sides with a lid, crown spots, nostrils, a flat mouth, a straight-cut shadow. My pick."
+        },
+        {
+          "id": "gecko-5",
+          "label": "Step 5: grown-up",
+          "image": "../../stage0/avatar12/shots/gecko-5.png",
+          "text": "The far end: a small flat head with eye bulges, long limbs, toe pads, a banded hook of a tail, sage and bone."
+        }
+      ]
+    },
+    {
+      "id": "person-dial",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Cut-out person, style dial",
+      "text": "The round 5 cut-out person in five steps, from as it was to grown-up. Tick where the style should sit.",
+      "why": "This finds the style before the species. You almost liked the cut-out person, and found the softer people too happy and too child-cartoon. Same pose throughout, so only the style moves. Tick one step, or two.",
+      "pick": [
+        "person-4"
+      ],
+      "details": "One drawing with a style dial, shown at five points on it. Step 1 is round 5's Cut-out person exactly. Step 5 is my idea of it as grown-up editorial flat vector. The pose never changes: standing square on, waving with the arm on the left of the picture, the other arm down and a little out. Each step is drawn the same height.\n\nThe shape language stays cut paper all the way: circles, half circles, straight cuts, one straight shadow down the right of each shape. That was already the grown-up part of it.\n\nWhat moves along the dial:\n- Proportion: the head goes from a third of the height to about a sixth. A neck appears, and the legs grow long.\n- Clothes: the yellow A-line smock becomes a longer ochre coat with a straight hem, squarer shoulders, a bone collar and a thin line down its front, over slim dark trousers. The shoes shrink to small flat half ovals.\n- Face: the big white eyes, raised brows and open grin calm down. The eyes get smaller with a level lid, then lose the white and end as small dark half ovals. The brows go, and the mouth shrinks to a short line, then goes. The cut nose stays. The face is calm and the pose does the waving.\n- Hair: the copper fan of a ponytail stays, since it's the character, scaled with the head and turned rust.\n- Limbs: thinner, with small hands.\n- Colour: saturated orange, yellow and periwinkle move to rust, ochre, bone and a warm charcoal.\n- The floor shadow: the flat pill becomes a thin flat ellipse.\n\nMy pick is step 4. It reads as an adult and is calm, with no grin, but the head is still big enough for the face to carry some warmth. Step 5 is the most editorial and the most distinctive in silhouette, but at room size the face is nearly gone. Step 3 is the in-between: still a cartoon, but a quieter one.",
+      "items": [
+        {
+          "id": "person-1",
+          "label": "Step 1: as in round 5",
+          "image": "../../stage0/avatar12/shots/person-1.png",
+          "text": "Round 5's Cut-out person, unchanged."
+        },
+        {
+          "id": "person-2",
+          "label": "Step 2",
+          "image": "../../stage0/avatar12/shots/person-2.png",
+          "text": "A smaller head, eyes with a lid on top instead of a flat bottom, thinner brows, a smaller smile."
+        },
+        {
+          "id": "person-3",
+          "label": "Step 3",
+          "image": "../../stage0/avatar12/shots/person-3.png",
+          "text": "The middle: a neck, longer legs, small eyes, no brows, a short closed mouth, softer colour."
+        },
+        {
+          "id": "person-4",
+          "label": "Step 4",
+          "image": "../../stage0/avatar12/shots/person-4.png",
+          "text": "Small dark eyes, no mouth to speak of, an ochre coat with a collar, charcoal trousers. My pick."
+        },
+        {
+          "id": "person-5",
+          "label": "Step 5: grown-up",
+          "image": "../../stage0/avatar12/shots/person-5.png",
+          "text": "The far end: a head a sixth of the height, a calm small face, a tailored coat, long legs."
+        }
+      ]
+    }
+  ]
+}
