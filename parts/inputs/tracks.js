@@ -17,7 +17,7 @@
 //   the drawing's svgs
 //   move(el, t, p, g)  optional: what moves on the clock (clock.js), t in seconds
 // A new look is one more entry here and one more option in part.json's `look`.
-import { ramp, mixHex, lerp, SKY, sun, waves, warmLayer, WARM } from './kit.js';
+import { ramp, mixHex, lerp, SKY, sun, waves, warmLayer, WARM, WARM_TINT } from './kit.js';
 
 const f2 = x => x.toFixed(2);
 const cycle = (t, period, phase = 0) => (((t / period + phase) % 1) + 1) % 1;
@@ -92,7 +92,7 @@ export const TRACKS = {
 
   // The sea cut away, the track running down into it: the sky with the sun, the surface with its waves,
   // water darkening with depth, the floor. The warm top layer runs from the surface (filling the waves) down
-  // to the handle, yellow-orange over deep orange with a slow wave between them, its lower edge glinting,
+  // to the handle, a tint over the water (its shading and light rays show through), yellow-orange over deep orange with a slow wave between them, its lower edge glinting,
   // and the handle hangs on a line from a float on the surface. The depth picture, drawn tall.
   sea: {
     across: 0, direction: 'down', directions: ['down'], labels: 'inside', picture: 'depth',
@@ -110,9 +110,9 @@ export const TRACKS = {
       return {
         back: `<defs>${clip('b')}<linearGradient id="${id}-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d49c0"/><stop offset="0.55" stop-color="#1b2a80"/><stop offset="1" stop-color="#0d1446"/></linearGradient></defs>
           <rect y="4" width="${W}" height="${B}" rx="18" fill="#0a0e2e"/>
-          <g clip-path="url(#${id}-b)"><rect width="${W}" height="${B}" fill="url(#${id}-w)"/><g class="rays" fill="#ffffff" opacity="0.06">${rays}</g></g>`,
+          <g clip-path="url(#${id}-b)"><rect width="${W}" height="${B}" fill="url(#${id}-w)"/><g class="rays" fill="#ffffff" opacity="0.08">${rays}</g></g>`,
         value: `<defs>${clip('v')}</defs><g clip-path="url(#${id}-v)">
-          <g class="warm"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
+          <g class="warm" opacity="${WARM_TINT}"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
           <path class="edge" stroke="#ffe9a6" stroke-width="3" stroke-dasharray="0.1 9" stroke-linecap="round"/>
           <path class="cable" stroke="#dde4ff" stroke-width="2" opacity="0.7"/></g>`,
         front: `<defs>${clip('f')}</defs><g clip-path="url(#${id}-f)">

@@ -4,10 +4,11 @@
 // first five beads on a rod are one shade and the last four another, so a digit reads at a glance, and it
 // is written under its rod too. Each change gives a tick. It always holds a real number (`start`, else 0),
 // as the slider does; past the range, it goes back to the range's end. Beads move by transform, on their
-// own layers, at whole device pixels. Once checked and wrong, the beads move to the true number and the
-// digits that changed turn gold; what was given goes on a tag at the corner.
+// own layers, at whole device pixels. Once checked and wrong, the beads move to the true number one at a
+// time, quickly, each snapping into place with a tick, rod by rod from the left (all of it inside a second),
+// and the digits that changed turn gold; what was given goes on a tag at the corner.
 import { esc, devicePx, mixHex } from '../kit.js';
-import { placesOf, tidy, startOf, show, differs, givenTag, markGiven, clearGiven } from './common.js';
+import { placesOf, tidy, startOf, show, differs, givenTag, markGiven, clearGiven, oneByOne } from './common.js';
 
 const PITCH = 20, BEAD = 18, TOP = 18, TRAVEL = 46;   // a bead's step, its height, the bar's depth, the gap the beads cross
 const ROD = TOP + 9 * PITCH + TRAVEL + 6;             // a rod's height
@@ -25,6 +26,8 @@ export const css = `
 .pi-rodbox::after { content: ""; position: absolute; left: -6px; right: -6px; top: 0; height: ${TOP - 6}px; background: #364090; border-radius: 0 0 6px 6px; }
 .pi-bead { position: absolute; left: 50%; top: 0; width: calc(var(--rw, 52px) - 8px); height: ${BEAD}px; margin-left: calc(var(--rw, 52px) / -2 + 4px); border-radius: 9px;
   will-change: transform; backface-visibility: hidden; transition: transform 230ms cubic-bezier(.3, 1.3, .5, 1); }
+/* the truth coming in a bead at a time: each one snaps across */
+.pi-abacus.snap .pi-bead { transition: transform 90ms cubic-bezier(.2, 1.5, .5, 1); }
 .pi-bead::after { content: ""; position: absolute; left: 7px; top: 3px; width: 34%; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.55); }
 .pi-adig { margin-top: 8px; min-width: 34px; height: 34px; padding: 0 6px; border-radius: 11px; background: #fff; color: #1b1f5e; box-shadow: 0 3px 0 #b9c2ee;
   display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
@@ -53,7 +56,7 @@ export function mount(f) {
   const abacus = root.querySelector('.pi-abacus'), signEl = root.querySelector('.pi-asign');
   const rods = [...root.querySelectorAll('.pi-rod')];
   const beads = rods.map(r => [...r.querySelectorAll('.pi-bead')]), digs = rods.map(r => r.querySelector('.pi-adig'));
-  let digits = Array(n).fill(0), sign = 1;
+  let digits = Array(n).fill(0), sign = 1, stopSnap = null;
   // bead b on a rod showing d: up against the bar if it's counted, else resting at the bottom
   const yOf = (b, d) => (b < d ? TOP + b * PITCH : TOP + TRAVEL + b * PITCH);
   const draw = i => {
@@ -107,17 +110,32 @@ export function mount(f) {
     sign = -sign; signEl.textContent = sign < 0 ? '−' : '+'; feel.tick(); commit();
   };
   root.addEventListener('click', onTap);
-  f.cleanup(() => root.removeEventListener('click', onTap));
+  const unsnap = () => { if (stopSnap) stopSnap(); stopSnap = null; abacus.classList.remove('snap'); };
+  f.cleanup(() => { root.removeEventListener('click', onTap); unsnap(); });
   return {
     reveal(answer) {
       if (!differs(S, f.value(), answer)) return;
       givenTag(root, abacus, S, f.value(), feel);
+      // the beads that must move, in order: rod by rod from the left, one bead at a time towards the truth
       const was = digits.slice();
       toDigits(tidy(S, answer));
-      digits.forEach((d, i) => { if (d !== was[i]) { draw(i); digs[i].classList.add('truth'); if (feel.pop) feel.pop(digs[i], 0.4); } });
+      const want = digits.slice(), moves = [];
+      want.forEach((d, i) => { for (let k = was[i]; k !== d; k += d > k ? 1 : -1) moves.push([i, k + (d > k ? 1 : -1), k + (d > k ? 1 : -1) === d]); });
+      digits = was;
+      if (signEl) signEl.textContent = sign < 0 ? '−' : '+';
+      unsnap();
+      abacus.classList.add('snap');
+      stopSnap = oneByOne(moves.length, Math.min(70, 950 / Math.max(1, moves.length)), m => {
+        const [i, d, last] = moves[m];
+        digits[i] = d;
+        draw(i);
+        digs[i].classList.add('truth');
+        feel.tick();
+        if (last && feel.pop) feel.pop(digs[i], 0.4);
+      }, () => { stopSnap = null; setTimeout(() => abacus.classList.remove('snap'), 120); });
     },
     mark(kind) { abacus.classList.add(kind); markGiven(root, kind); },
-    reset() { abacus.className = 'pi-abacus'; for (const d of digs) d.classList.remove('truth'); clearGiven(root); begin(); },
+    reset() { unsnap(); abacus.className = 'pi-abacus'; for (const d of digs) d.classList.remove('truth'); clearGiven(root); begin(); },
     debug: () => ({ digits: digits.slice(), sign, shown: show(S, valueOf()) }),
   };
 }

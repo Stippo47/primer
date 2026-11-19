@@ -807,22 +807,44 @@ try {
     ok(d.look === look && await ev(`!!document.querySelector('.partstage .form-number.look-${look}')`), `the number as ${look}`, d);
     await shot(`17e-number-${look}`);
   }
-  // the tape shows its unit; a wheel's side is darker than the shading at the foot of its drum
+  // the tape shows its unit; a wheel's side is darker than the shading at the foot of its drum, and the drum
+  // is a cylinder: nothing laid over its digits, the ones either side squashed as they turn away
   await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
   ok((await ev(`(document.querySelector('.partstage .pi-tape .pi-nread .u')||{}).textContent`)) === 'km/h', 'the tape writes its unit beside the number');
   await f.tap('[data-set=look][data-v=wheels]'); await sleep(400);
   const side = await ev(`(()=>{const m=getComputedStyle(document.querySelector('.partstage .pi-dwin')).boxShadow.match(/rgb\\((\\d+), (\\d+), (\\d+)\\)/);return m?[1,2,3].map(i=>Number(m[i])):null})()`);
-  ok(side && side[0] + side[1] + side[2] < 0x7d + 0x88 + 0xcc - 60, "each wheel's side under it is darker than its body, shading and all", side);
+  ok(side && side[0] + side[1] + side[2] < 0xc3 + 0xc9 + 0xef - 200, "each wheel's side under it is darker than its body, shading and all", side);
+  const drumNow = await ev(`(()=>{const w=document.querySelector('.partstage .pi-dwin'),cs=p=>getComputedStyle(w,p).content,sy=g=>g.getBoundingClientRect().height/g.offsetHeight;
+    const gs=[...w.querySelectorAll('.pi-dstrip b')].filter(g=>getComputedStyle(g).visibility!=='hidden').map(g=>({d:g.textContent,sy:Math.round(sy(g)*100)/100}));return {over:[cs('::before'),cs('::after')].filter(c=>c&&c!=='none'&&c!=='normal').length,gs}})()`);
+  ok(drumNow.over === 0 && drumNow.gs.length === 3 && drumNow.gs.filter(g => g.sy === 1).length === 1 && drumNow.gs.filter(g => g.sy > 0.3 && g.sy < 0.8).length === 2,
+    'a wheel is a drum: no shading laid over its digits, the one facing you full size, the ones either side squashed as they turn away', drumNow);
   // a wrong number on the tape: the tape glides until the truth is under the needle, the given one still marked
   await ev(`(h=>{h.run(['lock']);h.run(['reveal',119]);h.run(['mark','wrong'])})(__primer.app.partNow)`);
   await sleep(300);
   await f.tap('[data-set=look][data-v=tape]'); await sleep(400);
   await ev(`(h=>{h.run(['lock']);h.run(['reveal',119]);h.run(['mark','wrong'])})(__primer.app.partNow)`);
-  await sleep(800);
+  await sleep(1300);
   const tapeTruth = await ev(`(()=>{const r=document.querySelector('.partstage .pi-tape');return {read:r.querySelector('.pi-nread b').textContent,gold:r.querySelector('.pi-nread').classList.contains('truth'),given:!!r.querySelector('.given').getAttribute('d'),tag:(document.querySelector('.partstage .pi-was')||{}).textContent,value:__primer.app.partNow.state().value}})()`);
   ok(tapeTruth.read === '119' && tapeTruth.gold && tapeTruth.given && tapeTruth.tag === '0 km/h' && tapeTruth.value === 0, 'a wrong tape glides to the truth under its needle, in gold, the given number still marked on the ruler and on its tag', tapeTruth);
   await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
   ok(await ev(`!document.querySelector('.partstage .pi-was') && !document.querySelector('.partstage .pi-nread.truth')`), 'and Again clears it');
+  // its glide to the truth is paced on the clock: off slowly, picking up speed, there within a second
+  const tapeAt = async t => { await clock(`m.pin(${t})`); await sleep(150); return (await ev('__primer.app.partNow.debug()')).pos; };
+  await tapeAt(100);
+  await ev(`(h=>{h.run(['lock']);h.run(['reveal',119])})(__primer.app.partNow)`);
+  const tp = [await tapeAt(100.15), await tapeAt(100.5), await tapeAt(100.85), await tapeAt(101)];
+  await clock('m.pin(null)');
+  ok(tp[0] < 119 * 0.1 && tp[1] > 119 * 0.4 && tp[1] < 119 * 0.6 && tp[2] > 119 * 0.9 && tp[3] === 119, 'the tape sets off slowly towards the truth, picks up speed and is there within a second', tp);
+  await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
+  // the abacus shows the truth a bead at a time, quickly, each one snapping into place
+  await f.tap('[data-set=look][data-v=abacus]'); await sleep(400);
+  const beadsAt = async t => { await clock(`m.pin(${t})`); await sleep(150); return (await ev('__primer.app.partNow.debug()')).digits.join(''); };
+  await beadsAt(200);
+  await ev(`(h=>{h.run(['lock']);h.run(['reveal',119])})(__primer.app.partNow)`);
+  const bd = [await beadsAt(200), await beadsAt(200.08), await beadsAt(200.4), await beadsAt(201)];
+  await clock('m.pin(null)');
+  ok(bd[0] === '100' && bd[1] === '110' && bd[2] > '110' && bd[2] < '119' && bd[3] === '119', 'a wrong abacus moves its beads to the truth one at a time, rod by rod, all within a second', bd);
+  await ev(`__primer.app.partNow.run(['reset'])`); await sleep(200);
   await f.tap('[data-set=look][data-v=auto]'); await sleep(300);
   // Pile: the count is in the handle, and every thing added or taken away is a tick
   await f.tap('[data-set=form][data-v=pile]'); await sleep(500);
@@ -869,6 +891,8 @@ try {
     return {warmTop:w1.y,crestTop:roll.getBBox().y,skyRect:[...L.querySelectorAll('rect')].some(r=>Number(r.getAttribute('height'))===34),split:/q/.test(w2),rays:(L.querySelector('.sun-g path').getAttribute('d').match(/M/g)||[]).length,wl:Math.round(roll.getBBox().width)}})()`);
   ok(seaNow.warmTop < seaNow.crestTop + 1 && !seaNow.skyRect, "the sea's warm colour reaches up into its waves: nothing of the sky's sits under a crest", seaNow);
   ok(seaNow.split && seaNow.rays === 8, 'the two warm tones meet along a wave, and the round thing in the sky is a sun with rays', seaNow);
+  const tint = await ev(`(()=>{const o=s=>{const e=document.querySelector(s);return e?Number(e.getAttribute('opacity')):null};return {look:o('.partstage .pi-look .warm'),rays:!!document.querySelector('.partstage .pi-look .rays')}})()`);
+  ok(tint.look > 0.4 && tint.look < 0.9 && tint.rays, "the sea's warm layer is a tint: the water's shading and rays show through it", tint);
   await f.tap('[data-set=look][data-v=thermometer]'); await sleep(400);
   const thermo = await ev(`(()=>{const L=document.querySelector('.partstage .pi-look'),th=document.querySelector('.partstage .pi-thumb');
     return {circles:L.querySelectorAll('circle').length,rects:L.querySelectorAll('rect').length,liquid:L.querySelectorAll('.liq').length,thumbBg:getComputedStyle(th).backgroundColor,ring:th.classList.contains('ring')}})()`);
@@ -888,6 +912,7 @@ try {
   const gale = await windAt(1);
   ok(!gale.caps && gale.front && gale.mound === 0, "the wind's sea has no white caps, its darker near water lies in front of the island, and nothing is drawn across the foot of the tree", gale);
   ok(gale.bins >= 5 && gale.rays === 8, 'its rain is scattered across the window rather than in rows, and its sun has rays', gale);
+  ok(await ev(`!document.querySelector('.partstage svg.pic-wind [stroke="#fff0cf"]')`), 'no light line is drawn on the sand: the island is two flat tones');
   await windAt(0.3);
   await f.tap('[data-set=picture][data-v=warmth]'); await sleep(300);
   await f.tap('[data-set=form][data-v=slider]'); await sleep(300);
@@ -997,7 +1022,7 @@ try {
       const w = await f.rect('.partstage .pi-drum[data-i="1"] .pi-dwin');
       await f.drag(w.x, w.y, 0, -150, { steps: 20, ms: 500 });
       await f.drag(w.x, w.y, 0, 90, { steps: 20, ms: 500 });
-      ok((await ev('__primer.app.partNow.debug()')).digits[1] !== 0 && await ev(`[...document.querySelectorAll('.partstage .pi-dstrip')].every(s=>getComputedStyle(s).willChange==='transform')`), 'a drum rolls by finger, its digits moving on their own layer');
+      ok((await ev('__primer.app.partNow.debug()')).digits[1] !== 0 && await ev(`[...document.querySelectorAll('.partstage .pi-dstrip b')].every(s=>getComputedStyle(s).willChange==='transform')`), 'a drum rolls by finger, its digits moving on their own layers');
     } else if (which === 'number/tape') {
       const t = await f.rect('.partstage .pi-tband');
       await f.drag(t.x + 100, t.y, -200, 0, { steps: 20, ms: 400 });

@@ -10,6 +10,10 @@ export const clone = v => (v === null || v === undefined ? v : JSON.parse(JSON.s
 export const lerp = (a, b, k) => a + (b - a) * k;
 export const clamp01 = x => Math.min(1, Math.max(0, x));
 export const smooth = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+// Easing, k from 0 to 1, for what a form moves itself: slow away and slow in; quick away, overshooting a
+// little and settling back (by `s`, 0 none).
+export const easeInOut = k => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+export const easeBack = (k, s = 1.2) => { const c = k - 1; return 1 + c * c * ((s + 1) * c + s); };
 const decimals = step => { const s = String(step); return s.includes('.') ? Math.min(4, s.split('.')[1].length) : 0; };
 export const fmt = (v, step, unit) => `${Number(v).toLocaleString('en', { minimumFractionDigits: decimals(step), maximumFractionDigits: decimals(step) })}${unit ? (/^[°%]/.test(unit) ? '' : ' ') + unit : ''}`;
 
@@ -51,7 +55,10 @@ export const sun = (x, y, r) => {
 export const waves = (x0, y, wl, amp, n) => `M${r2(x0)} ${r2(y)}q${r2(wl / 4)} ${r2(-2 * amp)} ${r2(wl / 2)} 0${` t${r2(wl / 2)} 0`.repeat(Math.max(1, 2 * n - 1))}`;
 // A warm top layer on the sea in two tones, from y0 (above the waves, so its colour fills them) down to y1:
 // yellow-orange over deep orange, the two meeting along a slow wave `wl` long, rolled by `shift` (0 to 1).
-export const WARM = ['#ffa23a', '#ee6b5a'];
+// It's a tint, laid over the water at WARM_TINT as one group, so the water's own shading, its rays and all
+// that's in it still show through, only warmer.
+export const WARM = ['#ffa000', '#ff4a1a'];
+export const WARM_TINT = 0.72;
 export function warmLayer(x0, x1, y0, y1, wl, shift = 0) {
   const split = y0 + (y1 - y0) * 0.55, amp = Math.min(3, (y1 - split) * 0.25), from = x0 - wl * (1 + shift), n = Math.ceil((x1 - from) / wl) + 1;
   return { top: `M${r2(x0)} ${r2(y0)}H${r2(x1)}V${r2(y1)}H${r2(x0)}Z`, deep: `${waves(from, split, wl, amp, n)}V${r2(y1)}H${r2(from)}Z` };

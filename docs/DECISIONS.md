@@ -307,3 +307,13 @@ Their words are in primer-data `notes/answers-2026-11-19a.md`.
 - **The sea's round thing is the sun**: a daytime sky and rays, one sun drawing shared with the wind's island. "Wave between the oranges" read as the line where the two warm tones meet, now a slow wave.
 - **A wrong number shows the truth in its own field**, in gold (keys type it, wheels roll, the tape glides, beads move), and what was given stays on a small struck-through tag at the field's corner, coloured by its mark. A number given exactly right is left as it is.
 - **The tape's unit**: it was always shown when a lesson gives one; the Practice example had none, and now has km/h.
+
+### Forms, round four (their notes on round three; my calls, sent as deck `stage2-forms4`)
+
+- **Heat lines: without**, as they chose. The switch stays, off.
+- **The sea's warm layer is a tint** (their words: "transparent so it tints the water"): one group laid over the water at `WARM_TINT` in kit.js, shared by the sea slider and the depth picture, so the water's shading and light rays show through. The warm colours carry no blue, so the tint stays warm over blue water instead of going brown.
+- **The wind's sand has no line drawn on it.** The yellow line was a highlight whose ends poked past the island's edge. The island is two flat tones, with a clear shaded side on the right rather than a sliver.
+- **The abacus shows the truth a bead at a time**, quickly, each bead snapping into place with a tick, rod by rod from the left, always within a second. Only the reveal; a finger still moves a whole group at once, as on a real abacus.
+- **The wheels are drawn as real drums.** What read wrong: a blue-grey fade was laid over the drum's top and bottom, over the digits, so the neighbouring digits looked fogged, and the rounded window read as a button. Now each digit sits on a cylinder: full size facing you, squashed by the cosine of its angle as it turns over the top and bottom, nothing laid over it; the face is three flat bands (pale top turned to the light, white face, shaded foot) and a darker side.
+- **The tape's glide to the truth is paced**: slow off, faster, easing in, longer the further it goes, never over a second. A finger's glide stays quick.
+- Motion a Number look sets going itself (a drum settling, the tape's glide, the beads) runs on the inputs' one clock, through `tween` and `oneByOne` in number/common.js.
