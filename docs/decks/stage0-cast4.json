@@ -1,0 +1,38 @@
+{
+  "title": "A cast in geometric glow",
+  "topic": "stage0",
+  "order": 15,
+  "cards": [
+    {
+      "id": "glow-cast",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Ten in geometric glow",
+      "text": "Eight animals, a person and a monster in the gecko's style. Tick the ones that work. Does it hold as a family?",
+      "why": "This checks whether the style carries a whole cast before a species is chosen. Add a comment if the family doesn't hold, or if one looks wrong.",
+      "pick": [
+        "sheep",
+        "capybara",
+        "monster",
+        "fox"
+      ],
+      "details": "All ten are drawn the way round 13's gecko was: only circles, half circles, slices of circles, boxes and bars, nothing curved by hand. The same dark room and small lamp in the top left. Every character has a broad violet shadow on the side away from the lamp and a thin warm edge of light on the side toward it. Same eyes too: a white disc, a dark pupil looking up toward the lamp, a lid cut straight across. No grins. All stand on the floor at the gecko's scale, turned a little to the left, toward the light.\n\nThe eight animals were picked to look different from each other, not one body with ten heads:\n- Fox: slices of a disc for ears, a cream muzzle, dark socks, a big tail.\n- Mouse: the smallest, big disc ears, a thin curled tail.\n- Flamingo: the tallest, a neck made of one curve, one leg tucked up.\n- Capybara: the long one, on all fours, very sleepy lids.\n- Sheep: the round one, wool made only of circles.\n- Walrus: the heavy one, one big arch with no neck.\n- Turtle: a disc of shell behind, a belly plate made of boxes.\n- Axolotl: gill fronds made of beads, a fin along its tail.\n\nThe person is an adult, about four and a half heads tall: a box head, a cap of hair with a straight fringe, level brows, a jumper. The monster is new: an arch of a body, long arms, one big eye and one small, and a little lamp of its own on a stalk, which it's looking at.\n\nThe front shows all ten side by side, then all ten at icon size.\n\nMy picks are the sheep, capybara, monster and fox. The sheep is where the style is strongest: circles are the wool. The capybara is the calmest and most grown-up. The monster's own lamp ties it into the room. The fox reads clearly even at icon size.\n\nWeak spots: the person is the plainest. White disc eyes look more cartoon on a human than on an animal, and the pose is stiff. The axolotl is closest to the gecko's body. The flamingo's beak gets fiddly at icon size.\n\nMy reading: the style holds as a family. The lamp, the violet shadows and the warm edge tie very different bodies together.",
+      "images": [
+        "../../stage0/avatar14/shots/sheet.png",
+        "../../stage0/avatar14/shots/icons.png"
+      ],
+      "items": [
+        { "id": "fox", "label": "1. Fox", "image": "../../stage0/avatar14/shots/fox.png", "text": "Ears cut as slices of a disc, a cream muzzle, dark socks, a big tail with a cream tip. My pick." },
+        { "id": "mouse", "label": "2. Mouse", "image": "../../stage0/avatar14/shots/mouse.png", "text": "The smallest: a round head on a rounded box, big disc ears, a pale muzzle, a thin curled tail." },
+        { "id": "flamingo", "label": "3. Flamingo", "image": "../../stage0/avatar14/shots/flamingo.png", "text": "The tallest: a pill body, a half-disc wing, a neck that is one curve, a bent beak, one leg tucked." },
+        { "id": "capybara", "label": "4. Capybara", "image": "../../stage0/avatar14/shots/capybara.png", "text": "The long one, on all fours: a long rounded box, a blunt box of a head, very sleepy lids. My pick." },
+        { "id": "sheep", "label": "5. Sheep", "image": "../../stage0/avatar14/shots/sheep.png", "text": "The round one: wool made only of circles, a dark box of a face, hanging ears. My pick." },
+        { "id": "walrus", "label": "6. Walrus", "image": "../../stage0/avatar14/shots/walrus.png", "text": "The heavy one: one great arch with no neck, two disc cheeks, bar tusks, pill flippers." },
+        { "id": "turtle", "label": "7. Turtle", "image": "../../stage0/avatar14/shots/turtle.png", "text": "A big disc of shell behind, a belly plate made of boxes, a box head on a short neck." },
+        { "id": "axolotl", "label": "8. Axolotl", "image": "../../stage0/avatar14/shots/axolotl.png", "text": "Gill fronds made of beads, a wide head, a pear body, a long tail with a pale fin." },
+        { "id": "person", "label": "9. Person", "image": "../../stage0/avatar14/shots/person.png", "text": "An adult: a box head, a cap of hair with a straight fringe, level brows, a jumper, tube arms." },
+        { "id": "monster", "label": "10. Monster", "image": "../../stage0/avatar14/shots/monster.png", "text": "New: an arch of a body, long arms, one big eye and one small, a little lamp of its own. My pick." }
+      ]
+    }
+  ]
+}
