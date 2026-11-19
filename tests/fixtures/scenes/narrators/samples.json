@@ -1,0 +1,87 @@
+{
+ "v": 1,
+ "about": "Each narrator saying who it is, kept on the phone always and played when a narrator is chosen.",
+ "samples": {
+  "heart": {
+   "clip": "narrators/heart.e474d280.m4a",
+   "key": "e474d280d55958b91a4009fbbeaa6690f251c585",
+   "said": "Hello, I'm Heart. I'll read your lessons to you.",
+   "seconds": 2.549,
+   "words": [
+    ["Hello,", 0.06, 0.301],
+    ["I'm", 0.502, 0.602],
+    ["Heart.", 0.682, 0.863],
+    ["I'll", 1.244, 1.385],
+    ["read", 1.405, 1.545],
+    ["your", 1.565, 1.686],
+    ["lessons", 1.726, 2.027],
+    ["to", 2.087, 2.147],
+    ["you.", 2.208, 2.408]
+   ],
+   "check": "ok",
+   "heard": "Hello, I'm Heart. I'll read your lessons to you.",
+   "takes": 1
+  },
+  "george": {
+   "clip": "narrators/george.7c820136.m4a",
+   "key": "7c82013617127a9a853c00a548a9371a2d7daeed",
+   "said": "Hello, I'm George. I'll read your lessons to you.",
+   "seconds": 3.173,
+   "words": [
+    ["Hello,", 0.06, 0.341],
+    ["I'm", 0.582, 0.683],
+    ["George.", 0.783, 1.145],
+    ["I'll", 1.546, 1.687],
+    ["read", 1.727, 1.888],
+    ["your", 1.948, 2.089],
+    ["lessons", 2.189, 2.571],
+    ["to", 2.631, 2.711],
+    ["you.", 2.792, 3.033]
+   ],
+   "check": "ok",
+   "heard": "Hello, I'm George. I'll read your lessons to you.",
+   "takes": 1
+  },
+  "bella": {
+   "clip": "narrators/bella.d9cd8bfe.m4a",
+   "key": "d9cd8bfe7e7de895e788aef67b865acbd9874d60",
+   "said": "Hello, I'm Bella. I'll read your lessons to you.",
+   "seconds": 2.636,
+   "words": [
+    ["Hello,", 0.04, 0.302],
+    ["I'm", 0.503, 0.604],
+    ["Bella.", 0.664, 0.926],
+    ["I'll", 1.348, 1.489],
+    ["read", 1.509, 1.63],
+    ["your", 1.67, 1.771],
+    ["lessons", 1.811, 2.133],
+    ["to", 2.173, 2.254],
+    ["you.", 2.294, 2.515]
+   ],
+   "check": "ok",
+   "heard": "Hello, I'm Bella. I'll read your lessons to you.",
+   "takes": 1
+  },
+  "chatterbox-a": {
+   "clip": "narrators/chatterbox-a.b3672d04.m4a",
+   "key": "b3672d041ce1ab16d5dd9b46ff833bc5d56de7b5",
+   "said": "Hello, I'm Chatterbox A. I'll read your lessons to you.",
+   "seconds": 2.935,
+   "words": [
+    ["Hello,", 0.02, 0.221],
+    ["I'm", 0.523, 0.663],
+    ["Chatterbox", 0.744, 1.126],
+    ["A.", 1.307, 1.327],
+    ["I'll", 1.709, 1.849],
+    ["read", 1.89, 1.99],
+    ["your", 2.03, 2.131],
+    ["lessons", 2.151, 2.412],
+    ["to", 2.452, 2.513],
+    ["you.", 2.553, 2.754]
+   ],
+   "check": "ok",
+   "heard": "Hello, I'm Chatterbox A. I'll read your lessons to you.",
+   "takes": 1
+  }
+ }
+}

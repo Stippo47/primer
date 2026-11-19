@@ -10,11 +10,12 @@
     }
   },
   "scene": {
-    "about": "A scene with two or more parts directs them with shots, called as \"shot.<call>\" like any action (js/shots.js). It opens on its first part, full, unless its \"shot\" says otherwise (a shot call without the prefix: [\"split\", \"globe\", \"section\"]). Any action can make a sound effect as it happens (\"sound\"), and a shot makes its own unless told (\"sound\": \"none\").",
+    "about": "A scene with two or more parts directs them with shots (and any scene can lay a title over its picture), called as \"shot.<call>\" like any action (js/shots.js). It opens on its first part, full, unless its \"shot\" says otherwise (a shot call without the prefix: [\"split\", \"globe\", \"section\"]). Any action can make a sound effect as it happens (\"sound\"), and a shot makes its own unless told (\"sound\": \"none\").",
     "calls": {
       "cut": { "args": [{ "name": "part", "type": "part" }, { "name": "how", "type": "choice", "options": ["cut", "fade", "push", "back", "zoom"], "optional": true }], "about": "Shows one part, full, and nothing else. how: cut (at once, settling in from a touch closer; a soft puff), fade (one dissolving into the other), push (in from the right; a whoosh), back (in from the left; a whoosh), zoom (the old one swells away, the new one grows into place; a whoosh). cut unless told." },
       "split": { "args": [{ "name": "top", "type": "part" }, { "name": "bottom", "type": "part" }], "about": "Two parts, one above the other, each half the picture: the same thing seen two ways (from above and from the side), or two places side by side. Parts already showing glide to their halves. A whoosh." },
-      "inset": { "args": [{ "name": "part", "type": "part", "none": true }, { "name": "corner", "type": "choice", "options": ["top-right", "top-left", "bottom-right", "bottom-left"], "optional": true }], "about": "Lays a part over a corner of the picture as a small rounded window (top-right unless told): where we are, while the picture is a close-up. \"none\" takes the inset away. A soft pop." }
+      "inset": { "args": [{ "name": "part", "type": "part", "none": true }, { "name": "corner", "type": "choice", "options": ["top-right", "top-left", "bottom-right", "bottom-left"], "optional": true }], "about": "Lays a part over a corner of the picture as a small rounded window (top-right unless told): where we are, while the picture is a close-up. \"none\" takes the inset away. A soft pop." },
+      "title": { "args": [{ "name": "text", "type": "text", "maxLength": 30 }], "about": "A title card: a few big words over the top of the picture (a key term, a number, a span of dates) that stay while the line needs them, fading in and out; a new one replaces the last, and \"none\" takes it away. It works with one part too. No sound unless told." }
     },
     "sounds": {
       "whoosh": "A soft rush of air, rising and falling: a push or a zoom to another picture.",

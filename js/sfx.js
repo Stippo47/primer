@@ -10,8 +10,9 @@
 // as plain <audio>, which sounds with the silent switch on and never claims the phone's sound, so it can't
 // stop the person's music. Every play gets a new player. An iPhone starts sound only from a tap, so a scene
 // primes a player for every effect still to come in the tap that starts or resumes it (prime), and plays
-// those later. They sound only with Effects on (Profile), and a sound that won't play is simply not heard:
-// nothing waits for one.
+// those later. They have their own switch in Profile, Animation sounds, on unless turned off (ruled
+// 2026-11-19; Effects is the press sounds only, and stays off), and a sound that won't play is simply not
+// heard: nothing waits for one.
 import { getPrefs } from './feel.js';
 
 export const SOUNDS = {
@@ -29,8 +30,8 @@ const BASE = new URL('../sounds/', import.meta.url);
 export const soundUrl = name => new URL(`${name}.m4a`, BASE).href;
 
 export class Effects {
-  // on(): whether effects may sound (Effects in Profile, unless told otherwise).
-  constructor({ on = () => !!getPrefs().effects } = {}) {
+  // on(): whether they may sound (Animation sounds in Profile, unless told otherwise).
+  constructor({ on = () => getPrefs().animSounds !== false } = {}) {
     this.on = on;
     this.primed = new Map();   // name -> players made ready in a tap, oldest first
     this.playing = new Set();

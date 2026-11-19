@@ -94,6 +94,12 @@ html.vid, html.vid body { background: #090c2b; }
 .sstage.shots .spart[data-slot=inset-bottom-left] { bottom: calc(var(--foot) + 150px); left: 16px; }
 .scene[data-mode=step] .sstage.shots .spart[data-slot^=inset-top] { top: 12px; }
 .scene[data-mode=step] .sstage.shots .spart[data-slot^=inset-bottom] { bottom: 92px; }
+/* a title card (shot.title): a few big words over the top of the picture, faded by js/shots.js on the frame clock */
+.stitlecard { position: absolute; z-index: 4; left: 50%; top: calc(var(--top) + 22px); max-width: calc(100% - 40px); padding: 9px 18px 10px;
+  border-radius: 16px; background: rgba(10, 13, 46, 0.86); box-shadow: 0 0 0 2px rgba(255, 196, 61, 0.55), 0 5px 0 rgba(6, 8, 40, 0.45);
+  color: var(--gold); font-size: calc(23px * var(--ts)); line-height: 1.15; text-align: center; letter-spacing: 0.01em; white-space: nowrap;
+  opacity: 0; pointer-events: none; transform: translate(-50%, 10px); }
+.scene[data-mode=step] .stitlecard { top: 10px; font-size: calc(18px * var(--ts)); padding: 6px 13px 7px; }
 
 /* the caption: over the picture's foot, on a dark plate; it rises clear of the controls when they're up */
 .scap { position: absolute; z-index: 2; left: 14px; right: 14px; bottom: calc(var(--foot) + 18px); display: flex; justify-content: center; pointer-events: none;
@@ -148,9 +154,18 @@ html.vid, html.vid body { background: #090c2b; }
 .stitle { font-size: 22px; text-align: center; margin-bottom: 6px; text-shadow: 0 2px 0 rgba(5, 7, 28, 0.6); }
 .scene[data-mode=step] .send { top: 50px; bottom: 56px; }
 .scene[data-mode=step] .send .btn { height: 46px; font-size: 14px; }
-.nrow { text-align: left; }
+.nrow { text-align: left; gap: 10px; }
+.nrow .npick { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 50px; text-align: left; }
+.nrow .npick > p { font-size: calc(14.5px * var(--ts)); }
 .nrow .tickmark { width: 18px; display: flex; color: var(--teal); }
 .nrow .small { margin-left: auto; }
+.nrow .nplay { width: 36px; height: 36px; border-radius: 12px; }
+.nrow .nplay:disabled { opacity: 0.4; }
+/* Profile's hidden screen panel (the version tapped five times) */
+.diag .drow { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 2px solid var(--track); font-size: 13px; }
+.diag .drow:last-child { border-bottom: 0; }
+.diag .drow p:first-child { color: var(--muted); }
+.diag .drow p:last-child { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* review: the lesson player with the combo on top (js/review.js): the chip and its five pips, drawn by
    js/combo.js (css/combo.css), which come alive tier by tier as the run of right answers grows. */

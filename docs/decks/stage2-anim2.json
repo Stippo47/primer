@@ -1,0 +1,148 @@
+{
+  "title": "Animations, round two",
+  "topic": "stage2",
+  "order": 13,
+  "cards": [
+    {
+      "id": "anim2",
+      "kind": "report",
+      "rarity": "epic",
+      "title": "Animations, round two",
+      "text": "Both animations reworded and re-voiced, with pictures that show how each step works. Mark each part.",
+      "why": "Your notes: the cuts were meh, the explanations thin, the script worded weirdly, the sounds unheard and the band worse.",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom.\n\nFilms in Riffle play silent, so each film's sound (the voice and the effects together) is attached under it as its own clip. Play the clip alongside the film, or open the animation in Primer to hear them together.\n\nWhat was wrong with round one, frame by frame, and what changed:\n\n- The sea-and-sky view opened already full (a finished storm cloud, arrows, vapour) before anything had been explained, then was torn down and built again. Now it starts as plain sea and builds one piece per line.\n- \"Fuel: heat\" pointed at the cloud, though the heat comes from the sea. Now heat is shown where it is: warm sparks riding up on the vapour from the sea, then let go in the cloud.\n- \"Orange is warmest, blue is coolest\" left pink and purple unexplained. Now a key along the top runs Cool to Warm.\n- 27 °C was a tiny tag. Now a thermometer stands in the sea and its liquid rises to 27 °C.\n- \"Cooler up high\" pointed at empty sky, and \"tiny drops\" were never drawn. Now a strip down the side runs Warm to Cold with height, and drops form under the cloud.\n- The cloud was a flat white blob. Now its puffs are lit from the top left with a shaded side.\n- Heat let go, faster rising and air rushing in were thin and faint. All three are bolder.\n- \"Each day of summer sun\" had no days in it. Now the sun crosses the sky again and again while a thermometer climbs from 24 to 29 °C.\n- \"Mid-August to mid-October\" was a tiny dot label. Now it's a title card.\n- The Coriolis line showed an unlabelled white line and a cyan curve. Now a dotted line is \"Aimed straight south\", the bent arrow is \"The path it takes\", and a gold arrow shows the ground turning beneath it.\n- The spin never explained how bending right makes a storm turn. Now arrows aim straight into a storm, then bend right, miss the middle and swirl round it, counterclockwise; the south does the same the other way.\n- At the equator a horizontal and a vertical arrow made a meaningless cross. Now the same swirl is drawn twice: at 18° N it swirls, on the equator it goes straight in.\n- \"5° N\", \"Equator\" and \"5° S\" were stacked on each other. Names on lines now move aside to keep clear.\n- Arrows from earlier lines piled up. Old winds now clear before new ones blow, and every wind arrow has dashes running along it the way the air goes.\n- \"Cooler water\" was said over a globe that shows no warmth. The globe now fades into the warmth colours there, with the key.\n- Labels hid under storms and ran off the edge. Arrow names now sit above the storms and slide along their line to stay clear.\n- Several lines ended before their picture had played out. Those lines now hold a moment longer.\n\nEvery new tool is general: any future animation can use the air spiral, the dotted aim, the key, the change of look, the title card, and the sea-and-sky's thermometer, drops, cold-with-height strip and passing days.\n\nSCRIPT\n\nOld, then new.\n\nENGINE\n\n\"This is the Atlantic Ocean in late summer. The sea is coloured by how warm its surface is.\"\n→ \"That heat comes from the ocean. This is the Atlantic in late summer.\" / \"Orange shows the warmest water, near the equator. Blue shows the coolest, toward the poles.\"\n\n\"To get one started, the surface has to be about 27 °C or warmer. That's 80 °F.\"\n→ \"A hurricane can only start where the sea's surface is 27 °C or warmer. That's 80 °F.\"\n\n\"Over water that warm, a lot of it evaporates. The ocean's heat goes up into the air with the water vapour.\"\n→ \"Water that warm evaporates quickly. It turns into water vapour, a gas you can't see.\" / \"The vapour carries the ocean's heat with it, up into the air.\"\n\n\"That warm, wet air rises. High up it cools, and the vapour turns into tiny drops of water: cloud.\"\n→ \"Warm, wet air is light, so it rises.\" / \"High up, the air is cold. The vapour cools and turns back into tiny drops of water: a cloud.\"\n\n\"Making cloud gives that heat back. It warms the air around it, and warm air rises even faster.\"\n→ \"When the vapour turns into drops, it lets go of the heat it carried.\" / \"That heat warms the air around it, so the air rises even faster.\"\n\n\"More warm, wet air rushes in across the sea to take its place, and the engine feeds itself.\"\n→ \"More air rushes in across the sea to take its place.\" / \"It picks up more warm vapour on the way, so the engine feeds itself.\"\n\nSPIN\n\n\"A hurricane needs more than warm water. It needs a spin, and that comes from the Earth itself.\"\n→ \"Warm water isn't enough. A hurricane also needs a spin.\" / \"That spin comes from the Earth itself. The Earth turns once a day, from west to east.\"\n\n\"As air moves over the turning Earth, its path is bent. This is called the Coriolis effect.\"\n→ \"Picture air setting off south, toward the equator. The Earth turns beneath it as it goes.\" / \"So the path it takes over the ground is bent. This is called the Coriolis effect.\"\n\n\"North of the equator it bends moving air to the right, and storms turn counterclockwise, seen from above.\"\n→ \"North of the equator, moving air always bends to its right.\" / \"Air rushing into a storm bends right too. It misses the centre and swirls around it.\" / \"So storms north of the equator turn counterclockwise, seen from above.\"\n\n\"That's why they almost never form within about 5° of it.\"\n→ \"That's why hurricanes almost never form within about 5° of the equator.\"\n\n\"So: a spin from the turning Earth, a path that curves west and then away, and an end over land or cooler water.\"\n→ \"So the turning Earth gives a storm its spin. It drifts west, curves away, and ends over land or cooler water.\"\n\nAll four narrators were voiced again, and every new clip was heard back by the recogniser as written.\n\nBAND\n\nWhat changed: the app's box is now fixed to the edges of the window, with no height worked out from the screen (0.5.5 sized it from the screen's height, which made it worse). The safe areas at the top and bottom are padding inside the box, never a smaller box, and whatever sits under the box is the app's own dark, the video's while one plays, so an uncovered edge can't show a lighter colour.\n\nThis can't be seen on the PC: the simulated iPhone here shows no band at all. The hidden panel lists what your phone reports: the window's heights, the screen's, the visible area's, the safe areas, whether it's running from the Home Screen, and the pixel ratio. That says exactly where the band comes from.",
+      "parts": [
+        {
+          "id": "engine",
+          "title": "The storm's engine",
+          "text": "Sixteen lines now, in the order you'd ask: what it runs on, where the heat comes from, how the heat gets from the water into the storm, why late summer. Four films, about 25 seconds each, with their sound under them.",
+          "videos": [
+            "../stage2/shots-anim2/engine-1-engine-to-how-warm.mp4",
+            "../stage2/shots-anim2/engine-2-evaporate-to-heat-let-go.mp4",
+            "../stage2/shots-anim2/engine-3-faster-to-keeps-going.mp4",
+            "../stage2/shots-anim2/engine-4-late-summer-to-sum-up.mp4"
+          ],
+          "audio": [
+            {
+              "src": "../stage2/shots-anim2/engine-1-engine-to-how-warm-sound.m4a",
+              "label": "Film 1, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/engine-2-evaporate-to-heat-let-go-sound.m4a",
+              "label": "Film 2, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/engine-3-faster-to-keeps-going-sound.m4a",
+              "label": "Film 3, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/engine-4-late-summer-to-sum-up-sound.m4a",
+              "label": "Film 4, its sound"
+            }
+          ]
+        },
+        {
+          "id": "spin",
+          "title": "The spin, and the way they go",
+          "text": "Seventeen lines: why the Earth bends moving air, which way, how that makes a storm turn, why never at the equator, then one storm's path. Four films with their sound.",
+          "videos": [
+            "../stage2/shots-anim2/spin-1-spin-to-coriolis.mp4",
+            "../stage2/shots-anim2/spin-2-right-swirl-south.mp4",
+            "../stage2/shots-anim2/spin-3-equator-to-west.mp4",
+            "../stage2/shots-anim2/spin-4-curve-to-sum-up.mp4"
+          ],
+          "audio": [
+            {
+              "src": "../stage2/shots-anim2/spin-1-spin-to-coriolis-sound.m4a",
+              "label": "Film 1, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/spin-2-right-swirl-south-sound.m4a",
+              "label": "Film 2, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/spin-3-equator-to-west-sound.m4a",
+              "label": "Film 3, its sound"
+            },
+            {
+              "src": "../stage2/shots-anim2/spin-4-curve-to-sum-up-sound.m4a",
+              "label": "Film 4, its sound"
+            }
+          ]
+        },
+        {
+          "id": "script",
+          "title": "The script, reworded",
+          "text": "Short spoken sentences, one idea a line. Long lines were split in two, and every fact the lessons use stayed. The biggest changes, old then new, are under SCRIPT on the back."
+        },
+        {
+          "id": "sounds",
+          "title": "Sound effects",
+          "text": "The eight sounds, each to play here. They're made quiet, to sit under the voice, so turn the phone up. In Primer they now have their own switch, Animation sounds, on from the start; Effects is only the button sounds and stays off.",
+          "audio": [
+            {
+              "src": "../stage2/shots-anim2/sound-whoosh.m4a",
+              "label": "Whoosh: a push or zoom"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-cut.m4a",
+              "label": "Cut: a soft puff"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-swell.m4a",
+              "label": "Swell: a storm growing"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-pop.m4a",
+              "label": "Pop: a name arriving"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-chime.m4a",
+              "label": "Chime: a key term"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-wind.m4a",
+              "label": "Wind: air rushing in"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-fizz.m4a",
+              "label": "Fizz: water evaporating"
+            },
+            {
+              "src": "../stage2/shots-anim2/sound-rumble.m4a",
+              "label": "Rumble: a storm cloud"
+            }
+          ]
+        },
+        {
+          "id": "samples",
+          "title": "Narrator samples",
+          "text": "Each narrator says who it is. These four stay on the phone always: choosing a narrator in Profile plays its sample, and a small play button beside each plays it without choosing.",
+          "audio": [
+            {
+              "src": "../stage2/shots-anim2/narrator-heart.m4a",
+              "label": "Heart"
+            },
+            {
+              "src": "../stage2/shots-anim2/narrator-george.m4a",
+              "label": "George"
+            },
+            {
+              "src": "../stage2/shots-anim2/narrator-bella.m4a",
+              "label": "Bella"
+            },
+            {
+              "src": "../stage2/shots-anim2/narrator-chatterbox-a.m4a",
+              "label": "Chatterbox A"
+            }
+          ]
+        },
+        {
+          "id": "band",
+          "title": "The bottom band",
+          "text": "Last time's guess is undone, and the screen is laid out the standard way for a Home Screen app. Open an animation: is the band gone? If not, tap the version in Profile five times and send a screenshot of the panel. More under BAND on the back."
+        }
+      ]
+    }
+  ]
+}

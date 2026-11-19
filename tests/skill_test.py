@@ -749,6 +749,37 @@ class Voice(SceneWork):
         self.assertIn('george', self.timing(dest)['lines']['turn'])
 
     @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
+    def test_each_narrator_gets_a_sample_in_the_data_repo_made_once(self):
+        # a topic inside a data repo: voicing it makes the four narrators' samples there too, once
+        data = self.tmp / 'datarepo'
+        (data / 'topics').mkdir(parents=True)
+        (data / 'index.json').write_text('{"v": 1, "topics": []}', encoding='utf-8')
+        dest = data / 'topics' / 'scene-topic'
+        shutil.copytree(self.scene_topic(voice=False), dest)
+        out = self.voice(dest, '--narrators', 'topic')
+        self.assertIn('Narrator samples: 4 to make.', out)
+        listed = json.loads((data / 'narrators' / 'samples.json').read_text(encoding='utf-8'))['samples']
+        NAMES = {'heart': 'Heart', 'george': 'George', 'bella': 'Bella', 'chatterbox-a': 'Chatterbox A'}
+        self.assertEqual(list(listed), ['heart', 'george', 'bella', 'chatterbox-a'])
+        for n, e in listed.items():
+            self.assertEqual(e['said'], f"Hello, I'm {NAMES[n]}. I'll read your lessons to you.")
+            self.assertTrue(e['clip'].startswith(f'narrators/{n}.') and (data / e['clip']).is_file() and e['check'] == 'ok' and e['seconds'] > 0, e)
+        self.assertEqual(sorted(p.name for p in (data / 'narrators').iterdir()), sorted([*(pathlib.Path(e['clip']).name for e in listed.values()), 'samples.json']))
+        # voiced again, nothing new: the samples are kept as they were
+        self.assertIn('Narrator samples: all four made already.', self.voice(dest, '--narrators', 'topic'))
+        # a topic outside any data repo says how to make them, and makes none
+        loose = self.scene_topic(voice=False)
+        self.assertIn('run primer samples', self.voice(loose, '--narrators', 'topic'))
+        self.assertFalse((loose.parent / 'narrators').exists())
+        # primer samples makes them in the clone it's given
+        other = self.tmp / 'otherdata'
+        other.mkdir()
+        env = {**os.environ, 'PRIMER_APP': str(ROOT), 'PRIMER_VOICE_FAKE': '1'}
+        r = subprocess.run([sys.executable, str(PRIMER), 'samples', '--data', str(other), '--python', sys.executable], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(len(json.loads((other / 'narrators' / 'samples.json').read_text(encoding='utf-8'))['samples']), 4)
+
+    @unittest.skipUnless(shutil.which('ffmpeg') and shutil.which('ffprobe'), 'needs ffmpeg')
     def test_a_take_heard_wrong_is_made_again(self):
         dest = self.scene_topic(lambda S: line(S, 'storm').update(text='A storm appears over the mumble sea.', do=[]), voice=False)
         out = self.voice(dest, '--narrators', 'topic')
@@ -1242,6 +1273,20 @@ class SendAndProgress(Work):
         self.assertEqual(run('send', src, data=self.clone).returncode, 0)
         self.assertFalse((dest / old).exists())
         self.assertTrue((dest / new).exists())
+
+    def test_send_carries_the_narrators_samples(self):
+        src = self.tmp / 'src' / 'scene-topic'
+        shutil.copytree(SCENES, src)
+        r = run('send', src, data=self.clone)
+        self.assertIn('no narrator samples', r.stdout)
+        shutil.copytree(SCENES.parent.parent / 'narrators', self.clone / 'narrators')
+        (src / 'engine.json').write_text((src / 'engine.json').read_text(encoding='utf-8').replace('"version": 1', '"version": 2'), encoding='utf-8')
+        r = run('send', src, data=self.clone)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertNotIn('no narrator samples', r.stdout)
+        tracked = git(self.clone, 'ls-files', 'narrators').split()
+        self.assertEqual(len([p for p in tracked if p.endswith('.m4a')]), 4)
+        self.assertIn('narrators/samples.json', tracked)
 
     def test_send_refuses_a_topic_with_errors(self):
         src = self.topic(lambda L: step(L, 'brazil').pop('tries'))

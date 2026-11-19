@@ -1,5 +1,6 @@
 // Profile: what you know, topic by topic (blue when well remembered, grey as it slips, a warning mark on
-// low ones, no word for it), and the settings: Voice, Effects and Music, text size, the key connection,
+// low ones, no word for it), and the settings: Voice, Captions, Animation sounds (an animation's own sound
+// effects, on unless turned off), Effects (the press sounds), Music, text size, the narrators, the key connection,
 // what's waiting to send, the version, and whether the phone has promised to keep the data. A topic's
 // figure is how much of what's been asked in it you'd recall now, from the memory model (data.knowledge).
 import { esc, head, sheet, when } from '../ui.js';
@@ -43,7 +44,11 @@ export function profileScreen(app) {
       <div class="kb"><b style="width:${k.pct}%;background:${col}"></b></div><p class="pc" style="color:${col}">${k.pct}%</p>
       <div class="wn">${low(k) ? svg(22, 22, hazard()) : ''}</div></button>`;
   }).join('');
-  const toggle = (key, label) => `<div class="srow"><p>${label}</p><button class="toggle" data-pref="${key}" aria-pressed="${!!prefs[key]}" aria-label="${label}" data-sound="${prefs[key] ? 'off' : 'on'}"></button></div>`;
+  // dflt: what a switch is when it has never been touched (Animation sounds start on)
+  const toggle = (key, label, dflt = false) => {
+    const on = prefs[key] === undefined ? dflt : !!prefs[key];
+    return `<div class="srow"><p>${label}</p><button class="toggle" data-pref="${key}" aria-pressed="${on}" aria-label="${label}" data-sound="${on ? 'off' : 'on'}"></button></div>`;
+  };
   // Each subject has its own narrator, named by its topics; one chosen here speaks for the whole subject.
   const subjects = [...new Map(app.topics.filter(t => t.subject).map(t => [t.subject, t])).values()];
   const narrators = subjects.map(t => `<div class="srow"><p>${esc(t.subject)}</p><button class="btn sm ghost" data-narrator="${esc(t.subject)}" data-sound="select">${esc(NARRATORS[app.narratorFor(t)] || app.narratorFor(t))}</button></div>`).join('');
@@ -55,7 +60,7 @@ export function profileScreen(app) {
     ${app.topics.length ? `<p class="over">Knowledge</p><div class="plate know">${rows}</div>` : ''}
     <p class="over">Settings</p>
     <div class="plate settings">
-      ${toggle('voice', 'Voice')}${toggle('captions', 'Captions')}${toggle('effects', 'Effects')}${toggle('music', 'Music')}
+      ${toggle('voice', 'Voice')}${toggle('captions', 'Captions')}${toggle('animSounds', 'Animation sounds', true)}${toggle('effects', 'Effects')}${toggle('music', 'Music')}
       <div class="srow"><p>Text size</p><div class="seg" role="group" aria-label="Text size">${['s', 'm', 'l'].map((s, i) => `<button class="${prefs.text === s ? 'on' : ''}" data-size="${s}" data-sound="select" style="font-size:${[11, 13.5, 16][i]}px" aria-label="${['Small', 'Middle', 'Large'][i]} text">A</button>`).join('')}</div></div>
     </div>
     ${narrators ? `<p class="over">Narrators</p><div class="plate settings" id="narrators">${narrators}<p class="fine" id="narratornote" hidden></p></div>` : ''}
@@ -71,7 +76,7 @@ export function profileScreen(app) {
       ${st.connected ? `<div class="rowbtns"><button class="btn sm" data-go="send">${icon.send(18)}Send now</button><button class="btn sm ghost" data-go="pull">Check for lessons</button></div><p class="fine" id="sendresult" hidden></p>` : ''}
     </div>
     <p class="fine" id="storageline"></p>
-    <p class="fine">Primer ${esc(app.VERSION)}. Map shapes from Natural Earth (public domain). Nunito, SIL Open Font Licence.</p>
+    <p class="fine" id="version">Primer ${esc(app.VERSION)}. Map shapes from Natural Earth (public domain). Nunito, SIL Open Font Licence.</p>
   </section>`;
   app.store.persisted().then(yes => {
     const line = view.querySelector('#storageline');
@@ -81,6 +86,7 @@ export function profileScreen(app) {
         : "This phone hasn't promised to keep what Primer saves. It can clear it if space runs low; every answer also goes up once sent.";
   });
   view.onclick = async e => {
+    if (e.target.closest('#version')) { versionTapped(app); return; }
     const t = e.target.closest('[data-pref]');
     if (t) {
       const on = t.getAttribute('aria-pressed') !== 'true';
@@ -118,15 +124,38 @@ export function profileScreen(app) {
 // Clips are made in all four on the PC, but only the one in use is kept on the phone: a new choice's clips
 // come down then, and it says so. Until every one of them is down (no signal, or partway), the old narrator
 // goes on narrating, and the note says that plainly; then the new one takes over and the old one's clips go.
-function pickNarrator(app, topic) {
+// Each narrator's sample ("Hello, I'm Heart…", js/sync.js samples) is always on the phone: it plays when a
+// narrator is chosen, and from the small play button beside each, so a voice can be heard before choosing.
+const PLAY = '<svg width="16" height="16" viewBox="0 0 28 28" aria-hidden="true"><path d="M9.5 6.2v15.6a1 1 0 0 0 1.5.9l12.4-7.8a1 1 0 0 0 0-1.8L11 5.3a1 1 0 0 0-1.5.9z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+let sampleNow = null;
+// Plays a narrator's sample, if it's on the phone, stopping any other: called inside the tap, with the
+// sample's address already known, so the phone lets it sound.
+export function playSample(app, urls, id) {
+  const url = urls[id] && urls[id].url;
+  if (sampleNow) { try { sampleNow.pause(); } catch { /* done */ } }
+  sampleNow = null;
+  (app.heardSamples || (app.heardSamples = [])).push({ id, played: !!url });
+  if (!url) return false;
+  const a = new Audio(url);
+  sampleNow = a;
+  try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch { return false; }
+  return true;
+}
+
+async function pickNarrator(app, topic) {
   if (!topic) return;
+  const urls = await app.sync.samples().catch(() => ({}));
   const now = app.narratorFor(topic), own = topic.narrator || '';
-  const s = sheet(app.root, `<p style="font-size:20px">${esc(topic.subject)}</p><p class="fine" style="padding-top:4px">Who narrates its animations, lessons and reviews.</p>
-    <div class="plate settings">${Object.entries(NARRATORS).map(([id, name]) => `<button class="srow nrow" data-pick="${esc(id)}" data-sound="select" aria-pressed="${id === now}" style="width:100%">
-      <p>${esc(name)}</p><span class="small">${id === own ? 'its topics\' own' : ''}</span><span class="tickmark">${id === now ? icon.check(18) : ''}</span></button>`).join('')}</div>`);
+  const s = sheet(app.root, `<p style="font-size:20px">${esc(topic.subject)}</p><p class="fine" style="padding-top:4px">Who narrates its animations, lessons and reviews. Tap ${PLAY.replace('<svg ', '<svg style="display:inline;vertical-align:-3px" ')} to hear one.</p>
+    <div class="plate settings">${Object.entries(NARRATORS).map(([id, name]) => `<div class="srow nrow">
+      <button class="npick" data-pick="${esc(id)}" data-sound="select" aria-pressed="${id === now}"><p>${esc(name)}</p><span class="small">${id === own ? 'its topics\' own' : ''}</span><span class="tickmark">${id === now ? icon.check(18) : ''}</span></button>
+      <button class="round nplay${urls[id] ? '' : ' mute'}" data-hear="${esc(id)}" data-sound="none" aria-label="Hear ${esc(name)}"${urls[id] ? '' : ' disabled'}>${PLAY}</button></div>`).join('')}</div>`);
   s.el.addEventListener('click', e => {
+    const h = e.target.closest('[data-hear]');
+    if (h) { playSample(app, urls, h.dataset.hear); return; }
     const b = e.target.closest('[data-pick]');
     if (!b) return;
+    playSample(app, urls, b.dataset.pick);
     const chosen = { ...(app.prefs.narrators || {}) };
     if (b.dataset.pick === own) delete chosen[topic.subject]; else chosen[topic.subject] = b.dataset.pick;
     const changed = b.dataset.pick !== now;
@@ -135,6 +164,33 @@ function pickNarrator(app, topic) {
     profileScreen(app);
     if (changed) fetchVoice(app, topic.subject, NARRATORS[b.dataset.pick] || b.dataset.pick);
   });
+}
+
+// A hidden panel for when the screen looks wrong on the phone (a band along the bottom): the version tapped
+// five times in a row shows what the phone reports about its screen (js/app.js, screenFacts), to screenshot.
+let versionTaps = [];
+function versionTapped(app) {
+  const now = Date.now();
+  versionTaps = versionTaps.filter(t => now - t < 2500).concat(now);
+  if (versionTaps.length < 5) return;
+  versionTaps = [];
+  screenPanel(app);
+}
+export function screenPanel(app) {
+  const f = app.screenFacts();
+  const row = (k, v) => `<div class="drow"><p>${esc(k)}</p><p>${esc(v)}</p></div>`;
+  const vv = f.visualViewport ? `${f.visualViewport.height} (top ${f.visualViewport.offsetTop}, scale ${f.visualViewport.scale})` : 'none';
+  const box = f.app ? `${f.app.top} to ${f.app.bottom} (${f.app.height})` : 'none';
+  sheet(app.root, `<p style="font-size:20px">The screen, as the phone reports it</p>
+    <p class="fine" style="padding-top:4px">Screenshot this if a band shows at the bottom.</p>
+    <div class="plate settings diag" id="screenpanel">
+      ${row('innerHeight', `${f.innerHeight} (width ${f.innerWidth})`)}${row('outerHeight', f.outerHeight)}${row('screen.height', `${f.screenHeight} (avail ${f.availHeight}, width ${f.screenWidth})`)}
+      ${row('visualViewport height', vv)}${row('document height', `${f.documentHeight} (scroll ${f.scrollHeight}, body ${f.bodyHeight})`)}${row('app box', box)}
+      ${row('safe area top / bottom', `${f.insets.top} / ${f.insets.bottom}`)}${row('safe area left / right', `${f.insets.left} / ${f.insets.right}`)}
+      ${row('standalone', `${f.standalone} (display-mode ${f.displayMode || 'none'})`)}${row('devicePixelRatio', f.devicePixelRatio)}
+      ${row('version', app.VERSION)}
+    </div>
+    <p class="fine" style="padding-top:8px;word-break:break-all">${esc(f.ua)}</p>`);
 }
 
 // The new narrator's clips coming down, said under the Narrators.

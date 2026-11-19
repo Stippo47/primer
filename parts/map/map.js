@@ -17,7 +17,7 @@
 import { geoPath, geoInterpolate, geoDistance } from 'd3-geo';
 import { loadWorld, countryAt } from './world.js';
 import { makeView, SPHERE } from './views.js';
-import { LAYERS, mirroredBand, latBand, makeRoute, progressOf, headOf, parallel } from './layers.js';
+import { LAYERS, mirroredBand, latBand, makeRoute, progressOf, headOf, parallel, makeSpiral } from './layers.js';
 import { STYLE, colourOf, rampAt } from './look.js';
 import { Glide } from '../../js/ease.js';
 
@@ -38,7 +38,9 @@ export async function mount(el, settings, ctx = {}) {
   const S = settings;
   const feel = ctx.feel || { sound() {}, tick() {} };
   const soft = ctx.motion === 'soft';
-  const style = STYLE[S.style] || STYLE.day;
+  let style = STYLE[S.style] || STYLE.day, styleName = STYLE[S.style] ? S.style : 'day';
+  // a change of style fades the old map into the new: the old one is drawn too while it does (style)
+  let oldStyle = null;
   const view = makeView(S.projection || 'globe');
   const fingersMove = S.spin !== 'locked';
   const fingersZoom = fingersMove && S.pinch !== false;
@@ -52,6 +54,13 @@ export async function mount(el, settings, ctx = {}) {
   const g = canvas.getContext('2d');
   const base = document.createElement('canvas');
   const bg = base.getContext('2d');
+  const oldBase = document.createElement('canvas');
+  const og = oldBase.getContext('2d');
+  // How far down the picture is clear of the status bar in a scene (its --top): where a key sits.
+  const topProbe = document.createElement('div');
+  topProbe.style.cssText = 'position:absolute;left:0;top:0;width:0;height:var(--top, 0px);visibility:hidden;pointer-events:none';
+  el.append(topProbe);
+  let safeTop = 0;
 
   // ---- the camera, shared by every view: where it faces, how close, and (on a globe) its angle
   let w = 0, h = 0, dpr = 1;
@@ -63,7 +72,7 @@ export async function mount(el, settings, ctx = {}) {
   const set = (now = performance.now()) => view.set(w, h, centre, zoom, tilt.at(now), heading.at(now));
 
   // ---- what's on the map: everything a call adds, read by the layers
-  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1) };
+  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], spirals: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1), key: null };
   let contents = 0, tapped = null;
   const changed = () => { contents++; wake(); };
 
@@ -85,7 +94,8 @@ export async function mount(el, settings, ctx = {}) {
     // its layout size, not its box on screen: a scene's shot can be moving it with a transform just then
     w = Math.max(10, el.clientWidth || el.getBoundingClientRect().width); h = Math.max(10, el.clientHeight || el.getBoundingClientRect().height);
     dpr = Math.min(2, window.devicePixelRatio || 1);
-    for (const c of [canvas, base]) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    for (const c of [canvas, base, oldBase]) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    safeTop = topProbe.offsetHeight || 0;
     set();
     centre = view.clamp(centre, zoom);
     baseKey = '';
@@ -95,7 +105,7 @@ export async function mount(el, settings, ctx = {}) {
   // ---- the draw context the layers draw from (see layers.js)
   let shapes = new Map(), shapeKey = '';
   const d = {
-    c: null, view, W, S, m, style, memo, k: 1, now: 0, dt: 16, soft,
+    c: null, view, W, S, m, style, memo, k: 1, now: 0, dt: 16, soft, safeTop: 0, styleName,
     // a shape, projected once for this view and shared by every layer that draws it
     shape(geo) {
       let p = shapes.get(geo);
@@ -112,6 +122,9 @@ export async function mount(el, settings, ctx = {}) {
     d.c = c; d.now = now; d.dt = dt;
     d.k = Math.sqrt(view.size);
     d.box = view.box;
+    d.style = style;
+    d.styleName = styleName;
+    d.safeTop = safeTop;
   }
 
   // Base things fading in (in a scene) or out (after a clear): the map itself is redrawn while they do.
@@ -120,30 +133,40 @@ export async function mount(el, settings, ctx = {}) {
 
   // ---- the map itself, on its own picture
   function drawBase(now) {
-    const key = `${viewKey()},${contents},${m.selected}`;
+    const key = `${viewKey()},${contents},${m.selected},${styleName}`;
     if (key === baseKey) return;
     baseKey = key;
     redraws++;
     const t0 = performance.now();
-    ready(bg, now, 16);
-    bg.setTransform(dpr, 0, 0, dpr, 0, 0);
-    bg.clearRect(0, 0, w, h);
+    paintBase(bg, now);
+    // while a change of style fades, the old style's map is drawn too, at the same view
+    if (oldStyle) {
+      const keep = [style, styleName];
+      [style, styleName] = [oldStyle.style, oldStyle.name];
+      paintBase(og, now);
+      [style, styleName] = keep;
+    }
+    baseMs = performance.now() - t0;
+  }
+  function paintBase(cg, now) {
+    ready(cg, now, 16);
+    cg.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cg.clearRect(0, 0, w, h);
     let clipped = false;
     for (const layer of LAYERS) {
       if (!layer.base) continue;
-      if (layer.clip && !clipped) { bg.save(); bg.clip(d.shape(SPHERE)); clipped = true; }
-      if (!layer.clip && clipped) { bg.restore(); clipped = false; }
+      if (layer.clip && !clipped) { cg.save(); cg.clip(d.shape(SPHERE)); clipped = true; }
+      if (!layer.clip && clipped) { cg.restore(); clipped = false; }
       layer.draw(d);
     }
-    if (clipped) bg.restore();
-    baseMs = performance.now() - t0;
+    if (clipped) cg.restore();
   }
 
   // Things sent away by a clear go once they've faded.
   function prune(now) {
     const done = it => it.out && now >= it.out.t0 + it.out.ms;
     let base = false;
-    for (const key of ['points', 'markers', 'routes', 'bands', 'parallels']) {
+    for (const key of ['points', 'markers', 'routes', 'spirals', 'bands', 'parallels']) {
       const before = m[key].length;
       m[key] = m[key].filter(it => !done(it));
       if (key === 'bands' || key === 'parallels') base = base || m[key].length !== before;
@@ -151,6 +174,7 @@ export async function mount(el, settings, ctx = {}) {
     for (const [k, it] of m.highlights) if (done(it)) { m.highlights.delete(k); base = true; }
     for (const [k, it] of m.labels) if (done(it)) m.labels.delete(k);
     if (m.table && done(m.table)) { m.table = null; base = true; }
+    if (m.key && done(m.key)) m.key = null;
     if (base) contents++;
   }
 
@@ -231,6 +255,11 @@ export async function mount(el, settings, ctx = {}) {
     g.clearRect(0, 0, w, h);
     g.drawImage(base, 0, 0, w, h);
     let wants = false;
+    if (oldStyle) {
+      const k = clamp01((now - oldStyle.t0) / oldStyle.ms);
+      if (k >= 1) oldStyle = null;
+      else { g.globalAlpha = 1 - k * k * (3 - 2 * k); g.drawImage(oldBase, 0, 0, w, h); g.globalAlpha = 1; wants = true; }
+    }
     for (const layer of LAYERS) if (!layer.base && layer.draw(d)) wants = true;
     prune(now);
     if (done && !turn && !zoomAnim && !zoomG.moving(now)) settled();
@@ -454,18 +483,47 @@ export async function mount(el, settings, ctx = {}) {
       },
       point(place, label) { const at = placeOf(place); if (at) m.points.push({ at, label, born: performance.now() }); wake(); },
       marker(place, kind = 'ring', label) { const at = placeOf(place); if (at) m.markers.push({ at, kind, label, t0: performance.now() }); wake(); },
-      arc(from, to, colour) {
+      // label: its name beside its middle ("" for none). line: "dotted" draws it as dots, the way something
+      // was aimed, beside the way it went.
+      arc(from, to, colour, label, line = 'solid') {
         const a = placeOf(from), b = placeOf(to);
-        if (a && b) m.routes.push(makeRoute([a, b], { col: colourOf(colour), progress: 1, from: 0, seconds: soft ? 1.2 : 0.9, now: performance.now(), kind: 'arc' }));
+        if (a && b) m.routes.push(Object.assign(makeRoute([a, b], { col: colourOf(colour), progress: 1, from: 0, seconds: soft ? 1.2 : 0.9, now: performance.now(), kind: 'arc' }), { label: label || '', dotted: line === 'dotted' }));
         wake();
       },
       // An arrow along a smooth path through places, drawing itself in over `seconds`: a wind, a current, air
       // being bent. Cyan unless told.
-      flow(path, colour = 'cyan', seconds = 1.4) {
+      flow(path, colour = 'cyan', seconds = 1.4, label) {
         const places = [].concat(path || []).map(placeOf).filter(Boolean);
         if (places.length < 2) return;
         const t = Number(seconds) || 0;
-        m.routes.push(makeRoute(places, { col: colourOf(colour), progress: 1, from: t > 0 ? 0 : 1, seconds: t, now: performance.now(), kind: 'flow' }));
+        m.routes.push(Object.assign(makeRoute(places, { col: colourOf(colour), progress: 1, from: t > 0 ? 0 : 1, seconds: t, now: performance.now(), kind: 'flow' }), { label: label || '' }));
+        wake();
+      },
+      // Air rushing in toward a place from four sides, aimed at it (bend 0) or bent by the Earth's turning
+      // until it swirls round it (1). Called again at the same place, the bend glides there.
+      spiral(place, bend = 1, seconds = 1.4, size = 9) {
+        const at = placeOf(place);
+        if (!at) return;
+        const now = performance.now(), t = ms(seconds), b = clamp01(Number(bend));
+        const old = m.spirals.find(s => !s.out && Math.abs(s.at[0] - at[0]) < 1e-6 && Math.abs(s.at[1] - at[1]) < 1e-6);
+        if (old) old.bend.go(b, t, now);
+        else m.spirals.push(makeSpiral(at, { bend: b, size: Math.max(2, Number(size) || 9), seconds: t / 1000, now }));
+        wake();
+      },
+      // The map's style, the old one fading into the new.
+      style(name, seconds = 1) {
+        if (!STYLE[name] || name === styleName) return;
+        const t = ms(seconds), now = performance.now();
+        oldStyle = t > 0 ? { style, name: styleName, t0: now, ms: t } : null;
+        style = STYLE[name];
+        styleName = name;
+        changed();
+      },
+      // A key to the style's colours along the top (warmth has one).
+      key(on = true) {
+        const now = performance.now();
+        if (on === false) { if (m.key && !m.key.out) m.key.out = out(now, 450); wake(); return; }
+        if (!m.key || m.key.out) m.key = { born: now };
         wake();
       },
       // A path drawn as far as `progress` (0..1), with something riding its head. Called again with the
@@ -488,15 +546,20 @@ export async function mount(el, settings, ctx = {}) {
         wake();
       },
       // Takes everything away. Over `seconds` (in a scene, half a second unless told) it all fades out.
-      clear(seconds) {
-        const now = performance.now(), t = ms(seconds === undefined ? (soft ? 0.5 : 0) : seconds);
-        m.pin = null; m.selected = null;
-        if (!(t > 0)) {
-          m.highlights.clear(); m.bands.length = 0; m.table = null; m.points.length = 0; m.markers.length = 0; m.routes.length = 0;
-          m.labels.clear(); m.parallels.length = 0;
-        } else {
-          for (const it of [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.labels.values()]) if (!it.out) it.out = out(now, t);
-        }
+      // what: one kind only (flows, arcs, tracks, spirals, points, markers, labels, bands, parallels), or all.
+      clear(seconds, what = 'all') {
+        const now = performance.now(), t = ms(seconds === undefined || seconds === null ? (soft ? 0.5 : 0) : seconds);
+        const ROUTE = { flows: 'flow', arcs: 'arc', tracks: 'track' };
+        let items;
+        if (!what || what === 'all') {
+          m.pin = null; m.selected = null;
+          items = [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.spirals, ...m.labels.values(), ...(m.key ? [m.key] : [])];
+        } else if (ROUTE[what]) items = m.routes.filter(r => r.kind === ROUTE[what]);
+        else if (what === 'labels') items = [...m.labels.values()];
+        else items = Array.isArray(m[what]) ? m[what] : [];
+        if (!(t > 0)) for (const it of items) it.out = out(now - 2, 1);
+        else for (const it of items) if (!it.out) it.out = out(now, t);
+        if (!(t > 0)) prune(now);
         changed();
       },
     },
@@ -522,6 +585,9 @@ export async function mount(el, settings, ctx = {}) {
       zoom = zoomG.to;
       if (zoomAnim) { zoom = zoomAnim.to; zoomAnim = null; }
       for (const rt of m.routes) { rt.g.go(rt.g.to, 0, now); rt.born = past; }
+      for (const sp of m.spirals) { sp.bend.go(sp.bend.to, 0, now); sp.draw.go(sp.draw.to, 0, now); sp.born = past; }
+      if (m.key) m.key.born = past;
+      oldStyle = null;
       for (const it of [...baseItems(), ...m.points, ...m.labels.values()]) it.born = past;
       for (const mk of m.markers) mk.t0 = past;
       prune(now + 1e9);
@@ -535,6 +601,7 @@ export async function mount(el, settings, ctx = {}) {
     debug: () => ({ labels: [...(memo.shownNames || new Map())].map(([name, st]) => ({ name, a: st.a, on: st.on })), clashes: W.clashes, redraws, baseMs, frames, projection: view.kind,
       routes: m.routes.map(r => ({ legs: r.places.length - 1, points: r.pts.length, progress: progressOf(r, performance.now()), rider: r.rider, kind: r.kind, fading: !!r.out, bend: sharpest(r.pts) })), table: !!m.table,
       named: [...m.labels].map(([name, L]) => ({ name, kind: L.kind, at: L.at, fading: !!L.out })), parallels: m.parallels.map(p => p.lat),
+      spirals: m.spirals.map(s => ({ at: s.at, bend: s.bend.at(performance.now()), fading: !!s.out })), style: styleName, key: !!(m.key && !m.key.out),
       camera: { centre: roundC(), zoom: roundZ(), tilt: tilt.at(performance.now()), heading: heading.at(performance.now()), following: !!follow, drift: drift.at(performance.now()), moving: !!turn || zoomG.moving(performance.now()) },
       grow: m.grow.at(performance.now()), soft }),
     remove() {
@@ -545,6 +612,7 @@ export async function mount(el, settings, ctx = {}) {
       stop();
       for (const k of Object.keys(fns)) fns[k].clear();
       canvas.remove();
+      topProbe.remove();
     },
   };
 

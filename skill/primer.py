@@ -908,7 +908,7 @@ def check_spoken(lesson, where, rep, base, key, narrator):
 def check_scene_call(call, where, rep, kit, base, descs, names, span):
     part, name, args = split_call(call, names)
     if part == 'shot':
-        if len(names) < 2:
+        if len(names) < 2 and name != 'title':
             rep.err(where, 'a shot chooses between parts: this scene has only one')
             return None
         desc = kit.shot
@@ -1972,6 +1972,114 @@ def take_good(res):
     return bool(res) and res.get('verdict') in ('ok', 'minor') and (res.get('tail') or 0) <= LONG_TAIL and bool(res.get('words'))
 
 
+def voice_takes(todo, tts, a, ffmpeg, ffprobe, work, best):
+    """Makes, hears and retakes these clips, a round per take: every engine's jobs in one go, so each model loads
+    once. best (job id -> { res, file, take, takes }) gets the best take of each."""
+    for take in range(1, MAX_TAKES + 1):
+        if not todo:
+            break
+        wav, clips = work / f'wav{take}', work / f'm4a{take}'
+        clips.mkdir(parents=True, exist_ok=True)
+        for engine in ('kokoro', 'chatterbox'):
+            mine = [{**j, 'take': j.get('first', 0) + take} for j in todo if j['engine'] == engine]
+            if not mine:
+                continue
+            jf = work / f'{engine}{take}.json'
+            save_json(jf, mine)
+            print(f'  take {take}: {len(mine)} with {engine}...', flush=True)
+            run_env(env_python(tts, ENVIRONMENTS[engine], a.python), 'say.py', ['--engine', engine, '--jobs', jf, '--out', wav], tts)
+        for j in todo:
+            encode_clip(wav / f'{j["id"]}.wav', clips / f'{j["id"]}.m4a', ffmpeg, ffprobe)
+        hf = work / f'hear{take}.json'
+        save_json(work / f'hearjobs{take}.json', [{'id': j['id'], 'text': j['text'], 'take': take} for j in todo])
+        run_env(env_python(tts, ENVIRONMENTS['hear'], a.python), 'hear.py',
+                ['--jobs', work / f'hearjobs{take}.json', '--clips', clips, '--out', hf, '--ffmpeg', ffmpeg, '--ffprobe', ffprobe], tts)
+        heard = load_json(hf)
+        left = []
+        for j in todo:
+            res = heard.get(j['id'])
+            if j['id'] not in best or take_score(res) < take_score(best[j['id']]['res']):
+                best[j['id']] = {'res': res, 'file': clips / f'{j["id"]}.m4a', 'take': take}
+            best[j['id']]['takes'] = j.get('first', 0) + take
+            if not take_good(res):
+                left.append(j)
+        if left and take < MAX_TAKES:
+            print(f'  {len(left)} clip(s) heard wrong; another take: ' + '; '.join(f'{j["line"]} ({j["narrator"]}): "{(heard.get(j["id"]) or {}).get("heard", "")}"' for j in left[:4]), flush=True)
+        todo = left
+    return best
+
+
+SAMPLES_FILE = 'narrators/samples.json'
+
+
+def sample_words(narrator):
+    """What a narrator says to introduce itself: its name, said naturally."""
+    return f"Hello, I'm {NARRATORS[narrator]['name']}. I'll read your lessons to you."
+
+
+def make_samples(data, a, tts, ffmpeg, ffprobe):
+    """Each narrator's sample, a short clip saying who it is, made once into the data repo's narrators/ folder
+    (narrators/<narrator>.<key8>.m4a, listed in narrators/samples.json) and made again only when its words or
+    its making change. The phone keeps them all, always, so a narrator can be heard before it's chosen."""
+    folder = data / 'narrators'
+    old = (load_json(data / SAMPLES_FILE).get('samples') or {}) if (data / SAMPLES_FILE).exists() else {}
+    entries, jobs = {}, []
+    for n in NARRATORS:
+        said = sample_words(n)
+        k = clip_key(n, said)
+        e = old.get(n)
+        if e and e.get('key') == k and e.get('clip') and (data / e['clip']).is_file() and not a.again:
+            entries[n] = e
+            continue
+        jobs.append({'id': f's{len(jobs)}', 'scene': 'samples', 'line': 'hello', 'narrator': n, 'text': spoken(said), 'said': said, 'key': k,
+                     'first': 0, 'engine': NARRATORS[n]['engine'], 'voice': NARRATORS[n]['voice'], 'settings': NARRATORS[n].get('settings', {})})
+    if jobs:
+        print(f'Narrator samples: {len(jobs)} to make.', flush=True)
+        work = pathlib.Path(tempfile.mkdtemp(prefix='primer-samples-'))
+        try:
+            best = voice_takes(list(jobs), tts, a, ffmpeg, ffprobe, work, {})
+            folder.mkdir(parents=True, exist_ok=True)
+            for j in jobs:
+                b = best.get(j['id'])
+                if not b or not b['res'] or not b['res'].get('words'):
+                    print(f'  warning: {NARRATORS[j["narrator"]]["name"]}\'s sample couldn\'t be made.')
+                    continue
+                rel = f'narrators/{j["narrator"]}.{j["key"][:8]}.m4a'
+                shutil.copyfile(b['file'], data / rel)
+                res = b['res']
+                entries[j['narrator']] = {'clip': rel, 'key': j['key'], 'said': j['said'], 'seconds': round(seconds_of(ffprobe, data / rel), 3),
+                                          'words': res['words'], 'check': 'ok' if take_good(res) else 'flag', 'heard': res.get('heard', ''), 'takes': b['takes']}
+        finally:
+            shutil.rmtree(work, ignore_errors=True)
+    if not entries:
+        return
+    order = {n: entries[n] for n in NARRATORS if n in entries}
+    save_timing(data / SAMPLES_FILE, {'v': 1, 'about': 'Each narrator saying who it is, kept on the phone always and played when a narrator is chosen.', 'samples': order})
+    keep = {e['clip'] for e in order.values()} | {SAMPLES_FILE}
+    for f in sorted(folder.glob('*')):
+        if f.is_file() and f.relative_to(data).as_posix() not in keep:
+            f.unlink()
+    if not jobs:
+        print('Narrator samples: all four made already.')
+
+
+def samples_root(folder, a):
+    """Where a topic's narrator samples go: the data repo the topic folder is in, else --data; else nowhere."""
+    if folder.resolve().parent.name == 'topics' and (folder.resolve().parent.parent / 'index.json').exists():
+        return folder.resolve().parent.parent
+    if getattr(a, 'data', None):
+        return pathlib.Path(a.data)
+    return None
+
+
+def cmd_samples(a):
+    """Makes each narrator's sample in the data clone (--data, PRIMER_DATA or ~/Dev/primer-data)."""
+    data = pathlib.Path(a.data) if a.data else data_dir()
+    ffmpeg, ffprobe = a.ffmpeg or 'ffmpeg', a.ffprobe or 'ffprobe'
+    tts = None if a.python else tts_dir(a.tts)
+    make_samples(data, a, tts, ffmpeg, ffprobe)
+
+
 def cmd_voice(a):
     """Voices everything in a topic that is read aloud: every scene's lines, and every lesson, test and exam's
     own words (spoken_lines). A clip per line per narrator, each heard back and aligned, and a timing file per
@@ -2071,38 +2179,7 @@ def cmd_voice(a):
             print(f'  clips {at + 1} to {at + len(some)} of {len(jobs)}', flush=True)
         work = pathlib.Path(tempfile.mkdtemp(prefix='primer-voice-'))
         try:
-            todo = list(some)
-            for take in range(1, MAX_TAKES + 1):
-                if not todo:
-                    break
-                wav, clips = work / f'wav{take}', work / f'm4a{take}'
-                clips.mkdir(parents=True, exist_ok=True)
-                for engine in ('kokoro', 'chatterbox'):
-                    mine = [{**j, 'take': j.get('first', 0) + take} for j in todo if j['engine'] == engine]
-                    if not mine:
-                        continue
-                    jf = work / f'{engine}{take}.json'
-                    save_json(jf, mine)
-                    print(f'  take {take}: {len(mine)} with {engine}...', flush=True)
-                    run_env(env_python(tts, ENVIRONMENTS[engine], a.python), 'say.py', ['--engine', engine, '--jobs', jf, '--out', wav], tts)
-                for j in todo:
-                    encode_clip(wav / f'{j["id"]}.wav', clips / f'{j["id"]}.m4a', ffmpeg, ffprobe)
-                hf = work / f'hear{take}.json'
-                save_json(work / f'hearjobs{take}.json', [{'id': j['id'], 'text': j['text'], 'take': take} for j in todo])
-                run_env(env_python(tts, ENVIRONMENTS['hear'], a.python), 'hear.py',
-                        ['--jobs', work / f'hearjobs{take}.json', '--clips', clips, '--out', hf, '--ffmpeg', ffmpeg, '--ffprobe', ffprobe], tts)
-                heard = load_json(hf)
-                left = []
-                for j in todo:
-                    res = heard.get(j['id'])
-                    if j['id'] not in best or take_score(res) < take_score(best[j['id']]['res']):
-                        best[j['id']] = {'res': res, 'file': clips / f'{j["id"]}.m4a', 'take': take}
-                    best[j['id']]['takes'] = j.get('first', 0) + take
-                    if not take_good(res):
-                        left.append(j)
-                if left and take < MAX_TAKES:
-                    print(f'  {len(left)} clip(s) heard wrong; another take: ' + '; '.join(f'{j["line"]} ({j["narrator"]}): "{(heard.get(j["id"]) or {}).get("heard", "")}"' for j in left[:4]), flush=True)
-                todo = left
+            voice_takes(list(some), tts, a, ffmpeg, ffprobe, work, best)
             # Into the topic's folder, for every line that says it: voice/<scene>/<line>.<narrator>.<key>.m4a
             for j in some:
                 b = best.get(j['id'])
@@ -2129,6 +2206,12 @@ def cmd_voice(a):
     flagged = sum(1 for b in best.values() if not take_good(b['res']))
     weight = sum(f.stat().st_size for f in (folder / 'voice').rglob('*.m4a')) if (folder / 'voice').exists() else 0
     print(f'Voiced: {made} made ({retakes} needed another take, {flagged} still heard wrong), {kept} kept. {weight / 1024:.0f} KB of voice in {folder.name}/voice.')
+    # and each narrator's "Hello, I'm ..." sample, into the data repo, once
+    root = samples_root(folder, a)
+    if root is not None:
+        make_samples(root, a, tts, ffmpeg, ffprobe)
+    else:
+        print('Narrator samples: this topic isn\'t in a data repo, so they weren\'t made here: run primer samples (or pass --data).')
 
 
 # ---------- sending
@@ -2248,7 +2331,11 @@ def cmd_send(a):
                 print(f'  {folder_name}: {weight / 1024:.0f} KB')
     write_index(data)
     message = a.message or f'Topic: {topic["title"]} ({path_words(topic)})'
-    publish(data, message, [dest, data / 'index.json'], push=not a.no_push)
+    # the narrators' samples, made by voice or samples, go up with any topic
+    extra = [data / 'narrators'] if (data / 'narrators').is_dir() else []
+    if not (data / SAMPLES_FILE).exists():
+        print('  note: there are no narrator samples in the data clone yet: run primer samples, so a narrator can be heard before it\'s chosen.')
+    publish(data, message, [dest, data / 'index.json', *extra], push=not a.no_push)
 
 
 # ---------- reading progress
@@ -2441,6 +2528,13 @@ def main():
     s.add_argument('--ffmpeg', help='ffmpeg, if it isn\'t on PATH')
     s.add_argument('--ffprobe', help='ffprobe, if it isn\'t on PATH')
     s.set_defaults(fn=cmd_voice)
+    s = sub.add_parser('samples', help='make each narrator\'s "Hello, I\'m ..." sample in the data clone, which the phone keeps always')
+    s.add_argument('--again', action='store_true', help='make them again')
+    s.add_argument('--tts', help='the folder holding the voice environments: kokoro, chatterbox and check')
+    s.add_argument('--python', help=argparse.SUPPRESS)
+    s.add_argument('--ffmpeg', help='ffmpeg, if it isn\'t on PATH')
+    s.add_argument('--ffprobe', help='ffprobe, if it isn\'t on PATH')
+    s.set_defaults(fn=cmd_samples)
     s = sub.add_parser('send', help='check a topic, shrink its pictures, put it in the data clone, commit and push')
     s.add_argument('topic', help='the topic\'s folder')
     s.add_argument('--message')

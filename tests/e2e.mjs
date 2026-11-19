@@ -739,6 +739,26 @@ try {
   await f.tap('[data-pref=effects]');
   await sleep(100);
   ok((await ev(`__primer.store.get('prefs')`)).effects === false, 'and off again is kept');
+  // Animation sounds: their own switch, on by default; Effects is the press sounds only (ruled 2026-11-19)
+  ok(await ev(`document.querySelector('[data-pref=animSounds]').getAttribute('aria-pressed') === 'true'`) && (await ev(`__primer.feel.getPrefs()`)).animSounds === true, 'Animation sounds have their own switch, on from the start');
+  const rowsNow = await ev(`[...document.querySelectorAll('.settings .srow > p')].slice(0, 5).map(p => p.textContent)`);
+  ok(JSON.stringify(rowsNow) === '["Voice","Captions","Animation sounds","Effects","Music"]', 'beside Voice and Captions, above Effects', rowsNow);
+  await f.tap('[data-pref=animSounds]');
+  await sleep(100);
+  ok((await ev(`__primer.store.get('prefs')`)).animSounds === false && (await ev(`__primer.feel.getPrefs()`)).animSounds === false && (await ev(`__primer.feel.getPrefs()`)).effects === false, 'turning them off is kept, and leaves Effects alone');
+  ok((await ev(`(async()=>new (await import('/primer/js/sfx.js')).Effects().on())()`)) === false, "an animation's sound effects follow it");
+  await f.tap('[data-pref=animSounds]');
+  await sleep(100);
+  ok((await ev(`__primer.store.get('prefs')`)).animSounds === true && (await ev(`(async()=>new (await import('/primer/js/sfx.js')).Effects().on())()`)) === true && (await ev(`__primer.feel.sound('right')`)) === false, 'back on, they sound, while the press sounds stay off with Effects');
+  // the hidden screen panel: the version tapped five times
+  for (let i = 0; i < 5; i++) { await f.tap('#version'); await sleep(90); }
+  await sleep(400);
+  const panel = await ev(`[...document.querySelectorAll('#screenpanel .drow')].map(r => r.innerText.replace(/\\s+/g, ' ').trim())`);
+  ok(panel.length >= 10 && ['innerHeight', 'outerHeight', 'screen.height', 'visualViewport height', 'document height', 'safe area top / bottom', 'standalone', 'devicePixelRatio'].every(k => panel.some(r => r.startsWith(k))) && panel.some(r => r.startsWith('innerHeight 896')),
+    'tapping the version five times shows what the phone reports about its screen, to screenshot if a band shows', panel);
+  await shot('14b-screen-panel');
+  await f.tap('.scrim');
+  await sleep(250);
 
   console.log('Sound: off by default, and the phone\'s sound left alone');
   // Prefs saved by 0.1 always held effects: true, chosen or not: there's no telling, so it goes off.
@@ -1187,7 +1207,8 @@ try {
     point: [[0, 0], 'Here'], marker: [[-40, 15], 'storm', 'Storm'], arc: [[-0.1, 51.5], [-118.2, 34]], track: [[[-25, 12], [-45, 15], [-62, 21]], 0.5, 'storm', 0.3],
     clear: [], reveal: [26.5], mark: ['right'], lock: [], reset: [],
     camera: [[-45, 18], 2.4, 0.6, 10, 0.2], follow: [true, 0.5], drift: [8, 0.2], grow: [1.4, 0.2], label: ['Atlantic Ocean'], parallel: [5, '5° N'],
-    flow: [[[-20, 18], [-35, 14], [-50, 16]], 'cyan', 0.3],
+    flow: [[[-20, 18], [-35, 14], [-50, 16]], 'cyan', 0.3, 'Trade winds'], spiral: [[-45, 20], 1, 0.3, 9], style: ['warmth', 0.2], key: [true],
+    carry: [1, 0.2], drops: [1, 0.2], cooling: [1, 0.2], days: [1, 0.2], gauge: [27, '°C', 0.2],
     sun: [1, 0.2], warm: [0.8, 0.2], vapour: [1, 0.2], rise: [1.5, 0.2], cloud: [0.9, 0.2], release: [1, 0.2], inflow: [1, 0.2], rain: [0.5, 0.2], view: ['cloud', 0.2], tag: ['cloud', 'Cloud'],
   };
   for (const name of parts) {
@@ -1203,6 +1224,27 @@ try {
       ok(res.every(x => !x.includes(':')), `${name}${projection ? ` (${projection})` : ''}: every call in its description works`, res);
       await ev(`__h.remove();document.getElementById('bench').remove()`);
     }
+  }
+
+  // The tools that explain a mechanism: air spiralling in, the way the Earth bends it; old winds cleared alone;
+  // a change of style; a key; a dotted aim beside a bent path
+  {
+    await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px';document.body.append(d);window.__h=await __primer.parts.mount('globe',d,{style:'day',spin:'locked',tap:'none',view:[-40,10],zoom:1.6},{motion:'soft'});return true})()`);
+    await ev(`__h.run(['spiral',[-45,22],0,0,9]);__h.run(['spiral',[-30,0.5],1,0,9]);__h.run(['spiral',[60,-20],0,0,9]);__h.run(['flow',[[-20,18],[-35,14]],'cyan',0,'Wind']);__h.run(['arc',[-28,46],[-28,8],'white','Aimed','dotted']);true`);
+    await ev(`__h.run(['spiral',[-45,22],1,0.6]);true`);
+    await sleep(900);
+    let dbg = await ev('__h.debug()');
+    ok(dbg.spirals.length === 3 && Math.abs(dbg.spirals[0].bend - 1) < 1e-6, 'a spiral called again at its place glides to the new bend', dbg.spirals);
+    const arms = await ev(`(async()=>{const L=await import('/primer/parts/map/layers.js');const turn=(at,b)=>{const a=L.spiralArms({at,size:9},b)[0];const ang=p=>Math.atan2(p[1]-at[1],(p[0]-at[0])*Math.cos(at[1]*Math.PI/180));let d=ang(a.at(-1))-ang(a[0]);return Math.round(d*100)/100};return {north:turn([-45,22],1),south:turn([60,-20],1),equator:turn([-30,0.5],1),aimed:turn([-45,22],0)}})()`);
+    ok(arms.north > 1 && arms.south < -1 && Math.abs(arms.equator) < 0.1 && arms.aimed === 0, 'bent, air swirls counterclockwise in the north, clockwise in the south, and not at all on the equator; aimed, it goes straight in', arms);
+    await ev(`__h.run(['clear',0,'flows']);true`);
+    dbg = await ev('__h.debug()');
+    ok(dbg.routes.length === 1 && dbg.routes[0].kind === 'arc' && dbg.spirals.length === 3, 'clearing the flows leaves the rest', dbg.routes);
+    await ev(`__h.run(['style','warmth',0.3]);__h.run(['key',true]);true`);
+    await sleep(500);
+    dbg = await ev('__h.debug()');
+    ok(dbg.style === 'warmth' && dbg.key, 'the style changes, fading, and a key to its colours shows', [dbg.style, dbg.key]);
+    await ev(`__h.remove();document.getElementById('bench').remove()`);
   }
 
   // A bench for the map, as a lesson would put it on screen: by the part's name (map, or the globe preset).
@@ -1435,7 +1477,7 @@ try {
         await openNode(node.id);
         const first = await scene();
         ok(first.narrators.every(n => n === narrator), `${node.id}: every line has its clip, in the topic's narrator`, first.narrators);
-        ok(first.total >= 55 && first.total <= 100, `${node.id}: it runs ${first.total.toFixed(0)} seconds in ${narrator}'s voice`, first.total);
+        ok(first.total >= 55 && first.total <= 150, `${node.id}: it runs ${first.total.toFixed(0)} seconds in ${narrator}'s voice`, first.total);
         ok(await waitFor(`__primer.run.scene.state === 'playing'`, 4000), `${node.id}: it starts by itself, full screen`);
         await shot(`21-pilot-${node.id}-playing`);
         if (!played) {
@@ -2108,7 +2150,7 @@ try {
   await sleep(400);
   ok(JSON.stringify(await ev(`[...document.querySelectorAll('.node')].map(n=>n.dataset.kind+':'+n.className.split(' ')[1])`)) === '["animation:now","lesson:todo"]', 'an animation with its scene file is a node to play, like a lesson');
   ok((await ev(`__primer.store.files.all().then(a=>a.filter(f=>f.path.includes('/voice/')&&f.path.endsWith('.bella.'+f.path.split('.').at(-2)+'.m4a')&&f.data instanceof Blob).length)`)) === 10
-    && (await ev(`__primer.store.files.paths().then(a=>a.filter(p=>p.endsWith('.m4a')).length)`)) === 10, "its clips, and the lesson's, came down with the media, to play offline: the narrator's in use only (Bella's, 10 of 20)");
+    && (await ev(`__primer.store.files.paths().then(a=>a.filter(p=>p.endsWith('.m4a')&&!p.startsWith('narrators/')).length)`)) === 10, "its clips, and the lesson's, came down with the media, to play offline: the narrator's in use only (Bella's, 10 of 20)");
   await openNode('engine');
   let d = await scene();
   const frame = await ev(`(()=>{const s=document.querySelector('.sstage').getBoundingClientRect();return {top:s.top,bottom:s.bottom,w:s.width,video:!!document.querySelector('.video .scene[data-mode=video]'),bar:!!document.querySelector('.lfoot, .ltop, .lbar'),tabs:getComputedStyle(document.querySelector('.tabs')).display}})()`);
@@ -2448,12 +2490,12 @@ try {
         { id: 'two', text: 'Now we cut to the sea and the sky, and the sea warms.', do: [
           { at: 'cut', call: ['shot.cut', 'section', 'push'] },
           { at: 'warms', call: ['section.warm', 1, 0.5] }] },
-        { id: 'three', text: 'Both at once, one above the other.', do: [{ at: 'Both', call: ['shot.split', 'globe', 'section'] }] },
+        { id: 'three', text: 'Both at once, one above the other.', do: [{ at: 'Both', call: ['shot.split', 'globe', 'section'] }, { at: 'once', call: ['shot.title', 'Two views'] }] },
         { id: 'four', text: 'Then a small window over the sea.', do: [{ at: 'Then', call: ['shot.cut', 'section', 'fade'] }, { at: 'window', call: ['shot.inset', 'globe', 'top-right'] }] },
         { id: 'five', text: 'The window goes, and a quiet chime.', do: [{ at: 'window', call: ['shot.inset', 'none'] }, { at: 'chime', sound: 'chime' }] },
       ],
     };
-    await ev(`__primer.app.setPref('effects', true); true`);
+    await ev(`__primer.app.setPref('effects', false); __primer.app.setPref('animSounds', true); true`);
     await ev(`(async()=>{const P=__primer;const file=P.data.sceneLesson(${JSON.stringify(directed)},'directed','scene-topic');const node={kind:'animation',id:'directed',title:'A directed scene',file};
       const {playVideo}=await import('/primer/js/screens/video.js');window.__dv=await playVideo(P.app,{id:'scene-topic',title:'T',narrator:'bella',path:[node]},node,{record:()=>{},media:p=>p,voice:{on:()=>false},captions:{on:()=>true},onLeave:()=>{},onNext:()=>{}});return true})()`);
     const dv = () => ev('__dv.scene.debug()');
@@ -2461,7 +2503,7 @@ try {
     ok(JSON.stringify(await slots()) === '["globe:full","section:off"]', 'a scene with shots opens on its first part, full; the other waits, hidden', await slots());
     ok(await ev(`document.documentElement.classList.contains('vid') && getComputedStyle(document.documentElement).backgroundColor === 'rgb(9, 12, 43)'`), "while a video is open, the page's own ground is the video's, right to the bottom of the screen");
     await waitFor(`__dv.scene.debug().line >= 1`, 12000);
-    ok((await dv()).effects.some(e => e.name === 'pop' && e.played), 'an action makes its sound as it happens (Effects on)', (await dv()).effects);
+    ok((await dv()).effects.some(e => e.name === 'pop' && e.played), 'an action makes its sound as it happens (Animation sounds on, Effects off)', (await dv()).effects);
     await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
     await sleep(900);
     let d2 = await dv();
@@ -2469,6 +2511,7 @@ try {
     await waitFor(`__dv.scene.debug().shots.layout.globe === 'top'`, 8000);
     await sleep(900);
     const halves = await ev(`[...document.querySelectorAll('.video .spart')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom), Math.round(r.width)]; })`);
+    ok((await dv()).shots.title === 'Two views' && await ev(`(()=>{const e=document.querySelector('.video .stitlecard');const r=e&&e.getBoundingClientRect();return !!e&&e.textContent==='Two views'&&r.top>=${SAT}&&Number(getComputedStyle(e).opacity)>0.5})()`), 'a title card lays a few big words over the top of the picture, clear of the status bar', (await dv()).shots);
     ok(halves[0][0] === 0 && Math.abs(halves[0][1] - H / 2) < 4 && Math.abs(halves[1][0] - H / 2) < 4 && halves[1][1] === H && halves.every(x => x[2] === W), 'a split shows both, one above the other, each half the screen', halves);
     ok(await ev(`(()=>{const c=document.querySelector('.video .spart[data-part=globe] canvas');return Math.abs(c.width/c.height - c.clientWidth/c.clientHeight) < 0.02})()`), "the globe's picture is drawn for its new box, never stretched");
     await shot('52-shot-split');
@@ -2487,22 +2530,37 @@ try {
     await ev(`__dv.scene.seekTo(0.2, false)`);
     await sleep(200);
     ok(JSON.stringify(await slots()) === '["globe:full","section:off"]', 'and back at the start, the opening shot', await slots());
-    // with Effects off, nothing sounds
-    await ev(`__primer.app.setPref('effects', false); __dv.scene.sfx.heard.length = 0; __dv.scene.seekTo(__dv.scene.starts[1], true)`);
+    // with Animation sounds off, nothing sounds, whatever Effects is
+    await ev(`__primer.app.setPref('animSounds', false); __primer.app.setPref('effects', true); __dv.scene.sfx.heard.length = 0; __dv.scene.seekTo(__dv.scene.starts[1], true)`);
     await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
-    ok((await dv()).effects.every(e => !e.played), 'with Effects off, no sound plays', (await dv()).effects);
+    ok((await dv()).effects.length && (await dv()).effects.every(e => !e.played), 'with Animation sounds off, no sound plays, even with Effects on', (await dv()).effects);
+    await ev(`__primer.app.setPref('animSounds', true); __primer.app.setPref('effects', false); true`);
+    // the full-bleed layout: the app's box is the window, and the video reaches the bottom of the screen
+    const bottom = await ev(`(()=>{const r=e=>document.querySelector(e).getBoundingClientRect();return {app:[r('#app').top,r('#app').bottom],video:[r('.video').top,r('.video').bottom],inner:innerHeight,doc:document.documentElement.clientHeight,
+      appStyle:getComputedStyle(document.querySelector('#app')).height, apph:getComputedStyle(document.documentElement).getPropertyValue('--apph').trim()}})()`);
+    ok(bottom.app[0] === 0 && bottom.app[1] === H && bottom.video[1] === H && bottom.inner === H && bottom.apph === '', 'the app is fixed to the window\'s edges, with no height worked out from the screen, and the video reaches its bottom', bottom);
+    const rows = await b.send('Page.captureScreenshot', { format: 'png' });
+    const px = pixels(rows.data), at = (x, y) => { const i = (y * px.w + x) * px.bpp; return [px.out[i], px.out[i + 1], px.out[i + 2]]; };
+    const foot = [2, 120, 207, 300, 411].map(x => at(x, px.h - 1)), lighter = foot.filter(c => c[0] > 40 || c[1] > 45 || c[2] > 110);
+    ok(!lighter.length, `at the simulated insets (${SAT} top, ${SAB} bottom), no lighter band along the bottom under a video: the bottom row is the picture's own dark`, foot);
+    await shot('53b-video-bottom');
     await ev(`__dv.remove()`);
     ok(await ev(`!document.documentElement.classList.contains('vid')`), 'closed, the page has its own ground back');
-    // the app reaches the bottom of the screen when installed, even when the page is laid out short
-    const fit = await ev(`(()=>{const root=document.createElement('div');const win=(h)=>({navigator:{standalone:true},matchMedia:()=>({matches:true}),innerHeight:h,innerWidth:414,screen:{height:896,width:414}});
-      const a=__primer.fitScreen(win(848),root,true),va=root.style.getPropertyValue('--apph');const b=__primer.fitScreen(win(896),root,true),vb=root.style.getPropertyValue('--apph');const c=__primer.fitScreen(win(848),root,false);return {a,va,b,vb,c}})()`);
-    ok(fit.a && fit.va === '896px' && !fit.b && fit.vb === '' && !fit.c, "installed on an iPhone, a page laid out a status bar short takes the screen's whole height (no band at the bottom)", fit);
+    // what's under the app's box is the app's dark, so an edge it doesn't cover can't show a lighter band
+    const grounds = await ev(`(()=>{const bg=()=>getComputedStyle(document.documentElement).backgroundColor+'|'+getComputedStyle(document.body).backgroundColor;const tabs=bg();document.documentElement.classList.add('bare');const bare=bg();document.documentElement.classList.remove('bare');return {tabs,bare}})()`);
+    ok(grounds.tabs === 'rgb(15, 20, 52)|rgb(15, 20, 52)' && grounds.bare === 'rgb(20, 26, 60)|rgb(20, 26, 60)', "the page's own ground is the tab bar's dark under the tabs, and the screen's ground without them", grounds);
+    const meta = await ev(`({ vp: document.querySelector('meta[name=viewport]').content, bar: document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content })`);
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'manifest.webmanifest'), 'utf8'));
+    ok(meta.vp.includes('viewport-fit=cover') && meta.bar === 'black-translucent' && manifest.display === 'standalone' && manifest.background_color === manifest.theme_color, 'laid out under the status bar and the home bar, installed standalone, the splash and bars the app\'s colour', [meta, manifest.display, manifest.background_color]);
   }
 
   console.log('A narrator per subject, and only its voice on the phone');
   // the clips on the phone, by narrator
   const voiceOnPhone = () => ev(`__primer.store.files.paths().then(a => { const n = {}; for (const p of a) { const c = __primer.sync.clipOf(p); if (c) n[c.narrator] = (n[c.narrator] || 0) + 1; } return JSON.stringify(n); })`);
   ok((await voiceOnPhone()) === '{"bella":10}', "only the narrator in use has its clips on the phone: Bella's, the topic's own, a quarter of its voice", await voiceOnPhone());
+  // every narrator's "Hello, I'm ..." sample comes down and stays, whichever narrator is in use
+  const samplesOnPhone = () => ev(`__primer.store.files.paths().then(a => a.filter(p => p.startsWith('narrators/') && p.endsWith('.m4a')).map(p => p.replace(/[0-9a-f]{8}\.m4a$/, '')).sort())`);
+  ok(JSON.stringify(await samplesOnPhone()) === '["narrators/bella.","narrators/chatterbox-a.","narrators/george.","narrators/heart."]', "each narrator's sample is on the phone, all four, not only the one in use", await samplesOnPhone());
   await f.tap('.tab[data-tab=profile]');
   await sleep(400);
   const narratorRow = () => ev(`(()=>{const r=document.querySelector('#narrators .srow');return r?r.querySelector('p').textContent+' / '+r.querySelector('button').textContent:null})()`);
@@ -2512,12 +2570,18 @@ try {
   await sleep(400);
   const picks = await ev(`[...document.querySelectorAll('.sheet [data-pick]')].map(b=>b.innerText.replace(/\\s+/g,' ').trim())`);
   ok(picks.length === 4 && picks[0].startsWith('Heart') && picks.some(p => p.startsWith('Bella') && p.includes("own")) && picks.some(p => p.startsWith('Chatterbox A')), 'the four narrators, the topic\'s own marked', picks);
+  ok((await ev(`document.querySelectorAll('.sheet [data-hear]:not([disabled])').length`)) === 4, 'each with a small play button beside it, its sample on the phone');
   await shot('41-narrators');
+  await f.tap('.sheet [data-hear=heart]');
+  await sleep(200);
+  ok(JSON.stringify((await ev('__primer.app.heardSamples || []')).at(-1)) === '{"id":"heart","played":true}' && (await ev(`__primer.store.get('prefs')`)).narrators['Test science'] === undefined, "the play button plays Heart's sample without choosing her", await ev('__primer.app.heardSamples || []'));
   await f.tap('.sheet [data-pick=george]');
   await sleep(150);
   ok((await ev(`__primer.store.get('prefs')`)).narrators['Test science'] === 'george' && (await narratorRow()) === 'Test science / George', 'choosing George is kept, for the whole subject');
   ok(await waitFor(`(document.querySelector('#narratornote')||{}).textContent === "George's voice is on this phone."`, 15000), "his voice comes down then, and it says so", await narratorNote());
   ok((await voiceOnPhone()) === '{"george":10}', "and Bella's clips go, as no subject uses her now", await voiceOnPhone());
+  ok(JSON.stringify(await samplesOnPhone()) === '["narrators/bella.","narrators/chatterbox-a.","narrators/george.","narrators/heart."]', "while every narrator's sample stays, whichever is in use", await samplesOnPhone());
+  ok(JSON.stringify((await ev('__primer.app.heardSamples || []')).at(-1)) === '{"id":"george","played":true}', 'choosing George played his sample', await ev('__primer.app.heardSamples || []'));
   await shot('41b-narrator-fetched');
   await f.tap('.tab[data-tab=learn]');
   await sleep(300);
