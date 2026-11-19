@@ -97,6 +97,8 @@ const FILES = [
   'sounds/wind.m4a',
   'sounds/fizz.m4a',
   'sounds/rumble.m4a',
+  'sounds/crack.m4a',
+  'sounds/shatter.m4a',
 ];
 
 self.addEventListener('install', e => {

@@ -1668,8 +1668,8 @@ try {
     }
     await live();
     let d = await dbg();
-    ok(d.combo === 3 && d.chip.tier === 'plain' && (await ev(`document.querySelector('.combo').classList.contains('on') && document.querySelector('.combo').innerText.trim() === '×3' && document.querySelectorAll('.cpips i.on').length === 3`)),
-      'three right in a row: the chip counts ×3, still plain (a tier starts at five), with three pips', d);
+    ok(d.combo === 3 && d.chip.tier === 'wood' && (await ev(`document.querySelector('.combo').classList.contains('on') && document.querySelector('.combo').innerText.trim() === '×3' && document.querySelectorAll('.cpips i.on').length === 3`)),
+      'three right in a row: the chip counts ×3 and has reached wood, the first tier, with three pips', d);
     await shot2('41-review-question-combo');
     const missed = d.step;
     asked.push(missed);
@@ -1767,43 +1767,60 @@ try {
     console.log('The combo comes alive: a tier at each threshold, a miss drops it, reduced motion stills it');
     {
       const TIERS = await ev(`import('/primer/js/combo.js').then(m => m.LADDER.map(t => ({ id: t.id, at: t.at, shields: t.shields })))`);
-      const want = { 0: 'plain', 4: 'plain', 5: 'bronze', 9: 'bronze', 10: 'silver', 14: 'silver', 15: 'gold', 24: 'gold', 25: 'crystal', 39: 'crystal', 40: 'diamond', 59: 'diamond', 60: 'aurora', 999: 'aurora' };
+      // the 23 kept (2026-11-19), low to high above plain, their gaps growing three tiers at a time
+      const KEPT = ['wood', 'tin', 'copper', 'silver', 'gold', 'platinum', 'emerald', 'sapphire', 'crystal', 'ruby', 'diamond', 'obsidian', 'opal', 'titanium',
+        'aurora', 'nebula', 'celestial', 'eternal', 'supernova', 'eclipse', 'singularity', 'multiverse', 'void'];
+      const AT = [3, 6, 9, 13, 17, 21, 26, 31, 36, 42, 48, 54, 62, 70, 78, 88, 98, 108, 121, 134, 147, 163, 179];
+      const want = { 0: 'plain', 2: 'plain', 3: 'wood', 5: 'wood', 6: 'tin', 9: 'copper', 12: 'copper', 13: 'silver', 17: 'gold', 20: 'gold', 21: 'platinum', 35: 'sapphire', 36: 'crystal',
+        48: 'diamond', 77: 'titanium', 78: 'aurora', 178: 'multiverse', 179: 'void', 999: 'void' };
       const got = {};
       for (const n of Object.keys(want)) got[n] = await comboTier(n);
-      ok(JSON.stringify(TIERS.map(t => `${t.id}@${t.at}`)) === '["plain@0","bronze@5","silver@10","gold@15","crystal@25","diamond@40","aurora@60"]' && Object.entries(want).every(([n, id]) => got[n] === id),
-        'the tiers in use, in one table: plain, then bronze at 5, silver at 10, gold at 15, crystal at 25, diamond at 40 and aurora at 60', { TIERS, got });
-      ok(JSON.stringify(TIERS.map(t => t.shields)) === '[0,1,1,1,2,2,2]', 'their shields, in the same table: none on plain, one from bronze to gold, two from crystal up', TIERS);
-      // the board's candidates: in the same table, not in use, each drawn by the shared parts with its own colours
-      const board = await ev(`import('/primer/js/combo.js').then(m => {
+      const gaps = AT.map((a, i) => a - (i ? AT[i - 1] : 0));
+      ok(JSON.stringify(TIERS.map(t => t.id)) === JSON.stringify(['plain', ...KEPT]) && JSON.stringify(TIERS.map(t => t.at)) === JSON.stringify([0, ...AT])
+        && gaps.every((g, i) => !i || g >= gaps[i - 1]) && Object.entries(want).every(([n, id]) => got[n] === id),
+        `the 23 tiers kept, in one table, in their order: plain, then wood at 3 up to void at 179, every gap at least the one before (${gaps.join(', ')})`, { TIERS, got });
+      ok(JSON.stringify(TIERS.map(t => t.shields)) === JSON.stringify([0, 0, 0, 1, 1, 1, ...Array(18).fill(2)]),
+        'their shields, in the same table: none on plain, wood and tin, one from copper to gold, two from platinum up', TIERS.map(t => `${t.id}:${t.shields}`));
+      // the ones not kept: drawn the same way, never reached by a count
+      const spare = await ev(`import('/primer/js/combo.js').then(m => {
         const h = document.createElement('div'); h.className = 'rtop'; document.body.append(h);
-        const out = m.CANDIDATES.map(t => { const c = new m.Combo(h, { count: t.sample, look: t.id }); const d = c.debug();
+        const out = m.SPARE.map(t => { const c = new m.Combo(h, { count: 20, look: t.id }); const d = c.debug();
           const pip = getComputedStyle(c.el).getPropertyValue('--c-pip').trim(), face = !!c.el.querySelector('.cbody > .cface, .cbody > .cflow');
-          c.remove(); return { id: t.id, at: t.at, name: t.name, tier: d.tier, text: d.text, pip, face, shields: t.shields }; });
+          c.remove(); return { id: t.id, at: t.at, tier: d.tier, pip, face }; });
+        const never = [0, 3, 5, 10, 15, 25, 40, 60, 90, 150, 300, 999].every(n => !m.SPARE.some(t => t.id === m.tierOf(n).id));
+        h.remove(); return { out, never } })`);
+      ok(spare.out.length === 8 && spare.out.every(t => t.at === null && t.tier === t.id && t.pip && t.face) && spare.never && spare.out.some(t => t.id === 'bronze') && spare.out.some(t => t.id === 'omnipotent'),
+        `the ${spare.out.length} not kept (bronze, omnipotent and the rest) are set aside, still drawn with their own looks, and never reached by a count`, spare);
+      // alike tiers differ by more than colour: with every colour taken out, no two in a group draw the same
+      const shapes = await ev(`import('/primer/js/combo.js').then(m => {
+        const h = document.createElement('div'); h.className = 'rtop'; document.body.append(h);
+        const sig = id => { const c = new m.Combo(h, { count: 20, look: id, pips: false, still: false });
+          const s = [...c.el.querySelectorAll('*')].filter(e => !e.closest('.cnum')).map(e => e.tagName + '.' + (e.getAttribute('class') || '') + (e.getAttribute('d') ? ':' + e.getAttribute('d').replace(/[^MLCQAZHV]/g, '').length : '')).join('|');
+          c.remove(); return s; };
+        const groups = { metals: ['tin', 'copper', 'silver', 'gold', 'platinum', 'titanium'], gems: ['emerald', 'sapphire', 'crystal', 'ruby', 'diamond'], stones: ['obsidian', 'opal'],
+          sky: ['aurora', 'nebula', 'celestial', 'eternal'], far: ['supernova', 'eclipse', 'singularity', 'multiverse', 'void'] };
+        const out = {}; for (const [g, ids] of Object.entries(groups)) { const sigs = ids.map(sig); out[g] = new Set(sigs).size === ids.length; }
         h.remove(); return out })`);
-      ok(board.length >= 15 && board.length <= 25 && board.every(t => t.at === null && t.name && t.tier === t.id && t.pip && t.face && /^×\d+$/.test(t.text) && t.shields >= 0)
-        && board.some(t => t.id === 'wood') && board.some(t => t.id === 'omnipotent') && new Set(board.map(t => t.id)).size === board.length,
-        `${board.length} candidate tiers for the board (wood to omnipotent and past it), none in use yet, each drawn with its own colours`, board.map(t => `${t.id}:${t.pip}`));
-      ok(await ev(`import('/primer/js/combo.js').then(m => [m.tierOf(5).id, m.tierOf(3).id, m.tierOf(100).id].join())`) === 'bronze,plain,aurora', 'a candidate never shows by count: only when the board asks for it by name');
+      ok(Object.values(shapes).every(Boolean), 'alike tiers are drawn differently, not just coloured differently: metals, gems, dark stones, sky and the far end each have no two the same once colour is taken out', shapes);
       // the rule on its own: data plus one mechanism
       const rule = await ev(`import('/primer/js/combo.js').then(m => { const a = m.afterAnswer; return [
         a({ n: 17, cracks: 0 }, 'wrong'), a({ n: 17, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 2 }, 'wrong'),
-        a({ n: 23, cracks: 1 }, 'right'), a({ n: 24, cracks: 1 }, 'right'), a({ n: 3, cracks: 0 }, 'wrong'), a({ n: 12, cracks: 1 }, 'close'), a({ n: 0, cracks: 0 }, 'wrong')] })`);
+        a({ n: 23, cracks: 1 }, 'right'), a({ n: 25, cracks: 1 }, 'right'), a({ n: 7, cracks: 0 }, 'wrong'), a({ n: 12, cracks: 1 }, 'close'), a({ n: 0, cracks: 0 }, 'wrong')] })`);
       ok(JSON.stringify(rule) === JSON.stringify([{ n: 17, cracks: 1, event: 'crack' }, { n: 0, cracks: 0, event: 'shatter' }, { n: 30, cracks: 2, event: 'crack' }, { n: 0, cracks: 0, event: 'shatter' },
-        { n: 24, cracks: 1, event: null }, { n: 25, cracks: 0, event: 'rise' }, { n: 0, cracks: 0, event: 'shatter' }, { n: 12, cracks: 1, event: null }, { n: 0, cracks: 0, event: null }]),
+        { n: 24, cracks: 1, event: null }, { n: 26, cracks: 0, event: 'rise' }, { n: 0, cracks: 0, event: 'shatter' }, { n: 12, cracks: 1, event: null }, { n: 0, cracks: 0, event: null }]),
         'the rule: a miss with a shield left cracks and holds the count, with none it shatters to 0; right answers keep the cracks, a new tier mends them; close holds', rule);
-      // bronze lost its thin line; silver keeps its own
-      const lines = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h);
-        const n = id => { const c = new m.Combo(h, { count: 5, look: id, pips: false }); const k = c.el.querySelectorAll('.cface path[stroke-width="1.6"]').length; c.remove(); return k };
-        const r = { bronze: n('bronze'), silver: n('silver') }; h.remove(); return r })`);
-      ok(lines.bronze === 0 && lines.silver === 1, 'bronze has no thin line along its band any more (silver keeps its)', lines);
       // the chip is one part of its own: anything can show one
-      const alone = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h); const c = new m.Combo(h, { count: 40, pips: false }); const d = c.debug(); c.remove(); h.remove(); return d })`);
-      ok(alone.tier === 'diamond' && alone.text === '×40' && alone.idle && alone.pips === null, 'the chip stands alone: drawn at 40 on a bare element, it is diamond, ×40, already idling', alone);
+      const alone = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h); const c = new m.Combo(h, { count: 48, pips: false }); const d = c.debug(); c.remove(); h.remove(); return d })`);
+      ok(alone.tier === 'diamond' && alone.text === '×48' && alone.idle && alone.pips === null, 'the chip stands alone: drawn at 48 on a bare element, it is diamond, ×48, already idling', alone);
+      // the crack and the shatter are samples made by tools/make-sounds.py, which the app decodes and plays
+      const samples = await ev(`Promise.all(['crack', 'shatter'].map(n => __primer.feel.renderSound(n, 1.5).then(s => s ? { n, peak: s.reduce((a, v) => Math.max(a, Math.abs(v)), 0), heard: s.filter(v => Math.abs(v) > 0.01).length / 48000 } : null)))`);
+      ok(samples.every(x => x && x.peak > 0.05 && x.peak < 0.6 && x.heard > 0.03 && x.heard < 1.4), 'the crack and the shatter decode from their files and sound, under a soft peak', samples);
       await f.tap('.review [data-go=review]');
       await live();
       let c0 = (await dbg()).chip;
       ok(c0.tier === 'plain' && c0.text === '×0' && !c0.idle && c0.moving === 0, 'a run starts plain, at ×0, with nothing moving', c0);
       const chipNow = async () => (await dbg()).chip;
+      const STILL = ['wood', 'tin'];   // matte on purpose: nothing idles on them
       for (const t of TIERS.slice(1)) {
         await live();
         await ev(`__primer.run.setCombo(${t.at - 1}); true`);
@@ -1817,8 +1834,8 @@ try {
         const after = await chipNow();
         const ticked = (await ev('__primer.feel.tickCount()')) - ticks;
         ok(before.tier !== t.id && vd2.verdict === 'Right' && after.tier === t.id && after.text === `×${t.at}` && after.last && after.last.kind === 'rise' && after.last.tier === t.id && !after.last.still && ticked >= 2
-          && after.pips === 5 && after.pipTier.includes(`tier-${t.id}`) && after.idle && after.moving > 0 && !after.ghost && after.bits === 0,
-          `${t.at} in a row reaches ${t.id}: the chip swells into it with a burst and a tick (the Check press's and its own), its pips fill in its colour, and its idle motion starts`, { before: before.tier, mid, after, ticked });
+          && after.pips === (t.at % 5 || 5) && after.pipTier.includes(`tier-${t.id}`) && after.idle && (STILL.includes(t.id) ? after.moving === 0 : after.moving > 0) && !after.ghost && after.bits === 0,
+          `${t.at} in a row reaches ${t.id}: the chip swells into it with a burst and a tick (the Check press's and its own), its pips fill in its colour, and ${STILL.includes(t.id) ? 'it settles still (wood and tin have no idle motion)' : 'its idle motion starts'}`, { before: before.tier, mid, after, ticked });
         if (t.id === 'gold' || t.id === 'aurora') await shot2(`49-combo-${t.id}`);
         await press();
       }
@@ -1850,9 +1867,9 @@ try {
         && broken.cracks === 0 && broken.crackLines === 0 && broken.last.kind === 'shatter' && broken.pips === 0 && widths.every(w => w === w0) && broken.width === w0 && (await ev('__primer.feel.soundLog()')).includes('shatter'),
         `the next miss, with no shield left, shatters it: ${breaking.shards} pieces fly and fade, plain ×0 comes up under them, and the chip stays ${w0}px wide throughout`, { breaking, widths, broken });
       await press();
-      // right answers don't mend a crack; reaching a new tier does, and crystal has two shields
+      // right answers don't mend a crack; reaching a new tier does, and platinum has two shields
       await live();
-      await ev(`__primer.run.setCombo(23); true`);
+      await ev(`__primer.run.setCombo(19); true`);
       await answerStep(false); await press();
       const at23 = await chipNow();
       await press(); await live();
@@ -1862,8 +1879,8 @@ try {
       await answerStep(true); await press();
       await sleep(400);
       const at25 = await chipNow();
-      ok(at23.count === 23 && at23.cracks === 1 && at24.count === 24 && at24.cracks === 1 && at24.crackLines === 1 && at25.tier === 'crystal' && at25.count === 25 && at25.cracks === 0 && at25.crackLines === 0 && at25.shields === 2,
-        'a right answer leaves the crack (gold ×24 still cracked); reaching crystal at 25 mends it, with two shields', { at23, at24, at25 });
+      ok(at23.count === 19 && at23.cracks === 1 && at24.count === 20 && at24.cracks === 1 && at24.crackLines === 1 && at25.tier === 'platinum' && at25.count === 21 && at25.cracks === 0 && at25.crackLines === 0 && at25.shields === 2,
+        'a right answer leaves the crack (gold ×20 still cracked); reaching platinum at 21 mends it, with two shields', { at23, at24, at25 });
       await press(); await live();
       await answerStep(false); await press();
       const c1 = await chipNow();
@@ -1874,8 +1891,8 @@ try {
       await answerStep(false); await press();
       await sleep(900);
       const c3 = await chipNow();
-      ok(c1.count === 25 && c1.cracks === 1 && c1.crackLines === 1 && c2.count === 25 && c2.cracks === 2 && c2.crackLines === 2 && c2.shields === 0 && c3.count === 0 && c3.tier === 'plain' && c3.last.kind === 'shatter',
-        'crystal takes two misses, one crack each (×25 holds), and the third shatters it', { c1, c2, c3 });
+      ok(c1.count === 21 && c1.cracks === 1 && c1.crackLines === 1 && c2.count === 21 && c2.cracks === 2 && c2.crackLines === 2 && c2.shields === 0 && c3.count === 0 && c3.tier === 'plain' && c3.last.kind === 'shatter',
+        'platinum takes two misses, one crack each (×21 holds), and the third shatters it', { c1, c2, c3 });
       await press();
       // the width only ever grows, and smoothly: a chip on its own going from 9 to 10, then losing it
       const grow = await ev(`import('/primer/js/combo.js').then(async m => {
@@ -1898,14 +1915,14 @@ try {
         'and losing it never changes the width: cracked, then shattered to ×0, it stays 60px', { mid: grow.mid, down: [...new Set(grow.down)], after: grow.after });
       // reduced motion: the tiers change colour, cracks still show, and nothing idles, swells, knocks or flies
       await live();
-      await ev(`__primer.run.setCombo(42); true`);
+      await ev(`__primer.run.setCombo(48); true`);
       await sleep(200);
       const moving = (await chipNow()).moving;
       await b.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
       await sleep(300);
       const stilled = await chipNow();
       ok(moving > 0 && stilled.tier === 'diamond' && stilled.moving === 0, `with the system's reduce motion on, the diamond chip keeps its look and its idle motion stops (${moving} moving before, ${stilled.moving} after)`, { moving, stilled });
-      await ev(`__primer.run.setCombo(59); true`);
+      await ev(`__primer.run.setCombo(77); true`);
       await answerStep(true);
       await f.tap('.lfoot .btn');
       await sleep(80);
@@ -1919,7 +1936,7 @@ try {
       await f.tap('.lfoot .btn');
       await sleep(80);
       const stillCrack = await chipNow();
-      ok(stillCrack.count === 60 && stillCrack.cracks === 1 && stillCrack.crackLines === 1 && stillCrack.moving === 0, 'a miss still cracks it, drawn at once, with no knock', stillCrack);
+      ok(stillCrack.count === 78 && stillCrack.cracks === 1 && stillCrack.crackLines === 1 && stillCrack.moving === 0, 'a miss still cracks it, drawn at once, with no knock', stillCrack);
       await press();
       await live(); await answerStep(false); await f.tap('.lfoot .btn'); await sleep(80); await press();
       await live(); await answerStep(false); await f.tap('.lfoot .btn'); await sleep(80);
@@ -1927,19 +1944,19 @@ try {
       ok(stillDown.tier === 'plain' && stillDown.text === '×0' && !stillDown.ghost && stillDown.shards === 0 && stillDown.moving === 0, 'and with its shields gone, a miss drops it to plain at once, with no shatter', stillDown);
       await b.send('Emulation.setEmulatedMedia', { features: [] });
       await press();
-      // the run's best (60) shows its tier in the summary, on Practice and in Profile
+      // the run's best (179, void: the loop above reached every tier) shows its tier in the summary, on Practice and in Profile
       await f.tap('[data-go=leave]');
       await waitFor(`!!document.querySelector('.rend')`);
       await sleep(400);
       const best = (await dbg()).best;
-      ok(best === 60 && await ev(`document.querySelector('.rend .crownbig').classList.contains('tier-aurora') && document.querySelector('.rend .rays').classList.contains('tier-aurora') && document.querySelector('.rend .crownbig').innerText.includes('×60')`),
-        "the summary's crown, its number and the light behind it are in the best run's tier: aurora, ×60", best);
+      ok(best === 179 && await ev(`document.querySelector('.rend .crownbig').classList.contains('tier-void') && document.querySelector('.rend .rays').classList.contains('tier-void') && document.querySelector('.rend .crownbig').innerText.includes('×179')`),
+        "the summary's crown, its number and the light behind it are in the best run's tier: void, ×179", best);
       await shot2('49-combo-summary');
       await press();
-      ok(await ev(`document.querySelector('.review .crownchip').classList.contains('tier-aurora') && document.querySelector('.review .crownchip').innerText.trim() === '×60'`), "Practice's crown chip is aurora, ×60");
+      ok(await ev(`document.querySelector('.review .crownchip').classList.contains('tier-void') && document.querySelector('.review .crownchip').innerText.trim() === '×179'`), "Practice's crown chip is void, ×179");
       await f.tap('.tab[data-tab=profile]');
       await sleep(400);
-      ok(await ev(`document.querySelector('#bestcombo').classList.contains('tier-aurora') && document.querySelector('#bestcombo').innerText.trim() === '×60'`), "and so is Profile's best-combo tile");
+      ok(await ev(`document.querySelector('#bestcombo').classList.contains('tier-void') && document.querySelector('#bestcombo').innerText.trim() === '×179'`), "and so is Profile's best-combo tile");
       await f.tap('.tab[data-tab=practice]');
       await sleep(400);
     }
