@@ -1,0 +1,32 @@
+{
+  "title": "Answer forms, round five",
+  "topic": "stage2",
+  "order": 12,
+  "cards": [
+    {
+      "id": "forms5-notes",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your notes on round four",
+      "text": "The abacus beads now really slide, and the tape's unit reads with its number. Mark each part.",
+      "why": "Two notes from round four. The sea's tint was \"decent\" with no note, so it's left as it was.",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom. To try them: Practice, Answer forms, number, then abacus or tape.\n\nWhy the beads jumped: each bead was moved by a quick 90 ms snap that ran on its own, off the forms' clock, so on the phone it read as a jump and in last round's clip it wasn't caught at all. Now every point of each bead's slide is drawn on the forms' one clock, so the clips show exactly what the phone does.\n\nThe sea: looked at again at phone size, nothing clearly off, so nothing changed.",
+      "parts": [
+        {
+          "id": "abacus",
+          "title": "Abacus: each bead slides",
+          "text": "On a wrong answer each bead now slides along its rod to its place, one after another, and ticks as it lands. A few beads take their time, one clear of the next; with many to move they go quicker, each setting off just before the one ahead lands. It's all done within a second. In the clips 42 becomes 119: the first at full speed, the second at quarter speed so you can see each slide. The middle picture catches a bead halfway along its rod. A finger's own taps already slid the beads there (the last clip, at full speed).",
+          "images": ["../stage2/shots-forms5/abacus-given.png", "../stage2/shots-forms5/abacus-reveal-mid.png", "../stage2/shots-forms5/abacus-reveal.png"],
+          "videos": ["../stage2/shots-forms5/abacus-reveal.mp4", "../stage2/shots-forms5/abacus-reveal-quarter.mp4", "../stage2/shots-forms5/abacus-finger.mp4"]
+        },
+        {
+          "id": "tape",
+          "title": "Tape: the unit reads with the number",
+          "text": "The unit was there but small, thin and grey beside the number, so it was easy to miss. Now it's written right after the number as one phrase, \"119 km/h\": same bold weight, same colour, a little smaller. It stays that way while you pick, when it's marked (green when right) and when it shows the truth (gold). It's spelled as the lesson gives it: km/h, the standard way to write kilometres per hour. The pictures and clips are picking, marked right, then a wrong answer gliding to the truth.",
+          "images": ["../stage2/shots-forms5/tape-picking.png", "../stage2/shots-forms5/tape-right.png", "../stage2/shots-forms5/tape-reveal.png"],
+          "videos": ["../stage2/shots-forms5/tape-picking.mp4", "../stage2/shots-forms5/tape-right.mp4", "../stage2/shots-forms5/tape-reveal.mp4"]
+        }
+      ]
+    }
+  ]
+}
