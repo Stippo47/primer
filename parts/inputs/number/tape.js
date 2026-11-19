@@ -2,9 +2,11 @@
 // on and settle; tap a mark to go to it. Each step that passes the needle gives a tick, and the number at
 // the needle is written large above it. It always holds a real number (`start`, else 0), as the slider
 // does, and stops at the ends of its range with a little give. Only the ruler's marks are redrawn as it
-// moves; nothing slides over anything else.
+// moves; nothing slides over anything else. The unit is written beside the number. Once checked and
+// wrong, the tape glides until the true number is under the needle, written in gold, with what was given
+// still marked on the ruler and on a tag at the corner.
 import { esc } from '../kit.js';
-import { range, tidy, startOf, show, truthLine, clearTruth } from './common.js';
+import { range, tidy, startOf, show, differs, givenTag, markGiven, clearGiven } from './common.js';
 import { time } from '../clock.js';
 
 export const css = `
@@ -13,6 +15,7 @@ export const css = `
 .pi-tape.close { border-color: #ffc83d; box-shadow: 0 5px 0 #c98a00; }
 .pi-tape.wrong { border-color: #ee4b7a; box-shadow: 0 5px 0 #8f1f44; }
 .pi-tape .pi-nread { margin-bottom: 12px; }
+.pi-tape .pi-nread .u { font-size: 22px; color: #9aa3d6; }
 .pi-tband { position: relative; height: 78px; touch-action: none; }
 .pi-tband svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
 .pi-tband::before, .pi-tband::after { content: ""; position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1; pointer-events: none; }
@@ -34,8 +37,8 @@ export function mount(f) {
   root.innerHTML = `<div class="pi-tape"><div class="pi-nread"><b></b>${S.unit ? `<span class="u">${esc(S.unit)}</span>` : ''}</div>
       <div class="pi-tband"><svg aria-hidden="true"><rect class="paper" x="0" y="8" height="62" fill="#ffffff"/><rect class="paper-edge" x="0" y="66" height="4" fill="#b9c2ee"/>
         <path class="gap" fill="#ffc83d" opacity="0.4"/><path class="marks" stroke="#1b1f5e" stroke-width="2.4" stroke-linecap="round"/>
-        <path class="truth" stroke="#e8a91c" stroke-width="5" stroke-linecap="round"/><g class="nums" fill="#1b1f5e" font-size="14" font-weight="900" text-anchor="middle">${'<text/>'.repeat(14)}</g></svg>
-        <i class="needle"></i></div></div><div class="pi-truthline" hidden></div>`;
+        <path class="given" stroke="#ee4b7a" stroke-width="5" stroke-linecap="round"/><path class="truth" stroke="#e8a91c" stroke-width="5" stroke-linecap="round"/><g class="nums" fill="#1b1f5e" font-size="14" font-weight="900" text-anchor="middle">${'<text/>'.repeat(14)}</g></svg>
+        <i class="needle"></i></div></div>`;
   const tape = root.querySelector('.pi-tape'), band = root.querySelector('.pi-tband'), svg = band.querySelector('svg');
   const read = root.querySelector('.pi-nread b'), marks = svg.querySelector('.marks'), nums = [...svg.querySelectorAll('.nums text')];
   const valueAt = s => tidy(S, lo + Math.round(s) * step);
@@ -55,25 +58,31 @@ export function mount(f) {
     marks.setAttribute('d', d);
     const xs = s => cx + (s - pos) * px;
     svg.querySelector('.truth').setAttribute('d', truthS === null ? '' : `M${xs(truthS).toFixed(1)} 9v58`);
+    svg.querySelector('.given').setAttribute('d', truthS === null || givenS === null ? '' : `M${xs(givenS).toFixed(1)} 9v58`);
     svg.querySelector('.gap').setAttribute('d', truthS === null || givenS === null ? '' : `M${Math.min(xs(truthS), xs(givenS)).toFixed(1)} 8h${Math.abs(xs(truthS) - xs(givenS)).toFixed(1)}v62h-${Math.abs(xs(truthS) - xs(givenS)).toFixed(1)}z`);
   };
-  // the tape at a place (in steps, maybe between two); the number at the needle is the nearest step's
-  const go = s => {
-    if (f.locked()) { stop(); return; }
+  // the tape at a place (in steps, maybe between two); the number at the needle is the nearest step's.
+  // `place` only shows it (the truth gliding in); `go` gives it as the answer too.
+  const place = s => {
     pos = s;
     draw();
     const v = valueAt(Math.min(N, Math.max(0, s)));
     read.textContent = label(v);
+    return v;
+  };
+  const go = s => {
+    if (f.locked()) { stop(); return; }
+    const v = place(s);
     if (v !== f.value()) { f.set(v, true); feel.tick(); }
   };
   const stop = () => { if (anim) cancelAnimationFrame(anim); anim = 0; };
   // glides to a step, slowing as it comes in. Its time is the inputs' one clock (in ms), so a film or a
   // test that holds the clock holds the tape too; with reduced motion asked for, it's there at once.
   const ms = () => time() * 1000;
-  const glide = target => {
+  const glide = (target, to = go) => {
     stop();
     const s0 = pos, t0 = ms(), span = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : Math.min(420, 160 + Math.abs(target - s0) * 18);
-    const frame = () => { const k = Math.min(1, Math.max(0, (ms() - t0) / span)), e = 1 - (1 - k) ** 3; go(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
+    const frame = () => { const k = Math.min(1, Math.max(0, (ms() - t0) / span)), e = 1 - (1 - k) ** 3; to(s0 + (target - s0) * e); anim = k < 1 ? requestAnimationFrame(frame) : 0; };
     anim = requestAnimationFrame(frame);
   };
   // a flick runs on and slows down, then settles on the nearest step
@@ -107,13 +116,20 @@ export function mount(f) {
   }));
   return {
     reveal(answer) {
+      if (!differs(S, f.value(), answer)) return;
       truthS = (tidy(S, answer) - lo) / step;
       givenS = f.value() === null ? null : (f.value() - lo) / step;
-      draw();
-      truthLine(root, S, answer, feel);
+      givenTag(root, tape, S, f.value(), feel);
+      root.querySelector('.pi-nread').classList.add('truth');
+      glide(truthS, place);
     },
-    mark(kind) { tape.classList.add(kind); root.querySelector('.pi-nread').classList.add(kind); },
-    reset() { tape.className = 'pi-tape'; root.querySelector('.pi-nread').className = 'pi-nread'; truthS = givenS = null; clearTruth(root); begin(); },
+    mark(kind) {
+      tape.classList.add(kind);
+      root.querySelector('.pi-nread').classList.add(kind);
+      markGiven(root, kind);
+      svg.querySelector('.given').setAttribute('stroke', { right: '#2bc4a4', close: '#ffc83d', wrong: '#ee4b7a' }[kind] || '#ee4b7a');
+    },
+    reset() { tape.className = 'pi-tape'; root.querySelector('.pi-nread').className = 'pi-nread'; truthS = givenS = null; clearGiven(root); begin(); },
     debug: () => ({ pos, px, every }),
   };
 }

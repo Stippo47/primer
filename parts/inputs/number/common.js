@@ -1,6 +1,6 @@
 // What the Number form's looks share: how many digits a number needs, where a look that always holds a
-// value starts, and the truth shown under it once it's checked. Each look is one file beside this one, a
-// mount(f) -> { reveal, mark, reset } like any form; forms/number.js picks one by the `look` setting.
+// value starts, and how the truth is shown in its field once it's checked. Each look is one file beside
+// this one, a mount(f) -> { reveal, mark, reset } like any form; forms/number.js picks one by `look`.
 import { esc, fmt } from '../kit.js';
 
 export const decimals = step => { const s = String(step); return s.includes('.') ? Math.min(4, s.split('.')[1].length) : 0; };
@@ -26,23 +26,44 @@ export function startOf(S) {
 
 export const show = (S, v) => fmt(v, S.step, S.unit);
 
-// The truth, as a gold chip on a line of its own under the answer.
-export function truthLine(root, S, answer, feel) {
-  let line = root.querySelector('.pi-truthline');
-  if (!line) { line = document.createElement('div'); line.className = 'pi-truthline'; root.append(line); }
-  line.hidden = false;
-  line.innerHTML = `<span class="pi-read truth">${esc(show(S, answer))}</span>`;
-  if (feel && feel.pop) feel.pop(line.firstElementChild);
+// The truth, shown in the answer's own field, the way the other forms show it on their own scale: each look
+// puts the true number where the given one was, in gold (keys type it, wheels roll to it, the tape glides
+// to it, the beads move), and what was given stays on a small tag at the field's top corner, struck
+// through and coloured by its mark. Only when they differ: a number given exactly right is left as it is.
+export const differs = (S, given, answer) => given === null || given === undefined || Math.abs(tidy(S, given) - tidy(S, answer)) > 1e-9;
+// The tag with what was given (nothing given: none), over the top right of `field`.
+export function givenTag(root, field, S, given, feel) {
+  clearGiven(root);
+  if (given === null || given === undefined) return null;
+  const tag = document.createElement('span');
+  tag.className = 'pi-was';
+  tag.innerHTML = `<s>${esc(show(S, given))}</s>`;
+  tag.style.top = `${field.offsetTop - 15}px`;
+  tag.style.right = `${Math.max(6, root.clientWidth - field.offsetLeft - field.offsetWidth + 14)}px`;
+  root.append(tag);
+  if (feel && feel.pop) feel.pop(tag);
+  return tag;
 }
-export const clearTruth = root => { const l = root.querySelector('.pi-truthline'); if (l) { l.hidden = true; l.innerHTML = ''; } };
+export const markGiven = (root, kind) => { const t = root.querySelector('.pi-was'); if (t) t.classList.add(kind); };
+export const clearGiven = root => { for (const t of root.querySelectorAll('.pi-was')) t.remove(); };
+// A number as its digits, held to the range and the step's decimals, for writing in a field.
+export const digitsText = (S, v) => tidy(S, v).toFixed(decimals(S.step));
 
 export const css = `
 .pi.form-number { padding-top: 4px; }
-.pi-truthline { display: flex; justify-content: center; margin-top: 12px; min-height: 38px; }
+.pi.form-number { position: relative; }
+/* what was given, once the truth is in the field: a small tag on the field's top corner, struck through */
+.pi-was { position: absolute; z-index: 3; padding: 3px 10px; border-radius: 11px; background: #fff; color: #1b1f5e; box-shadow: 0 3px 0 #b9c2ee;
+  font-size: 15px; white-space: nowrap; pointer-events: none; }
+.pi-was s { text-decoration-thickness: 2px; }
+.pi-was.wrong { background: #ee4b7a; color: #fff; box-shadow: 0 3px 0 #8f1f44; }
+.pi-was.close { background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; }
+.pi-was.right { background: #2bc4a4; color: #fff; box-shadow: 0 3px 0 #127a85; }
 .pi-nread { display: flex; align-items: baseline; justify-content: center; gap: 6px; height: 50px; margin-bottom: 10px; }
 .pi-nread b { font-size: 40px; font-weight: 900; line-height: 1; }
 .pi-nread .u { font-size: 19px; color: #7f88c8; }
 .pi-nread.right b { color: #7df0cf; }
 .pi-nread.close b { color: #ffc83d; }
 .pi-nread.wrong b { color: #ff8fb0; }
+.pi-nread.truth b, .pi-nread.truth.wrong b, .pi-nread.truth.close b { color: #ffc83d; }
 `;

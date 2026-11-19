@@ -4,9 +4,10 @@
 // first five beads on a rod are one shade and the last four another, so a digit reads at a glance, and it
 // is written under its rod too. Each change gives a tick. It always holds a real number (`start`, else 0),
 // as the slider does; past the range, it goes back to the range's end. Beads move by transform, on their
-// own layers, at whole device pixels.
+// own layers, at whole device pixels. Once checked and wrong, the beads move to the true number and the
+// digits that changed turn gold; what was given goes on a tag at the corner.
 import { esc, devicePx, mixHex } from '../kit.js';
-import { placesOf, tidy, startOf, show, truthLine, clearTruth } from './common.js';
+import { placesOf, tidy, startOf, show, differs, givenTag, markGiven, clearGiven } from './common.js';
 
 const PITCH = 20, BEAD = 18, TOP = 18, TRAVEL = 46;   // a bead's step, its height, the bar's depth, the gap the beads cross
 const ROD = TOP + 9 * PITCH + TRAVEL + 6;             // a rod's height
@@ -27,6 +28,7 @@ export const css = `
 .pi-bead::after { content: ""; position: absolute; left: 7px; top: 3px; width: 34%; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.55); }
 .pi-adig { margin-top: 8px; min-width: 34px; height: 34px; padding: 0 6px; border-radius: 11px; background: #fff; color: #1b1f5e; box-shadow: 0 3px 0 #b9c2ee;
   display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
+.pi-adig.truth { background: #ffc83d; color: #2a1650; box-shadow: 0 3px 0 #c98a00; }
 .pi-adot { width: 9px; height: 9px; border-radius: 50%; background: #fff; align-self: flex-end; margin: 0 -1px 20px; flex: none; }
 .pi-asign { align-self: flex-end; margin-bottom: 4px; width: 40px; height: 42px; border-radius: 13px; background: #2a3274; box-shadow: 0 4px 0 #161c4a; font-size: 26px; font-weight: 900;
   transition: transform 120ms ease-out, box-shadow 120ms; }
@@ -47,7 +49,7 @@ export function mount(f) {
   const rod = i => `<div class="pi-rod" data-i="${i}"><div class="pi-rodbox">${Array.from({ length: 9 }, (_, b) => bead(i, b)).join('')}</div><span class="pi-adig">0</span></div>`;
   root.innerHTML = `<div class="pi-abacus" style="--rw:${rw}px">${neg ? '<button class="pi-asign" data-sound="select" aria-label="Sign">+</button>' : ''}
       ${Array.from({ length: n }, (_, i) => (i === whole && dec ? '<span class="pi-adot"></span>' : '') + rod(i)).join('')}
-      ${S.unit ? `<span class="pi-aunit">${esc(S.unit)}</span>` : ''}</div><div class="pi-truthline" hidden></div>`;
+      ${S.unit ? `<span class="pi-aunit">${esc(S.unit)}</span>` : ''}</div>`;
   const abacus = root.querySelector('.pi-abacus'), signEl = root.querySelector('.pi-asign');
   const rods = [...root.querySelectorAll('.pi-rod')];
   const beads = rods.map(r => [...r.querySelectorAll('.pi-bead')]), digs = rods.map(r => r.querySelector('.pi-adig'));
@@ -107,9 +109,15 @@ export function mount(f) {
   root.addEventListener('click', onTap);
   f.cleanup(() => root.removeEventListener('click', onTap));
   return {
-    reveal(answer) { truthLine(root, S, answer, feel); },
-    mark(kind) { abacus.classList.add(kind); },
-    reset() { abacus.className = 'pi-abacus'; clearTruth(root); begin(); },
+    reveal(answer) {
+      if (!differs(S, f.value(), answer)) return;
+      givenTag(root, abacus, S, f.value(), feel);
+      const was = digits.slice();
+      toDigits(tidy(S, answer));
+      digits.forEach((d, i) => { if (d !== was[i]) { draw(i); digs[i].classList.add('truth'); if (feel.pop) feel.pop(digs[i], 0.4); } });
+    },
+    mark(kind) { abacus.classList.add(kind); markGiven(root, kind); },
+    reset() { abacus.className = 'pi-abacus'; for (const d of digs) d.classList.remove('truth'); clearGiven(root); begin(); },
     debug: () => ({ digits: digits.slice(), sign, shown: show(S, valueOf()) }),
   };
 }

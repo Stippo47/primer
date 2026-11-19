@@ -293,3 +293,10 @@ Their words are in primer-data `notes/answers-2026-11-18e.md`.
 - **Shields (their idea, accepted):** each tier protects the combo from one-off mistakes: bronze to gold one shield, higher tiers two. A miss with a shield left cracks the chip (one crack per shield used) instead of ending the combo. My reading, to confirm on the board: shields refill on reaching a new tier, and right answers don't mend cracks.
 - **Forms:** thermometer: bulb and tube one shape, the tube's shadow not over the bulb, a solid handle, heat lines in doubt. Sea: the heat colour fills the waves, longer wavelength, the wave between yellow-orange and deep orange; the round thing reads as a moon. Wind: no white waves, rain falls in an odd pattern, a stray line at the foot of the tree, the darker water in front of the island. Number: all four looks kept (picked all of them); a wrong answer shows the right one in the field; the wheels' bottom shadow is lighter than the body; the tape needs its unit. Pile and Spot: good.
 - **Crow round 10:** Button and Bean picked. Both get simple round eyes, in a white and a black version. They're unsure about the style and about a bird at all: next, a board of every character made so far.
+
+### Forms, round three (my calls, sent as deck `stage2-forms3`)
+
+- **Heat lines: off**, behind one switch (`heatLines` on the warmth picture), asked on the deck's board (my pick: without).
+- **The sea's round thing is the sun**: a daytime sky and rays, one sun drawing shared with the wind's island. "Wave between the oranges" read as the line where the two warm tones meet, now a slow wave.
+- **A wrong number shows the truth in its own field**, in gold (keys type it, wheels roll, the tape glides, beads move), and what was given stays on a small struck-through tag at the field's corner, coloured by its mark. A number given exactly right is left as it is.
+- **The tape's unit**: it was always shown when a lesson gives one; the Practice example had none, and now has km/h.

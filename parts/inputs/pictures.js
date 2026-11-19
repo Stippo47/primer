@@ -9,7 +9,7 @@
 // use it. Each says its size (w, h), whether it's `round` (drawn as a disc filling its box, so the dial's
 // round window can show all of it; any other picture sits whole inside the window), and may say the look
 // a slider takes with it when the lesson doesn't say (`look`: the warmth picture goes with a thermometer).
-import { mixHex, ramp, smooth, attr, lerp, clamp01 } from './kit.js';
+import { mixHex, ramp, smooth, attr, lerp, clamp01, SKY, sun, waves, warmLayer, WARM } from './kit.js';
 import { onFrame, now } from './clock.js';
 
 let count = 0;
@@ -18,6 +18,8 @@ const f2 = x => x.toFixed(2);
 const wave = (t, rate, phase = 0) => Math.sin(t * rate + phase);
 // a value that runs 0 to 1 over and over, every `period` seconds, offset by `phase` (0 to 1)
 const cycle = (t, period, phase = 0) => (((t / period + phase) % 1) + 1) % 1;
+// a steady scatter, 0 to 1, for thing i on its round n: the same each frame, different each round
+const scatter = (i, n) => { const v = Math.sin(i * 127.1 + n * 311.7) * 43758.5453; return v - Math.floor(v); };
 const star = (x, y, r) => `M${x} ${y - r}l${r * 0.25} ${r * 0.75} ${r * 0.75} ${r * 0.25}-${r * 0.75} ${r * 0.25}-${r * 0.25} ${r * 0.75}-${r * 0.25}-${r * 0.75}-${r * 0.75}-${r * 0.25} ${r * 0.75}-${r * 0.25}z`;
 
 // A crust of frost on the ball's rim (centre 70, 66, radius 40): centred on angle `mid`, spanning `span`
@@ -36,9 +38,11 @@ function frostCrust(mid, span, depth = 1) {
 export const PICTURES = {
   // A ball that goes from ice to fire: a snowflake in a pale blue ball at the low end, with frost creeping
   // round its rim and glinting; melting drips as it warms; plain and mild in the middle; a flame inside,
-  // fire on top and heat shimmering up from it at the high end. For temperature.
+  // fire on top at the high end, with heat lines shimmering up from it if `heatLines` is on. For temperature.
   warmth: {
     w: 140, h: 128, inWindow: 1.3, look: 'thermometer',
+    // The wavy heat lines over the fire: kept off until the designer picks (deck stage2-forms3 asks).
+    heatLines: false,
     STOPS: [[0, '#e8f8ff'], [0.22, '#a6e1ff'], [0.42, '#49c6ff'], [0.54, '#5fd9c0'], [0.62, '#a8e67e'], [0.7, '#ffd75a'], [0.84, '#ffa23a'], [1, '#ff6a3d']],
     body() {
       const arm = a => {
@@ -106,8 +110,8 @@ export const PICTURES = {
       attr(svg, '.fire', { opacity: f2(smooth(0.78, 0.83, k)), transform: `translate(70 40) scale(${f2(0.7 + 0.3 * blaze)} ${f2(0.2 + 0.8 * blaze)}) translate(-70 -40)` });
       attr(svg, '.fire-in', { transform: `translate(70 42) scale(${f2(1 + 0.03 * wave(t, 5.3, 2))} ${f2(1 + 0.09 * wave(t, 8.9) + 0.04 * wave(t, 13.1))}) translate(-70 -42)` });
       attr(svg, '.glow', { opacity: f2(smooth(0.7, 1, k) * (0.85 + 0.15 * wave(t, 1.3))) });
-      // heat shimmering up from it when it's hot
-      const hot = smooth(0.6, 0.85, k);
+      // heat shimmering up from it when it's hot (if the heat lines are on)
+      const hot = this.heatLines ? smooth(0.6, 0.85, k) : 0;
       attr(svg, '.shimmer', { opacity: f2(hot) });
       svg.querySelectorAll('.shimmer path').forEach((p, i) => {
         const c = cycle(t, 2.6, i * 0.37), x = [46, 70, 94][i], y = lerp(lerp(26, 8, blaze), -10, c), a = 3.2;
@@ -117,37 +121,37 @@ export const PICTURES = {
     },
   },
 
-  // The sea cut away: a warm layer on top of cold water, as deep as the value. Its waves roll, bubbles
+  // The sea cut away: a warm layer on top of cold water, as deep as the value, under a sky with the sun.
+  // Its waves roll, filled with the warm water's colour; the two warm tones meet along a slow wave; bubbles
   // rise, and the warm layer's edge glints. For how deep something goes. A slider takes the sea look with
   // it, where the sea itself is the track (tracks.js); this drawing is for a dial's window or a slider set
   // to another look.
   depth: {
-    w: 220, h: 128, look: 'sea',
+    w: 220, h: 128, look: 'sea', WL: 40, AMP: 2.6,
     body() {
-      const id = uid('depth');
-      const crest = `q8 -4 16 0${'t16 0'.repeat(17)}`;   // waves 16 apart, long enough to roll by two of them
+      const id = uid('depth'), surf = waves(-this.WL, 26, this.WL, this.AMP, 8);
       return `<clipPath id="${id}"><rect x="12" y="10" width="196" height="108" rx="16"/></clipPath>
         <rect x="12" y="14" width="196" height="108" rx="16" fill="#0a0e2e"/>
         <g clip-path="url(#${id})">
           <rect x="12" y="10" width="196" height="108" fill="#1b2a80"/>
           <rect x="12" y="80" width="196" height="38" fill="#16216a"/>
-          <rect x="12" y="10" width="196" height="16" fill="#141a3c"/>
-          <circle cx="186" cy="12" r="10" fill="#ffd75a"/>
-          <g class="warm"><rect class="w1" x="12" y="26" width="196" height="10" fill="#ffa23a"/><rect class="w2" x="12" y="30" width="196" height="6" fill="#ee6b5a"/></g>
+          <g class="warm"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
           <path class="edge" d="M12 36H208" stroke="#ffe9a6" stroke-width="2.4" stroke-dasharray="0.1 7" stroke-linecap="round"/>
           <g class="bubbles" fill="none" stroke="#b3ebff" stroke-width="1.6" opacity="0.7"><circle r="2.4"/><circle r="1.8"/><circle r="2.8"/></g>
-          <g class="rolling"><path d="M-20 26${crest}v-6H-20z" fill="#141a3c"/>
-            <path d="M-20 26${crest}" fill="none" stroke="#b3ebff" stroke-width="2.2" opacity="0.8"/></g>
+          <g class="rolling"><path d="${surf}V0H${-this.WL}z" fill="${SKY}"/>
+            <path d="${surf}" fill="none" stroke="#fff3c4" stroke-width="2.2" opacity="0.9"/></g>
+          ${sun(184, 17.5, 4.2)}
           <path d="M150 118l8 -14 8 14z" fill="#141f66"/><path d="M30 118l12 -20 14 20z" fill="#141f66"/>
         </g>
         <rect x="12" y="10" width="196" height="108" rx="16" fill="none" stroke="#364090" stroke-width="3"/>`;
     },
     set(svg, k, t) {
-      const d = 2 + k * 90;   // from the surface (y 26) down to the floor (y 118)
-      attr(svg, '.w1', { height: f2(d) });
-      attr(svg, '.w2', { y: f2(26 + d * 0.55), height: f2(d * 0.45) });
-      attr(svg, '.edge', { d: `M12 ${f2(26 + d)}H208`, opacity: k > 0.02 ? 1 : 0, 'stroke-dashoffset': f2(-t * 5) });
-      attr(svg, '.rolling', { transform: `translate(${f2(-cycle(t, 4) * 32)} 0)` });
+      const y = 28 + k * 90;   // from just under the surface (y 26) down to the floor (y 118)
+      const L = warmLayer(12, 208, 26 - this.AMP - 3, y, 56, cycle(t, 9));
+      attr(svg, '.w1', { d: L.top });
+      attr(svg, '.w2', { d: L.deep });
+      attr(svg, '.edge', { d: `M12 ${f2(y)}H208`, opacity: k > 0.02 ? 1 : 0, 'stroke-dashoffset': f2(-t * 5) });
+      attr(svg, '.rolling', { transform: `translate(${f2(-cycle(t, 5) * this.WL)} ${f2(0.8 * wave(t, 1.1))})` });
       svg.querySelectorAll('.bubbles circle').forEach((c, i) => {
         const p = cycle(t, 4.2 + i * 0.9, i * 0.31), x = [48, 112, 170][i] + 3 * wave(t, 2 + i, i);
         c.setAttribute('cx', f2(x)); c.setAttribute('cy', f2(lerp(112, 32, p)));
@@ -159,10 +163,11 @@ export const PICTURES = {
   // A palm on an island in a round window, for wind: still and drooping at the low end, its trunk bowed
   // and every frond streaming downwind at the high end, with the sea getting up, the clouds racing in and,
   // near the top, driving rain. It moves all the time, faster the harder it blows: clouds drift past,
-  // waves roll, white caps and streaks of wind run downwind, the fronds flutter and the trunk sways.
+  // waves roll, streaks of wind run downwind, the fronds flutter and the trunk sways. The near water, the
+  // darker band, lies in front of the island's foot.
   wind: {
     w: 200, h: 200, round: true,
-    CAPS: 7, STREAKS: 9, RAIN: 26,
+    STREAKS: 9, RAIN: 26,
     body() {
       const clip = uid('wind'), sky = uid('sky');
       const cloud = cls => `<g class="${cls}"><path class="cs" d="M-26 6a12 12 0 0 1 4-21a16 16 0 0 1 29-6a13 13 0 0 1 21 9a10 10 0 0 1-1 18z" transform="translate(0 3)"/>
@@ -173,18 +178,18 @@ export const PICTURES = {
           <clipPath id="${clip}"><circle cx="100" cy="100" r="99"/></clipPath></defs>
         <g clip-path="url(#${clip})">
           <rect width="200" height="200" fill="url(#${sky})"/>
-          <g class="sun"><circle cx="146" cy="50" r="17" fill="#ffd75a"/><path d="M131 46a15 15 0 0 1 12-12" fill="none" stroke="#fff3c4" stroke-width="3" stroke-linecap="round"/></g>
+          <g class="sun">${sun(146, 50, 14)}</g>
           ${cloud('c1')}${cloud('c2')}${cloud('c3')}${cloud('c4')}
-          <g class="sea"><path class="sea-t" fill="#3651c8"/><path class="sea-b" fill="#2338a8"/><path class="sea-lit" fill="none" stroke="#7fa0ff" stroke-width="2.4" stroke-linecap="round"/></g>
-          <g class="caps" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round">${n(this.CAPS)}</g>
-          <path d="M38 151Q60 125 104 128Q132 131 140 151Z" fill="#d9a865"/>
-          <path d="M38 151Q60 122 102 125Q128 128 137 147L129 151Z" fill="#f5d59a"/>
+          <g class="sea"><path class="sea-t" fill="#3651c8"/><path class="sea-lit" fill="none" stroke="#7fa0ff" stroke-width="2.4" stroke-linecap="round"/></g>
+          <path d="M34 162Q60 125 104 128Q134 131 144 162Z" fill="#d9a865"/>
+          <path d="M34 162Q60 122 102 125Q128 128 137 147L133 162Z" fill="#f5d59a"/>
           <path d="M48 142Q64 129 92 128" fill="none" stroke="#fff0cf" stroke-width="3" stroke-linecap="round"/>
           <g class="palm"><path class="trunk-s" fill="#7c4a26"/><path class="trunk" fill="#b27744"/><path class="trunk-l" fill="none" stroke="#d29a62" stroke-width="2.4" stroke-linecap="round"/>
             <g class="rings" fill="none" stroke="#7c4a26" stroke-width="2" stroke-linecap="round">${n(5)}</g>
-            <path d="M66 142Q80 132 95 142Z" fill="#f5d59a"/><path d="M70 137Q78 134 84 134" fill="none" stroke="#fff0cf" stroke-width="2" stroke-linecap="round"/>
+            <path d="M64 143Q80 132 97 143Z" fill="#f5d59a"/>
             <g class="back" fill="#1b9a82">${n(3)}</g><g class="nuts"><circle r="5.6" fill="#6b3d1f"/><circle r="5.6" fill="#8a5530"/><circle r="1.8" fill="#d6a070"/></g>
             <g class="front">${n(7, '<g><path fill="#22b393"/><path fill="#5fe0c2"/><path fill="none" stroke="#127a85" stroke-width="1.3" stroke-linecap="round"/></g>')}</g></g>
+          <path class="sea-b" fill="#2338a8"/>
           <g class="streaks" stroke="#ffffff" stroke-linecap="round">${n(this.STREAKS)}</g>
           <g class="rain" stroke="#c9d4ff" stroke-width="1.8" stroke-linecap="round" opacity="0.7">${n(this.RAIN)}</g>
         </g>
@@ -207,21 +212,17 @@ export const PICTURES = {
         attr(c, '.cs', { fill: mixHex('#c3ccf5', '#5d66ad', e * 0.85) });
         attr(c, '.cl', { stroke: mixHex('#ffffff', '#c9d0ee', e) });
       });
-      // the sea: its waves grow and roll, and white caps run downwind once it's breezy
+      // the sea: its waves grow and roll
       const amp = 1.2 + gust * 6.5, top = 142, roll = t * (1.1 + 3.2 * e);
       const ys = [];
       for (let x = 0; x <= 200; x += 8) ys.push([x, top + Math.sin(x * 0.075 + 0.6 - roll) * amp + Math.sin(x * 0.19 - roll * 1.7) * amp * 0.35]);
-      const line = dy => ys.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${f2(y + dy)}`).join('');
+      // a line of the sea dy below the far one, its waves `swell` as high (the near water swells less, so it
+      // laps the island's foot and never swamps it)
+      const line = (dy, swell = 1) => ys.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${f2(top + (y - top) * swell + dy)}`).join('');
       const crest = line(0);
       attr(svg, '.sea-t', { d: `${crest}L200 200L0 200Z` });
-      attr(svg, '.sea-b', { d: `${line(9)}L200 200L0 200Z` });
+      attr(svg, '.sea-b', { d: `${line(13, 0.5)}L200 200L0 200Z` });
       attr(svg, '.sea-lit', { d: crest, opacity: f2(0.75 - gust * 0.4) });
-      const nCaps = smooth(0.25, 0.85, k) * this.CAPS;
-      svg.querySelectorAll('.caps path').forEach((p, i) => {
-        const x = ((((22 + i * 47 + t * (8 + 46 * e)) % 200) + 200) % 200), y = 156 + (i % 3) * 13;
-        p.setAttribute('d', `M${f2(x - 7)} ${y}q7 -5 14 0`);
-        p.setAttribute('opacity', f2(clamp01(nCaps - i) * Math.min(1, Math.sin((Math.PI * x) / 200) * 3)));
-      });
       // the palm: the trunk bows downwind (to the right) and sways; its fronds swing round to stream
       // after it, and flutter
       const sway = wave(t, 1.3 + 2.6 * e) * (0.5 + 3 * e), bob = wave(t, 1.3 + 2.6 * e, 1.2) * (0.3 + 1.2 * e);
@@ -290,9 +291,12 @@ export const PICTURES = {
         p.setAttribute('stroke-width', i % 2 ? 2 : 2.6);
         p.setAttribute('opacity', f2(clamp01(nS - i) * (0.45 + 0.3 * (i % 2))));
       });
+      // each drop falls along the slant at its own speed and comes in at a new, scattered place each time
+      // round, so the rain never lines up in rows or bands
       const nR = storm * this.RAIN;
       svg.querySelectorAll('.rain path').forEach((p, i) => {
-        const y = ((((i * 67.1 + t * 210) % 180) + 180) % 180) - 15, x = ((((-10 + i * 41.7 + y * 0.7 + t * 40) % 220) + 220) % 220) - 10;
+        const run = t * (1 + 0.25 * scatter(i, 0.5)) / 0.95 + scatter(i, 0.9), lap = Math.floor(run), u = run - lap;
+        const y = -20 + u * 230, x = -40 + scatter(i, lap) * 220 + (y + 20) * 0.69;
         p.setAttribute('d', `M${f2(x)} ${f2(y)}l9 13`);
         p.setAttribute('opacity', f2(clamp01(nR - i)));
       });

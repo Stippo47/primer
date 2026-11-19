@@ -1,9 +1,10 @@
 // Number, as keys: typed on the form's own keypad, so the phone's keyboard never covers the button. The
 // number sits in a deep screen, each digit dropping in as it's typed, the range it can be written faintly
 // until then; the keys are chunky caps that sink when pressed. Nothing is answered until something is
-// typed.
+// typed. Once checked and wrong, the true number drops into the screen in gold, and what was typed goes
+// on a tag at its corner.
 import { esc } from '../kit.js';
-import { range, truthLine, clearTruth } from './common.js';
+import { range, differs, givenTag, markGiven, clearGiven, digitsText } from './common.js';
 
 export const css = `
 .pi-display { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; height: 78px; margin-bottom: 16px; border-radius: 20px;
@@ -17,7 +18,8 @@ export const css = `
 .pi-display.right { border-color: #2bc4a4; box-shadow: 0 4px 0 #127a85; }
 .pi-display.close { border-color: #ffc83d; box-shadow: 0 4px 0 #c98a00; }
 .pi-display.wrong { border-color: #ee4b7a; box-shadow: 0 4px 0 #8f1f44; }
-.pi-display.right .caret, .pi-display.close .caret, .pi-display.wrong .caret { display: none; }
+.pi-display.right .caret, .pi-display.close .caret, .pi-display.wrong .caret, .pi-display.truth .caret { display: none; }
+.pi-display.truth .d { color: #ffc83d; }
 @keyframes pi-blink { 50% { opacity: 0; } }
 .pi-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 12px; }
 .pi-key { height: 54px; border-radius: 17px; background: #2a3274; border-top: 2px solid #3d4ba0; box-shadow: 0 5px 0 #161c4a; font-size: 25px; font-weight: 900;
@@ -42,12 +44,15 @@ export function mount(f) {
   root.innerHTML = `<div class="pi-display"><span class="d"></span><span class="caret"></span><span class="u">${esc(S.unit)}</span>
       <span class="ph">${esc(`${lo.toLocaleString('en')} to ${hi.toLocaleString('en')}`)}</span></div>
     <div class="pi-keys">${keys.map(key).join('')}</div>
-    ${minus && dot ? `<div class="pi-keys" style="margin-top:10px"><span></span>${key('±')}<span></span></div>` : ''}<div class="pi-truthline" hidden></div>`;
-  const d = root.querySelector('.d'), ph = root.querySelector('.ph');
-  const draw = (popLast = false) => {
-    d.innerHTML = [...typed].map(c => `<i>${esc(c)}</i>`).join('');
-    ph.hidden = !!typed;
+    ${minus && dot ? `<div class="pi-keys" style="margin-top:10px"><span></span>${key('±')}<span></span></div>` : ''}`;
+  const d = root.querySelector('.d'), ph = root.querySelector('.ph'), screen = root.querySelector('.pi-display');
+  const write = (text, popLast = false) => {
+    d.innerHTML = [...text].map(c => `<i>${esc(c)}</i>`).join('');
+    ph.hidden = !!text;
     if (popLast && d.lastElementChild && feel.pop) feel.pop(d.lastElementChild, 0.4);
+  };
+  const draw = (popLast = false) => {
+    write(typed, popLast);
     const v = Number(typed);
     f.set(typed && typed !== '-' && typed !== '.' && Number.isFinite(v) ? v : null, !!typed && Number.isFinite(v) && typed !== '-');
   };
@@ -65,9 +70,15 @@ export function mount(f) {
   f.cleanup(() => root.removeEventListener('click', onTap));
   draw();
   return {
-    reveal(answer) { truthLine(root, S, answer, feel); },
-    mark(kind) { root.querySelector('.pi-display').classList.add(kind); },
-    reset() { typed = ''; root.querySelector('.pi-display').className = 'pi-display'; clearTruth(root); draw(); },
+    reveal(answer) {
+      if (!differs(S, f.value(), answer)) return;
+      givenTag(root, screen, S, f.value(), feel);
+      screen.classList.add('truth');
+      write(digitsText(S, answer));
+      if (feel.pop) for (const i of d.children) feel.pop(i, 0.4);
+    },
+    mark(kind) { screen.classList.add(kind); markGiven(root, kind); },
+    reset() { typed = ''; screen.className = 'pi-display'; clearGiven(root); draw(); },
     debug: () => ({ typed }),
   };
 }

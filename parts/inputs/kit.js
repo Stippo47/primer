@@ -31,6 +31,32 @@ export const ramp = (stops, k) => {
 };
 export const attr = (el, sel, a) => { const x = sel ? el.querySelector(sel) : el; if (x) for (const [k, v] of Object.entries(a)) x.setAttribute(k, v); };
 
+// ---------------------------------------------------------------- drawn pieces the pictures share
+// The pictures and the slider's looks draw the same sky, sun and waves, so the sea in a dial's window, the
+// sea a slider runs down and the wind's island all look like one place.
+const r2 = x => Math.round(x * 100) / 100;
+// The sky by day: the colour at the top of the wind's sky, flat where a band of sky is thin (the sea's).
+export const SKY = '#5a6fd8';
+// The sun: a disc ringed with short rays, a highlight on its upper left, so it reads as the sun on any sky.
+export const sun = (x, y, r) => {
+  const rays = Array.from({ length: 8 }, (_, i) => {
+    const a = (i * Math.PI) / 4 + Math.PI / 8, c = Math.cos(a), s = Math.sin(a);
+    return `M${r2(x + c * r * 1.35)} ${r2(y + s * r * 1.35)}L${r2(x + c * r * 1.7)} ${r2(y + s * r * 1.7)}`;
+  }).join('');
+  return `<g class="sun-g"><path d="${rays}" stroke="#ffd75a" stroke-width="${r2(Math.max(2, r * 0.26))}" stroke-linecap="round"/>
+    <circle cx="${x}" cy="${y}" r="${r}" fill="#ffd75a"/><path d="M${r2(x - r * 0.62)} ${r2(y - r * 0.12)}a${r2(r * 0.66)} ${r2(r * 0.66)} 0 0 1 ${r2(r * 0.5)} ${r2(-r * 0.5)}" fill="none" stroke="#fff3c4" stroke-width="${r2(Math.max(1.8, r * 0.24))}" stroke-linecap="round"/></g>`;
+};
+// A line of waves from x0 along height y: `n` whole waves `wl` long, crests `amp` above y and troughs as far
+// below. Path data to go on with (V, H, Z) or to stroke as it is.
+export const waves = (x0, y, wl, amp, n) => `M${r2(x0)} ${r2(y)}q${r2(wl / 4)} ${r2(-2 * amp)} ${r2(wl / 2)} 0${` t${r2(wl / 2)} 0`.repeat(Math.max(1, 2 * n - 1))}`;
+// A warm top layer on the sea in two tones, from y0 (above the waves, so its colour fills them) down to y1:
+// yellow-orange over deep orange, the two meeting along a slow wave `wl` long, rolled by `shift` (0 to 1).
+export const WARM = ['#ffa23a', '#ee6b5a'];
+export function warmLayer(x0, x1, y0, y1, wl, shift = 0) {
+  const split = y0 + (y1 - y0) * 0.55, amp = Math.min(3, (y1 - split) * 0.25), from = x0 - wl * (1 + shift), n = Math.ceil((x1 - from) / wl) + 1;
+  return { top: `M${r2(x0)} ${r2(y0)}H${r2(x1)}V${r2(y1)}H${r2(x0)}Z`, deep: `${waves(from, split, wl, amp, n)}V${r2(y1)}H${r2(from)}Z` };
+}
+
 // ---------------------------------------------------------------- the number scale
 // min, max, step, scale (linear, or log for powers of ten) and start, read the same way by every form that
 // answers with a number on a scale. A start left out is the middle of the scale (`middle: false`: its low end).

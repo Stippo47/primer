@@ -11,14 +11,13 @@
 //   direction   the way it runs when the lesson doesn't say; `directions`, the ways it can run
 //   line(W, H)  its own run, when it fills the whole box (the sea)
 //   labels      where the numbers go: 'side' (below an across track, left of an up or down one), 'inside'
-//   thumb       the handle's look: '' (a white disc) or 'ring' (a white ring the fill shows through)
 //   picture     the picture it already is, so it isn't drawn again beside it (the sea is the depth picture)
 //   draw(W, H, g, dir) its drawing; set(el, p, k, g) for the handle at p (0 to 1 along the run) and the
 //   picture's k (0 to 1, where the lesson's picture would be; the run's p when there's none), el holding
 //   the drawing's svgs
 //   move(el, t, p, g)  optional: what moves on the clock (clock.js), t in seconds
 // A new look is one more entry here and one more option in part.json's `look`.
-import { ramp, mixHex, lerp } from './kit.js';
+import { ramp, mixHex, lerp, SKY, sun, waves, warmLayer, WARM } from './kit.js';
 
 const f2 = x => x.toFixed(2);
 const cycle = (t, period, phase = 0) => (((t / period + phase) % 1) + 1) % 1;
@@ -34,13 +33,21 @@ const runFrame = (g, dir) => {
 const runLength = g => Math.hypot(g.x1 - g.x0, g.y1 - g.y0);
 export const along = (g, p) => [g.x0 + (g.x1 - g.x0) * p, g.y0 + (g.y1 - g.y0) * p];
 
+// One outline for a bulb and its tube, in run space: a circle of radius R at u = bu, running by a smooth
+// neck into a tube of half-width T whose round end reaches u = end. The glass and the liquid are each one.
+const bulbTube = (bu, R, T, end, neck = 5) => {
+  const xi = bu + Math.sqrt(R * R - T * T), a = Math.asin(T / R) + neck / R;
+  const cx = bu + R * Math.cos(a), cy = R * Math.sin(a), e = Math.max(xi + neck, end - T);
+  return `M${f2(e)} ${f2(-T)}H${f2(xi + neck)}Q${f2(xi)} ${f2(-T)} ${f2(cx)} ${f2(-cy)}A${R} ${R} 0 1 0 ${f2(cx)} ${f2(cy)}Q${f2(xi)} ${f2(T)} ${f2(xi + neck)} ${f2(T)}H${f2(e)}A${T} ${T} 0 0 0 ${f2(e)} ${f2(-T)}Z`;
+};
+
 // The liquid's colour, from cold to hot.
 const LIQUID = [[0, '#a6e1ff'], [0.25, '#49c6ff'], [0.45, '#4fd6c4'], [0.56, '#a8e67e'], [0.66, '#ffd75a'], [0.82, '#ffa23a'], [1, '#ff5a4a']];
 
 export const TRACKS = {
   // A rail with a fill: the slider as it always was, across or up and down.
   plain: {
-    across: 56, pad: [0, 0], vpad: [18, 18], direction: 'right', directions: ['right', 'up', 'down'], labels: 'side', thumb: '',
+    across: 56, pad: [0, 0], vpad: [18, 18], direction: 'right', directions: ['right', 'up', 'down'], labels: 'side',
     draw(W, H, g, dir) {
       const L = runLength(g);
       return `<g transform="${runFrame(g, dir)}"><rect x="-6" y="-6" width="${f2(L + 12)}" height="12" rx="6" fill="#2a3168"/>
@@ -55,45 +62,49 @@ export const TRACKS = {
   },
 
   // A thermometer: a glass tube on a bulb, the liquid rising in it and turning from icy blue through teal
-  // and gold to red as it warms. The handle is a ring round the tube at the top of the liquid.
+  // and gold to red as it warms. The glass is one shape, the bulb running into the tube by a smooth neck, and
+  // so is the liquid: its shaded edge runs round the bulb and up the tube as one. The handle is a solid disc
+  // at the top of the liquid.
   thermometer: {
-    across: 68, pad: [56, 18], vpad: [56, 18], direction: 'up', directions: ['right', 'up', 'down'], labels: 'side', thumb: 'ring',
-    RB: 21, TW: 11,
+    across: 68, pad: [56, 18], vpad: [56, 18], direction: 'up', directions: ['right', 'up', 'down'], labels: 'side',
+    RB: 21, TW: 11, BU: -30, LR: 15.5, LT: 6,
     draw(W, H, g, dir) {
-      const { RB, TW } = this, L = runLength(g), bu = -30, end = L + 12;   // the bulb's centre and the tube's end, along the run
-      const tube = (grow, fill, extra = '') => `<g fill="${fill}" ${extra}><circle cx="${bu}" cy="0" r="${RB + grow}"/><rect x="${bu}" y="${-TW - grow}" width="${f2(end - bu + grow)}" height="${2 * (TW + grow)}" rx="${TW + grow}"/></g>`;
+      const { RB, TW, BU: bu } = this, L = runLength(g), end = L + 12;   // the tube's far end, along the run
+      const id = `pi-thermo-${Math.random().toString(36).slice(2, 8)}`;
+      const glass = (grow, fill) => `<path d="${bulbTube(bu, RB + grow, TW + grow, end + grow)}" fill="${fill}"/>`;
       // the scale's marks on the glass: one at every tenth of the run, a longer one at every half
       const marks = Array.from({ length: 11 }, (_, i) => { const u = (L * i) / 10, l = i % 5 ? 3 : 5; return `<path d="M${f2(u)} ${TW - 2}v-${l}"/>`; }).join('');
-      return `<g transform="translate(0 4)"><g transform="${runFrame(g, dir)}">${tube(3, '#2f3678')}</g></g>
-        <g transform="${runFrame(g, dir)}">${tube(3, '#364090')}${tube(0, '#0f1434')}
+      return `<defs><clipPath id="${id}"><path class="liq-clip"/></clipPath></defs>
+        <g transform="translate(0 4)"><g transform="${runFrame(g, dir)}">${glass(3, '#2f3678')}</g></g>
+        <g transform="${runFrame(g, dir)}">${glass(3, '#364090')}${glass(0, '#0f1434')}
           <g stroke="#2a3168" stroke-width="1.6" stroke-linecap="round">${marks}</g>
-          <circle class="bulb-side" cx="${bu}" cy="1.4" r="${RB - 5}"/><circle class="bulb" cx="${bu}" cy="0" r="${RB - 5.5}"/>
-          <rect class="col-side" x="${bu}" y="-6" width="12" height="12" rx="6"/><rect class="col" x="${bu}" y="-6" width="12" height="9.5" rx="4.75"/>
+          <path class="liq-side"/><g clip-path="url(#${id})"><path class="liq" transform="translate(0 -2.6)"/></g>
           <path d="M${bu - 10} -6a11 11 0 0 1 8 -7" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
           <path d="M${bu + RB + 4} ${-TW + 4}H${f2(end - 6)}" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity="0.22"/></g>`;
     },
     set(svg, p, k, g) {
-      const L = runLength(g), bu = -30, top = L * p;
-      const c = ramp(LIQUID, k), side = mixHex(c, '#0e1436', 0.35);
-      for (const [sel, col] of [['.bulb', c], ['.col', c], ['.bulb-side', side], ['.col-side', side]]) svg.querySelector(sel).setAttribute('fill', col);
-      for (const sel of ['.col', '.col-side']) svg.querySelector(sel).setAttribute('width', f2(Math.max(12, top - bu + 6)));
+      const top = runLength(g) * p, c = ramp(LIQUID, k), d = bulbTube(this.BU, this.LR, this.LT, Math.max(0, top) + this.LT);
+      for (const sel of ['.liq', '.liq-side', '.liq-clip']) svg.querySelector(sel).setAttribute('d', d);
+      svg.querySelector('.liq').setAttribute('fill', c);
+      svg.querySelector('.liq-side').setAttribute('fill', mixHex(c, '#0e1436', 0.35));
     },
   },
 
-  // The sea cut away, the track running down into it: sky, the surface with its waves, water darkening
-  // with depth, the floor. The warm top layer runs from the surface down to the handle, its lower edge
-  // glinting, and the handle hangs on a line from a float on the surface. The depth picture, drawn tall.
+  // The sea cut away, the track running down into it: the sky with the sun, the surface with its waves,
+  // water darkening with depth, the floor. The warm top layer runs from the surface (filling the waves) down
+  // to the handle, yellow-orange over deep orange with a slow wave between them, its lower edge glinting,
+  // and the handle hangs on a line from a float on the surface. The depth picture, drawn tall.
   sea: {
-    across: 0, direction: 'down', directions: ['down'], labels: 'inside', thumb: '', picture: 'depth',
-    SKY: 34, FLOOR: 30,
+    across: 0, direction: 'down', directions: ['down'], labels: 'inside', picture: 'depth',
+    SKY: 34, FLOOR: 30, WL: 46, AMP: 3.2, DEEP_WL: 64,
     line(W, H) { return { x0: Math.round(W * 0.34), y0: this.SKY + 8, x1: Math.round(W * 0.34), y1: H - 4 - this.FLOOR + 4 }; },
     // Three layers: the water behind, what the value moves (the warm layer, its edge, the line) in the
     // middle, and in front what moves on the clock (waves, float, bubbles, fish, weed). Each is a layer of
     // its own, so moving the handle repaints only the middle one, and the clock only the others.
     draw(W, H) {
-      const id = `pi-sea-${Math.random().toString(36).slice(2, 8)}`, S = this.SKY, B = H - 4, F = B - this.FLOOR;
+      const id = `pi-sea-${Math.random().toString(36).slice(2, 8)}`, S = this.SKY, B = H - 4, F = B - this.FLOOR, WL = this.WL;
       const clip = n => `<clipPath id="${id}-${n}"><rect width="${W}" height="${B}" rx="18"/></clipPath>`;
-      const crest = `q9 -4.5 18 0${'t18 0'.repeat(Math.ceil(W / 18) + 3)}`;
+      const surf = waves(-WL, S, WL, this.AMP, Math.ceil(W / WL) + 3);
       const rays = [0.18, 0.5, 0.8].map(x => `<path d="M${f2(W * x - 14)} ${S}h28l${f2(W * 0.06)} ${f2((F - S) * 0.75)}h-10z"/>`).join('');
       const weed = (x, h) => `<path class="weed" data-x="${f2(x)}" data-h="${h}" fill="none" stroke="#1fa78c" stroke-width="4" stroke-linecap="round"/>`;
       return {
@@ -101,7 +112,7 @@ export const TRACKS = {
           <rect y="4" width="${W}" height="${B}" rx="18" fill="#0a0e2e"/>
           <g clip-path="url(#${id}-b)"><rect width="${W}" height="${B}" fill="url(#${id}-w)"/><g class="rays" fill="#ffffff" opacity="0.06">${rays}</g></g>`,
         value: `<defs>${clip('v')}</defs><g clip-path="url(#${id}-v)">
-          <g class="warm"><rect class="w1" x="0" y="${S - 4}" width="${W}" height="10" fill="#ffa23a"/><rect class="w2" x="0" y="${S}" width="${W}" height="6" fill="#ee6b5a"/></g>
+          <g class="warm"><path class="w1" fill="${WARM[0]}"/><path class="w2" fill="${WARM[1]}"/></g>
           <path class="edge" stroke="#ffe9a6" stroke-width="3" stroke-dasharray="0.1 9" stroke-linecap="round"/>
           <path class="cable" stroke="#dde4ff" stroke-width="2" opacity="0.7"/></g>`,
         front: `<defs>${clip('f')}</defs><g clip-path="url(#${id}-f)">
@@ -111,24 +122,30 @@ export const TRACKS = {
           <path d="M0 ${F + 14}Q${f2(W * 0.3)} ${F + 2} ${f2(W * 0.58)} ${F + 10}T${W} ${F + 8}V${B}H0Z" fill="#0f1650"/>
           <path d="M${f2(W * 0.74)} ${F + 4}l12 -14 14 16z" fill="#1b2a80"/><path d="M${f2(W * 0.74 + 12)} ${F - 10}l4 5" stroke="#364090" stroke-width="2.4" stroke-linecap="round"/>
           ${weed(W * 0.1, 30)}${weed(W * 0.14, 22)}${weed(W * 0.56, 34)}${weed(W * 0.6, 24)}
-          <rect width="${W}" height="${S}" fill="#141a3c"/>
-          <g class="rolling"><path d="M-36 ${S}${crest}V0H-36z" fill="#141a3c"/><path d="M-36 ${S}${crest}" fill="none" stroke="#b3ebff" stroke-width="2.6" opacity="0.85"/></g>
-          <circle cx="${f2(W - 36)}" cy="${S / 2 - 1}" r="9" fill="#ffd75a"/><path d="M${f2(W - 43)} ${S / 2 - 3}a8 8 0 0 1 5 -6" fill="none" stroke="#fff3c4" stroke-width="2.6" stroke-linecap="round"/>
+          <g class="rolling"><path d="${surf}V-10H${-WL}z" fill="${SKY}"/><path d="${surf}" fill="none" stroke="#fff3c4" stroke-width="2.6" opacity="0.9"/></g>
+          ${sun(W - 34, S / 2 - 1, 7)}
           <g class="float"><ellipse cx="0" cy="2" rx="9" ry="6" fill="#8f1f44"/><ellipse cx="0" cy="0" rx="9" ry="6" fill="#ee4b7a"/><rect x="-9" y="-1.5" width="18" height="3" fill="#ffffff"/><path d="M0 -6v-7" stroke="#dde4ff" stroke-width="2" stroke-linecap="round"/></g></g>
           <rect x="1.5" y="1.5" width="${W - 3}" height="${B - 3}" rx="17" fill="none" stroke="#364090" stroke-width="3"/>`,
       };
     },
+    // the warm layer, from just above the highest crest down to the handle, at the clock's time t
+    warm(svg, y, W, t) {
+      const L = warmLayer(0, W, this.SKY - this.AMP - 3, Math.max(this.SKY + 2, y), this.DEEP_WL, cycle(t, 9));
+      svg.querySelector('.w1').setAttribute('d', L.top);
+      svg.querySelector('.w2').setAttribute('d', L.deep);
+    },
     set(svg, p, k, g) {
-      const S = this.SKY, y = g.y0 + (g.y1 - g.y0) * p, d = Math.max(2, y - S), W = g.W;
-      svg.querySelector('.w1').setAttribute('height', f2(d + 4));
-      const w2 = svg.querySelector('.w2');
-      w2.setAttribute('y', f2(S + d * 0.55)); w2.setAttribute('height', f2(d * 0.45));
+      const S = this.SKY, y = g.y0 + (g.y1 - g.y0) * p, W = g.W;
+      this.warm(svg, y, W, svg._t || 0);
+      svg._y = y;
       svg.querySelector('.edge').setAttribute('d', `M0 ${f2(y)}H${W}`);
       svg.querySelector('.cable').setAttribute('d', `M${g.x0} ${S - 2}V${f2(y)}`);
     },
     move(svg, t, p, g) {
       const S = this.SKY, W = g.W, F = g.H - 4 - this.FLOOR;
-      svg.querySelector('.rolling').setAttribute('transform', `translate(${f2(-cycle(t, 4.5) * 36)} ${f2(1.2 * wave(t, 1.1))})`);
+      svg._t = t;
+      if (svg._y !== undefined) this.warm(svg, svg._y, W, t);
+      svg.querySelector('.rolling').setAttribute('transform', `translate(${f2(-cycle(t, 5.5) * this.WL)} ${f2(1.2 * wave(t, 1.1))})`);
       svg.querySelector('.edge').setAttribute('stroke-dashoffset', f2(-t * 6));
       svg.querySelector('.rays').setAttribute('transform', `translate(${f2(6 * wave(t, 0.35))} 0)`);
       svg.querySelector('.float').setAttribute('transform', `translate(${g.x0} ${f2(S - 3 + 1.6 * wave(t, 1.6))}) rotate(${f2(6 * wave(t, 1.6, 0.8))})`);
