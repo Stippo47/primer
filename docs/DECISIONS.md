@@ -334,3 +334,9 @@ Their words are in primer-data `notes/answers-2026-11-19c.md`.
 ## 2026-11-19: the geometric-glow style, tried on a cast
 
 In chat, on the ten gecko styles: "Try 8 animals and a human and monster in the 1st style the lizard is in". Style 1 is geometric glow (round 13): built from circles, half circles and boxes, lit by a small glowing lamp in the dark, violet shadows and a warm edge of light. Next: ten characters in it (eight animals, a person, a monster), one picture each, to see whether the style holds across a cast.
+My calls building the animation notes (branch s2-anim), theirs to overturn on the phone:
+
+- **Directing is general.** Shots (cut, fade, push, zoom; split; inset) are scene actions; the camera moves (a place, a zoom, an angle from low down, a heading, following a storm, the world drifting) are the map's calls; a new part, the sea and sky seen from the side, is the cutaway for anything between the sea and the sky. Both pilot animations are re-directed with them, with no spoken words changed.
+- **Soft motion in scenes, lively in lessons.** In a scene things fade and grow in and every move eases in and out with no overshoot; a lesson's parts keep the approved bounce.
+- **Sound effects are made here**, from noise and sine waves (no recordings, nobody else's sounds), quiet beside the voice, played as plain `<audio>` like the voice. They follow the Effects switch, which is off since the press sounds were disliked; turning it on to hear them brings the press sounds back too. Whether animations' sounds should have a switch of their own is a question for the phone.
+- **A new narrator switches a topic all at once**, once every clip of it is down; until then the old voice goes on.

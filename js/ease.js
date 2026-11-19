@@ -12,6 +12,39 @@ export const out = k => 1 - Math.pow(1 - k, 3);
 export const inn = k => k * k * k;
 export const inOut = k => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 
+// Soft: an ease in and out whose fastest moment is only half again its average speed (a cubic in-out's is
+// three times it, which reads as a snap). The camera, tracks and anything a scene moves use this.
+export const soft = k => (k <= 0 ? 0 : k >= 1 ? 1 : 0.5 - 0.5 * Math.cos(Math.PI * k));
+// The eases a scene's stretch can name (docs/format.md, "A scene").
+export const EASES = { soft, linear: k => clamp01(k), in: k => clamp01(k) * clamp01(k), out: k => 1 - (1 - clamp01(k)) * (1 - clamp01(k)) };
+
+// A value that glides to wherever it's sent, softly, and can be sent somewhere new mid-glide without a jolt:
+// the new glide starts from where it is, at the speed it's going (a cubic Hermite curve, so its speed never
+// jumps). From rest it eases in and out like `soft`. Times are in milliseconds (performance.now()).
+export class Glide {
+  constructor(v = 0) { this.from = v; this.to = v; this.v0 = 0; this.t0 = 0; this.ms = 0; }
+  // Where it is at `now`, and how fast it's going (per millisecond).
+  at(now) {
+    if (!this.ms || now >= this.t0 + this.ms) return this.to;
+    const k = clamp01((now - this.t0) / this.ms), m0 = this.v0 * this.ms, d = this.to - this.from;
+    const k2 = k * k, k3 = k2 * k;
+    return this.from + (k3 - 2 * k2 + k) * m0 + (3 * k2 - 2 * k3) * d;
+  }
+  speed(now) {
+    if (!this.ms || now >= this.t0 + this.ms) return 0;
+    const k = clamp01((now - this.t0) / this.ms), m0 = this.v0 * this.ms, d = this.to - this.from;
+    return ((3 * k * k - 4 * k + 1) * m0 + (6 * k - 6 * k * k) * d) / this.ms;
+  }
+  moving(now) { return !!this.ms && now < this.t0 + this.ms; }
+  // Off to `to` over `ms` (0: there at once).
+  go(to, ms, now) {
+    if (!(ms > 0)) { this.from = this.to = to; this.v0 = 0; this.ms = 0; return this; }
+    const v = this.at(now), s = this.speed(now);
+    Object.assign(this, { from: v, to, v0: s, t0: now, ms });
+    return this;
+  }
+}
+
 // Ease out with an overshoot. s = 0 is a plain ease out; s = 1.7 is a clear overshoot.
 export const back = (k, s) => {
   const c = k - 1;

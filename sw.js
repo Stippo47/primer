@@ -6,7 +6,7 @@
 // untouched. Lessons and their media are kept by the app itself, in IndexedDB, never here.
 // Caches it makes are named primer-app-<VERSION>, and it only ever clears caches with that prefix: a test
 // page under the same address keeps its own (primer-stage0-phone-…), and those must survive.
-const VERSION = '0.5.4';
+const VERSION = '0.5.5';
 const PREFIX = 'primer-app-';
 const CACHE = PREFIX + VERSION;
 const FILES = [
@@ -36,6 +36,8 @@ const FILES = [
   'js/readalong.js',
   'js/rules.js',
   'js/scene.js',
+  'js/sfx.js',
+  'js/shots.js',
   'js/store.js',
   'js/sync.js',
   'js/ui.js',
@@ -54,6 +56,10 @@ const FILES = [
   'parts/map/look.js',
   'parts/map/world.js',
   'parts/map/thumb.svg',
+  'parts/map/places.json',
+  'parts/section/part.json',
+  'parts/section/section.js',
+  'parts/section/thumb.svg',
   'parts/inputs/part.json',
   'parts/inputs/inputs.js',
   'parts/inputs/kit.js',
@@ -83,6 +89,14 @@ const FILES = [
   'vendor/ts-fsrs.mjs',
   'vendor/countries-110m.json',
   'vendor/fonts/nunito-latin.woff2',
+  'sounds/whoosh.m4a',
+  'sounds/cut.m4a',
+  'sounds/swell.m4a',
+  'sounds/pop.m4a',
+  'sounds/chime.m4a',
+  'sounds/wind.m4a',
+  'sounds/fizz.m4a',
+  'sounds/rumble.m4a',
 ];
 
 self.addEventListener('install', e => {

@@ -118,13 +118,19 @@ class Parts(unittest.TestCase):
         for form in ('dial', 'pile', 'string', 'sort', 'snap'):
             own = [k for k, s in desc['settings'].items() if form in (s.get('forms') or [])]
             self.assertTrue(own, form)
+    def test_scenes_shots_and_sounds_are_listed(self):
+        r = run('parts')
+        for words in ('shot.cut(part: part, how?: choice cut|fade|push|back|zoom)', 'shot.split(', 'shot.inset(', 'sounds (an action\'s "sound"): whoosh:',
+                      'section: Sea and sky', 'camera(place: place, zoom: number', 'label(name: name', 'flow(path: list of place'):
+            self.assertIn(words, r.stdout)
+
     def test_the_globe_is_a_preset_of_the_map(self):
         out = run('parts', check=True).stdout
         self.assertIn('globe: Globe (a preset: the map part with projection "globe", pinch false by default)', out)
 
     def test_json(self):
         parts = json.loads(run('parts', '--json', check=True).stdout)
-        self.assertEqual(sorted(parts), ['globe', 'inputs', 'map'])
+        self.assertEqual(sorted(parts), ['globe', 'inputs', 'map', 'section'])
         self.assertIn('marking', parts['inputs'])
         globe, flat = parts['globe'], parts['map']
         self.assertEqual((globe['of'], globe['settings']['projection']['default'], globe['settings']['pinch']['default']), ('map', 'globe', False))
@@ -518,6 +524,76 @@ class SceneCheck(SceneWork):
         out = self.errors(lambda S: line(S, 'turn')['do'].append({'from': 'globe', 'to': 'Brazil', 'call': ['spinTo', '$p']}))
         self.assertIn('"$p" is a number from 0 to 1, but spinTo\'s place is place', out)
         r = run('check', self.scene_topic(lambda S: line(S, 'turn')['do'].append({'from': 'globe', 'to': '$end', 'call': ['spinTo', 'Brazil', '$p']})))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_shots_cut_between_the_scenes_parts(self):
+        """Shots (shot.cut, shot.split, shot.inset) choose between a scene's parts; the checker knows them."""
+        def two(S):
+            S['parts']['section'] = {'part': 'section', 'settings': {'view': 'wide', 'warm': 0.5}}
+            for x in S['lines']:
+                for a in x.get('do') or []:
+                    a['call'][0] = 'globe.' + a['call'][0]
+            line(S, 'storm')['do'].append({'at': 'sea', 'call': ['shot.cut', 'section', 'zoom']})
+            line(S, 'track')['do'].append({'at': 'Then', 'call': ['shot.split', 'globe', 'section']})
+            line(S, 'end')['do'].append({'at': 'And', 'call': ['shot.inset', 'globe', 'top-left'], 'sound': 'chime'})
+            line(S, 'end')['do'].append({'at': 'scene', 'call': ['shot.inset', 'none']})
+            line(S, 'end')['do'].append({'at': 'end', 'call': ['section.cloud', 0.8, 2]})
+            S['shot'] = ['split', 'globe', 'section']
+        r = run('check', self.scene_topic(two))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        def bad(S):
+            two(S)
+            line(S, 'storm')['do'][-1]['call'] = ['shot.cut', 'chart']
+            line(S, 'track')['do'][-1]['call'] = ['shot.split', 'globe', 'globe']
+            line(S, 'end')['do'][0]['call'] = ['shot.wipe', 'globe']
+            line(S, 'end')['do'][-1]['call'] = ['shot.cut', 'section', 'spin']
+            S['shot'] = 'globe'
+        out = self.errors(bad)
+        self.assertIn('cut: "chart" isn\'t a part of this scene (globe, section)', out)
+        self.assertIn('a split shows two different parts', out)
+        self.assertIn('no shot "wipe"', out)
+        self.assertIn('"spin" isn\'t one of cut, fade, push, back, zoom', out)
+        self.assertIn('the opening shot is a shot call without "shot."', out)
+        # one part: nothing to cut between
+        out = self.errors(lambda S: line(S, 'turn')['do'].append({'at': 'globe', 'call': ['shot.cut', 'globe']}))
+        self.assertIn('a shot chooses between parts: this scene has only one', out)
+
+    def test_sounds_eases_and_ranges(self):
+        def good(S):
+            line(S, 'turn')['do'][0]['sound'] = 'whoosh'
+            line(S, 'storm')['do'].append({'at': 'appears', 'sound': 'swell'})
+            line(S, 'track')['do'][0].update(ease='linear', range=[0.2, 0.9])
+        r = run('check', self.scene_topic(good))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        def bad(S):
+            line(S, 'turn')['do'][0]['sound'] = 'bleep'
+            line(S, 'storm')['do'].append({'from': 'A', 'to': 'storm', 'sound': 'swell'})
+            line(S, 'storm')['do'][0]['ease'] = 'soft'
+            line(S, 'track')['do'][0].update(ease='bouncy', range=[0.2, 1.4])
+        out = self.errors(bad)
+        self.assertIn('"sound": "bleep" isn\'t a sound the kit has (whoosh, cut, swell', out)
+        self.assertIn('a sound on its own happens "at" a word', out)
+        self.assertIn('"ease" shapes a stretch', out)
+        self.assertIn('"ease" is one of soft, linear, in, out', out)
+        self.assertIn('"range" is [from, to], each 0 to 1', out)
+
+    def test_named_oceans_and_continents_are_labelled_while_they_matter(self):
+        said = 'The storm leaves *Africa* over the Atlantic.'
+        r = run('check', self.scene_topic(lambda S: line(S, 'storm').update(text=said, do=[])))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn('names Atlantic Ocean: write it on the map while it matters (globe.label "Atlantic Ocean")', r.stdout)
+        self.assertIn('names Africa', r.stdout)
+        def labelled(S):
+            line(S, 'storm').update(text=said)
+            line(S, 'storm')['do'] = [{'at': 'Africa', 'call': ['label', 'Africa']}, {'at': 'Atlantic', 'call': ['label', 'Atlantic Ocean']}]
+        r = run('check', self.scene_topic(labelled))
+        self.assertNotIn('names Atlantic', r.stdout)
+        self.assertNotIn('names Africa', r.stdout)
+        # a name the map doesn't know is an error; a named place works wherever a place does
+        out = self.errors(lambda S: line(S, 'storm')['do'].append({'at': 'sea', 'call': ['label', 'Atlantis']}))
+        self.assertIn('or an ocean, sea or continent it names', out)
+        self.assertIn('"Atlantis" isn\'t a country the map knows', out)
+        r = run('check', self.scene_topic(lambda S: line(S, 'turn')['do'][0].update(call=['spinTo', 'Caribbean Sea', 0.6])))
         self.assertEqual(r.returncode, 0, r.stdout)
 
     def test_waits_are_refused(self):

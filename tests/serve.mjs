@@ -62,7 +62,7 @@ const shaOf = path => {
   if (shas.get(path)?.value !== value) shas.set(path, { value, sha: createHash('sha1').update(path).update(value).digest('hex') });
   return shas.get(path).sha;
 };
-let down = false, fail = null, conflicts = 0, writes = 0, slow = 0;
+let down = false, fail = null, conflicts = 0, writes = 0, slow = 0, refuse = null;
 
 async function api(req, res, url, body, raw) {
   const send = (status, b, headers = {}) => {
@@ -76,6 +76,8 @@ async function api(req, res, url, body, raw) {
   if (path === '/__writes') { send(200, { writes }); return; }
   if (path === '/__down') { down = url.searchParams.get('on') === '1'; send(200, { down }); return; }
   if (path === '/__slow') { slow = Number(url.searchParams.get('ms')) || 0; send(200, { slow }); return; }
+  // a file that won't come down: blobs whose path holds this text are refused (a download that stops partway)
+  if (path === '/__refuse') { refuse = url.searchParams.get('match') || null; send(200, { refuse }); return; }
   if (path === '/__conflict') { conflicts = Number(url.searchParams.get('n')); send(200, { conflicts }); return; }
   if (path === '/__fail') {
     const code = Number(url.searchParams.get('code'));
@@ -86,7 +88,7 @@ async function api(req, res, url, body, raw) {
   if (path === '/__reset') { // back to how it started; ?data=<folder> seeds it from another folder, ?data=fixtures from the made-up one
     const d = url.searchParams.get('data');
     if (d) DATA = d === 'fixtures' ? FIXTURES : d;
-    files = await seed(); down = false; fail = null; conflicts = 0; writes = 0; slow = 0; send(200, { files: files.size }); return; }
+    files = await seed(); down = false; fail = null; conflicts = 0; writes = 0; slow = 0; refuse = null; send(200, { files: files.size }); return; }
   if (path === '/__put') { files.set(url.searchParams.get('path'), raw); send(200, { files: files.size }); return; }
   if (path === '/__del') { files.delete(url.searchParams.get('path')); send(200, { files: files.size }); return; }
   if (down) { req.socket.destroy(); return; }
@@ -124,7 +126,7 @@ async function api(req, res, url, body, raw) {
   if (path.startsWith(`${REPO}/git/blobs/`)) {
     const sha = path.split('/').pop();
     const p = [...files.keys()].find(k => shaOf(k) === sha);
-    if (!p) { send(404, { message: 'Not Found' }); return; }
+    if (!p || (refuse && p.includes(refuse))) { send(404, { message: 'Not Found' }); return; }
     send(200, files.get(p), { 'Content-Type': 'application/vnd.github.raw+json' });
     return;
   }

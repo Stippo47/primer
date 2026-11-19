@@ -1,0 +1,25 @@
+{
+  "about": "Named places the map knows besides countries: oceans, seas and continents. Each has a kind (how its name is drawn) and one or more anchors, [longitude, latitude], where its name can sit; the map uses the one in view nearest the middle. Any call that takes a place takes these names too (it goes to the first anchor), and the label call writes them on the map. The checker (skill/primer.py) reads this same file.",
+  "places": {
+    "Atlantic Ocean": { "kind": "ocean", "at": [[-42, 30], [-25, -20]] },
+    "Pacific Ocean": { "kind": "ocean", "at": [[-150, 20], [-125, -15], [170, 25], [-170, -20]] },
+    "Indian Ocean": { "kind": "ocean", "at": [[78, -18], [70, -5]] },
+    "Arctic Ocean": { "kind": "ocean", "at": [[0, 84], [-150, 80], [120, 80]] },
+    "Southern Ocean": { "kind": "ocean", "at": [[0, -60], [100, -58], [-120, -62]] },
+    "Caribbean Sea": { "kind": "sea", "at": [[-74, 15]] },
+    "Gulf of Mexico": { "kind": "sea", "at": [[-90, 25]] },
+    "Mediterranean Sea": { "kind": "sea", "at": [[17, 35]] },
+    "Arabian Sea": { "kind": "sea", "at": [[64, 15]] },
+    "Bay of Bengal": { "kind": "sea", "at": [[88, 15]] },
+    "South China Sea": { "kind": "sea", "at": [[114, 14]] },
+    "Coral Sea": { "kind": "sea", "at": [[155, -17]] },
+    "Gulf of Guinea": { "kind": "sea", "at": [[3, 1]] },
+    "Africa": { "kind": "continent", "at": [[18, 7]] },
+    "Europe": { "kind": "continent", "at": [[18, 51]] },
+    "Asia": { "kind": "continent", "at": [[90, 47]] },
+    "North America": { "kind": "continent", "at": [[-100, 44]] },
+    "South America": { "kind": "continent", "at": [[-60, -12]] },
+    "Australia": { "kind": "continent", "at": [[134, -25]] },
+    "Antarctica": { "kind": "continent", "at": [[0, -80]] }
+  }
+}

@@ -1,12 +1,30 @@
 {
-  "about": "Every part in the kit, by folder name. Each folder holds part.json (its description) and the module it names. A preset is a part under another name with some of its defaults changed; a lesson uses it exactly like a part, and can still set anything the part has.",
-  "parts": ["map", "inputs"],
+  "about": "Every part in the kit, by folder name. Each folder holds part.json (its description) and the module it names. A preset is a part under another name with some of its defaults changed; a lesson uses it exactly like a part, and can still set anything the part has. `scene` describes what a scene can do besides its parts' calls: its shots and its sound effects.",
+  "parts": ["map", "inputs", "section"],
   "presets": {
     "globe": {
       "of": "map",
       "title": "Globe",
       "about": "The map as a globe, the way stage 1 had it: projection globe, and no zooming by finger, so two quick taps on a pin step stay two taps. Every setting, call, event and state of the map works on it.",
       "settings": { "projection": "globe", "pinch": false }
+    }
+  },
+  "scene": {
+    "about": "A scene with two or more parts directs them with shots, called as \"shot.<call>\" like any action (js/shots.js). It opens on its first part, full, unless its \"shot\" says otherwise (a shot call without the prefix: [\"split\", \"globe\", \"section\"]). Any action can make a sound effect as it happens (\"sound\"), and a shot makes its own unless told (\"sound\": \"none\").",
+    "calls": {
+      "cut": { "args": [{ "name": "part", "type": "part" }, { "name": "how", "type": "choice", "options": ["cut", "fade", "push", "back", "zoom"], "optional": true }], "about": "Shows one part, full, and nothing else. how: cut (at once, settling in from a touch closer; a soft puff), fade (one dissolving into the other), push (in from the right; a whoosh), back (in from the left; a whoosh), zoom (the old one swells away, the new one grows into place; a whoosh). cut unless told." },
+      "split": { "args": [{ "name": "top", "type": "part" }, { "name": "bottom", "type": "part" }], "about": "Two parts, one above the other, each half the picture: the same thing seen two ways (from above and from the side), or two places side by side. Parts already showing glide to their halves. A whoosh." },
+      "inset": { "args": [{ "name": "part", "type": "part", "none": true }, { "name": "corner", "type": "choice", "options": ["top-right", "top-left", "bottom-right", "bottom-left"], "optional": true }], "about": "Lays a part over a corner of the picture as a small rounded window (top-right unless told): where we are, while the picture is a close-up. \"none\" takes the inset away. A soft pop." }
+    },
+    "sounds": {
+      "whoosh": "A soft rush of air, rising and falling: a push or a zoom to another picture.",
+      "cut": "A short soft puff: a cut.",
+      "swell": "A warm rising swell: something growing, a storm strengthening.",
+      "pop": "A small round bubble: a point or a name arriving.",
+      "chime": "Two soft mallet notes: a term worth remembering.",
+      "wind": "A breath of wind that builds and dies away: air rushing in, winds blowing.",
+      "fizz": "Tiny rising bubbles: water evaporating.",
+      "rumble": "A soft, far-off rumble: a storm cloud."
     }
   }
 }

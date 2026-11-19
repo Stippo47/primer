@@ -1104,7 +1104,7 @@ try {
     return [];
   };
   const parts = await ev('__primer.parts.listParts()');
-  ok(JSON.stringify(parts) === JSON.stringify(['map', 'inputs']), 'the kit is the map and the inputs: the globe is a preset of the map, not a part of its own', parts);
+  ok(JSON.stringify(parts) === JSON.stringify(['map', 'inputs', 'section']), 'the kit is the map, the inputs and the sea and sky: the globe is a preset of the map, not a part of its own', parts);
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
     const cases = [];
@@ -1127,13 +1127,14 @@ try {
       await ev(`(async()=>{const el=document.getElementById('bench');el.innerHTML='';window.__h=await __primer.parts.mount(${JSON.stringify(name)},el,${JSON.stringify(c.settings)},{media:p=>'/primer/../__gh/__none/'+p});})()`);
       await sleep(name === 'map' ? 250 : 80);
       // it draws
-      const drawn = await ev(name === 'map'
+      const drawn = await ev(name !== 'inputs'
         ? `(()=>{const c=document.querySelector('#bench canvas');const g=c.getContext('2d');const d=g.getImageData(c.width/2-20,c.height/2-20,40,40).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>0)n++;return n>100})()`
         : `(()=>{const r=document.querySelector('#bench .pi');return !!r&&r.getBoundingClientRect().height>30&&r.children.length>0})()`);
       if (drawn) drew++; else problems.push(`${label}: drew nothing`);
       // it answers a finger
       let moved = false;
-      if (name === 'map') {
+      if (desc.touch === false) moved = true;   // a part for scenes and figures: nothing in it takes a touch
+      else if (name === 'map') {
         const c = await f.rect('#bench canvas');
         await f.tapAt(c.x, c.y);
         moved = !!(await ev('__h.state().tapped'));
@@ -1185,6 +1186,9 @@ try {
     spinTo: [[10, 20], 0.2], zoomTo: [2, 0.2], highlight: [['Brazil', 'France'], 'pink'], colourBy: [{ Brazil: 3, France: 1, Chad: 2 }, 'green'], band: [5, 20],
     point: [[0, 0], 'Here'], marker: [[-40, 15], 'storm', 'Storm'], arc: [[-0.1, 51.5], [-118.2, 34]], track: [[[-25, 12], [-45, 15], [-62, 21]], 0.5, 'storm', 0.3],
     clear: [], reveal: [26.5], mark: ['right'], lock: [], reset: [],
+    camera: [[-45, 18], 2.4, 0.6, 10, 0.2], follow: [true, 0.5], drift: [8, 0.2], grow: [1.4, 0.2], label: ['Atlantic Ocean'], parallel: [5, '5° N'],
+    flow: [[[-20, 18], [-35, 14], [-50, 16]], 'cyan', 0.3],
+    sun: [1, 0.2], warm: [0.8, 0.2], vapour: [1, 0.2], rise: [1.5, 0.2], cloud: [0.9, 0.2], release: [1, 0.2], inflow: [1, 0.2], rain: [0.5, 0.2], view: ['cloud', 0.2], tag: ['cloud', 'Cloud'],
   };
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
@@ -1350,8 +1354,10 @@ try {
     await sleep(900);
     const rt = await ev('__h.debug().routes');
     ok(rt.length === 2 && Math.abs(rt[1].progress - 0.75) < 1e-6 && rt[1].rider === 'pin', `${projection}: calling track again with the same path moves that track on, rather than adding one`, rt);
-    const drawnTo = await pixelAt([-45, 15]), notYet = await pixelAt([-73, 30]);
-    ok(drawnTo.every(x => x > 200) && !notYet.every(x => x > 200), `${projection}: a track is drawn as far as its progress, and no further`, { drawnTo, notYet });
+    // the curve rounds the places between its ends, so look for the line within a few pixels of each
+    const whiteNear = place => ev(`(()=>{const c=document.querySelector('#bench canvas'),b=c.getBoundingClientRect(),k=c.width/b.width,p=__h.where(${JSON.stringify(place)});const d=c.getContext('2d').getImageData(Math.round((p.x-b.left)*k)-9,Math.round((p.y-b.top)*k)-9,19,19).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]>200&&d[i+2]>200)n++;return n})()`);
+    const drawnTo = await whiteNear([-45, 15]), notYet = await whiteNear([-73, 30]);
+    ok(drawnTo > 4 && notYet === 0, `${projection}: a track is drawn as far as its progress, and no further`, { drawnTo, notYet });
     // colouring from a table: countries, then bands of latitude
     await ev(`__h.run(['spinTo', [-30, -10], 0])`);
     await ev(`__h.run(['zoomTo', 1, 0])`);
@@ -1442,7 +1448,8 @@ try {
             const f0 = fired.find(y => y.line === x.id && y.n === n);
             const ws = timing.lines[x.id][narrator].words;
             const words = (x.say || x.text).split(/\s+/).map(w => w.replace(/[*’]/g, m => (m === '’' ? "'" : '')).toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''));
-            const k = words.indexOf(String(a.at || a.from).toLowerCase().split(/\s+/)[0].replace(/[^\p{L}\p{N}'-]/gu, ''));
+            const want = String(a.at || a.from).toLowerCase().split(/\s+/).map(w => w.replace(/[^\p{L}\p{N}'-]/gu, ''));
+            const k = words.findIndex((_, i) => want.every((w, j) => words[i + j] === w));
             return f0 && k >= 0 && Math.abs(f0.want - ws[k][1]) < 0.001;
           }));
           ok(said, `${node.id}: each at the time its word is said in the clip, by the timing file`);
@@ -2336,6 +2343,162 @@ try {
   await control('close');
   await sleep(300);
 
+  console.log('Directed scenes: shots, names on the map, soft motion, smooth tracks and sounds');
+  {
+    // the kit's sounds: the same names in parts.json and js/sfx.js, every file there and playable
+    const kitJson = JSON.parse(readFileSync(join(ROOT, 'parts', 'parts.json'), 'utf8'));
+    const sfxNames = await ev(`import('/primer/js/sfx.js').then(m => m.SOUND_NAMES)`);
+    ok(JSON.stringify(Object.keys(kitJson.scene.sounds)) === JSON.stringify(sfxNames), 'the sounds a scene can make are the same in the kit (parts.json) and the player (js/sfx.js)', sfxNames);
+    const lengths = await ev(`Promise.all(${JSON.stringify(sfxNames)}.map(n => new Promise(r => { const a = new Audio('/primer/sounds/' + n + '.m4a'); a.preload = 'auto'; a.onloadedmetadata = () => r(a.duration); a.onerror = () => r(-1); setTimeout(() => r(-2), 5000); })))`);
+    ok(lengths.every(d => d > 0.1 && d < 3.5), `every sound is a short file the browser plays (${lengths.map(d => d.toFixed(2)).join(', ')} s)`, lengths);
+    // the stretch's ease and range
+    const eases = await ev(`import('/primer/js/scene.js').then(m => { const s = m.stretch({}), r = m.stretch({ range: [0.2, 0.8], ease: 'linear' }); return [s(0), s(0.25), s(0.5), s(1), r(0), r(0.5), r(1)].map(x => +x.toFixed(4)); })`);
+    ok(JSON.stringify(eases) === JSON.stringify([0, 0.1464, 0.5, 1, 0.2, 0.5, 0.8]), 'a stretch eases in and out unless told, and runs across its range', eases);
+
+    // the map in a scene: soft, with its camera, names, smooth tracks and fades
+    await ev(`(async()=>{document.getElementById('bench')?.remove();const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50;background:#141a3c';document.body.append(d);window.__h=await __primer.parts.mount('globe',d,{style:'day',spin:'locked',tap:'none',view:[-40,15]},{motion:'soft'});return true})()`);
+    ok((await ev('__h.debug().soft')) === true && (await ev(`__primer.parts.mount('globe', document.createElement('div'), {}).then(h => { const s = h.debug().soft; h.remove(); return s; })`)) === false, 'a part mounted in a scene moves softly; the same part in a lesson keeps its spring');
+    const P = [[-25, 12], [-45, 15], [-62, 21], [-73, 30], [-66, 39]];
+    await ev(`__h.run(['track', ${JSON.stringify(P)}, 1, 'storm', 0])`);
+    const route = (await ev('__h.debug()')).routes[0];
+    ok(route.points > 60 && route.bend < 6, `a storm's track is one smooth curve along its places: ${route.points} close points, its sharpest turn ${route.bend}° (the old straight legs turned up to 40° at each place)`, route);
+    await ev(`__h.run(['clear', 0])`);
+    // a glide along the track: always forward, no stop, its fastest moment under twice its average
+    const prog = await ev(`(async()=>{__h.run(['track', ${JSON.stringify(P)}, 1, 'storm', 1.2]);const out=[];const t0=performance.now();while(performance.now()-t0<1500){await new Promise(r=>requestAnimationFrame(r));out.push([performance.now()-t0, __h.debug().routes[0].progress]);}return out})()`);
+    const steps = prog.slice(1).map((x, i) => (x[1] - prog[i][1]) / Math.max(1, x[0] - prog[i][0]));
+    const moving = steps.filter((_, i) => prog[i + 1][0] < 1150);
+    const mean = 1 / 1200;
+    ok(prog.every((x, i) => !i || x[1] >= prog[i - 1][1] - 1e-9) && prog.at(-1)[1] === 1, 'the storm glides along it, never back', prog.slice(-3));
+    ok(Math.max(...moving) < mean * 2, `softly: its fastest moment is ${(Math.max(...moving) / mean).toFixed(2)} times its average speed (a cubic ease's is 3)`);
+    // sent on further mid-glide, it carries on at the speed it had
+    const joined = await ev(`(async()=>{__h.run(['clear',0]);__h.run(['track', ${JSON.stringify(P)}, 0.5, 'storm', 1]);await new Promise(r=>setTimeout(r,500));const s=[];for(let i=0;i<4;i++){await new Promise(r=>requestAnimationFrame(r));s.push([performance.now(),__h.debug().routes[0].progress]);}__h.run(['track', ${JSON.stringify(P)}, 1, 'storm', 1.4]);for(let i=0;i<4;i++){await new Promise(r=>requestAnimationFrame(r));s.push([performance.now(),__h.debug().routes[0].progress]);}return s})()`);
+    const v = i => (joined[i + 1][1] - joined[i][1]) / (joined[i + 1][0] - joined[i][0]);
+    ok(Math.abs(v(5) - v(2)) < Math.max(v(2), 1e-6) * 0.6, `sent on mid-glide, it carries on from the speed it had (${(v(2) * 1000).toFixed(3)} then ${(v(5) * 1000).toFixed(3)} of the way a second)`, joined);
+    // the camera: a place, a zoom, an angle and a heading on one soft glide; following the storm; the world turning
+    await ev(`__h.run(['clear', 0]); __h.run(['camera', [-45, 18], 2.4, 0.7, 20, 0.4])`);
+    await sleep(700);
+    const cam = (await ev('__h.debug()')).camera;
+    ok(Math.abs(cam.zoom - 2.4) < 0.01 && Math.abs(cam.tilt - 0.7) < 0.01 && Math.abs(cam.heading - 20) < 0.1 && Math.abs(cam.centre[0] + 45) < 0.2, 'the camera moves to a place, a zoom, an angle and a heading together', cam);
+    const lowered = await ev(`(()=>{const p=__h.where([-45,18]),b=document.getElementById('bench').getBoundingClientRect();return {y:p.y-b.top,h:b.height}})()`);
+    ok(lowered.y > lowered.h * 0.6, 'seen at an angle, the place sits low in the picture with the world curving away above it', lowered);
+    await ev(`__h.run(['camera', [-40, 15], 1.5, 0, 0, 0]); __h.run(['track', ${JSON.stringify(P)}, 1, 'storm', 2]); __h.run(['follow', true, 0.6])`);
+    await sleep(1400);
+    const chase = await ev(`(()=>{const d=__h.debug(),p=__h.where(${JSON.stringify(P[3])});return {following:d.camera.following}})()`);
+    const head = await ev(`(()=>{const b=document.getElementById('bench').getBoundingClientRect();const c=__h.debug().camera.centre;return c})()`);
+    ok(chase.following && Math.abs(head[0] - -40) > 15, 'following, the camera goes with the storm', head);
+    await ev(`__h.run(['follow', false]); __h.run(['drift', 20, 0.2])`);
+    const c0 = (await ev('__h.debug()')).camera.centre[0];
+    await sleep(800);
+    const c1 = (await ev('__h.debug()')).camera.centre[0];
+    ok(((c0 - c1 + 540) % 360) - 180 > 5, `drifting, the world turns by itself, west to east (${c0} to ${c1})`);
+    await ev(`__h.run(['drift', 0, 0]); __h.run(['clear', 0]); __h.run(['camera', [-40, 20], 1.4, 0, 0, 0])`);
+    // names of oceans and continents: written while they matter, and taken away
+    await ev(`__h.run(['label', 'Atlantic Ocean']); __h.run(['label', 'Africa']); __h.run(['label', 'Nowhere Sea'])`);
+    await sleep(900);
+    let named = (await ev('__h.debug()')).named;
+    ok(named.length === 2 && named.every(n => n.at) && named.find(n => n.name === 'Atlantic Ocean').kind === 'ocean' && named.find(n => n.name === 'Africa').kind === 'continent', 'an ocean and a continent are named on the map where they are; a name the map doesn\'t know is left out', named);
+    await shot('50-map-names');
+    await ev(`__h.run(['label', 'Africa', false])`);
+    named = (await ev('__h.debug()')).named;
+    ok(named.find(n => n.name === 'Africa').fading, 'taken away, a name fades', named);
+    await sleep(700);
+    ok((await ev('__h.debug()')).named.length === 1, 'and is gone');
+    // a clear in a scene fades everything out
+    await ev(`__h.run(['point', [-40, 15], 'Here']); __h.run(['flow', [[-20, 20], [-35, 18], [-50, 20]], 'cyan', 0.3]); __h.run(['parallel', 0, 'Equator'])`);
+    await sleep(500);
+    await ev(`__h.run(['clear'])`);
+    const fading = (await ev('__h.debug()')).routes;
+    ok(fading.length === 1 && fading[0].fading && fading[0].kind === 'flow', 'in a scene, a clear fades things out rather than snapping them away', fading);
+    await sleep(700);
+    const cleared = await ev('__h.debug()');
+    ok(!cleared.routes.length && !cleared.named.length && !cleared.parallels.length, 'and then they are gone', cleared);
+    await ev(`__h.remove(); document.getElementById('bench').remove()`);
+
+    // the sea and sky
+    await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px;z-index:50';document.body.append(d);window.__h=await __primer.parts.mount('section',d,{view:'wide'},{motion:'soft'});return true})()`);
+    await ev(`__h.run(['warm', 1, 0.3]); __h.run(['vapour', 1, 0.3]); __h.run(['cloud', 0.8, 0.3]); __h.run(['tag', 'cloud', 'Cloud'])`);
+    await sleep(600);
+    let sec = await ev('__h.debug()');
+    ok(sec.levels.warm === 1 && sec.levels.cloud === 0.8 && sec.tags.length === 1 && sec.frames > 10, 'the sea and sky: its levels glide where they are sent, a tag names a thing, and it keeps moving', sec);
+    await shot('51-sea-and-sky');
+    await ev(`document.getElementById('bench').setAttribute('data-off', '')`);
+    const f0 = (await ev('__h.debug()')).frames;
+    await sleep(400);
+    ok((await ev('__h.debug()')).frames === f0, 'put away by a shot, it draws nothing');
+    await ev(`document.getElementById('bench').removeAttribute('data-off')`);
+    await sleep(200);
+    ok((await ev('__h.debug()')).frames > f0, 'and shown again, it draws at once');
+    await ev(`__h.run(['clear', 0.2])`);
+    await sleep(500);
+    sec = await ev('__h.debug()');
+    ok(Object.values(sec.levels).every(x => x === 0) && !sec.tags.length, 'a clear takes it back to nothing', sec);
+    await ev(`__h.remove(); document.getElementById('bench').remove()`);
+
+    // shots, in a scene played full screen
+    const directed = {
+      title: 'A directed scene',
+      parts: {
+        globe: { part: 'globe', settings: { style: 'warmth', spin: 'locked', tap: 'none', view: [-40, 15] } },
+        section: { part: 'section', settings: { view: 'wide', warm: 0.2 } },
+      },
+      lines: [
+        { id: 'one', text: 'This is the Atlantic Ocean, and a storm moves along its track.', do: [
+          { at: 'Atlantic', call: ['globe.label', 'Atlantic Ocean'], sound: 'pop' },
+          { from: 'moves', to: 'track', call: ['globe.track', P, '$p', 'storm'], ease: 'linear' }] },
+        { id: 'two', text: 'Now we cut to the sea and the sky, and the sea warms.', do: [
+          { at: 'cut', call: ['shot.cut', 'section', 'push'] },
+          { at: 'warms', call: ['section.warm', 1, 0.5] }] },
+        { id: 'three', text: 'Both at once, one above the other.', do: [{ at: 'Both', call: ['shot.split', 'globe', 'section'] }] },
+        { id: 'four', text: 'Then a small window over the sea.', do: [{ at: 'Then', call: ['shot.cut', 'section', 'fade'] }, { at: 'window', call: ['shot.inset', 'globe', 'top-right'] }] },
+        { id: 'five', text: 'The window goes, and a quiet chime.', do: [{ at: 'window', call: ['shot.inset', 'none'] }, { at: 'chime', sound: 'chime' }] },
+      ],
+    };
+    await ev(`__primer.app.setPref('effects', true); true`);
+    await ev(`(async()=>{const P=__primer;const file=P.data.sceneLesson(${JSON.stringify(directed)},'directed','scene-topic');const node={kind:'animation',id:'directed',title:'A directed scene',file};
+      const {playVideo}=await import('/primer/js/screens/video.js');window.__dv=await playVideo(P.app,{id:'scene-topic',title:'T',narrator:'bella',path:[node]},node,{record:()=>{},media:p=>p,voice:{on:()=>false},captions:{on:()=>true},onLeave:()=>{},onNext:()=>{}});return true})()`);
+    const dv = () => ev('__dv.scene.debug()');
+    const slots = () => ev(`[...document.querySelectorAll('.video .spart')].map(e => e.dataset.part + ':' + (e.hasAttribute('data-off') ? 'off' : e.dataset.slot))`);
+    ok(JSON.stringify(await slots()) === '["globe:full","section:off"]', 'a scene with shots opens on its first part, full; the other waits, hidden', await slots());
+    ok(await ev(`document.documentElement.classList.contains('vid') && getComputedStyle(document.documentElement).backgroundColor === 'rgb(9, 12, 43)'`), "while a video is open, the page's own ground is the video's, right to the bottom of the screen");
+    await waitFor(`__dv.scene.debug().line >= 1`, 12000);
+    ok((await dv()).effects.some(e => e.name === 'pop' && e.played), 'an action makes its sound as it happens (Effects on)', (await dv()).effects);
+    await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
+    await sleep(900);
+    let d2 = await dv();
+    ok(JSON.stringify(await slots()) === '["globe:off","section:full"]' && d2.effects.some(e => e.name === 'whoosh' && e.played), 'a cut pushes the sea and sky in, with a whoosh; the globe goes off', [await slots(), d2.effects]);
+    await waitFor(`__dv.scene.debug().shots.layout.globe === 'top'`, 8000);
+    await sleep(900);
+    const halves = await ev(`[...document.querySelectorAll('.video .spart')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom), Math.round(r.width)]; })`);
+    ok(halves[0][0] === 0 && Math.abs(halves[0][1] - H / 2) < 4 && Math.abs(halves[1][0] - H / 2) < 4 && halves[1][1] === H && halves.every(x => x[2] === W), 'a split shows both, one above the other, each half the screen', halves);
+    ok(await ev(`(()=>{const c=document.querySelector('.video .spart[data-part=globe] canvas');return Math.abs(c.width/c.height - c.clientWidth/c.clientHeight) < 0.02})()`), "the globe's picture is drawn for its new box, never stretched");
+    await shot('52-shot-split');
+    await waitFor(`String(__dv.scene.debug().shots.layout.globe).startsWith('inset')`, 8000);
+    await sleep(700);
+    const inset = await ev(`(()=>{const r=document.querySelector('.video .spart[data-part=globe]').getBoundingClientRect();return {w:r.width,h:r.height,right:${W}-r.right,top:r.top}})()`);
+    ok(inset.w < W / 2 && Math.abs(inset.w - inset.h) < 2 && inset.right < 30 && inset.top > SAT, 'an inset is a small window in the top right corner', inset);
+    await shot('53-shot-inset');
+    await waitFor(`__dv.scene.state === 'ended'`, 15000);
+    d2 = await dv();
+    ok(JSON.stringify(await slots()) === '["globe:off","section:full"]' && d2.effects.some(e => e.name === 'chime'), 'it takes the inset away, and a sound can stand on its own', [await slots(), d2.effects.map(e => e.name)]);
+    // seeking back rebuilds the shot of that moment, at once
+    await ev(`__dv.scene.seekTo(__dv.scene.starts[2] + 2.5, false)`);
+    await sleep(200);
+    ok(JSON.stringify(await slots()) === '["globe:top","section:bottom"]' && !(await dv()).shots.moving.length, 'seeking, the picture is rebuilt as that moment shows it: split, nothing still moving', await slots());
+    await ev(`__dv.scene.seekTo(0.2, false)`);
+    await sleep(200);
+    ok(JSON.stringify(await slots()) === '["globe:full","section:off"]', 'and back at the start, the opening shot', await slots());
+    // with Effects off, nothing sounds
+    await ev(`__primer.app.setPref('effects', false); __dv.scene.sfx.heard.length = 0; __dv.scene.seekTo(__dv.scene.starts[1], true)`);
+    await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
+    ok((await dv()).effects.every(e => !e.played), 'with Effects off, no sound plays', (await dv()).effects);
+    await ev(`__dv.remove()`);
+    ok(await ev(`!document.documentElement.classList.contains('vid')`), 'closed, the page has its own ground back');
+    // the app reaches the bottom of the screen when installed, even when the page is laid out short
+    const fit = await ev(`(()=>{const root=document.createElement('div');const win=(h)=>({navigator:{standalone:true},matchMedia:()=>({matches:true}),innerHeight:h,innerWidth:414,screen:{height:896,width:414}});
+      const a=__primer.fitScreen(win(848),root,true),va=root.style.getPropertyValue('--apph');const b=__primer.fitScreen(win(896),root,true),vb=root.style.getPropertyValue('--apph');const c=__primer.fitScreen(win(848),root,false);return {a,va,b,vb,c}})()`);
+    ok(fit.a && fit.va === '896px' && !fit.b && fit.vb === '' && !fit.c, "installed on an iPhone, a page laid out a status bar short takes the screen's whole height (no band at the bottom)", fit);
+  }
+
   console.log('A narrator per subject, and only its voice on the phone');
   // the clips on the phone, by narrator
   const voiceOnPhone = () => ev(`__primer.store.files.paths().then(a => { const n = {}; for (const p of a) { const c = __primer.sync.clipOf(p); if (c) n[c.narrator] = (n[c.narrator] || 0) + 1; } return JSON.stringify(n); })`);
@@ -2380,28 +2543,42 @@ try {
     'with no signal, the change still takes, and it says plainly the voice comes when there is signal', await narratorNote());
   await shot('41c-narrator-offline');
   ok((await voiceOnPhone()) === '{"george":10}', 'nothing could come down, so the phone still holds what it had', await voiceOnPhone());
+  ok((await narratorNote()).includes('Until then, George goes on narrating Test science.'), 'and the note says the old voice goes on meanwhile', await narratorNote());
   await f.tap('.tab[data-tab=learn]');
   await sleep(300);
   await openNode('engine');
   d = await scene();
-  ok(d.narrators.every(n => n === 'bella') && !d.voiced && !d.clip && d.state === 'playing', "its clips not here, every line plays from its words on the reading clock, never in the old narrator's voice", d);
-  ok((await ev(`document.querySelector('.snote').textContent`)).includes('comes down when there is signal'), 'and a line says the voice comes down when there is signal');
-  ok(await sceneState('ended', 30000) && (await scene()).fired.length === 6, 'a missing clip never breaks it: it plays to its end, every action on its word');
+  ok(d.narrators.every(n => n === 'george') && await waitFor(`__primer.run.scene.debug().voiced && __primer.run.scene.debug().clip`, 4000), "a new narrator with no signal: the old one's voice goes on (George's clips are all here), never silent captions", d.narrators);
+  ok(await sceneState('ended', 30000) && (await scene()).fired.length === 6, 'and it plays to its end, every action on its word');
   await control('close');
   await sleep(300);
   await f.tap('.node[data-node=with-scene]');
   await sleep(300);
   await f.tap('.callout [data-go=start]');
-  await waitFor(`__primer.run && __primer.run.step.id === 'before'`);
-  await sleep(800);
-  ok((await ev('__primer.run.reader.heard.length')) === 0 && !(await ev(`!!document.querySelector('.ltext.reading')`)) && (await ev(`document.querySelector('.ltext').textContent`)).includes('made-up step'), "and a lesson's words are simply there, unread");
+  ok(await waitFor(`__primer.run.reader.heard.some(h => h.id === 'before.text' && h.narrator === 'george')`, 5000), "a lesson's words are read in the old voice too", await ev('__primer.run.reader.heard'));
   await f.tap('[data-go=leave]');
   await sleep(300);
+  // signal back, but one of Bella's clips won't come down: half a new voice is never used
+  await api('/__refuse?match=turn.bella');
   await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await ev('__primer.app.pullNow()');
-  ok((await voiceOnPhone()) === '{"bella":10}', "with signal back, the next check brings Bella's voice and lets George's go", await voiceOnPhone());
+  ok((await voiceOnPhone()) === '{"bella":9,"george":10}', "with one of Bella's clips still missing, George's are kept beside the nine of hers that came", await voiceOnPhone());
   await openNode('engine');
-  ok(await waitFor(`__primer.run.scene.debug().voiced && __primer.run.scene.debug().narrators.every(n => n === 'bella')`, 4000), 'and it speaks again');
+  d = await scene();
+  ok(d.narrators.every(n => n === 'george'), 'and George still narrates it all: never two voices in one topic', d.narrators);
+  await control('close');
+  await sleep(300);
+  await f.tap('.tab[data-tab=profile]');
+  await sleep(300);
+  await ev('__primer.app.fetchVoice("Test science", "Bella").then(r => { document.querySelector("#narratornote").hidden = false; document.querySelector("#narratornote").textContent = r.words; })');
+  ok((await narratorNote()).startsWith("1 of Bella's clips aren't down yet") && (await narratorNote()).includes('George goes on narrating'), 'Profile says how many are still to come, and who narrates meanwhile', await narratorNote());
+  await f.tap('.tab[data-tab=learn]');
+  await sleep(300);
+  await api('/__refuse');
+  await ev('__primer.app.pullNow()');
+  ok((await voiceOnPhone()) === '{"bella":10}', "once every one of Bella's clips is here, she takes over and George's go", await voiceOnPhone());
+  await openNode('engine');
+  ok(await waitFor(`__primer.run.scene.debug().voiced && __primer.run.scene.debug().narrators.every(n => n === 'bella')`, 4000), 'and it speaks in her voice');
   await control('close');
   await sleep(300);
   console.log('Offline, a line changed since voicing, and the phone\'s sound left alone');
@@ -2435,7 +2612,7 @@ try {
   console.log('Offline, and the service worker');
   const ownFiles = [];
   const walk = d => { for (const n of readdirSync(join(ROOT, d))) { const p = join(d, n); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else ownFiles.push(p.split(sep).join('/')); } };
-  for (const d of ['css', 'js', 'parts', 'vendor', 'icons']) walk(d);
+  for (const d of ['css', 'js', 'parts', 'vendor', 'icons', 'sounds']) walk(d);
   const swText = readFileSync(join(ROOT, 'sw.js'), 'utf8');
   const missing = ownFiles.filter(p => !p.endsWith('.md') && !swText.includes(`'${p}'`));
   ok(missing.length === 0, "every one of the app's files is kept for offline", missing);

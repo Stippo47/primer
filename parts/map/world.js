@@ -3,7 +3,8 @@
 // them once: where each name goes, each country's area and bounds, the four political colours, the land
 // as one shape, the borders as one mesh, and the four colours' shapes as one piece each.
 //
-// loadWorld() -> Promise of { countries, byName, land, borders, grat, byColour, clashes }.
+// loadWorld() -> Promise of { countries, byName, land, borders, grat, byColour, clashes, places }. `places` are
+// the oceans, seas and continents of places.json, by name: { kind, at: [[lon, lat], ...] }.
 
 import { geoGraticule, geoCentroid, geoArea, geoBounds, geoContains } from 'd3-geo';
 
@@ -18,7 +19,8 @@ export function loadWorld() {
     s.onerror = () => rej(new Error('the map script did not load'));
     document.head.append(s);
   });
-  worldP = Promise.all([script, fetch(new URL('../../vendor/countries-110m.json', import.meta.url)).then(r => r.json())]).then(([, world]) => {
+  const places = fetch(new URL('./places.json', import.meta.url)).then(r => r.json()).then(j => j.places || {}).catch(() => ({}));
+  worldP = Promise.all([script, fetch(new URL('../../vendor/countries-110m.json', import.meta.url)).then(r => r.json()), places]).then(([, world, named]) => {
     const { feature, mesh, neighbors } = globalThis.topojson;
     const countries = feature(world, world.objects.countries).features.map(f => {
       const main = mainPiece(f);
@@ -35,6 +37,7 @@ export function loadWorld() {
       grat: geoGraticule().step([30, 30])(),
       byColour: [0, 1, 2, 3].map(k => joined(countries.filter(c => c.four === k))),
       clashes,
+      places: new Map(Object.entries(named)),
     };
   }).catch(e => { worldP = null; throw e; });
   return worldP;

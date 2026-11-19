@@ -95,14 +95,16 @@ export function callProblem(desc, call) {
   return null;
 }
 
-// Mounts a part into el. ctx brings what a part may use from the app: the feel, finger tracking, and a
-// way to turn a media path into an address. Returns the part's handle, with run(call) added.
-export async function mount(name, el, given = {}, { media } = {}) {
+// Mounts a part into el. ctx brings what a part may use from the app: the feel, finger tracking, a way to
+// turn a media path into an address, and its motion: 'lively' in a lesson (things pop in on the approved
+// spring), 'soft' in a scene (they fade and grow in, and leave the same way). Returns the part's handle, with
+// run(call) added.
+export async function mount(name, el, given = {}, { media, motion = 'lively' } = {}) {
   const desc = await describe(name);
   const mod = await import(new URL(`${desc.of || name}/${desc.module}`, BASE).href);
   const { settings, problems } = settle(desc, given);
   for (const p of problems) console.warn(`part ${p}`);
-  const ctx = { feel: { sound: feel.sound, tick: feel.tick, pop: feel.pop, spring: feel.spring }, track, media: media || (p => p) };
+  const ctx = { feel: { sound: feel.sound, tick: feel.tick, pop: feel.pop, spring: feel.spring }, track, media: media || (p => p), motion };
   const handle = await mod.mount(el, settings, ctx);
   handle.name = name;
   handle.desc = desc;

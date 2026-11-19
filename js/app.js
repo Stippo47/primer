@@ -21,9 +21,9 @@ import { homeScreen, shopScreen } from './screens/home.js';
 import { profileScreen, connectScreen } from './screens/profile.js';
 import { visitNode } from './screens/node.js';
 import { playVideo } from './screens/video.js';
-import { DEFAULT_NARRATOR } from './scene.js';
+import { DEFAULT_NARRATOR, NARRATORS } from './scene.js';
 
-const VERSION = '0.5.4'; // keep in step with sw.js
+const VERSION = '0.5.5'; // keep in step with sw.js
 const root = document.getElementById('app');
 const view = document.getElementById('view');
 const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
@@ -34,8 +34,24 @@ const params = new URLSearchParams(location.search);
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isInstalled = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
+// The app's box reaches the bottom of the screen. Installed on an iPhone, with the status bar see-through,
+// the page can be laid out a status bar's height short of the screen, which showed as a band of a lighter
+// ground in the home bar's strip under a video (2026-11-18). An installed app always has the whole screen,
+// so there the box takes the screen's own height whenever the page reports less (css/app.css, --apph).
+export function fitScreen(win = window, root = document.documentElement, ios = isIOS) {
+  const installed = win.navigator.standalone === true || (win.matchMedia && win.matchMedia('(display-mode: standalone)').matches);
+  const portrait = win.innerHeight >= win.innerWidth;
+  const full = portrait ? Math.max(win.screen.height, win.screen.width) : Math.min(win.screen.height, win.screen.width);
+  const short = installed && ios && full - win.innerHeight > 1 && full - win.innerHeight < 120;
+  if (short) root.style.setProperty('--apph', `${full}px`); else root.style.removeProperty('--apph');
+  return short;
+}
+
 function trackViewport() {
   document.addEventListener('gesturestart', e => e.preventDefault());
+  fitScreen();
+  addEventListener('resize', () => fitScreen());
+  addEventListener('orientationchange', () => setTimeout(() => fitScreen(), 300));
   // On a local test server only: pretend to have an iPhone's safe areas, to check the true spacing.
   const fake = isLocalHost && params.get('insets');
   if (fake) {
@@ -51,6 +67,7 @@ const TABS = [['learn', 'Learn', icon.learn], ['practice', 'Practice', icon.prac
 const SCREENS = { learn: learnScreen, practice: practiceScreen, home: homeScreen, shop: shopScreen, profile: profileScreen };
 
 let run = null;          // the lesson open now, if any
+const OPENING = { remove() {}, opening: true };   // while one is being opened: a second tap opens nothing
 let updateReady = false;
 const app = {
   VERSION, root, view, store, sync,
@@ -69,7 +86,7 @@ const app = {
     if (run) return;
     app.tab = tab;
     app.setPref('tab', tab);
-    document.documentElement.classList.remove('bare');
+    document.documentElement.classList.remove('bare', 'vid');
     paintTabs();
     view.onclick = null;
     SCREENS[tab](app);
@@ -93,30 +110,47 @@ const app = {
     return (topic.subject && (app.prefs.narrators || {})[topic.subject]) || topic.narrator || DEFAULT_NARRATOR;
   },
 
-  // After a narrator is chosen for a subject: its clips come down now, and the old one's go. Says how it
-  // went, in words for Profile: { words, here } (here: every clip of it is on this phone).
+  // The narrator a topic plays in now (js/sync.js, voiceFor): the one chosen, once all its clips are on the
+  // phone; until then the old one, whose clips are. Worked out when the voice on the phone can change (a
+  // pull, a new choice) and as a topic opens.
+  speaking: {},
+  speakerFor(topic) { return app.speaking[topic.id] || app.narratorFor(topic); },
+  async refreshVoice(topics = app.topics) {
+    for (const t of topics) {
+      try { app.speaking[t.id] = (await sync.voiceFor(t.id)).narrator; } catch { /* the chosen one, then */ }
+    }
+  },
+
+  // After a narrator is chosen for a subject: its clips come down now, and the old one's go once they're all
+  // here; until then the old voice goes on. Says how it went, in words for Profile: { words, here } (here:
+  // every clip of it is on this phone).
   async fetchVoice(subject, name) {
     await app.pullNow();
-    const ids = app.topics.filter(t => t.subject === subject).map(t => t.id);
-    const v = await sync.voiceHere(ids);
+    const topics = app.topics.filter(t => t.subject === subject);
+    await app.refreshVoice(topics);
+    const v = await sync.voiceHere(topics.map(t => t.id));
     const problem = sync.status().pullProblem;
+    const old = topics.map(t => app.speaking[t.id]).find(n => n && NARRATORS[n] !== name);
+    const meanwhile = old ? `Until then, ${NARRATORS[old] || old} goes on narrating ${subject}.` : `Until then, ${subject} plays from its words.`;
     if (v.of !== null && v.have === v.of) return { here: true, words: `${name}'s voice is on this phone.` };
     if (v.of === null || (problem && v.have === 0)) {
-      return { here: false, words: `No signal: ${name}'s voice comes down when there is. Until then, ${subject} plays from its words, with no voice.` };
+      return { here: false, words: `No signal: ${name}'s voice comes down when there is. ${meanwhile}` };
     }
-    return { here: false, words: `${v.of - v.have} of ${name}'s clips aren't down yet. They come at the next check; until then those lines play from their words.` };
+    return { here: false, words: `${v.of - v.have} of ${name}'s clips aren't down yet. They come at the next check. ${meanwhile}` };
   },
 
   async openLesson(topic, lesson, start = 0) {
     if (run) return;
+    run = OPENING;
     paintTabs();
+    await app.refreshVoice([topic]);
     if (lesson.draw) lesson = drawn(topic, lesson);
     run = new lessonPlayer.Run(view, {
       topic, lesson, start,
       record,
       media: path => sync.mediaUrl(data.mediaPath(topic.id, path)),
       onLeave: () => { run = null; app.go('learn'); },
-      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic),
+      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.speakerFor(topic),
         captions: () => app.prefs.captions !== false, setCaptions: on => app.setPref('captions', on) },
     });
     await run.open();
@@ -126,13 +160,15 @@ const app = {
   // An animation, played like a video, full screen. Next goes on to the node after it on the path.
   async openVideo(topic, node) {
     if (run) return null;
+    run = OPENING;
     paintTabs();
+    await app.refreshVoice([topic]);
     const at = topic.path.findIndex(n => n.id === node.id);
     const next = at >= 0 ? topic.path[at + 1] || null : null;
     const opening = playVideo(app, topic, node, {
       next, record,
       media: path => sync.mediaUrl(data.mediaPath(topic.id, path)),
-      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.narratorFor(topic) },
+      voice: { on: () => app.prefs.voice !== false, set: on => app.setPref('voice', on), narrator: app.speakerFor(topic) },
       captions: { on: () => app.prefs.captions !== false, set: on => app.setPref('captions', on) },
       onLeave: () => { run = null; app.go('learn'); },
       onNext: () => { run = null; app.openAfter(topic, node); },
@@ -170,6 +206,8 @@ const app = {
     if (run) return null;
     const pool = review.poolFor({ topics: app.topics, scope, node });
     if (!pool.length) return null;
+    run = OPENING;
+    await app.refreshVoice();
     const back = node ? 'learn' : scope ? 'profile' : 'practice';
     run = new review.Review(view, {
       app, pool, node, scope, anyway, record,
@@ -305,6 +343,8 @@ async function start() {
   // only the clips of the narrator each topic uses come down (js/sync.js): the one chosen for its subject
   sync.setNarratorChoice(subject => (subject && (app.prefs.narrators || {})[subject]) || null);
   sync.onPulled(maybeRebuild);
+  sync.onPulled(() => app.refreshVoice());
+  app.refreshVoice();
   app.tab = SCREENS[app.prefs.tab] ? app.prefs.tab : 'learn';
   app.go(app.tab);
   app.pullNow = await sync.start(async () => { await reloadLibrary(); app.render(); });
@@ -337,6 +377,6 @@ if (isLocalHost) {
       await new Promise(r => setTimeout(r, 120));
       return run.scene.measure();
     },
-    esc,
+    esc, fitScreen,
   };
 }

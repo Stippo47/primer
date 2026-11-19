@@ -1,0 +1,56 @@
+{
+  "name": "section",
+  "title": "Sea and sky",
+  "about": "A slice of sea and the air above it, seen from the side, in the house style: what happens between the sea and the sky. The sun warming the water, the sea's surface from cool blue to warm orange (the globe's own warmth colours), water vapour rising from it, air rising up the middle and rushing in along the surface, a cloud building from a small puff to a storm cloud with an anvil, the heat it gives back, and rain. Each is a level that glides where it's sent, so a scene can turn them up on its words or drive one across a stretch. Tags name a thing with a line to it. Its camera moves between framings: the whole slice, the sea, the surface, the air, the cloud, the top. Nothing in it takes a touch: it's for scenes and figures.",
+  "module": "section.js",
+  "thumb": "thumb.svg",
+  "playground": false,
+  "touch": false,
+  "settings": {
+    "view": { "type": "choice", "options": ["wide", "sea", "surface", "air", "cloud", "top"], "default": "wide", "about": "The framing it starts on. wide: all of it. sea: the water, with its warm top layer. surface: where the sea meets the air. air: the column of air above the sea. cloud: the cloud. top: the top of a storm cloud." },
+    "sun": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "The sun, top left, from none to full, with light falling on the sea." },
+    "warm": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0.2, "about": "How warm the sea's surface is: 0 cool blue, 1 warm orange. Over 0.45 the vapour carries a warm spark (the heat going up with it); over 0.55 heat shimmers above the water." },
+    "vapour": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Water vapour rising from the sea, from none to a lot." },
+    "rise": { "type": "number", "min": 0, "max": 2, "step": 0.1, "default": 0, "about": "Air rising up the middle: 1 steady, 2 fast. Rising air draws the vapour into the column." },
+    "cloud": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "The cloud: 0.25 a small puff, 0.5 a tower, 0.8 a tall storm cloud, 1 with its anvil spreading at the top." },
+    "release": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Heat given back inside the cloud as the vapour turns to drops: a warm glow and warm arrows leaving it." },
+    "inflow": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Air rushing in along the sea from both sides toward the middle, then turning up." },
+    "rain": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Rain falling from the cloud (once there is one)." }
+  },
+  "calls": {
+    "sun": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The sun, from none to full, gliding there over seconds (1 unless told; 0 at once)." },
+    "warm": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The sea's surface, from cool blue (0) to warm orange (1)." },
+    "vapour": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Water vapour rising from the sea." },
+    "rise": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 2 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Air rising up the middle: 1 steady, 2 fast." },
+    "cloud": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The cloud builds (or shrinks) to this size: 0.25 a puff, 0.5 a tower, 0.8 a storm cloud, 1 with its anvil." },
+    "release": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Heat given back inside the cloud: a warm glow and warm arrows." },
+    "inflow": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Air rushing in along the sea toward the middle." },
+    "rain": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Rain from the cloud." },
+    "view": { "args": [{ "name": "framing", "type": "choice", "options": ["wide", "sea", "surface", "air", "cloud", "top"] }, { "name": "seconds", "type": "number", "min": 0, "max": 8, "optional": true }], "about": "The camera glides to a framing (1.4 seconds unless told): wide, sea, surface, air, cloud or top." },
+    "tag": { "args": [{ "name": "thing", "type": "choice", "options": ["sea", "surface", "vapour", "air", "rise", "cloud", "heat", "inflow", "sun", "high", "rain"] }, { "name": "text", "type": "text", "optional": true, "maxLength": 28 }], "about": "Names a thing with a line to it: the sea, the surface, the vapour, the air, the rising air, the cloud, the heat in it, the air coming in, the sun, high up, the rain. Without text, its tag fades away." },
+    "clear": { "args": [{ "name": "seconds", "type": "number", "min": 0, "max": 5, "optional": true }], "about": "Everything back to nothing (the sea cool, no cloud, no tags), gliding there over seconds (0.8 unless told). The camera stays." }
+  },
+  "colours": [],
+  "events": {},
+  "state": {
+    "sun": { "type": "number", "about": "Each level as last sent is in the state by its name: sun, warm, vapour, rise, cloud, release, inflow, rain." }
+  },
+  "needs": {
+    "data": [],
+    "weight": "One canvas and one small module, sharing the map's chips and colours. It draws every frame while on screen (the waves and the vapour move); put away by a scene's shot, it stops."
+  },
+  "example": {
+    "settings": { "view": "wide", "sun": 1, "warm": 0.9, "vapour": 0.8, "rise": 1, "cloud": 0.7, "release": 0.6, "inflow": 0.8 },
+    "calls": [["tag", "vapour", "Water vapour"], ["tag", "heat", "Heat given back"]]
+  },
+  "try": [
+    { "label": "Warm", "call": ["warm", 1, 2] },
+    { "label": "Vapour", "call": ["vapour", 1] },
+    { "label": "Rise", "call": ["rise", 1.5] },
+    { "label": "Cloud", "call": ["cloud", 0.9, 3] },
+    { "label": "Heat", "call": ["release", 1] },
+    { "label": "In", "call": ["inflow", 1] },
+    { "label": "Cloud view", "call": ["view", "cloud"] },
+    { "label": "Clear", "call": ["clear"] }
+  ]
+}

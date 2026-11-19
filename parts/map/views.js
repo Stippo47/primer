@@ -2,7 +2,8 @@
 // [longitude, latitude] and a zoom, so every call, layer and gesture works on all of them unchanged. A
 // view only answers the questions that depend on the projection:
 //
-//   set(w, h, centre, zoom)   point the projection (view.proj) at the camera, for a box w by h
+//   set(w, h, centre, zoom, tilt, heading)   point the projection (view.proj) at the camera, for a box w by h.
+//                             tilt (0..1) and heading (degrees) are the globe's angle; a flat map ignores them
 //   clamp(centre, zoom)       the nearest centre the view can really show
 //   pan(from, dx, dy)         the centre once the map has been moved dx, dy pixels from `from`
 //   between(a, b)             a path from one centre to another, k (0..1) -> centre
@@ -47,14 +48,21 @@ function globeView() {
   const v = {
     kind: 'globe', round: true, proj,
     w: 0, h: 0, cx: 0, cy: 0, r: 0, size: 1, centre: [0, 0],
-    set(w, h, centre, zoom) {
-      v.w = w; v.h = h; v.cx = w / 2; v.cy = h / 2;
+    // The angle: tilt 0 looks straight down at the centre; tilt 1 lowers the ball until its edge, the
+    // horizon, runs across the top of the picture, so the place in the middle is seen from low down with the
+    // world curving away beyond it (only once zoomed in enough for the ball to be bigger than the box). The
+    // heading turns the picture about the centre: which way is up, in degrees (0 north up).
+    set(w, h, centre, zoom, tilt = 0, heading = 0) {
+      v.w = w; v.h = h; v.cx = w / 2;
       v.r = (Math.min(w, h) / 2) * 0.84 * zoom;
+      v.lift = Math.max(0, Math.min(1, tilt)) * Math.max(0, Math.min(h * 0.17 + v.r - h / 2, h * 0.27));
+      v.cy = h / 2 + v.lift;
       v.size = v.r / BASE_R;
       v.scale1 = v.r / zoom;
       v.box = [v.cx - v.r, v.cy - v.r, v.cx + v.r, v.cy + v.r];
       v.centre = centre;
-      proj.translate([v.cx, v.cy]).scale(v.r).rotate([-centre[0], -centre[1], 0]);
+      v.heading = heading || 0;
+      proj.translate([v.cx, v.cy]).scale(v.r).rotate([-centre[0], -centre[1], v.heading]);
       return v;
     },
     clamp: c => [wrap(c[0]), clamp(c[1], -75, 75)],

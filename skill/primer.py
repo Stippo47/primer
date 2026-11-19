@@ -39,7 +39,7 @@ STEP_FIELDS = {
     'explain': {'id', 'kind', 'title', 'text', 'say', 'figure', 'src', 'fact'},
     'check': {'id', 'kind', 'title', 'ask', 'say', 'figure', 'input', 'answer', 'within', 'close', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
     'play': {'id', 'kind', 'title', 'ask', 'say', 'play', 'goal', 'closeGoal', 'ready', 'right', 'why', 'misses', 'then', 'tries', 'src', 'fact'},
-    'scene': {'id', 'kind', 'title', 'parts', 'lines', 'src'},
+    'scene': {'id', 'kind', 'title', 'parts', 'lines', 'src', 'shot'},
 }
 # Facts (docs/format.md, "Facts"): what a lesson says is worth knowing afterward, each with two or more asks.
 FACT_FIELDS = {'id', 'text', 'src', 'asks'}
@@ -51,9 +51,11 @@ DRAW_FROM = ('unit', 'topic')
 SPOKEN_FIELDS = {'explain': ('text',), 'check': ('ask', 'right', 'why'), 'play': ('ask', 'right', 'why')}
 # Scenes: an animation's file, or a scene step in a lesson (docs/format.md, "A scene"). An animation plays
 # through like a video: nothing in it waits for an answer.
-SCENE_FILE_FIELDS = {'v', 'title', 'version', 'minutes', 'parts', 'lines', 'sources'}
+SCENE_FILE_FIELDS = {'v', 'title', 'version', 'minutes', 'parts', 'lines', 'sources', 'shot'}
 LINE_FIELDS = {'id', 'text', 'say', 'do', 'hold'}
-ACTION_FIELDS = {'call', 'at', 'from', 'to'}
+ACTION_FIELDS = {'call', 'at', 'from', 'to', 'sound', 'ease', 'range'}
+# A stretch's ease (js/ease.js, EASES): soft eases in and out, the default.
+EASES = ('soft', 'linear', 'in', 'out')
 LINE_LIMIT = 200          # characters in a caption
 LINES_RANGE = (2, 30)
 SYMBOLS = re.compile(r'[°%/&+=<>@#~^]')   # read aloud in ways no one can be sure of: say how, with "say"
@@ -158,6 +160,15 @@ class Kit:
             if preset.get('of') in self.parts:
                 self.parts[name] = preset_of(self.parts[preset['of']], name, preset)
         self._countries = None
+        # what a scene can do besides its parts' calls: its shots (shot.cut, shot.split, shot.inset) and sounds
+        self.scene = listed.get('scene') or {'calls': {}, 'sounds': {}}
+        self.shot = {'name': 'shot', 'title': 'Shots', 'about': self.scene.get('about', ''), 'settings': {}, 'calls': self.scene.get('calls', {})}
+        f = app / 'parts' / 'map' / 'places.json'
+        self.places = (load_json(f).get('places') or {}) if f.exists() else {}
+
+    @property
+    def sounds(self):
+        return self.scene.get('sounds') or {}
 
     @property
     def countries(self):
@@ -340,10 +351,15 @@ def check_value(spec, v, where, rep, kit, base):
     elif t == 'lonlat':
         if not (isinstance(v, list) and len(v) == 2 and all(_num(x) is not None for x in v) and -180 <= v[0] <= 180 and -90 <= v[1] <= 90):
             rep.err(where, 'is [longitude, latitude]')
-    elif t == 'place':
+    elif t == 'country':
+        if v not in kit.countries:
+            rep.err(where, f'"{v}" isn\'t a country the map knows (names as in Natural Earth, like "United States of America")')
+    elif t in ('place', 'name'):
         if isinstance(v, str):
-            if v not in kit.countries:
-                rep.err(where, f'"{v}" isn\'t a country the map knows (names as in Natural Earth, like "United States of America")')
+            if v not in kit.countries and v not in kit.places:
+                rep.err(where, f'"{v}" isn\'t a country the map knows (names as in Natural Earth, like "United States of America"), or an ocean, sea or continent it names ({", ".join(kit.places)})')
+        elif t == 'name':
+            rep.err(where, 'is a place\'s name: a country, or an ocean, sea or continent')
         else:
             check_value({'type': 'lonlat'}, v, where, rep, kit, base)
     elif t == 'place-or-level':
@@ -384,7 +400,7 @@ def check_value(spec, v, where, rep, kit, base):
                 rep.err(where, 'has the same id twice')
         elif of in ('country', 'place'):
             for i, x in enumerate(v):
-                check_value({'type': 'place'}, x, f'{where}[{i}]' if of == 'place' else where, rep, kit, base)
+                check_value({'type': of}, x, f'{where}[{i}]' if of == 'place' else where, rep, kit, base)
         elif of == 'number':
             for i, x in enumerate(v):
                 if _num(x) is None:
@@ -466,7 +482,7 @@ def check_call(desc, call, where, rep, kit, base):
     if len(args) > len(spec['args']):
         rep.err(where, f'{call[0]} takes at most {len(spec["args"])} argument(s)')
     for a, v in zip(spec['args'], args):
-        if a['type'] == 'answer':
+        if a['type'] in ('answer', 'part'):
             continue
         check_value({**a, 'colours': desc.get('colours', [])}, v, f'{where} {call[0]}({a["name"]})', rep, kit, base)
 
@@ -721,8 +737,9 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
             rep.err(w, '"hold" is extra seconds after the line, 0 to 5')
         for i, act in enumerate(line.get('do') or []):
             aw = f'{w} do[{i}]'
-            if not isinstance(act, dict) or not isinstance(act.get('call'), list) or not act['call']:
-                rep.err(aw, 'an action is { "at": "word", "call": ["name", arg, ...] }')
+            sound_only = isinstance(act, dict) and 'call' not in act and isinstance(act.get('sound'), str)
+            if not isinstance(act, dict) or (not sound_only and (not isinstance(act.get('call'), list) or not act['call'])):
+                rep.err(aw, 'an action is { "at": "word", "call": ["name", arg, ...] }, or a sound alone: { "at": "word", "sound": "whoosh" }')
                 continue
             for k in set(act) - ACTION_FIELDS:
                 rep.err(aw, f'no field "{k}" on an action ({", ".join(sorted(ACTION_FIELDS))})')
@@ -734,10 +751,59 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
                     got = find_words(said, act[k], last=(k == 'to'))
                     if got == -1:
                         rep.err(aw, f'"{k}": "{act[k]}" isn\'t in what\'s said: "{said}"')
-            check_scene_call(act['call'], aw, rep, kit, base, descs, names, span)
+            if 'sound' in act and act['sound'] != 'none' and act['sound'] not in kit.sounds:
+                rep.err(aw, f'"sound": "{act["sound"]}" isn\'t a sound the kit has ({", ".join(kit.sounds)}, or "none")')
+            if sound_only and span:
+                rep.err(aw, 'a sound on its own happens "at" a word')
+            for k in ('ease', 'range'):
+                if k in act and not span:
+                    rep.err(aw, f'"{k}" shapes a stretch: it goes with "from" and "to"')
+            if 'ease' in act and act['ease'] not in EASES:
+                rep.err(aw, f'"ease" is one of {", ".join(EASES)} (soft unless given)')
+            if 'range' in act and not (isinstance(act['range'], list) and len(act['range']) == 2 and all(_num(x) is not None and 0 <= x <= 1 for x in act['range'])):
+                rep.err(aw, '"range" is [from, to], each 0 to 1: the share of the way "$p" runs across, for carrying something on across lines')
+            if not sound_only:
+                check_scene_call(act['call'], aw, rep, kit, base, descs, names, span)
+    shot = scene.get('shot')
+    if shot is not None:
+        if not (isinstance(shot, list) and shot and isinstance(shot[0], str)):
+            rep.err(f'{where}.shot', 'the opening shot is a shot call without "shot.": ["cut", "globe"], ["split", "globe", "section"]')
+        else:
+            check_scene_call([f'shot.{shot[0]}', *shot[1:]], f'{where}.shot', rep, kit, base, descs, names, False)
+    warn_places(scene, where, rep, kit, descs)
     if voice is not None:
         warn_voice([x for x in lines if isinstance(x, dict) and x.get('id') and isinstance(x.get('text'), str)], voice, narrator, where, rep,
                    'play from their captions')
+
+
+def place_words(name):
+    """How a named place is usually said: "Atlantic Ocean" as "Atlantic", "Caribbean Sea" as "Caribbean", "Gulf of
+    Mexico" and the continents in full."""
+    for tail in (' Ocean', ' Sea'):
+        if name.endswith(tail) and len(name.split()) == 2:
+            return name[:-len(tail)]
+    return name
+
+
+def warn_places(scene, where, rep, kit, descs):
+    """A scene with a map that names an ocean, sea or continent should write its name on the map while it matters
+    (the map's label call; ruled 2026-11-18: if the ocean matters it shows up labelled)."""
+    maps = [n for n, d in descs.items() if 'label' in (d.get('calls') or {})]
+    if not maps:
+        return
+    labelled = set()
+    for line in scene.get('lines') or []:
+        for act in (line.get('do') or []) if isinstance(line, dict) else []:
+            c = act.get('call') if isinstance(act, dict) else None
+            if isinstance(c, list) and c and str(c[0]).split('.')[-1] == 'label' and len(c) > 1:
+                labelled.add(c[1])
+    for line in scene.get('lines') or []:
+        if not isinstance(line, dict) or not isinstance(line.get('text'), str):
+            continue
+        text = ' ' + re.sub(r'[^\w\s-]', ' ', line['text'].replace('*', '')).lower() + ' '
+        for name in kit.places:
+            if f' {place_words(name).lower()} ' in text and name not in labelled:
+                rep.warn(f'{where} line {line.get("id")}', f'names {name}: write it on the map while it matters ({maps[0]}.label "{name}")')
 
 
 def warn_voice(lines, voice, narrator, where, rep, until):
@@ -841,6 +907,22 @@ def check_spoken(lesson, where, rep, base, key, narrator):
 
 def check_scene_call(call, where, rep, kit, base, descs, names, span):
     part, name, args = split_call(call, names)
+    if part == 'shot':
+        if len(names) < 2:
+            rep.err(where, 'a shot chooses between parts: this scene has only one')
+            return None
+        desc = kit.shot
+        spec = (desc.get('calls') or {}).get(name)
+        if not spec:
+            rep.err(where, f'no shot "{name}" (there are {", ".join(desc.get("calls") or {})})')
+            return None
+        for a, v in zip(spec['args'], args):
+            if a['type'] == 'part' and v not in names and not (a.get('none') and v == 'none'):
+                rep.err(where, f'{name}: "{v}" isn\'t a part of this scene ({", ".join(names)}{", or none" if a.get("none") else ""})')
+        if name == 'split' and len(args) >= 2 and args[0] == args[1]:
+            rep.err(where, 'a split shows two different parts')
+        check_call(desc, [name, *['globe' if a['type'] == 'part' else v for a, v in zip(spec['args'], args)], *args[len(spec['args']):]], where, rep, kit, base)
+        return desc
     if part is None:
         rep.err(where, f'this scene has {len(names)} parts: name the one, like "{names[0] if names else "globe"}.{name}"')
         return None
@@ -1651,6 +1733,15 @@ def cmd_parts(a):
         if d.get('marking'):
             print('  marking: ' + '; '.join(f'{k}: {json.dumps(m["rule"], ensure_ascii=False)}' for k, m in d['marking'].items() if k != 'about' and k not in hidden))
         print(f'  needs: {d.get("needs", {}).get("weight", "")}')
+        print()
+    if kit.scene.get('calls'):
+        print('shot: Shots (a scene with two or more parts)')
+        print(f'  {kit.scene.get("about", "")}')
+        print('  calls:')
+        for k, c in kit.scene['calls'].items():
+            args = ', '.join(f'{x["name"]}{"?" if x.get("optional") else ""}: {arg_type(x)}' for x in c['args'])
+            print(f'    shot.{k}({args}): {c.get("about", "")}')
+        print('  sounds (an action\'s "sound"): ' + '; '.join(f'{k}: {v}' for k, v in kit.sounds.items()))
         print()
 
 

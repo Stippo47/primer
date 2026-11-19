@@ -9,9 +9,11 @@ A part is a folder in `parts/` with two things:
 - **`part.json`, its description.** Settings (type, range, default), calls (each argument's type), events, state, what it needs, an `example` the Playground opens with and a `try` row of buttons. Everything else is built from it: the Playground's panel (`js/screens/practice.js`), the phone's checks (`js/parts.js`), the writer's catalogue and checker (`skill/primer.py parts`, `check`) and the tests. Write the description first.
 - **One module** exporting `mount(el, settings, ctx)`. It draws into `el` and returns a handle: `calls` (one function per call in the description), `state()` (what a goal can read), `on(event, fn)`, and `remove()`. Optional: `where(place)`, `busy()` and `debug()` for the tests.
 
-`ctx` brings the shared pieces from the app, so a part never imports app code for them: `ctx.track(el, handlers)` (one-finger drags with a flick speed, two-finger pinches with their midpoint, taps; `js/gesture.js`), `ctx.feel` (the sound, tick, pop and spring of `js/feel.js`) and `ctx.media(path)`.
+`ctx` brings the shared pieces from the app, so a part never imports app code for them: `ctx.track(el, handlers)` (one-finger drags with a flick speed, two-finger pinches with their midpoint, taps; `js/gesture.js`), `ctx.feel` (the sound, tick, pop and spring of `js/feel.js`), `ctx.media(path)`, and `ctx.motion`: `lively` in a lesson (things pop in on the approved spring) or `soft` in a scene (they fade and grow in, and a clear fades out). Anything a part animates over time should use `Glide` from `js/ease.js`: a value that eases in and out with no overshoot and, sent somewhere new mid-glide, carries on from the speed it had.
 
-Argument and setting types the checker knows: `choice`, `bool`, `number` (with `min`, `max`), `text`, `media`, `lonlat`, `place` (a country's name or `[lon, lat]`), `place-or-level`, `colour`, `table`, and `list` (`of`: `country`, `place`, `number`, `text`, or an object's fields). A setting with `"wide": true` gets a line of its own in the Playground's panel.
+Two more optional handle methods matter in scenes: `finish()` lands whatever is still moving at once (a scene calls it after rebuilding the picture at a moment, so nothing animates in that was already there); and a part that draws every frame should rest while an ancestor is marked `data-off` (a shot has put it away), keeping time so it's right the moment it shows. A part measures its own size by layout (`clientWidth`), never by its box on screen: a shot may be moving it with a transform.
+
+Argument and setting types the checker knows: `choice`, `bool`, `number` (with `min`, `max`), `text`, `media`, `lonlat`, `place` (a country's name, an ocean's, a sea's or a continent's from `parts/map/places.json`, or `[lon, lat]`), `name` (a place's name only), `place-or-level`, `colour`, `table`, `part` (one of the scene's parts, for shots) and `list` (`of`: `country`, `place`, `number`, `text`, or an object's fields). A setting with `"wide": true` gets a line of its own in the Playground's panel. A part with `"playground": false` stays out of the Playground (lessons and scenes still use it).
 
 ## Presets: one part, several names
 
@@ -58,6 +60,14 @@ Add one line to `PROJECTIONS` in `views.js` (any d3-geo projection symmetric abo
 - No live blur. Glows are gradients or wide faint strokes; shadows are offset copies.
 - Shapes are built once: bands, warmth, tables and the four-colour groups when they're made; projected paths once per view, shared by every layer.
 - A still map asks for no frames and redraws nothing. While it moves, the base picture is redrawn and the small things drawn over it; a turning storm or a moving track redraws only the top.
+
+## The sea and sky, a part for scenes
+
+The Section (`parts/section/`) is a slice of sea and the air above it, from the side: the cutaway a scene cuts to when the globe can't show a thing (water evaporating, air rising, a cloud forming and giving its heat back). Everything in it is a level that glides (sun, warm, vapour, rise, cloud, release, inflow, rain), so it can be turned up on a word or driven across a stretch; tags name a thing with a line to it; its camera moves between framings. It shares the map's chips and the globe's warmth colours, so the two read as one picture when a scene cuts between them. A new thing in it is a new level: a name in `LEVELS`, a block in `draw`, a setting and a call in `part.json`.
+
+## Scenes: shots and sounds
+
+A scene directs its parts with shots (`js/shots.js`): cut, split and inset, described under `scene` in `parts/parts.json` (the checker reads them there), each move driven by the frame clock so a seek lands exactly and a film renders the same each time. Its sound effects (`js/sfx.js`) are short files in `sounds/`, made by `tools/make-sounds.py` from noise and sine waves alone (the app's own: nothing recorded or borrowed), named in `parts.json`, and played as plain `<audio>` by the same rules as the voice: a fresh player each time, primed in the tap that starts the scene, heard only with Effects on. A new sound is a function in `make-sounds.py` and its name in `parts.json` and in `SOUNDS` in `js/sfx.js`.
 
 ## The answer forms, as a second example
 
