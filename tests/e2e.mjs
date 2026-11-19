@@ -1688,12 +1688,36 @@ try {
 
     console.log('The combo comes alive: a tier at each threshold, a miss drops it, reduced motion stills it');
     {
-      const TIERS = await ev(`import('/primer/js/combo.js').then(m => m.TIERS)`);
+      const TIERS = await ev(`import('/primer/js/combo.js').then(m => m.LADDER.map(t => ({ id: t.id, at: t.at, shields: t.shields })))`);
       const want = { 0: 'plain', 4: 'plain', 5: 'bronze', 9: 'bronze', 10: 'silver', 14: 'silver', 15: 'gold', 24: 'gold', 25: 'crystal', 39: 'crystal', 40: 'diamond', 59: 'diamond', 60: 'aurora', 999: 'aurora' };
       const got = {};
       for (const n of Object.keys(want)) got[n] = await comboTier(n);
       ok(JSON.stringify(TIERS.map(t => `${t.id}@${t.at}`)) === '["plain@0","bronze@5","silver@10","gold@15","crystal@25","diamond@40","aurora@60"]' && Object.entries(want).every(([n, id]) => got[n] === id),
-        'the tiers, in one table: plain, then bronze at 5, silver at 10, gold at 15, crystal at 25, diamond at 40 and aurora at 60', { TIERS, got });
+        'the tiers in use, in one table: plain, then bronze at 5, silver at 10, gold at 15, crystal at 25, diamond at 40 and aurora at 60', { TIERS, got });
+      ok(JSON.stringify(TIERS.map(t => t.shields)) === '[0,1,1,1,2,2,2]', 'their shields, in the same table: none on plain, one from bronze to gold, two from crystal up', TIERS);
+      // the board's candidates: in the same table, not in use, each drawn by the shared parts with its own colours
+      const board = await ev(`import('/primer/js/combo.js').then(m => {
+        const h = document.createElement('div'); h.className = 'rtop'; document.body.append(h);
+        const out = m.CANDIDATES.map(t => { const c = new m.Combo(h, { count: t.sample, look: t.id }); const d = c.debug();
+          const pip = getComputedStyle(c.el).getPropertyValue('--c-pip').trim(), face = !!c.el.querySelector('.cbody > .cface, .cbody > .cflow');
+          c.remove(); return { id: t.id, at: t.at, name: t.name, tier: d.tier, text: d.text, pip, face, shields: t.shields }; });
+        h.remove(); return out })`);
+      ok(board.length >= 15 && board.length <= 25 && board.every(t => t.at === null && t.name && t.tier === t.id && t.pip && t.face && /^×\d+$/.test(t.text) && t.shields >= 0)
+        && board.some(t => t.id === 'wood') && board.some(t => t.id === 'omnipotent') && new Set(board.map(t => t.id)).size === board.length,
+        `${board.length} candidate tiers for the board (wood to omnipotent and past it), none in use yet, each drawn with its own colours`, board.map(t => `${t.id}:${t.pip}`));
+      ok(await ev(`import('/primer/js/combo.js').then(m => [m.tierOf(5).id, m.tierOf(3).id, m.tierOf(100).id].join())`) === 'bronze,plain,aurora', 'a candidate never shows by count: only when the board asks for it by name');
+      // the rule on its own: data plus one mechanism
+      const rule = await ev(`import('/primer/js/combo.js').then(m => { const a = m.afterAnswer; return [
+        a({ n: 17, cracks: 0 }, 'wrong'), a({ n: 17, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 2 }, 'wrong'),
+        a({ n: 23, cracks: 1 }, 'right'), a({ n: 24, cracks: 1 }, 'right'), a({ n: 3, cracks: 0 }, 'wrong'), a({ n: 12, cracks: 1 }, 'close'), a({ n: 0, cracks: 0 }, 'wrong')] })`);
+      ok(JSON.stringify(rule) === JSON.stringify([{ n: 17, cracks: 1, event: 'crack' }, { n: 0, cracks: 0, event: 'shatter' }, { n: 30, cracks: 2, event: 'crack' }, { n: 0, cracks: 0, event: 'shatter' },
+        { n: 24, cracks: 1, event: null }, { n: 25, cracks: 0, event: 'rise' }, { n: 0, cracks: 0, event: 'shatter' }, { n: 12, cracks: 1, event: null }, { n: 0, cracks: 0, event: null }]),
+        'the rule: a miss with a shield left cracks and holds the count, with none it shatters to 0; right answers keep the cracks, a new tier mends them; close holds', rule);
+      // bronze lost its thin line; silver keeps its own
+      const lines = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h);
+        const n = id => { const c = new m.Combo(h, { count: 5, look: id, pips: false }); const k = c.el.querySelectorAll('.cface path[stroke-width="1.6"]').length; c.remove(); return k };
+        const r = { bronze: n('bronze'), silver: n('silver') }; h.remove(); return r })`);
+      ok(lines.bronze === 0 && lines.silver === 1, 'bronze has no thin line along its band any more (silver keeps its)', lines);
       // the chip is one part of its own: anything can show one
       const alone = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h); const c = new m.Combo(h, { count: 40, pips: false }); const d = c.debug(); c.remove(); h.remove(); return d })`);
       ok(alone.tier === 'diamond' && alone.text === '×40' && alone.idle && alone.pips === null, 'the chip stands alone: drawn at 40 on a bare element, it is diamond, ×40, already idling', alone);
@@ -1720,19 +1744,81 @@ try {
         if (t.id === 'gold' || t.id === 'aurora') await shot2(`49-combo-${t.id}`);
         await press();
       }
-      // a miss: the chip falls back to plain, softly
+      // shields: gold has one. A miss cracks the chip and the count holds; the fact still comes back
       await live();
       await ev(`__primer.run.setCombo(17); true`);
+      const missedKey = (await dbg()).step.key;
       await answerStep(false);
-      await f.tap('.lfoot .btn');
-      await sleep(120);
-      const falling = await chipNow();
-      await sleep(900);
-      const fallen = await chipNow();
-      ok((await verdict()).verdict === 'Not quite' && falling.ghost && falling.tier === 'plain' && fallen.tier === 'plain' && fallen.text === '×0' && fallen.pips === 0 && !fallen.ghost && fallen.moving === 0 && fallen.last.kind === 'fall',
-        'a miss drops it to plain ×0: the gold chip sinks away and fades, then nothing moves', { falling, fallen });
       await press();
-      // reduced motion: the tiers change colour, and nothing idles, swells or falls
+      const cracked = await chipNow();
+      let rd = await dbg();
+      ok((await verdict()).verdict === 'Not quite' && rd.combo === 17 && cracked.count === 17 && cracked.text === '×17' && cracked.tier === 'gold' && cracked.cracks === 1 && cracked.crackLines === 1
+        && cracked.shields === 0 && cracked.pips === 2 && cracked.last.kind === 'crack' && !cracked.ghost && cracked.shards === 0 && rd.again.some(a => a.key === missedKey) && (await ev('__primer.feel.soundLog()')).includes('crack'),
+        'a miss at gold ×17 uses its shield: Not quite, the chip cracks (one crack), the count holds at ×17 and its pips stay, and the missed fact still comes back', { cracked, again: rd.again });
+      await press();
+      // with no shield left, the next miss shatters it: the pieces fly and fade, plain ×0 comes up, and the width stays
+      await live();
+      await answerStep(false);
+      const w0 = cracked.width;
+      await f.tap('.lfoot .btn');
+      await sleep(200);
+      const breaking = await chipNow();
+      const widths = [breaking.width];
+      for (let k = 0; k < 6; k++) { await sleep(120); widths.push((await chipNow()).width); }
+      await sleep(500);
+      const broken = await chipNow();
+      rd = await dbg();
+      ok(breaking.shards >= 12 && breaking.tier === 'plain' && broken.tier === 'plain' && broken.text === '×0' && rd.combo === 0 && broken.shards === 0 && !broken.ghost && broken.moving === 0
+        && broken.cracks === 0 && broken.crackLines === 0 && broken.last.kind === 'shatter' && broken.pips === 0 && widths.every(w => w === w0) && broken.width === w0 && (await ev('__primer.feel.soundLog()')).includes('shatter'),
+        `the next miss, with no shield left, shatters it: ${breaking.shards} pieces fly and fade, plain ×0 comes up under them, and the chip stays ${w0}px wide throughout`, { breaking, widths, broken });
+      await press();
+      // right answers don't mend a crack; reaching a new tier does, and crystal has two shields
+      await live();
+      await ev(`__primer.run.setCombo(23); true`);
+      await answerStep(false); await press();
+      const at23 = await chipNow();
+      await press(); await live();
+      await answerStep(true); await press();
+      const at24 = await chipNow();
+      await press(); await live();
+      await answerStep(true); await press();
+      await sleep(400);
+      const at25 = await chipNow();
+      ok(at23.count === 23 && at23.cracks === 1 && at24.count === 24 && at24.cracks === 1 && at24.crackLines === 1 && at25.tier === 'crystal' && at25.count === 25 && at25.cracks === 0 && at25.crackLines === 0 && at25.shields === 2,
+        'a right answer leaves the crack (gold ×24 still cracked); reaching crystal at 25 mends it, with two shields', { at23, at24, at25 });
+      await press(); await live();
+      await answerStep(false); await press();
+      const c1 = await chipNow();
+      await press(); await live();
+      await answerStep(false); await press();
+      const c2 = await chipNow();
+      await press(); await live();
+      await answerStep(false); await press();
+      await sleep(900);
+      const c3 = await chipNow();
+      ok(c1.count === 25 && c1.cracks === 1 && c1.crackLines === 1 && c2.count === 25 && c2.cracks === 2 && c2.crackLines === 2 && c2.shields === 0 && c3.count === 0 && c3.tier === 'plain' && c3.last.kind === 'shatter',
+        'crystal takes two misses, one crack each (×25 holds), and the third shatters it', { c1, c2, c3 });
+      await press();
+      // the width only ever grows, and smoothly: a chip on its own going from 9 to 10, then losing it
+      const grow = await ev(`import('/primer/js/combo.js').then(async m => {
+        const h = document.createElement('div'); h.style.cssText = 'position:fixed;left:20px;top:200px;display:flex;gap:8px'; document.body.append(h);
+        const c = new m.Combo(h, { count: 9, still: false });
+        const w = () => +parseFloat(getComputedStyle(c.el).width).toFixed(1), frame = () => new Promise(r => requestAnimationFrame(r));
+        const before = w(); c.answer('right'); const up = [];
+        for (let i = 0; i < 30; i++) { await frame(); up.push(w()); }
+        await new Promise(r => setTimeout(r, 400));
+        const crack = c.answer('wrong'); const mid = w();
+        await new Promise(r => setTimeout(r, 500));
+        const shatter = c.answer('wrong'); const down = [];
+        for (let i = 0; i < 40; i++) { await frame(); down.push(w()); }
+        const d = c.debug(); c.remove(); h.remove();
+        return { before, up, crack: crack.event, mid, shatter: shatter.event, down, after: d.width, text: d.text } })`);
+      const between = grow.up.filter(x => x > grow.before + 0.5 && x < 59.5);
+      ok(grow.before === 52 && grow.up.at(-1) === 60 && grow.up.every((x, i) => !i || x >= grow.up[i - 1]) && between.length >= 4,
+        `reaching 10 widens the chip smoothly, 52 to 60px over ${between.length} frames in between, never a jump`, grow.up);
+      ok(grow.crack === 'crack' && grow.mid === 60 && grow.shatter === 'shatter' && grow.down.every(x => x === 60) && grow.after === 60 && grow.text === '×0',
+        'and losing it never changes the width: cracked, then shattered to ×0, it stays 60px', { mid: grow.mid, down: [...new Set(grow.down)], after: grow.after });
+      // reduced motion: the tiers change colour, cracks still show, and nothing idles, swells, knocks or flies
       await live();
       await ev(`__primer.run.setCombo(42); true`);
       await sleep(200);
@@ -1754,8 +1840,13 @@ try {
       await answerStep(false);
       await f.tap('.lfoot .btn');
       await sleep(80);
+      const stillCrack = await chipNow();
+      ok(stillCrack.count === 60 && stillCrack.cracks === 1 && stillCrack.crackLines === 1 && stillCrack.moving === 0, 'a miss still cracks it, drawn at once, with no knock', stillCrack);
+      await press();
+      await live(); await answerStep(false); await f.tap('.lfoot .btn'); await sleep(80); await press();
+      await live(); await answerStep(false); await f.tap('.lfoot .btn'); await sleep(80);
       const stillDown = await chipNow();
-      ok(stillDown.tier === 'plain' && stillDown.text === '×0' && !stillDown.ghost && stillDown.moving === 0, 'and a miss drops it to plain at once, with no fall', stillDown);
+      ok(stillDown.tier === 'plain' && stillDown.text === '×0' && !stillDown.ghost && stillDown.shards === 0 && stillDown.moving === 0, 'and with its shields gone, a miss drops it to plain at once, with no shatter', stillDown);
       await b.send('Emulation.setEmulatedMedia', { features: [] });
       await press();
       // the run's best (60) shows its tier in the summary, on Practice and in Profile

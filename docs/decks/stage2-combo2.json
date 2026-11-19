@@ -1,0 +1,318 @@
+{
+  "title": "Combo: more tiers, shields",
+  "topic": "stage2",
+  "order": 8,
+  "cards": [
+    {
+      "id": "tier-board",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Pick your tiers",
+      "text": "Every tier I made, lowest to highest, the six in use among them. Tick the ones you like.",
+      "why": "You asked for a board to pick from, up and down, into the abstract. Once you pick, I set where each one starts. Pin anything that looks wrong.",
+      "pick": [
+        "wood",
+        "tin",
+        "bronze",
+        "silver",
+        "gold",
+        "platinum",
+        "emerald",
+        "crystal",
+        "diamond",
+        "aurora",
+        "celestial",
+        "legendary",
+        "eternal",
+        "eclipse",
+        "omnipotent",
+        "void"
+      ],
+      "details": "There are 25 new ones and the six in use. Each one is a line in the same table as the tiers in use, drawn with the same shared parts (metal, grain, cut gems, sky, drifting colour, glowing core, the black hole) and its own colours and extras, so a tier you keep is ready, and one you drop costs nothing.\n\nEach film is six seconds and loops, shown bigger than on the phone, at a count I'd guess for it. Those counts and the 'below bronze' or 'past aurora' notes are suggestions only: nothing new has a starting count yet.\n\nShields: tiers below bronze have none, bronze to gold one, the rest two. Untick the six in use to drop or replace one.\n\nMy picks lean on the ones you named (wood, tin, platinum, eternal, legendary, omnipotent) plus the ones I think read clearest small.",
+      "items": [
+        {
+          "id": "clay",
+          "label": "Clay",
+          "video": "../stage2/shots-combo2/tiers/01-clay.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/01-clay.png",
+          "text": "Matte terracotta, no shine and nothing moving. The humblest start. Shown at ×3; below bronze."
+        },
+        {
+          "id": "stone",
+          "label": "Stone",
+          "video": "../stage2/shots-combo2/tiers/02-stone.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/02-stone.png",
+          "text": "Grey stone with soft layers in it. Still. Shown at ×3; below bronze."
+        },
+        {
+          "id": "wood",
+          "label": "Wood",
+          "video": "../stage2/shots-combo2/tiers/03-wood.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/03-wood.png",
+          "text": "Warm wood with grain and a knot. Still. Shown at ×4; below bronze."
+        },
+        {
+          "id": "tin",
+          "label": "Tin",
+          "video": "../stage2/shots-combo2/tiers/04-tin.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/04-tin.png",
+          "text": "Dull grey metal, a single glint now and then. Shown at ×4; below bronze."
+        },
+        {
+          "id": "copper",
+          "label": "Copper",
+          "video": "../stage2/shots-combo2/tiers/05-copper.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/05-copper.png",
+          "text": "Reddish metal, one glint now and then. Close to bronze, a little redder. Shown at ×4; below bronze."
+        },
+        {
+          "id": "bronze",
+          "label": "Bronze",
+          "video": "../stage2/shots-combo2/tiers/06-bronze.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/06-bronze.png",
+          "text": "In use, from 5. Now without the thin line. Shown at ×5; in use from 5."
+        },
+        {
+          "id": "silver",
+          "label": "Silver",
+          "video": "../stage2/shots-combo2/tiers/07-silver.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/07-silver.png",
+          "text": "In use, from 10. Still has its thin line; say if that goes too. Shown at ×10; in use from 10."
+        },
+        {
+          "id": "gold",
+          "label": "Gold",
+          "video": "../stage2/shots-combo2/tiers/08-gold.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/08-gold.png",
+          "text": "In use, from 15. Shown at ×15; in use from 15."
+        },
+        {
+          "id": "rose",
+          "label": "Rose gold",
+          "video": "../stage2/shots-combo2/tiers/09-rose.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/09-rose.png",
+          "text": "Pink gold: the shine, glints and a soft pink glow. Shown at ×18; between gold and crystal."
+        },
+        {
+          "id": "platinum",
+          "label": "Platinum",
+          "video": "../stage2/shots-combo2/tiers/10-platinum.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/10-platinum.png",
+          "text": "Pale cool metal with a faint rainbow shine and four sparkles. Shown at ×20; between gold and crystal."
+        },
+        {
+          "id": "jade",
+          "label": "Jade",
+          "video": "../stage2/shots-combo2/tiers/11-jade.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/11-jade.png",
+          "text": "Smooth green stone with lighter green drifting slowly through it. Shown at ×22; between gold and crystal."
+        },
+        {
+          "id": "emerald",
+          "label": "Emerald",
+          "video": "../stage2/shots-combo2/tiers/12-emerald.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/12-emerald.png",
+          "text": "Green, step-cut like crystal; light runs across the facets. Shown at ×27; between gold and diamond."
+        },
+        {
+          "id": "sapphire",
+          "label": "Sapphire",
+          "video": "../stage2/shots-combo2/tiers/13-sapphire.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/13-sapphire.png",
+          "text": "Deep blue, step-cut; light runs across the facets. Shown at ×30; between gold and diamond."
+        },
+        {
+          "id": "crystal",
+          "label": "Crystal",
+          "video": "../stage2/shots-combo2/tiers/14-crystal.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/14-crystal.png",
+          "text": "In use, from 25. Shown at ×25; in use from 25."
+        },
+        {
+          "id": "ruby",
+          "label": "Ruby",
+          "video": "../stage2/shots-combo2/tiers/15-ruby.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/15-ruby.png",
+          "text": "Red, cut like the diamond, with coloured glints. Shown at ×35; between crystal and diamond."
+        },
+        {
+          "id": "diamond",
+          "label": "Diamond",
+          "video": "../stage2/shots-combo2/tiers/16-diamond.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/16-diamond.png",
+          "text": "In use, from 40. Shown at ×40; in use from 40."
+        },
+        {
+          "id": "obsidian",
+          "label": "Obsidian",
+          "video": "../stage2/shots-combo2/tiers/17-obsidian.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/17-obsidian.png",
+          "text": "Black glass with a violet shine sweeping across. Shown at ×45; between diamond and aurora."
+        },
+        {
+          "id": "opal",
+          "label": "Opal",
+          "video": "../stage2/shots-combo2/tiers/18-opal.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/18-opal.png",
+          "text": "Milky white with pastel colours drifting through it; pastel pips. Shown at ×50; between diamond and aurora."
+        },
+        {
+          "id": "titanium",
+          "label": "Titanium",
+          "video": "../stage2/shots-combo2/tiers/19-titanium.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/19-titanium.png",
+          "text": "Anodised metal running blue to violet to pink to gold, with a rainbow shine. Shown at ×55; between diamond and aurora."
+        },
+        {
+          "id": "aurora",
+          "label": "Aurora",
+          "video": "../stage2/shots-combo2/tiers/20-aurora.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/20-aurora.png",
+          "text": "In use, from 60. Shown at ×60; in use from 60."
+        },
+        {
+          "id": "nebula",
+          "label": "Nebula",
+          "video": "../stage2/shots-combo2/tiers/21-nebula.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/21-nebula.png",
+          "text": "Pink and blue clouds drifting through a starry sky. Shown at ×70; past aurora."
+        },
+        {
+          "id": "celestial",
+          "label": "Celestial",
+          "video": "../stage2/shots-combo2/tiers/22-celestial.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/22-celestial.png",
+          "text": "Deep blue sky with a gold constellation, a gold rim and a gold spark circling. Shown at ×80; past aurora."
+        },
+        {
+          "id": "legendary",
+          "label": "Legendary",
+          "video": "../stage2/shots-combo2/tiers/23-legendary.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/23-legendary.png",
+          "text": "Orange gold, with rays turning slowly behind it and sparks rising. Shown at ×90; past aurora."
+        },
+        {
+          "id": "eternal",
+          "label": "Eternal",
+          "video": "../stage2/shots-combo2/tiers/24-eternal.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/24-eternal.png",
+          "text": "White gold, with pale rays turning behind it and a spark tracing a figure of eight. Shown at ×99; past aurora."
+        },
+        {
+          "id": "prism",
+          "label": "Prism",
+          "video": "../stage2/shots-combo2/tiers/25-prism.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/25-prism.png",
+          "text": "A full rainbow drifting through it, with rainbow pips. Shown at ×120; past aurora."
+        },
+        {
+          "id": "supernova",
+          "label": "Supernova",
+          "video": "../stage2/shots-combo2/tiers/26-supernova.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/26-supernova.png",
+          "text": "White-hot in the middle, burning out to red, rings of light pulsing outward. Shown at ×150; far past aurora."
+        },
+        {
+          "id": "eclipse",
+          "label": "Eclipse",
+          "video": "../stage2/shots-combo2/tiers/27-eclipse.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/27-eclipse.png",
+          "text": "A black chip with a ring of light round its edge, a corona glowing behind and a bright bead circling. Shown at ×200; far past aurora."
+        },
+        {
+          "id": "omnipotent",
+          "label": "Omnipotent",
+          "video": "../stage2/shots-combo2/tiers/28-omnipotent.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/28-omnipotent.png",
+          "text": "Your black hole: a black chip with a glowing disc of matter round a dark middle, and sparks spiralling in. Shown at ×300; far past aurora."
+        },
+        {
+          "id": "singularity",
+          "label": "Singularity",
+          "video": "../stage2/shots-combo2/tiers/29-singularity.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/29-singularity.png",
+          "text": "Inverted: a white-hot chip with a dark number, rings collapsing onto it and dark sparks drawn in. Shown at ×500; far past aurora."
+        },
+        {
+          "id": "multiverse",
+          "label": "Multiverse",
+          "video": "../stage2/shots-combo2/tiers/30-multiverse.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/30-multiverse.png",
+          "text": "Deep indigo with cyan and magenta copies of the chip drifting out of step behind it. Shown at ×750; far past aurora."
+        },
+        {
+          "id": "void",
+          "label": "Void",
+          "video": "../stage2/shots-combo2/tiers/31-void.mp4",
+          "thumb": "../stage2/shots-combo2/tiers/31-void.png",
+          "text": "The end of everything: a window into deep space, two layers of stars drifting past, nothing else. Shown at ×999; the very end."
+        }
+      ]
+    },
+    {
+      "id": "combo-changes",
+      "kind": "report",
+      "rarity": "uncommon",
+      "title": "Bronze, losing it, shields",
+      "text": "Bronze lost its thin line. A miss now cracks the chip while a shield is left, and shatters it when none is.",
+      "why": "Your notes from 0.5: the thin line, a shatter instead of the fade, the width never jumping, and your shields. Pin anything that looks wrong.",
+      "details": "Shields only protect the count. A missed fact still comes back a few questions later and is due sooner in your memory, exactly as before.\n\nThe films come from the tests, with a made-up topic, shown bigger than on the phone, without the question below. The crack and shatter films have their sound in them; the phone plays films silent, so the sounds are also on the shields part to tap.\n\nIf your phone is set to reduce motion, cracks still show and the chip still empties, but nothing knocks or flies.",
+      "parts": [
+        {
+          "id": "bronze",
+          "title": "Bronze",
+          "text": "The thin bright line along its band is gone. Silver and gold still have theirs.",
+          "videos": [
+            "../stage2/shots-combo2/tiers/06-bronze.mp4"
+          ]
+        },
+        {
+          "id": "shatter",
+          "title": "Losing it: a shatter",
+          "text": "With no shield left, cracks run right through the chip, it swells a touch and bursts: the pieces fly out, turn, fall and fade, and plain ×0 comes up under them. A crunch and a few glassy notes if Effects is on. The chip doesn't change width: it keeps the widest it has been in the run, and grows smoothly when a count needs another digit.",
+          "videos": [
+            "../stage2/shots-combo2/shatter-crystal.mp4",
+            "../stage2/shots-combo2/shatter-gold.mp4",
+            "../stage2/shots-combo2/width-steady.mp4"
+          ],
+          "audio": [
+            {
+              "src": "../stage2/shots-combo2/shatter.m4a",
+              "label": "The shatter"
+            }
+          ]
+        },
+        {
+          "id": "shields",
+          "title": "Shields and cracks",
+          "text": "Bronze to gold take one miss, crystal and up two. A miss with a shield left knocks the chip and opens a crack across it, with a small crack sound; the count and pips stay. One crack shows per shield used. Right answers don't mend cracks; reaching the next tier does. Here: gold's one crack, crystal's second, a tier-up mending one, and the whole run of it.",
+          "videos": [
+            "../stage2/shots-combo2/crack-1-gold.mp4",
+            "../stage2/shots-combo2/crack-2-crystal.mp4",
+            "../stage2/shots-combo2/refill-gold-to-crystal.mp4",
+            "../stage2/shots-combo2/story-gold-to-shatter.mp4"
+          ],
+          "audio": [
+            {
+              "src": "../stage2/shots-combo2/crack.m4a",
+              "label": "A crack"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shield-refill",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "When shields come back",
+      "text": "Do shields refill when you reach a new tier, and stay used until then?",
+      "why": "Right answers mending cracks would make a shield nearly free: miss, get one right, miss again. Refilling only at a new tier keeps a crack meaning something while still rewarding a long run.",
+      "pick": "Yes: reaching a new tier refills them and mends the cracks; right answers don't.",
+      "details": "Other ways it could go: a crack mends after five right in a row (one full row of pips), or shields only come back when a new run starts.\n\nThe film on the shields part shows the way it works now: gold cracked at ×24, one right answer reaches crystal, and the cracked chip fades as the clean one swells.",
+      "videos": [
+        "../stage2/shots-combo2/refill-gold-to-crystal.mp4"
+      ]
+    }
+  ]
+}
