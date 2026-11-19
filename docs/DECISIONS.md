@@ -330,3 +330,7 @@ Their words are in primer-data `notes/answers-2026-11-19c.md`.
 - **The wheels are drawn as real drums.** What read wrong: a blue-grey fade was laid over the drum's top and bottom, over the digits, so the neighbouring digits looked fogged, and the rounded window read as a button. Now each digit sits on a cylinder: full size facing you, squashed by the cosine of its angle as it turns over the top and bottom, nothing laid over it; the face is three flat bands (pale top turned to the light, white face, shaded foot) and a darker side.
 - **The tape's glide to the truth is paced**: slow off, faster, easing in, longer the further it goes, never over a second. A finger's glide stays quick.
 - Motion a Number look sets going itself (a drum settling, the tape's glide, the beads) runs on the inputs' one clock, through `tween` and `oneByOne` in number/common.js.
+
+## 2026-11-19: the geometric-glow style, tried on a cast
+
+In chat, on the ten gecko styles: "Try 8 animals and a human and monster in the 1st style the lizard is in". Style 1 is geometric glow (round 13): built from circles, half circles and boxes, lit by a small glowing lamp in the dark, violet shadows and a warm edge of light. Next: ten characters in it (eight animals, a person, a monster), one picture each, to see whether the style holds across a cast.
