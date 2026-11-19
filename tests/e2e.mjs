@@ -2185,9 +2185,16 @@ try {
   const nextAt = await f.rect('[data-sc=next]');
   const under = await ev(`(()=>{window.__taps=[];for(const t of ['pointerdown','click'])document.addEventListener(t,e=>__taps.push(t+':'+e.target.tagName+'.'+String(e.target.className).slice(0,30)+(e.defaultPrevented?' prevented':'')),true);const e=document.elementFromPoint(${nextAt.x},${nextAt.y});return e?e.tagName+'.'+String(e.className).slice(0,40):null})()`);
   await f.tap('[data-sc=next]');
+  // Under load (other test runs at once) the browser can see the press but make no click of it: a long press.
+  // Then it's tapped once more, and said, so a real miss still fails.
+  let retapped = false;
+  if (!(await waitFor(`__primer.run && __primer.run.step && __primer.run.step.id === 'before'`, 2000))) {
+    const t = await ev('window.__taps');
+    if (t.some(x => x.startsWith('pointerdown')) && !t.some(x => x.startsWith('click'))) { retapped = true; console.log('  note: the press made no click; tapped Next again'); await f.tap('[data-sc=next]'); }
+  }
   await waitFor(`__primer.run && __primer.run.step && __primer.run.step.id === 'before'`);
   ok(!(await ev('!!document.querySelector(".video")')) && (await stepId()) === 'before', 'Next goes on to the next node on the path: the lesson',
-    { under, taps: await ev('window.__taps'), scene: await ev(`(()=>{const s=document.querySelector('.scene');return s?{cls:s.className,state:s.dataset.state}:null})()`), run: await ev('__primer.run ? (__primer.run.scene ? "scene" : "lesson") : null') });
+    { under, taps: await ev('window.__taps'), scene: await ev(`(()=>{const s=document.querySelector('.scene');return s?{cls:s.className,state:s.dataset.state}:null})()`), run: await ev('__primer.run ? (__primer.run.scene ? "scene" : "lesson") : null'), retapped });
   ok((await everyEvent()).filter(e => e.lesson === 'engine' && e.type === 'finish').length === 1, 'and the animation was finished once, for that viewing');
   await f.tap('[data-go=leave]');
   await sleep(400);

@@ -307,3 +307,10 @@ Their words are in primer-data `notes/answers-2026-11-19a.md`.
 - **The sea's round thing is the sun**: a daytime sky and rays, one sun drawing shared with the wind's island. "Wave between the oranges" read as the line where the two warm tones meet, now a slow wave.
 - **A wrong number shows the truth in its own field**, in gold (keys type it, wheels roll, the tape glides, beads move), and what was given stays on a small struck-through tag at the field's corner, coloured by its mark. A number given exactly right is left as it is.
 - **The tape's unit**: it was always shown when a lesson gives one; the Practice example had none, and now has km/h.
+
+## 2026-11-19: forms round three on the phone
+
+Their words are in primer-data `notes/answers-2026-11-19b.md`.
+
+- **Good:** the thermometer, the sea, the wind, the number reveal and the tape. Heat lines: **without**.
+- **Still to do:** the sea's warm colour becomes see-through, tinting the water so its detail still shows; a yellow line still peeks out on the wind picture's sand; the abacus reveal moves its beads one at a time, quickly snapping, instead of all at once; the wheels still look off ("the fade is over the numbers?"); the tape's reveal can take longer, starting slow and speeding up, always within one second.
