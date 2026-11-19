@@ -293,3 +293,11 @@ Their words are in primer-data `notes/answers-2026-11-18e.md`.
 - **Shields (their idea, accepted):** each tier protects the combo from one-off mistakes: bronze to gold one shield, higher tiers two. A miss with a shield left cracks the chip (one crack per shield used) instead of ending the combo. My reading, to confirm on the board: shields refill on reaching a new tier, and right answers don't mend cracks.
 - **Forms:** thermometer: bulb and tube one shape, the tube's shadow not over the bulb, a solid handle, heat lines in doubt. Sea: the heat colour fills the waves, longer wavelength, the wave between yellow-orange and deep orange; the round thing reads as a moon. Wind: no white waves, rain falls in an odd pattern, a stray line at the foot of the tree, the darker water in front of the island. Number: all four looks kept (picked all of them); a wrong answer shows the right one in the field; the wheels' bottom shadow is lighter than the body; the tape needs its unit. Pile and Spot: good.
 - **Crow round 10:** Button and Bean picked. Both get simple round eyes, in a white and a black version. They're unsure about the style and about a bird at all: next, a board of every character made so far.
+
+## 2026-11-19: the whole cast
+
+Their words are in primer-data `notes/answers-2026-11-19a.md`.
+
+- **Crow:** Button with white eyes (my pick). Unsure the light rim on its left side fits. Next: pill-shaped eyes, like 2D capsules, solid white.
+- **The cast board (98 characters):** they ticked 15 with "some merit/charm", none they're sold on: fox, capybara, axolotl (round 2), puffin and tall person (3), gecko, sheep, walrus, flamingo (4), cut-out person (5), softer person, soft noodle person, Flop and Hug (6), Plump crow (9). The round 7 faces are "ok". The gecko "could be used if made more unique and not like Cartoon Network/child book"; the softer and noodle people are "too happy, too much child cartoon vibe". So the direction is less child-book, more grown-up and unique, keeping charm.
+- **Next round (my call):** Button with pill eyes, rim and no rim; and a spectrum from child-book to grown-up for two of the liked characters (the gecko and the cut-out person), so they can point at where on it the style should sit, before any species is settled.
