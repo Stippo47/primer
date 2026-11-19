@@ -1,0 +1,37 @@
+<!doctype html>
+<!--
+  Primer: the avatar, thirteenth round. A sketch to react to, not app code. Stills only.
+
+  1. Button with its pill eyes lying down: the white capsule on its side, no rim, and the same with a flat shadow on
+     the eye (below, on the side away from the light; or on top, as if cast by the head). Everything else is round
+     10's Button (js/crows.js, drawn by ../avatar10/js/crows.js).
+  2. The round 4 gecko in ten stylised directions: the same pose and simplicity, each with its own shape language,
+     palette and finish, none more realistic (js/styles.js, with shared parts in js/base.js).
+
+    index.html?pic=crow-button-lying           one crow. ids: button-lying, button-lying-shade-low, button-lying-shade-top
+    index.html?lineup=crow-faces               the heads, large, with round 12's upright pill first
+    index.html?lineup=crow-icons               the same at icon size
+    index.html?pic=gecko-geometric             one direction: geometric, poster, papercut, midcentury, chunky,
+                                               monoline, faceted, blobby, riso, linocut
+    index.html?lineup=gecko-sheet              all ten, small
+    index.html?lineup=gecko-icons              all ten at icon size
+
+  Modules need http, and this page reaches into ../avatar10 and ../avatar12, so serve the stage0 folder.
+  tools/capture.mjs does that itself and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, pills lying down and the gecko's styles</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
