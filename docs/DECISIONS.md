@@ -340,3 +340,13 @@ My calls building the animation notes (branch s2-anim), theirs to overturn on th
 - **Soft motion in scenes, lively in lessons.** In a scene things fade and grow in and every move eases in and out with no overshoot; a lesson's parts keep the approved bounce.
 - **Sound effects are made here**, from noise and sine waves (no recordings, nobody else's sounds), quiet beside the voice, played as plain `<audio>` like the voice. They follow the Effects switch, which is off since the press sounds were disliked; turning it on to hear them brings the press sounds back too. Whether animations' sounds should have a switch of their own is a question for the phone.
 - **A new narrator switches a topic all at once**, once every clip of it is down; until then the old voice goes on.
+
+## 2026-11-19: styles picked, the combo's tiers, forms round four
+
+Their words are in primer-data `notes/answers-2026-11-19d.md`.
+
+- **Style: geometric glow** (round 13, style 1), and my reading of "more unique, not child-book" is confirmed: a style with its own voice, a clear shape language and palette, calm faces instead of grins, simple and flat, not realistic. The ten-character cast in it is out on deck `stage0-cast4`.
+- **Button's eyes: pills lying down, with the shade below.**
+- **Combo tiers kept (23), low to high:** wood, tin, copper, silver, gold, platinum, emerald, sapphire, crystal, ruby, diamond, obsidian, opal, titanium, aurora, nebula, celestial, eternal, supernova, eclipse, singularity, multiverse, void. Bronze wasn't ticked: copper takes its place (my reading). Similar tiers must differ by more than colour (tin and copper, for one), and the thresholds are spread out.
+- **Shields refill on reaching a new tier** (my pick, GO). Shields, cracks and the shatter: good, but both the crack and the shatter sound are bad and get redone.
+- **Forms round four:** wind sand, wheels and tape good. The abacus beads must actually slide, one at a time, not jump. The sea's tint: decent, no note. The tape: "Km/hr?" (check the unit shows and reads plainly).
