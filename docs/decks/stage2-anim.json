@@ -1,0 +1,33 @@
+{
+  "title": "Animations, directed",
+  "topic": "stage2",
+  "order": 10,
+  "cards": [
+    {
+      "id": "anim",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Animations, directed",
+      "text": "The two hurricane animations now cut between views, move softer and label what they name. Mark each part.",
+      "why": "Your note was that they were too static and snappy. The films here play silent; open the animations in Primer to hear them.",
+      "details": "To update: close Primer fully and open it again; Profile shows 0.5.5 at the bottom.\n\nThe spoken words didn't change, only what you see while they're said. Everything new is a general tool any future animation can use: cuts, a split screen, a small window in a corner, a camera that tilts and follows, labels, and a new side-on picture of sea and sky.\n\nA few films were made before labels learned to fade near the edge, so a label can look cut off at the screen's edge in them; the app itself fades them.",
+      "parts": [
+        { "id": "cuts", "title": "Cuts and views", "text": "Each line now shows what it says: the camera pushes in, tilts low over the sea, cuts to a side-on slice of sea and sky for the warm water, vapour and cloud, splits north and south, and drops in a small globe in the corner to remind you where you are.", "videos": ["../stage2/shots-anim/engine-1-atlantic-to-the-engine.mp4", "../stage2/shots-anim/engine-2-warm-enough-evaporates-cloud.mp4", "../stage2/shots-anim/spin-1-spin-coriolis-north-south.mp4"] },
+        { "id": "smooth", "title": "Softer motion", "text": "Moves ease in and out at half the old peak speed, with no overshoot, and a move started mid-move carries on smoothly. The storm's track is one smooth curve now, and the storm rides it at an even pace without stopping between lines. The old version is the first film.", "videos": ["../stage2/shots-anim/before-spin-3-west-curve-east-track.mp4", "../stage2/shots-anim/spin-3-west-curve-east-track.mp4"] },
+        { "id": "labels", "title": "Labels", "text": "When a line names an ocean, sea or continent, it's labelled on the globe while it matters, and fades after.", "videos": ["../stage2/shots-anim/spin-4-cooler-ashore-sum-up.mp4"] },
+        { "id": "sounds", "title": "Sound effects", "text": "Eight quiet sounds made here from scratch (whoosh, cut, swell, pop, chime, wind, fizz, rumble), well under the voice. They play with Effects on. Do they sound good on your phone's speaker?" },
+        { "id": "band", "title": "The bottom band", "text": "The player's dark background now reaches the bottom of the screen. The cause was guessed from your picture, since it can't be tested here: is the band gone?" },
+        { "id": "voice", "title": "New narrator, no signal", "text": "As you chose: after a narrator change, the old voice keeps narrating until all of the new one is down, then it switches at once." }
+      ]
+    },
+    {
+      "id": "effects-switch",
+      "kind": "question",
+      "rarity": "uncommon",
+      "title": "Animation sounds switch",
+      "text": "Animation sounds need Effects on, which also brings back the button sounds. Give them their own switch?",
+      "why": "Right now you can't have the animation sounds without the press sounds. Their own switch fixes that.",
+      "pick": "Their own switch, Animation sounds, on by default. Effects stays off and only covers button presses."
+    }
+  ]
+}
