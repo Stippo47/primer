@@ -469,3 +469,5 @@ export const FAMILIES = [
   { id: 'bean', name: 'Bean', crows: BEANS.map(k => ({ ...k, draw: g => beanBird(g, k.v), head: headOf(k.v) })) },
 ];
 export const CROWS = FAMILIES.flatMap(f => f.crows.map(k => ({ ...k, family: f.id })));
+// the parts, for later rounds that build on these birds (round 11 swaps the eyes of Button and Bean)
+export { PLUMPS, BEANS, plumpBird, beanBird, vary, headOf };

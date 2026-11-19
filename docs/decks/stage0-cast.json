@@ -1,0 +1,655 @@
+{
+  "title": "Round eyes, and the whole cast",
+  "topic": "stage0",
+  "order": 11,
+  "cards": [
+    {
+      "id": "crow-round-eyes",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Round eyes on Button, Bean",
+      "text": "Button and Bean with simple round eyes, white and black. Tick the ones you like.",
+      "why": "You picked Button and Bean and asked for simple round eyes in a white and a black version. Only the eyes changed: the bodies, colours, pose and size are round 10's. Pin anything that looks wrong.",
+      "pick": [
+        "button-white"
+      ],
+      "details": "Four crows: Button and Bean, each with white eyes and with black eyes. Same room, pose, light and size as last round, so only the eyes change.\n\nWhite eyes: a plain white circle with a round dark pupil, set a little forward so the bird looks ahead. No lid, no ring, no glint.\n\nBlack eyes: a plain dark circle with one small round glint, high on the side the light comes from. Without the glint a black eye on a near-black head disappears.\n\nOn all four the far eye is the same eye seen at a slant, peeking past the edge of the head above the beak, as before. The near eye is the same size on both birds.\n\nThe picture on the front shows the four heads large, side by side.\n\nMy pick is Button with white eyes. The white eye is the clearest face of the four: it reads from across the room and still shows at icon size, where the black eye shrinks to a single white dot. Button's round body suits a round eye, and its thin edge of light keeps its shape on the dark wall when small, which Bean doesn't have. My second is Bean with white eyes.\n\nStill weak: the far white eye shows as a small white bump at the edge of the head, which can look like a notch. A pupil set forward with no lid can read a little wide-eyed rather than calm. The black eyes are calm, but at icon size only their glints show. Bean still goes dark and muddy when small.",
+      "images": [
+        "../../stage0/avatar11/shots/crow-faces.png"
+      ],
+      "items": [
+        {
+          "id": "button-white",
+          "label": "Button, white eyes",
+          "image": "../../stage0/avatar11/shots/crow-button-white.png",
+          "text": "A white circle with a round dark pupil looking ahead. No lid, no glint. My pick."
+        },
+        {
+          "id": "button-black",
+          "label": "Button, black eyes",
+          "image": "../../stage0/avatar11/shots/crow-button-black.png",
+          "text": "A plain dark circle with one small glint."
+        },
+        {
+          "id": "bean-white",
+          "label": "Bean, white eyes",
+          "image": "../../stage0/avatar11/shots/crow-bean-white.png",
+          "text": "Round 9's Bean with a white circle and a round dark pupil. My second."
+        },
+        {
+          "id": "bean-black",
+          "label": "Bean, black eyes",
+          "image": "../../stage0/avatar11/shots/crow-bean-black.png",
+          "text": "Round 9's Bean with a plain dark circle and one small glint."
+        }
+      ]
+    },
+    {
+      "id": "whole-cast",
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Every character so far",
+      "text": "Every character so far, one per picture. Tick the ones whose style you like, any species.",
+      "why": "This is to find the style before the species. Tick a look you like even if the animal is wrong for you.",
+      "pick": [
+        "r03-raccoon",
+        "r04-hippo",
+        "r04-sheep",
+        "r06-lamp-blob",
+        "r07-face-calm",
+        "r09-crow-longtail"
+      ],
+      "details": "All 98 characters from the avatar rounds, in the order they were shown, each in its own picture with the round it came from. Round 1 is the stand-in kid from the first Home sketch, drawn on its own. Round 2 is the first board of three animals and three monsters. Rounds 3 to 10 are the avatar rounds since.\n\nLeft out, since they'd only repeat a picture: the same characters in hats and shirts, the round 6 Blob and Noodle people (round 5's again), and round 10's Plump and Bean (round 9's, unchanged). This round's four round-eyed crows are on the other card.\n\nMy picks are for style, not species: the raccoon, the hippo and the sheep (a few simple blocks, big eyes, feet floating under the body, one flat shadow), the lamp monster in Blob (one soft shape with a clear outline), the calm face (small dark eyes, no grin), and the Longtail crow (flat colour with a thin edge of light). Seen together, the round 4 animals are the most consistent family of the lot: one way of drawing that works for any species.",
+      "items": [
+        {
+          "id": "r01-kid",
+          "label": "Kid in a hat, round 1",
+          "image": "../../stage0/cast/r01-kid.png",
+          "thumb": "../../stage0/cast/thumbs/r01-kid.jpg"
+        },
+        {
+          "id": "r02-fox",
+          "label": "Fox, round 2",
+          "image": "../../stage0/cast/r02-fox.png",
+          "thumb": "../../stage0/cast/thumbs/r02-fox.jpg"
+        },
+        {
+          "id": "r02-capybara",
+          "label": "Capybara, round 2",
+          "image": "../../stage0/cast/r02-capybara.png",
+          "thumb": "../../stage0/cast/thumbs/r02-capybara.jpg"
+        },
+        {
+          "id": "r02-axolotl",
+          "label": "Axolotl, round 2",
+          "image": "../../stage0/cast/r02-axolotl.png",
+          "thumb": "../../stage0/cast/thumbs/r02-axolotl.jpg"
+        },
+        {
+          "id": "r02-tuft",
+          "label": "Tuft, round 2",
+          "image": "../../stage0/cast/r02-tuft.png",
+          "thumb": "../../stage0/cast/thumbs/r02-tuft.jpg"
+        },
+        {
+          "id": "r02-glim",
+          "label": "Glim, round 2",
+          "image": "../../stage0/cast/r02-glim.png",
+          "thumb": "../../stage0/cast/thumbs/r02-glim.jpg"
+        },
+        {
+          "id": "r02-pebble",
+          "label": "Pebble, round 2",
+          "image": "../../stage0/cast/r02-pebble.png",
+          "thumb": "../../stage0/cast/thumbs/r02-pebble.jpg"
+        },
+        {
+          "id": "r03-puffin",
+          "label": "Puffin, round 3",
+          "image": "../../stage0/cast/r03-puffin.png",
+          "thumb": "../../stage0/cast/thumbs/r03-puffin.jpg"
+        },
+        {
+          "id": "r03-tall",
+          "label": "Tall person, round 3",
+          "image": "../../stage0/cast/r03-tall.png",
+          "thumb": "../../stage0/cast/thumbs/r03-tall.jpg"
+        },
+        {
+          "id": "r03-frog",
+          "label": "Frog, round 3",
+          "image": "../../stage0/cast/r03-frog.png",
+          "thumb": "../../stage0/cast/thumbs/r03-frog.jpg"
+        },
+        {
+          "id": "r03-raccoon",
+          "label": "Raccoon, round 3",
+          "image": "../../stage0/cast/r03-raccoon.png",
+          "thumb": "../../stage0/cast/thumbs/r03-raccoon.jpg"
+        },
+        {
+          "id": "r03-toucan",
+          "label": "Toucan, round 3",
+          "image": "../../stage0/cast/r03-toucan.png",
+          "thumb": "../../stage0/cast/thumbs/r03-toucan.jpg"
+        },
+        {
+          "id": "r03-round",
+          "label": "Round person, round 3",
+          "image": "../../stage0/cast/r03-round.png",
+          "thumb": "../../stage0/cast/thumbs/r03-round.jpg"
+        },
+        {
+          "id": "r04-otter",
+          "label": "Otter, round 4",
+          "image": "../../stage0/cast/r04-otter.png",
+          "thumb": "../../stage0/cast/thumbs/r04-otter.jpg"
+        },
+        {
+          "id": "r04-hippo",
+          "label": "Hippo, round 4",
+          "image": "../../stage0/cast/r04-hippo.png",
+          "thumb": "../../stage0/cast/thumbs/r04-hippo.jpg"
+        },
+        {
+          "id": "r04-gecko",
+          "label": "Gecko, round 4",
+          "image": "../../stage0/cast/r04-gecko.png",
+          "thumb": "../../stage0/cast/thumbs/r04-gecko.jpg"
+        },
+        {
+          "id": "r04-cockatiel",
+          "label": "Cockatiel, round 4",
+          "image": "../../stage0/cast/r04-cockatiel.png",
+          "thumb": "../../stage0/cast/thumbs/r04-cockatiel.jpg"
+        },
+        {
+          "id": "r04-bee",
+          "label": "Bee, round 4",
+          "image": "../../stage0/cast/r04-bee.png",
+          "thumb": "../../stage0/cast/thumbs/r04-bee.jpg"
+        },
+        {
+          "id": "r04-person",
+          "label": "Person with a bun, round 4",
+          "image": "../../stage0/cast/r04-person.png",
+          "thumb": "../../stage0/cast/thumbs/r04-person.jpg"
+        },
+        {
+          "id": "r04-sheep",
+          "label": "Sheep, round 4",
+          "image": "../../stage0/cast/r04-sheep.png",
+          "thumb": "../../stage0/cast/thumbs/r04-sheep.jpg"
+        },
+        {
+          "id": "r04-bat",
+          "label": "Bat, round 4",
+          "image": "../../stage0/cast/r04-bat.png",
+          "thumb": "../../stage0/cast/thumbs/r04-bat.jpg"
+        },
+        {
+          "id": "r04-walrus",
+          "label": "Walrus, round 4",
+          "image": "../../stage0/cast/r04-walrus.png",
+          "thumb": "../../stage0/cast/thumbs/r04-walrus.jpg"
+        },
+        {
+          "id": "r04-flamingo",
+          "label": "Flamingo, round 4",
+          "image": "../../stage0/cast/r04-flamingo.png",
+          "thumb": "../../stage0/cast/thumbs/r04-flamingo.jpg"
+        },
+        {
+          "id": "r05-person-blob",
+          "label": "Person, Blob, round 5",
+          "image": "../../stage0/cast/r05-person-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-blob.jpg"
+        },
+        {
+          "id": "r05-person-circles",
+          "label": "Person, Circles, round 5",
+          "image": "../../stage0/cast/r05-person-circles.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-circles.jpg"
+        },
+        {
+          "id": "r05-person-noodle",
+          "label": "Person, Noodle, round 5",
+          "image": "../../stage0/cast/r05-person-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-noodle.jpg"
+        },
+        {
+          "id": "r05-person-pills",
+          "label": "Person, Pills, round 5",
+          "image": "../../stage0/cast/r05-person-pills.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-pills.jpg"
+        },
+        {
+          "id": "r05-person-squat",
+          "label": "Person, Squat, round 5",
+          "image": "../../stage0/cast/r05-person-squat.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-squat.jpg"
+        },
+        {
+          "id": "r05-person-tall",
+          "label": "Person, Tall, round 5",
+          "image": "../../stage0/cast/r05-person-tall.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-tall.jpg"
+        },
+        {
+          "id": "r05-person-blocks",
+          "label": "Person, Blocks, round 5",
+          "image": "../../stage0/cast/r05-person-blocks.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-blocks.jpg"
+        },
+        {
+          "id": "r05-person-cutout",
+          "label": "Person, Cut-out, round 5",
+          "image": "../../stage0/cast/r05-person-cutout.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-cutout.jpg"
+        },
+        {
+          "id": "r05-person-facets",
+          "label": "Person, Facets, round 5",
+          "image": "../../stage0/cast/r05-person-facets.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-facets.jpg"
+        },
+        {
+          "id": "r05-person-spiky",
+          "label": "Person, Spiky, round 5",
+          "image": "../../stage0/cast/r05-person-spiky.png",
+          "thumb": "../../stage0/cast/thumbs/r05-person-spiky.jpg"
+        },
+        {
+          "id": "r05-monster-blob",
+          "label": "Monster, Blob, round 5",
+          "image": "../../stage0/cast/r05-monster-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-blob.jpg"
+        },
+        {
+          "id": "r05-monster-circles",
+          "label": "Monster, Circles, round 5",
+          "image": "../../stage0/cast/r05-monster-circles.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-circles.jpg"
+        },
+        {
+          "id": "r05-monster-noodle",
+          "label": "Monster, Noodle, round 5",
+          "image": "../../stage0/cast/r05-monster-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-noodle.jpg"
+        },
+        {
+          "id": "r05-monster-pills",
+          "label": "Monster, Pills, round 5",
+          "image": "../../stage0/cast/r05-monster-pills.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-pills.jpg"
+        },
+        {
+          "id": "r05-monster-squat",
+          "label": "Monster, Squat, round 5",
+          "image": "../../stage0/cast/r05-monster-squat.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-squat.jpg"
+        },
+        {
+          "id": "r05-monster-tall",
+          "label": "Monster, Tall, round 5",
+          "image": "../../stage0/cast/r05-monster-tall.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-tall.jpg"
+        },
+        {
+          "id": "r05-monster-blocks",
+          "label": "Monster, Blocks, round 5",
+          "image": "../../stage0/cast/r05-monster-blocks.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-blocks.jpg"
+        },
+        {
+          "id": "r05-monster-cutout",
+          "label": "Monster, Cut-out, round 5",
+          "image": "../../stage0/cast/r05-monster-cutout.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-cutout.jpg"
+        },
+        {
+          "id": "r05-monster-facets",
+          "label": "Monster, Facets, round 5",
+          "image": "../../stage0/cast/r05-monster-facets.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-facets.jpg"
+        },
+        {
+          "id": "r05-monster-spiky",
+          "label": "Monster, Spiky, round 5",
+          "image": "../../stage0/cast/r05-monster-spiky.png",
+          "thumb": "../../stage0/cast/thumbs/r05-monster-spiky.jpg"
+        },
+        {
+          "id": "r06-person-softer",
+          "label": "Person, Softer, round 6",
+          "image": "../../stage0/cast/r06-person-softer.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-softer.jpg"
+        },
+        {
+          "id": "r06-person-longer",
+          "label": "Person, Long nubs, round 6",
+          "image": "../../stage0/cast/r06-person-longer.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-longer.jpg"
+        },
+        {
+          "id": "r06-person-blobnoodle",
+          "label": "Person, Blob + noodles, round 6",
+          "image": "../../stage0/cast/r06-person-blobnoodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-blobnoodle.jpg"
+        },
+        {
+          "id": "r06-person-softnoodle",
+          "label": "Person, Soft noodle, round 6",
+          "image": "../../stage0/cast/r06-person-softnoodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-softnoodle.jpg"
+        },
+        {
+          "id": "r06-person-rounder",
+          "label": "Person, Round noodle, round 6",
+          "image": "../../stage0/cast/r06-person-rounder.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-rounder.jpg"
+        },
+        {
+          "id": "r06-person-bendier",
+          "label": "Person, Bendier, round 6",
+          "image": "../../stage0/cast/r06-person-bendier.png",
+          "thumb": "../../stage0/cast/thumbs/r06-person-bendier.jpg"
+        },
+        {
+          "id": "r06-lamp-blob",
+          "label": "Lamp, Blob, round 6",
+          "image": "../../stage0/cast/r06-lamp-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r06-lamp-blob.jpg"
+        },
+        {
+          "id": "r06-lamp-noodle",
+          "label": "Lamp, Noodle, round 6",
+          "image": "../../stage0/cast/r06-lamp-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-lamp-noodle.jpg"
+        },
+        {
+          "id": "r06-flop-blob",
+          "label": "Flop, Blob, round 6",
+          "image": "../../stage0/cast/r06-flop-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r06-flop-blob.jpg"
+        },
+        {
+          "id": "r06-flop-noodle",
+          "label": "Flop, Noodle, round 6",
+          "image": "../../stage0/cast/r06-flop-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-flop-noodle.jpg"
+        },
+        {
+          "id": "r06-hug-blob",
+          "label": "Hug, Blob, round 6",
+          "image": "../../stage0/cast/r06-hug-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r06-hug-blob.jpg"
+        },
+        {
+          "id": "r06-hug-noodle",
+          "label": "Hug, Noodle, round 6",
+          "image": "../../stage0/cast/r06-hug-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-hug-noodle.jpg"
+        },
+        {
+          "id": "r06-wiggle-blob",
+          "label": "Wiggle, Blob, round 6",
+          "image": "../../stage0/cast/r06-wiggle-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r06-wiggle-blob.jpg"
+        },
+        {
+          "id": "r06-wiggle-noodle",
+          "label": "Wiggle, Noodle, round 6",
+          "image": "../../stage0/cast/r06-wiggle-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r06-wiggle-noodle.jpg"
+        },
+        {
+          "id": "r07-face-calm",
+          "label": "Calm face, round 7",
+          "image": "../../stage0/cast/r07-face-calm.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-calm.jpg"
+        },
+        {
+          "id": "r07-face-plain",
+          "label": "Plain face, round 7",
+          "image": "../../stage0/cast/r07-face-plain.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-plain.jpg"
+        },
+        {
+          "id": "r07-face-thinking",
+          "label": "Thinking face, round 7",
+          "image": "../../stage0/cast/r07-face-thinking.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-thinking.jpg"
+        },
+        {
+          "id": "r07-face-sleepy",
+          "label": "Sleepy face, round 7",
+          "image": "../../stage0/cast/r07-face-sleepy.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-sleepy.jpg"
+        },
+        {
+          "id": "r07-face-curious",
+          "label": "Curious face, round 7",
+          "image": "../../stage0/cast/r07-face-curious.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-curious.jpg"
+        },
+        {
+          "id": "r07-face-unimpressed",
+          "label": "Unimpressed face, round 7",
+          "image": "../../stage0/cast/r07-face-unimpressed.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-unimpressed.jpg"
+        },
+        {
+          "id": "r07-face-determined",
+          "label": "Determined face, round 7",
+          "image": "../../stage0/cast/r07-face-determined.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-determined.jpg"
+        },
+        {
+          "id": "r07-face-shy",
+          "label": "Shy face, round 7",
+          "image": "../../stage0/cast/r07-face-shy.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-shy.jpg"
+        },
+        {
+          "id": "r07-face-quiet",
+          "label": "Quiet face, round 7",
+          "image": "../../stage0/cast/r07-face-quiet.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-quiet.jpg"
+        },
+        {
+          "id": "r07-face-dry",
+          "label": "Dry face, round 7",
+          "image": "../../stage0/cast/r07-face-dry.png",
+          "thumb": "../../stage0/cast/thumbs/r07-face-dry.jpg"
+        },
+        {
+          "id": "r07-side-person-blob",
+          "label": "Blob, side view, round 7",
+          "image": "../../stage0/cast/r07-side-person-blob.png",
+          "thumb": "../../stage0/cast/thumbs/r07-side-person-blob.jpg"
+        },
+        {
+          "id": "r07-side-person-noodle",
+          "label": "Noodle, side view, round 7",
+          "image": "../../stage0/cast/r07-side-person-noodle.png",
+          "thumb": "../../stage0/cast/thumbs/r07-side-person-noodle.jpg"
+        },
+        {
+          "id": "r07-side-person-blobnoodle",
+          "label": "Blob + noodles, side view, round 7",
+          "image": "../../stage0/cast/r07-side-person-blobnoodle.png",
+          "thumb": "../../stage0/cast/thumbs/r07-side-person-blobnoodle.jpg"
+        },
+        {
+          "id": "r07-side-lamp",
+          "label": "Lamp, side view, round 7",
+          "image": "../../stage0/cast/r07-side-lamp.png",
+          "thumb": "../../stage0/cast/thumbs/r07-side-lamp.jpg"
+        },
+        {
+          "id": "r07-side-hippo",
+          "label": "Hippo, side view, round 7",
+          "image": "../../stage0/cast/r07-side-hippo.png",
+          "thumb": "../../stage0/cast/thumbs/r07-side-hippo.jpg"
+        },
+        {
+          "id": "r08-crow-pebble",
+          "label": "Pebble crow, round 8",
+          "image": "../../stage0/cast/r08-crow-pebble.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-pebble.jpg"
+        },
+        {
+          "id": "r08-crow-facet",
+          "label": "Facet crow, round 8",
+          "image": "../../stage0/cast/r08-crow-facet.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-facet.jpg"
+        },
+        {
+          "id": "r08-crow-stilt",
+          "label": "Stilt crow, round 8",
+          "image": "../../stage0/cast/r08-crow-stilt.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-stilt.jpg"
+        },
+        {
+          "id": "r08-crow-chunk",
+          "label": "Chunk crow, round 8",
+          "image": "../../stage0/cast/r08-crow-chunk.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-chunk.jpg"
+        },
+        {
+          "id": "r08-crow-blocks",
+          "label": "Blocks crow, round 8",
+          "image": "../../stage0/cast/r08-crow-blocks.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-blocks.jpg"
+        },
+        {
+          "id": "r08-crow-scratch",
+          "label": "Scratch crow, round 8",
+          "image": "../../stage0/cast/r08-crow-scratch.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-scratch.jpg"
+        },
+        {
+          "id": "r08-crow-paper",
+          "label": "Paper crow, round 8",
+          "image": "../../stage0/cast/r08-crow-paper.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-paper.jpg"
+        },
+        {
+          "id": "r08-crow-lantern",
+          "label": "Lantern crow, round 8",
+          "image": "../../stage0/cast/r08-crow-lantern.png",
+          "thumb": "../../stage0/cast/thumbs/r08-crow-lantern.jpg"
+        },
+        {
+          "id": "r09-crow-plump",
+          "label": "Plump crow, round 9",
+          "image": "../../stage0/cast/r09-crow-plump.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-plump.jpg"
+        },
+        {
+          "id": "r09-crow-sleek",
+          "label": "Sleek crow, round 9",
+          "image": "../../stage0/cast/r09-crow-sleek.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-sleek.jpg"
+        },
+        {
+          "id": "r09-crow-hooded",
+          "label": "Hooded crow, round 9",
+          "image": "../../stage0/cast/r09-crow-hooded.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-hooded.jpg"
+        },
+        {
+          "id": "r09-crow-crisp",
+          "label": "Crisp crow, round 9",
+          "image": "../../stage0/cast/r09-crow-crisp.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-crisp.jpg"
+        },
+        {
+          "id": "r09-crow-longtail",
+          "label": "Longtail crow, round 9",
+          "image": "../../stage0/cast/r09-crow-longtail.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-longtail.jpg"
+        },
+        {
+          "id": "r09-crow-ruff",
+          "label": "Ruff crow, round 9",
+          "image": "../../stage0/cast/r09-crow-ruff.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-ruff.jpg"
+        },
+        {
+          "id": "r09-crow-bean",
+          "label": "Bean crow, round 9",
+          "image": "../../stage0/cast/r09-crow-bean.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-bean.jpg"
+        },
+        {
+          "id": "r09-crow-ink",
+          "label": "Ink crow, round 9",
+          "image": "../../stage0/cast/r09-crow-ink.png",
+          "thumb": "../../stage0/cast/thumbs/r09-crow-ink.jpg"
+        },
+        {
+          "id": "r10-crow-button",
+          "label": "Button crow, round 10",
+          "image": "../../stage0/cast/r10-crow-button.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-button.jpg"
+        },
+        {
+          "id": "r10-crow-drowse",
+          "label": "Drowse crow, round 10",
+          "image": "../../stage0/cast/r10-crow-drowse.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-drowse.jpg"
+        },
+        {
+          "id": "r10-crow-keen",
+          "label": "Keen crow, round 10",
+          "image": "../../stage0/cast/r10-crow-keen.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-keen.jpg"
+        },
+        {
+          "id": "r10-crow-amber",
+          "label": "Amber crow, round 10",
+          "image": "../../stage0/cast/r10-crow-amber.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-amber.jpg"
+        },
+        {
+          "id": "r10-crow-smoke",
+          "label": "Smoke crow, round 10",
+          "image": "../../stage0/cast/r10-crow-smoke.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-smoke.jpg"
+        },
+        {
+          "id": "r10-crow-pip",
+          "label": "Pip crow, round 10",
+          "image": "../../stage0/cast/r10-crow-pip.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-pip.jpg"
+        },
+        {
+          "id": "r10-crow-nap",
+          "label": "Nap crow, round 10",
+          "image": "../../stage0/cast/r10-crow-nap.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-nap.jpg"
+        },
+        {
+          "id": "r10-crow-scout",
+          "label": "Scout crow, round 10",
+          "image": "../../stage0/cast/r10-crow-scout.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-scout.jpg"
+        },
+        {
+          "id": "r10-crow-honey",
+          "label": "Honey crow, round 10",
+          "image": "../../stage0/cast/r10-crow-honey.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-honey.jpg"
+        },
+        {
+          "id": "r10-crow-moon",
+          "label": "Moon crow, round 10",
+          "image": "../../stage0/cast/r10-crow-moon.png",
+          "thumb": "../../stage0/cast/thumbs/r10-crow-moon.jpg"
+        }
+      ]
+    }
+  ]
+}

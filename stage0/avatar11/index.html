@@ -1,0 +1,31 @@
+<!doctype html>
+<!--
+  Primer: the avatar, eleventh round. A sketch to react to, not app code. Stills only.
+
+  Round ten's picks were 2 Button and 7 Bean. This round gives both simple round eyes, in a white version (a white
+  disc with a round dark pupil) and a black version (a dark disc with one small glint). Everything else is round
+  ten's: the birds are drawn by ../avatar10/js/crows.js with only the eye settings swapped (js/crows.js).
+
+    index.html?pic=crow-button-white    one crow. ids: button-white, button-black, bean-white, bean-black
+    index.html?lineup=crow-faces        the four heads, large
+    index.html?lineup=crow-icons        the four at icon size
+
+  Modules need http, and this page reaches into ../avatar10, so serve the stage0 folder. tools/capture.mjs does
+  that itself and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, Button and Bean with round eyes</title>
+<style>
+  html, body { margin: 0; background: #141a3c; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
