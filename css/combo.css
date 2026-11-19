@@ -15,22 +15,32 @@
 .cbody { position: absolute; inset: 0; border-radius: 13px; overflow: hidden; background: var(--plate); box-shadow: 0 4px 0 var(--c-edge); }
 .cface, .crim { position: absolute; left: 0; top: 0; }
 .cnum { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1;
-  color: var(--c-ink); text-shadow: 0 1.5px 0 var(--c-ink-sh); }
+  color: var(--c-ink); text-shadow: 0 1.5px 0 var(--c-ink-sh), 0 0 5px var(--c-halo, transparent), 0 0 2px var(--c-halo, transparent); }
 .cnum b { font-weight: inherit; }
 :is(.cghost, .cshard) .cnum::before { content: attr(data-text); }
 .combo:not(.on) > .cbody .cnum { color: var(--muted); }
 
-/* a shine sweeping across (silver, gold; a faint rainbow on diamond; a tier can tint it), off to the side
-   until it goes */
+/* a shine sweeping across (silver, gold; a faint rainbow on platinum, diamond and titanium; a tier can tint
+   it, and slow it: copper's is a slow warm one), off to the side until it goes */
 .cshine { position: absolute; inset: 0; opacity: 0; transform: translateX(-100%);
   background: linear-gradient(105deg, transparent 0 34%, var(--sh, rgba(255, 255, 255, 0.6)) 34% 46%, transparent 46% 51%, var(--sh2, rgba(255, 255, 255, 0.35)) 51% 55%, transparent 55%); }
 .cshine.prism { background: linear-gradient(105deg, transparent 0 34%, rgba(255, 111, 163, 0.38) 34% 40%, rgba(255, 207, 61, 0.38) 40% 46%, rgba(47, 208, 255, 0.38) 46% 52%, transparent 52%); }
-.combo.idle > .cbody > .cshine { opacity: 1; animation: c-sweep 3s 0.5s infinite both ease-in-out; }
+.combo.idle > .cbody > .cshine { opacity: 1; animation: c-sweep var(--sp, 3s) 0.5s infinite both ease-in-out; }
 @keyframes c-sweep { 0% { transform: translateX(-100%); } 45%, 100% { transform: translateX(100%); } }
 
-/* a facet catching the light (crystal, diamond): each in turn, a wave across the cut */
+/* a facet catching the light (the gems, opal's flecks): each in turn, a wave across the cut; the emerald's
+   slower */
 .fx { position: absolute; inset: 0; opacity: 0; }
-.combo.idle > .cbody > .fx { animation: c-facet 3s var(--d, 0s) infinite both ease-in-out; }
+.combo.idle > .cbody > .fx { animation: c-facet var(--fp, 3s) var(--d, 0s) infinite both ease-in-out; }
+
+/* the star sapphire's star, gliding over the dome as the light moves, and the ruby's ember breathing */
+.cstar { position: absolute; inset: 0; opacity: 0.75; }
+.cstar svg { display: block; }
+.combo.idle > .cbody > .cstar { animation: c-glide 3s infinite alternate ease-in-out; }
+@keyframes c-glide { from { transform: translate(-6px, 1px); opacity: 0.55; } 50% { opacity: 0.95; } to { transform: translate(6px, -1px); opacity: 0.6; } }
+.cember { position: absolute; left: 18%; right: 18%; top: 14%; bottom: 14%; opacity: 0.5; }
+.combo.idle > .cbody > .cember { animation: c-ember 3s infinite alternate ease-in-out; }
+@keyframes c-ember { from { opacity: 0.25; transform: scale(0.85); } to { opacity: 0.9; transform: scale(1.08); } }
 @keyframes c-facet { 0% { opacity: 0; } 12% { opacity: 1; } 30%, 100% { opacity: 0; } }
 
 /* the glow behind (gold and up), a soft gradient that breathes; aurora's turns from teal to violet and back */
@@ -56,6 +66,13 @@
 .crib svg { display: block; }
 .combo.idle > .cbody > .crib { animation: c-drift 6s infinite linear; }
 @keyframes c-drift { to { transform: translateX(-50%); } }
+/* nebula's clouds drift the other way from aurora's ribbons */
+.combo.idle > .cbody > .crib.slow { animation-name: c-drift-back; }
+@keyframes c-drift-back { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+/* the eclipse's bead of light, flaring and fading on the moon's edge */
+.cst.bead { opacity: 0.9; }
+.combo.idle > .cbody > .cst.bead { animation: c-bead 3s infinite ease-in-out; }
+@keyframes c-bead { 0%, 100% { opacity: 0.45; transform: scale(0.7); } 45% { opacity: 1; transform: scale(1.7); } }
 .cst { position: absolute; border-radius: 50%; background: #fff; opacity: 0.6; }
 .combo.idle > .cbody > .cst { animation: c-star 3s var(--d, 0s) infinite ease-in-out; }
 @keyframes c-star { 0%, 100% { opacity: 0.25; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1.15); } }
@@ -125,10 +142,10 @@
 .ccrack { position: absolute; left: 0; top: 0; overflow: visible; }
 .cflake { position: absolute; z-index: 3; width: 5px; height: 5px; border-radius: 1px; pointer-events: none; }
 
-/* reduced motion: the tiers keep their colours, and nothing idles. Crystal and diamond keep their glints,
-   still, since they're part of how those look. */
+/* reduced motion: the tiers keep their colours, and nothing idles. Crystal, ruby and diamond keep their
+   glints, still, since they're part of how those look. */
 .combo.still *, .combo.still { animation: none !important; }
-.combo.still:is(.tier-crystal, .tier-diamond) > .cs { opacity: 0.9; transform: scale(0.8); }
+.combo.still:is(.tier-crystal, .tier-ruby, .tier-diamond) > .cs { opacity: 0.9; transform: scale(0.8); }
 @media (prefers-reduced-motion: reduce) { .combo, .combo * { animation: none !important; } }
 
 /* ---------------------------------------------------------------- the pips */

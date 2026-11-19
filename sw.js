@@ -6,7 +6,7 @@
 // untouched. Lessons and their media are kept by the app itself, in IndexedDB, never here.
 // Caches it makes are named primer-app-<VERSION>, and it only ever clears caches with that prefix: a test
 // page under the same address keeps its own (primer-stage0-phone-…), and those must survive.
-const VERSION = '0.5.6';
+const VERSION = '0.5.7';
 const PREFIX = 'primer-app-';
 const CACHE = PREFIX + VERSION;
 const FILES = [
@@ -97,6 +97,8 @@ const FILES = [
   'sounds/wind.m4a',
   'sounds/fizz.m4a',
   'sounds/rumble.m4a',
+  'sounds/crack.m4a',
+  'sounds/shatter.m4a',
 ];
 
 self.addEventListener('install', e => {

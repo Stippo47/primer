@@ -101,21 +101,51 @@ const SOUNDS = {
   wrong: [[0, 349.23, { level: 0.16, decay: 0.42, partial: 0.03 }], [0.13, 293.66, { level: 0.14, decay: 0.6, partial: 0.03 }]],
   done: [[0, 523.25, { level: 0.15, decay: 0.8 }], [0.1, 659.25, { level: 0.14, decay: 0.85 }], [0.2, 783.99, { level: 0.14, decay: 0.95 }], [0.32, 1046.5, { level: 0.12, decay: 1.3 }]],
   pop: [[0, 659.25, { level: 0.1, decay: 0.18 }]],
-  // the combo: a shield taking a miss (a small crack and a knock), and the chip shattering (a crunch, then
-  // glassy bits falling away, high to low)
-  crack: [[0, 'grit', 1900, { level: 0.22, decay: 0.07, q: 1.4 }], [0.004, 196, { level: 0.14, decay: 0.16, partial: 0.02 }], [0.03, 'grit', 3200, { level: 0.08, decay: 0.05, q: 2 }]],
-  shatter: [[0, 'grit', 2300, { level: 0.3, decay: 0.16, q: 0.9 }], [0, 147, { level: 0.14, decay: 0.22, partial: 0.02 }], [0.02, 'grit', 3600, { level: 0.14, decay: 0.12, q: 1.6 }],
-    [0.05, 2093, { level: 0.07, decay: 0.2, partial: 0.3 }], [0.1, 1760, { level: 0.065, decay: 0.22, partial: 0.3 }], [0.16, 2349.3, { level: 0.05, decay: 0.18, partial: 0.3 }],
-    [0.23, 1568, { level: 0.05, decay: 0.24, partial: 0.3 }], [0.31, 1975.5, { level: 0.04, decay: 0.2, partial: 0.3 }], [0.4, 1318.5, { level: 0.035, decay: 0.26, partial: 0.3 }]],
 };
-export const SOUND_NAMES = Object.keys(SOUNDS);
+// The combo's crack (a shield taking a miss) and shatter (losing it) are samples instead: a porcelain tink
+// with a soft knock under it, and a bright break cascading away over a soft thump, made by
+// tools/make-sounds.py (redone 2026-11-19: the made-on-the-spot ones were "bad sound"). They're levelled in
+// the file, about -27.5 LUFS like the scenes' sounds, so they skip the low-pass and the half level.
+const SAMPLES = { crack: 'crack', shatter: 'shatter' };
+const decoded = new Map();   // name -> AudioBuffer, or the promise of one
+export const SOUND_NAMES = [...Object.keys(SOUNDS), ...Object.keys(SAMPLES)];
+const sampleUrl = name => new URL(`../sounds/${SAMPLES[name]}.m4a`, import.meta.url).href;
+
+function decode(c, name) {
+  if (!decoded.has(name)) {
+    const p = fetch(sampleUrl(name)).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+      .then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))   // the callback form, for older Safari
+      .then(buf => { decoded.set(name, buf); return buf; }, () => { decoded.delete(name); return null; });
+    decoded.set(name, p);
+  }
+  return decoded.get(name);
+}
+// Ready the samples ahead (a review starting), so the first crack sounds on time. Only with Effects on.
+export function preload(names = Object.keys(SAMPLES)) {
+  if (!prefs.effects) return;
+  const c = engine();
+  if (c) for (const n of names) if (SAMPLES[n]) decode(c, n);
+}
+function playSample(c, buf, at, dest) {
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.connect(dest);
+  src.start(at);
+}
 
 export function sound(name) {
   played.push(name);
   if (played.length > 50) played.shift();
-  if (!prefs.effects || !SOUNDS[name]) return false;
+  if (!prefs.effects || !(SOUNDS[name] || SAMPLES[name])) return false;
   const c = engine();
   if (!c) return false;
+  if (SAMPLES[name]) {
+    // ready: at once. Not yet: when it is, unless that's too late to go with what it's for.
+    const got = decode(c, name), asked = performance.now();
+    if (got instanceof AudioBuffer) playSample(c, got, c.currentTime + 0.005, c.destination);
+    else got.then(buf => { if (buf && performance.now() - asked < 250) playSample(c, buf, c.currentTime + 0.005, c.destination); });
+    return true;
+  }
   play(c, out, c.currentTime + 0.01, name);
   return true;
 }
@@ -130,9 +160,12 @@ function play(c, dest, t0, name) {
 // For films: a sound rendered to samples (mono, 48 kHz), the same as it plays, Effects on or not.
 export async function renderSound(name, seconds = 1.5) {
   const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-  if (!OAC || !SOUNDS[name]) return null;
+  if (!OAC || !(SOUNDS[name] || SAMPLES[name])) return null;
   const c = new OAC(1, Math.ceil(48000 * seconds), 48000);
-  play(c, chain(c), 0.01, name);
+  if (SAMPLES[name]) {
+    const b = await fetch(sampleUrl(name)).then(r => r.arrayBuffer());
+    playSample(c, await new Promise((ok, no) => c.decodeAudioData(b, ok, no)), 0.01, c.destination);
+  } else play(c, chain(c), 0.01, name);
   const buf = await c.startRendering();
   return Array.from(buf.getChannelData(0));
 }

@@ -1,0 +1,137 @@
+{
+  "title": "Combo: 23 tiers, new sounds",
+  "topic": "stage2",
+  "order": 11,
+  "cards": [
+    {
+      "id": "tiers-wired",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "Your 23 tiers, wired",
+      "text": "All 23 tiers you kept are in, spaced out, and alike ones now differ by finish, cut or motion, not just colour.",
+      "why": "Your notes: tin and copper (and every similar set) should be more than a colour swap, and space them out. Mark any group or film that's off.",
+      "details": "To update: close Primer fully and open it again; Profile shows 0.5.7 at the bottom.\n\nPlain is still below wood. Bronze is gone (copper takes its place). The ones you didn't tick (bronze, clay, stone, rose gold, jade, legendary, prism, omnipotent) are kept aside, drawn but never reached, so any can come back.\n\nWhy these gaps: a run starts at ×0 each time and a review is about 10 to 30 questions. A short run that goes well still reaches a few tiers (five by 17). Past that, a big review keeps reaching a new tier every 6 to 16 answers, and void needs 179 right in a row in one run, about six whole reviews without a break.\n\nShields as you said: wood and tin none, copper to gold one, platinum and up two, refilled at every new tier. I weighed a third for the far end and left it out: with two back at every tier the top is already forgiving enough.\n\nEach group's first film shows them side by side; the rest are one tier each, six seconds, looping, shown bigger than on the phone, at a count in its range. Singularity took omnipotent's black-hole drawing, since a singularity is a black hole; eclipse is drawn new.",
+      "parts": [
+        {
+          "id": "metals",
+          "title": "Wood and the metals",
+          "text": "Wood: grain and a knot, still. Tin: matte grey with a few dents, nothing shines. Copper: warm, verdigris crusting its bottom edge and a corner, a slow warm sheen. Silver: polished, a fine bright line, a quick white sweep. Gold: a raised rim like a coin's, a warm sweep, a glow. Platinum: a mirror, bright sky over a sharp dark horizon, a faint rainbow sweep. Titanium: brushed lines with an anodised rainbow edge.",
+          "videos": [
+            "../stage2/shots-combo3/groups/metals.mp4",
+            "../stage2/shots-combo3/tiers/01-wood.mp4",
+            "../stage2/shots-combo3/tiers/02-tin.mp4",
+            "../stage2/shots-combo3/tiers/03-copper.mp4",
+            "../stage2/shots-combo3/tiers/04-silver.mp4",
+            "../stage2/shots-combo3/tiers/05-gold.mp4",
+            "../stage2/shots-combo3/tiers/06-platinum.mp4",
+            "../stage2/shots-combo3/tiers/14-titanium.mp4"
+          ]
+        },
+        {
+          "id": "gems",
+          "title": "The gems",
+          "text": "Each cut its own way. Emerald: long steps round a wide table, corners cut, the light walking slowly along the steps. Sapphire: a polished dome with a six-rayed star gliding over it. Crystal: a cluster of points standing up, glints on the tips. Ruby: the princess cut, rings of facets closing on the middle, an ember breathing inside. Diamond: the brilliant, its fire and quick sparkles.",
+          "videos": [
+            "../stage2/shots-combo3/groups/gems.mp4",
+            "../stage2/shots-combo3/tiers/07-emerald.mp4",
+            "../stage2/shots-combo3/tiers/08-sapphire.mp4",
+            "../stage2/shots-combo3/tiers/09-crystal.mp4",
+            "../stage2/shots-combo3/tiers/10-ruby.mp4",
+            "../stage2/shots-combo3/tiers/11-diamond.mp4"
+          ]
+        },
+        {
+          "id": "stones",
+          "title": "The dark stones",
+          "text": "Obsidian: black glass with the curved ripples of where it broke, a violet sheen sweeping. Opal: milky, pastel drifting through, flecks of bright colour flashing in turn.",
+          "videos": [
+            "../stage2/shots-combo3/groups/stones.mp4",
+            "../stage2/shots-combo3/tiers/12-obsidian.mp4",
+            "../stage2/shots-combo3/tiers/13-opal.mp4"
+          ]
+        },
+        {
+          "id": "sky",
+          "title": "The sky",
+          "text": "Aurora keeps its ribbons and rim spark. Nebula is soft pink and blue clouds drifting the other way, thick with stars. Celestial: a gold constellation, gold rim and a gold spark circling. Eternal: white gold with pale rays turning and a figure-of-eight spark.",
+          "videos": [
+            "../stage2/shots-combo3/groups/sky.mp4",
+            "../stage2/shots-combo3/tiers/15-aurora.mp4",
+            "../stage2/shots-combo3/tiers/16-nebula.mp4",
+            "../stage2/shots-combo3/tiers/17-celestial.mp4",
+            "../stage2/shots-combo3/tiers/18-eternal.mp4"
+          ]
+        },
+        {
+          "id": "far",
+          "title": "The far end",
+          "text": "Supernova bursts outward in rings. Eclipse (new): a black moon over the sun, its corona and a bead of light flaring on its edge. Singularity is now the black hole, in violet, sparks spiralling in. Multiverse: copies of the chip drifting out of step. Void: nothing but drifting stars.",
+          "videos": [
+            "../stage2/shots-combo3/groups/far.mp4",
+            "../stage2/shots-combo3/tiers/19-supernova.mp4",
+            "../stage2/shots-combo3/tiers/20-eclipse.mp4",
+            "../stage2/shots-combo3/tiers/21-singularity.mp4",
+            "../stage2/shots-combo3/tiers/22-multiverse.mp4",
+            "../stage2/shots-combo3/tiers/23-void.mp4"
+          ]
+        },
+        {
+          "id": "thresholds",
+          "title": "Where each starts, and shields",
+          "text": "The gap to the next tier grows: 3 for the first three, then 4, 5, 6, 8, 10 and 13 for three tiers each, 16 for the last two.\n\n- Wood at 3, no shields\n- Tin at 6, no shields\n- Copper at 9, 1 shield\n- Silver at 13, 1 shield\n- Gold at 17, 1 shield\n- Platinum at 21, 2 shields\n- Emerald at 26, 2 shields\n- Sapphire at 31, 2 shields\n- Crystal at 36, 2 shields\n- Ruby at 42, 2 shields\n- Diamond at 48, 2 shields\n- Obsidian at 54, 2 shields\n- Opal at 62, 2 shields\n- Titanium at 70, 2 shields\n- Aurora at 78, 2 shields\n- Nebula at 88, 2 shields\n- Celestial at 98, 2 shields\n- Eternal at 108, 2 shields\n- Supernova at 121, 2 shields\n- Eclipse at 134, 2 shields\n- Singularity at 147, 2 shields\n- Multiverse at 163, 2 shields\n- Void at 179, 2 shields\n\nA full review of 30 right reaches emerald; void needs 179 in a row in one run."
+        }
+      ]
+    },
+    {
+      "id": "crack-shatter-sounds",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "New crack and shatter",
+      "text": "Three new cracks and three new shatters. Tick one of each you like.",
+      "why": "You said both old sounds were bad. These are softer and rounder: a tink with a soft body for the crack, a bright cascade over a soft thump for the shatter. My picks are in the app now.",
+      "pick": [
+        "crack-a-porcelain",
+        "shatter-a-cascade"
+      ],
+      "details": "Made here from sine tones and noise, no recordings. Each is levelled to about -27.5 LUFS like the animations' sounds, so they sit well under the voice; they play with Effects on, like the other effects.\n\nThe crack plays when a shield takes a miss; the shatter when the combo is lost. If none of the three is right for one of them, say what's off (too high, too sharp, too long) and I'll make another set.",
+      "items": [
+        {
+          "id": "crack-a-porcelain",
+          "label": "Crack A: porcelain",
+          "audio": "../stage2/shots-combo3/sounds/crack-a-porcelain.m4a",
+          "text": "A porcelain tink with a soft knock under it, and two tiny ticks as the crack runs."
+        },
+        {
+          "id": "crack-b-glass",
+          "label": "Crack B: glass",
+          "audio": "../stage2/shots-combo3/sounds/crack-b-glass.m4a",
+          "text": "A glass tap, then a second higher, softer one as the crack spreads; a lighter knock."
+        },
+        {
+          "id": "crack-c-ceramic",
+          "label": "Crack C: ceramic",
+          "audio": "../stage2/shots-combo3/sounds/crack-c-ceramic.m4a",
+          "text": "A lower, warmer cup-like tink with more body, and a short soft scrape."
+        },
+        {
+          "id": "shatter-a-cascade",
+          "label": "Shatter A: cascade",
+          "audio": "../stage2/shots-combo3/sounds/shatter-a-cascade.m4a",
+          "text": "A soft low thump, a bright break, and small bits cascading away, thinning as they fall."
+        },
+        {
+          "id": "shatter-b-chimes",
+          "label": "Shatter B: chimes",
+          "audio": "../stage2/shots-combo3/sounds/shatter-b-chimes.m4a",
+          "text": "The same break, its bits falling as notes stepping down a scale, like small chimes."
+        },
+        {
+          "id": "shatter-c-shower",
+          "label": "Shatter C: shower",
+          "audio": "../stage2/shots-combo3/sounds/shatter-c-shower.m4a",
+          "text": "A brighter, quicker shower of fine bits with a soft sparkle of air behind it."
+        }
+      ]
+    }
+  ]
+}

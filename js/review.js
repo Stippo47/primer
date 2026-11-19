@@ -57,6 +57,7 @@ export class Review extends Run {
 
   begin() {
     this.meter = new Combo(this.root.querySelector('.combohost'), { count: this.combo });
+    feel.preload(['crack', 'shatter']);   // the combo's samples, ready for the first miss (Effects on)
     const first = this.nextStep();
     if (first) { this.lesson.steps.push(first); this.warmStep(first); }
   }
