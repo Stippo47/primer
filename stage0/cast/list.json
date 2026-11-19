@@ -1,0 +1,836 @@
+{
+  "about": "Every character shown in the avatar rounds, one full-size picture each, in the order shown. Built by tools/build.py.",
+  "count": 98,
+  "cast": [
+    {
+      "id": "r01-kid",
+      "label": "Kid in a hat, round 1",
+      "round": 1,
+      "picture": "r01-kid.png",
+      "thumb": "thumbs/r01-kid.jpg",
+      "from": "cast/r01-kid.png",
+      "note": "The stand-in avatar in the first Home sketch. Re-rendered on its own."
+    },
+    {
+      "id": "r02-fox",
+      "label": "Fox, round 2",
+      "round": 2,
+      "picture": "r02-fox.png",
+      "thumb": "thumbs/r02-fox.jpg",
+      "from": "room/shots/avatar-fox.png",
+      "note": "The first avatar board: three animals, three monsters."
+    },
+    {
+      "id": "r02-capybara",
+      "label": "Capybara, round 2",
+      "round": 2,
+      "picture": "r02-capybara.png",
+      "thumb": "thumbs/r02-capybara.jpg",
+      "from": "room/shots/avatar-capy.png"
+    },
+    {
+      "id": "r02-axolotl",
+      "label": "Axolotl, round 2",
+      "round": 2,
+      "picture": "r02-axolotl.png",
+      "thumb": "thumbs/r02-axolotl.jpg",
+      "from": "room/shots/avatar-axo.png"
+    },
+    {
+      "id": "r02-tuft",
+      "label": "Tuft, round 2",
+      "round": 2,
+      "picture": "r02-tuft.png",
+      "thumb": "thumbs/r02-tuft.jpg",
+      "from": "room/shots/avatar-tuft.png",
+      "note": "The purple monster."
+    },
+    {
+      "id": "r02-glim",
+      "label": "Glim, round 2",
+      "round": 2,
+      "picture": "r02-glim.png",
+      "thumb": "thumbs/r02-glim.jpg",
+      "from": "room/shots/avatar-glim.png"
+    },
+    {
+      "id": "r02-pebble",
+      "label": "Pebble, round 2",
+      "round": 2,
+      "picture": "r02-pebble.png",
+      "thumb": "thumbs/r02-pebble.jpg",
+      "from": "room/shots/avatar-pebble.png",
+      "note": "The rock monster."
+    },
+    {
+      "id": "r03-puffin",
+      "label": "Puffin, round 3",
+      "round": 3,
+      "picture": "r03-puffin.png",
+      "thumb": "thumbs/r03-puffin.jpg",
+      "from": "avatar/shots/puffin.png",
+      "note": "Kurzgesagt end to Duolingo end."
+    },
+    {
+      "id": "r03-tall",
+      "label": "Tall person, round 3",
+      "round": 3,
+      "picture": "r03-tall.png",
+      "thumb": "thumbs/r03-tall.jpg",
+      "from": "avatar/shots/tall.png"
+    },
+    {
+      "id": "r03-frog",
+      "label": "Frog, round 3",
+      "round": 3,
+      "picture": "r03-frog.png",
+      "thumb": "thumbs/r03-frog.jpg",
+      "from": "avatar/shots/frog.png"
+    },
+    {
+      "id": "r03-raccoon",
+      "label": "Raccoon, round 3",
+      "round": 3,
+      "picture": "r03-raccoon.png",
+      "thumb": "thumbs/r03-raccoon.jpg",
+      "from": "avatar/shots/raccoon.png"
+    },
+    {
+      "id": "r03-toucan",
+      "label": "Toucan, round 3",
+      "round": 3,
+      "picture": "r03-toucan.png",
+      "thumb": "thumbs/r03-toucan.jpg",
+      "from": "avatar/shots/toucan.png"
+    },
+    {
+      "id": "r03-round",
+      "label": "Round person, round 3",
+      "round": 3,
+      "picture": "r03-round.png",
+      "thumb": "thumbs/r03-round.jpg",
+      "from": "avatar/shots/round.png"
+    },
+    {
+      "id": "r04-otter",
+      "label": "Otter, round 4",
+      "round": 4,
+      "picture": "r04-otter.png",
+      "thumb": "thumbs/r04-otter.jpg",
+      "from": "avatar4/shots/otter.png",
+      "note": "Ten base shapes."
+    },
+    {
+      "id": "r04-hippo",
+      "label": "Hippo, round 4",
+      "round": 4,
+      "picture": "r04-hippo.png",
+      "thumb": "thumbs/r04-hippo.jpg",
+      "from": "avatar4/shots/hippo.png"
+    },
+    {
+      "id": "r04-gecko",
+      "label": "Gecko, round 4",
+      "round": 4,
+      "picture": "r04-gecko.png",
+      "thumb": "thumbs/r04-gecko.jpg",
+      "from": "avatar4/shots/gecko.png"
+    },
+    {
+      "id": "r04-cockatiel",
+      "label": "Cockatiel, round 4",
+      "round": 4,
+      "picture": "r04-cockatiel.png",
+      "thumb": "thumbs/r04-cockatiel.jpg",
+      "from": "avatar4/shots/cockatiel.png"
+    },
+    {
+      "id": "r04-bee",
+      "label": "Bee, round 4",
+      "round": 4,
+      "picture": "r04-bee.png",
+      "thumb": "thumbs/r04-bee.jpg",
+      "from": "avatar4/shots/bee.png"
+    },
+    {
+      "id": "r04-person",
+      "label": "Person with a bun, round 4",
+      "round": 4,
+      "picture": "r04-person.png",
+      "thumb": "thumbs/r04-person.jpg",
+      "from": "avatar4/shots/person.png"
+    },
+    {
+      "id": "r04-sheep",
+      "label": "Sheep, round 4",
+      "round": 4,
+      "picture": "r04-sheep.png",
+      "thumb": "thumbs/r04-sheep.jpg",
+      "from": "avatar4/shots/sheep.png"
+    },
+    {
+      "id": "r04-bat",
+      "label": "Bat, round 4",
+      "round": 4,
+      "picture": "r04-bat.png",
+      "thumb": "thumbs/r04-bat.jpg",
+      "from": "avatar4/shots/bat.png"
+    },
+    {
+      "id": "r04-walrus",
+      "label": "Walrus, round 4",
+      "round": 4,
+      "picture": "r04-walrus.png",
+      "thumb": "thumbs/r04-walrus.jpg",
+      "from": "avatar4/shots/walrus.png"
+    },
+    {
+      "id": "r04-flamingo",
+      "label": "Flamingo, round 4",
+      "round": 4,
+      "picture": "r04-flamingo.png",
+      "thumb": "thumbs/r04-flamingo.jpg",
+      "from": "avatar4/shots/flamingo.png"
+    },
+    {
+      "id": "r05-person-blob",
+      "label": "Person, Blob, round 5",
+      "round": 5,
+      "picture": "r05-person-blob.png",
+      "thumb": "thumbs/r05-person-blob.jpg",
+      "from": "avatar5/shots/person-blob.png",
+      "note": "One person and one monster in ten shape styles."
+    },
+    {
+      "id": "r05-person-circles",
+      "label": "Person, Circles, round 5",
+      "round": 5,
+      "picture": "r05-person-circles.png",
+      "thumb": "thumbs/r05-person-circles.jpg",
+      "from": "avatar5/shots/person-circles.png"
+    },
+    {
+      "id": "r05-person-noodle",
+      "label": "Person, Noodle, round 5",
+      "round": 5,
+      "picture": "r05-person-noodle.png",
+      "thumb": "thumbs/r05-person-noodle.jpg",
+      "from": "avatar5/shots/person-noodle.png"
+    },
+    {
+      "id": "r05-person-pills",
+      "label": "Person, Pills, round 5",
+      "round": 5,
+      "picture": "r05-person-pills.png",
+      "thumb": "thumbs/r05-person-pills.jpg",
+      "from": "avatar5/shots/person-pills.png"
+    },
+    {
+      "id": "r05-person-squat",
+      "label": "Person, Squat, round 5",
+      "round": 5,
+      "picture": "r05-person-squat.png",
+      "thumb": "thumbs/r05-person-squat.jpg",
+      "from": "avatar5/shots/person-squat.png"
+    },
+    {
+      "id": "r05-person-tall",
+      "label": "Person, Tall, round 5",
+      "round": 5,
+      "picture": "r05-person-tall.png",
+      "thumb": "thumbs/r05-person-tall.jpg",
+      "from": "avatar5/shots/person-tall.png"
+    },
+    {
+      "id": "r05-person-blocks",
+      "label": "Person, Blocks, round 5",
+      "round": 5,
+      "picture": "r05-person-blocks.png",
+      "thumb": "thumbs/r05-person-blocks.jpg",
+      "from": "avatar5/shots/person-blocks.png"
+    },
+    {
+      "id": "r05-person-cutout",
+      "label": "Person, Cut-out, round 5",
+      "round": 5,
+      "picture": "r05-person-cutout.png",
+      "thumb": "thumbs/r05-person-cutout.jpg",
+      "from": "avatar5/shots/person-cutout.png"
+    },
+    {
+      "id": "r05-person-facets",
+      "label": "Person, Facets, round 5",
+      "round": 5,
+      "picture": "r05-person-facets.png",
+      "thumb": "thumbs/r05-person-facets.jpg",
+      "from": "avatar5/shots/person-facets.png"
+    },
+    {
+      "id": "r05-person-spiky",
+      "label": "Person, Spiky, round 5",
+      "round": 5,
+      "picture": "r05-person-spiky.png",
+      "thumb": "thumbs/r05-person-spiky.jpg",
+      "from": "avatar5/shots/person-spiky.png"
+    },
+    {
+      "id": "r05-monster-blob",
+      "label": "Monster, Blob, round 5",
+      "round": 5,
+      "picture": "r05-monster-blob.png",
+      "thumb": "thumbs/r05-monster-blob.jpg",
+      "from": "avatar5/shots/monster-blob.png",
+      "note": "One person and one monster in ten shape styles."
+    },
+    {
+      "id": "r05-monster-circles",
+      "label": "Monster, Circles, round 5",
+      "round": 5,
+      "picture": "r05-monster-circles.png",
+      "thumb": "thumbs/r05-monster-circles.jpg",
+      "from": "avatar5/shots/monster-circles.png"
+    },
+    {
+      "id": "r05-monster-noodle",
+      "label": "Monster, Noodle, round 5",
+      "round": 5,
+      "picture": "r05-monster-noodle.png",
+      "thumb": "thumbs/r05-monster-noodle.jpg",
+      "from": "avatar5/shots/monster-noodle.png"
+    },
+    {
+      "id": "r05-monster-pills",
+      "label": "Monster, Pills, round 5",
+      "round": 5,
+      "picture": "r05-monster-pills.png",
+      "thumb": "thumbs/r05-monster-pills.jpg",
+      "from": "avatar5/shots/monster-pills.png"
+    },
+    {
+      "id": "r05-monster-squat",
+      "label": "Monster, Squat, round 5",
+      "round": 5,
+      "picture": "r05-monster-squat.png",
+      "thumb": "thumbs/r05-monster-squat.jpg",
+      "from": "avatar5/shots/monster-squat.png"
+    },
+    {
+      "id": "r05-monster-tall",
+      "label": "Monster, Tall, round 5",
+      "round": 5,
+      "picture": "r05-monster-tall.png",
+      "thumb": "thumbs/r05-monster-tall.jpg",
+      "from": "avatar5/shots/monster-tall.png"
+    },
+    {
+      "id": "r05-monster-blocks",
+      "label": "Monster, Blocks, round 5",
+      "round": 5,
+      "picture": "r05-monster-blocks.png",
+      "thumb": "thumbs/r05-monster-blocks.jpg",
+      "from": "avatar5/shots/monster-blocks.png"
+    },
+    {
+      "id": "r05-monster-cutout",
+      "label": "Monster, Cut-out, round 5",
+      "round": 5,
+      "picture": "r05-monster-cutout.png",
+      "thumb": "thumbs/r05-monster-cutout.jpg",
+      "from": "avatar5/shots/monster-cutout.png"
+    },
+    {
+      "id": "r05-monster-facets",
+      "label": "Monster, Facets, round 5",
+      "round": 5,
+      "picture": "r05-monster-facets.png",
+      "thumb": "thumbs/r05-monster-facets.jpg",
+      "from": "avatar5/shots/monster-facets.png"
+    },
+    {
+      "id": "r05-monster-spiky",
+      "label": "Monster, Spiky, round 5",
+      "round": 5,
+      "picture": "r05-monster-spiky.png",
+      "thumb": "thumbs/r05-monster-spiky.jpg",
+      "from": "avatar5/shots/monster-spiky.png"
+    },
+    {
+      "id": "r06-person-softer",
+      "label": "Person, Softer, round 6",
+      "round": 6,
+      "picture": "r06-person-softer.png",
+      "thumb": "thumbs/r06-person-softer.jpg",
+      "from": "avatar6/shots/person-softer.png",
+      "note": "Steps between Blob and Noodle."
+    },
+    {
+      "id": "r06-person-longer",
+      "label": "Person, Long nubs, round 6",
+      "round": 6,
+      "picture": "r06-person-longer.png",
+      "thumb": "thumbs/r06-person-longer.jpg",
+      "from": "avatar6/shots/person-longer.png"
+    },
+    {
+      "id": "r06-person-blobnoodle",
+      "label": "Person, Blob + noodles, round 6",
+      "round": 6,
+      "picture": "r06-person-blobnoodle.png",
+      "thumb": "thumbs/r06-person-blobnoodle.jpg",
+      "from": "avatar6/shots/person-blobnoodle.png"
+    },
+    {
+      "id": "r06-person-softnoodle",
+      "label": "Person, Soft noodle, round 6",
+      "round": 6,
+      "picture": "r06-person-softnoodle.png",
+      "thumb": "thumbs/r06-person-softnoodle.jpg",
+      "from": "avatar6/shots/person-softnoodle.png"
+    },
+    {
+      "id": "r06-person-rounder",
+      "label": "Person, Round noodle, round 6",
+      "round": 6,
+      "picture": "r06-person-rounder.png",
+      "thumb": "thumbs/r06-person-rounder.jpg",
+      "from": "avatar6/shots/person-rounder.png"
+    },
+    {
+      "id": "r06-person-bendier",
+      "label": "Person, Bendier, round 6",
+      "round": 6,
+      "picture": "r06-person-bendier.png",
+      "thumb": "thumbs/r06-person-bendier.jpg",
+      "from": "avatar6/shots/person-bendier.png"
+    },
+    {
+      "id": "r06-lamp-blob",
+      "label": "Lamp, Blob, round 6",
+      "round": 6,
+      "picture": "r06-lamp-blob.png",
+      "thumb": "thumbs/r06-lamp-blob.jpg",
+      "from": "avatar6/shots/monster-lamp-blob.png",
+      "note": "Four new monsters, each in Blob and Noodle."
+    },
+    {
+      "id": "r06-lamp-noodle",
+      "label": "Lamp, Noodle, round 6",
+      "round": 6,
+      "picture": "r06-lamp-noodle.png",
+      "thumb": "thumbs/r06-lamp-noodle.jpg",
+      "from": "avatar6/shots/monster-lamp-noodle.png"
+    },
+    {
+      "id": "r06-flop-blob",
+      "label": "Flop, Blob, round 6",
+      "round": 6,
+      "picture": "r06-flop-blob.png",
+      "thumb": "thumbs/r06-flop-blob.jpg",
+      "from": "avatar6/shots/monster-flop-blob.png"
+    },
+    {
+      "id": "r06-flop-noodle",
+      "label": "Flop, Noodle, round 6",
+      "round": 6,
+      "picture": "r06-flop-noodle.png",
+      "thumb": "thumbs/r06-flop-noodle.jpg",
+      "from": "avatar6/shots/monster-flop-noodle.png"
+    },
+    {
+      "id": "r06-hug-blob",
+      "label": "Hug, Blob, round 6",
+      "round": 6,
+      "picture": "r06-hug-blob.png",
+      "thumb": "thumbs/r06-hug-blob.jpg",
+      "from": "avatar6/shots/monster-hug-blob.png"
+    },
+    {
+      "id": "r06-hug-noodle",
+      "label": "Hug, Noodle, round 6",
+      "round": 6,
+      "picture": "r06-hug-noodle.png",
+      "thumb": "thumbs/r06-hug-noodle.jpg",
+      "from": "avatar6/shots/monster-hug-noodle.png"
+    },
+    {
+      "id": "r06-wiggle-blob",
+      "label": "Wiggle, Blob, round 6",
+      "round": 6,
+      "picture": "r06-wiggle-blob.png",
+      "thumb": "thumbs/r06-wiggle-blob.jpg",
+      "from": "avatar6/shots/monster-wiggle-blob.png"
+    },
+    {
+      "id": "r06-wiggle-noodle",
+      "label": "Wiggle, Noodle, round 6",
+      "round": 6,
+      "picture": "r06-wiggle-noodle.png",
+      "thumb": "thumbs/r06-wiggle-noodle.jpg",
+      "from": "avatar6/shots/monster-wiggle-noodle.png"
+    },
+    {
+      "id": "r07-face-calm",
+      "label": "Calm face, round 7",
+      "round": 7,
+      "picture": "r07-face-calm.png",
+      "thumb": "thumbs/r07-face-calm.jpg",
+      "from": "avatar7/shots/face-calm.png",
+      "note": "Ten calmer faces on the same person."
+    },
+    {
+      "id": "r07-face-plain",
+      "label": "Plain face, round 7",
+      "round": 7,
+      "picture": "r07-face-plain.png",
+      "thumb": "thumbs/r07-face-plain.jpg",
+      "from": "avatar7/shots/face-plain.png"
+    },
+    {
+      "id": "r07-face-thinking",
+      "label": "Thinking face, round 7",
+      "round": 7,
+      "picture": "r07-face-thinking.png",
+      "thumb": "thumbs/r07-face-thinking.jpg",
+      "from": "avatar7/shots/face-thinking.png"
+    },
+    {
+      "id": "r07-face-sleepy",
+      "label": "Sleepy face, round 7",
+      "round": 7,
+      "picture": "r07-face-sleepy.png",
+      "thumb": "thumbs/r07-face-sleepy.jpg",
+      "from": "avatar7/shots/face-sleepy.png"
+    },
+    {
+      "id": "r07-face-curious",
+      "label": "Curious face, round 7",
+      "round": 7,
+      "picture": "r07-face-curious.png",
+      "thumb": "thumbs/r07-face-curious.jpg",
+      "from": "avatar7/shots/face-curious.png"
+    },
+    {
+      "id": "r07-face-unimpressed",
+      "label": "Unimpressed face, round 7",
+      "round": 7,
+      "picture": "r07-face-unimpressed.png",
+      "thumb": "thumbs/r07-face-unimpressed.jpg",
+      "from": "avatar7/shots/face-unimpressed.png"
+    },
+    {
+      "id": "r07-face-determined",
+      "label": "Determined face, round 7",
+      "round": 7,
+      "picture": "r07-face-determined.png",
+      "thumb": "thumbs/r07-face-determined.jpg",
+      "from": "avatar7/shots/face-determined.png"
+    },
+    {
+      "id": "r07-face-shy",
+      "label": "Shy face, round 7",
+      "round": 7,
+      "picture": "r07-face-shy.png",
+      "thumb": "thumbs/r07-face-shy.jpg",
+      "from": "avatar7/shots/face-shy.png"
+    },
+    {
+      "id": "r07-face-quiet",
+      "label": "Quiet face, round 7",
+      "round": 7,
+      "picture": "r07-face-quiet.png",
+      "thumb": "thumbs/r07-face-quiet.jpg",
+      "from": "avatar7/shots/face-quiet.png"
+    },
+    {
+      "id": "r07-face-dry",
+      "label": "Dry face, round 7",
+      "round": 7,
+      "picture": "r07-face-dry.png",
+      "thumb": "thumbs/r07-face-dry.jpg",
+      "from": "avatar7/shots/face-dry.png"
+    },
+    {
+      "id": "r07-side-person-blob",
+      "label": "Blob, side view, round 7",
+      "round": 7,
+      "picture": "r07-side-person-blob.png",
+      "thumb": "thumbs/r07-side-person-blob.jpg",
+      "from": "avatar7/shots/side-person-blob.png",
+      "note": "The first side views."
+    },
+    {
+      "id": "r07-side-person-noodle",
+      "label": "Noodle, side view, round 7",
+      "round": 7,
+      "picture": "r07-side-person-noodle.png",
+      "thumb": "thumbs/r07-side-person-noodle.jpg",
+      "from": "avatar7/shots/side-person-noodle.png"
+    },
+    {
+      "id": "r07-side-person-blobnoodle",
+      "label": "Blob + noodles, side view, round 7",
+      "round": 7,
+      "picture": "r07-side-person-blobnoodle.png",
+      "thumb": "thumbs/r07-side-person-blobnoodle.jpg",
+      "from": "avatar7/shots/side-person-blobnoodle.png"
+    },
+    {
+      "id": "r07-side-lamp",
+      "label": "Lamp, side view, round 7",
+      "round": 7,
+      "picture": "r07-side-lamp.png",
+      "thumb": "thumbs/r07-side-lamp.jpg",
+      "from": "avatar7/shots/side-lamp.png"
+    },
+    {
+      "id": "r07-side-hippo",
+      "label": "Hippo, side view, round 7",
+      "round": 7,
+      "picture": "r07-side-hippo.png",
+      "thumb": "thumbs/r07-side-hippo.jpg",
+      "from": "avatar7/shots/side-hippo.png"
+    },
+    {
+      "id": "r08-crow-pebble",
+      "label": "Pebble crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-pebble.png",
+      "thumb": "thumbs/r08-crow-pebble.jpg",
+      "from": "avatar8/shots/crow-pebble.png",
+      "note": "One crow in eight very different looks."
+    },
+    {
+      "id": "r08-crow-facet",
+      "label": "Facet crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-facet.png",
+      "thumb": "thumbs/r08-crow-facet.jpg",
+      "from": "avatar8/shots/crow-facet.png"
+    },
+    {
+      "id": "r08-crow-stilt",
+      "label": "Stilt crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-stilt.png",
+      "thumb": "thumbs/r08-crow-stilt.jpg",
+      "from": "avatar8/shots/crow-stilt.png"
+    },
+    {
+      "id": "r08-crow-chunk",
+      "label": "Chunk crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-chunk.png",
+      "thumb": "thumbs/r08-crow-chunk.jpg",
+      "from": "avatar8/shots/crow-chunk.png"
+    },
+    {
+      "id": "r08-crow-blocks",
+      "label": "Blocks crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-blocks.png",
+      "thumb": "thumbs/r08-crow-blocks.jpg",
+      "from": "avatar8/shots/crow-blocks.png"
+    },
+    {
+      "id": "r08-crow-scratch",
+      "label": "Scratch crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-scratch.png",
+      "thumb": "thumbs/r08-crow-scratch.jpg",
+      "from": "avatar8/shots/crow-scratch.png"
+    },
+    {
+      "id": "r08-crow-paper",
+      "label": "Paper crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-paper.png",
+      "thumb": "thumbs/r08-crow-paper.jpg",
+      "from": "avatar8/shots/crow-paper.png"
+    },
+    {
+      "id": "r08-crow-lantern",
+      "label": "Lantern crow, round 8",
+      "round": 8,
+      "picture": "r08-crow-lantern.png",
+      "thumb": "thumbs/r08-crow-lantern.jpg",
+      "from": "avatar8/shots/crow-lantern.png"
+    },
+    {
+      "id": "r09-crow-plump",
+      "label": "Plump crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-plump.png",
+      "thumb": "thumbs/r09-crow-plump.jpg",
+      "from": "avatar9/shots/crow-plump.png",
+      "note": "One crow in eight flat looks."
+    },
+    {
+      "id": "r09-crow-sleek",
+      "label": "Sleek crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-sleek.png",
+      "thumb": "thumbs/r09-crow-sleek.jpg",
+      "from": "avatar9/shots/crow-sleek.png"
+    },
+    {
+      "id": "r09-crow-hooded",
+      "label": "Hooded crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-hooded.png",
+      "thumb": "thumbs/r09-crow-hooded.jpg",
+      "from": "avatar9/shots/crow-hooded.png"
+    },
+    {
+      "id": "r09-crow-crisp",
+      "label": "Crisp crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-crisp.png",
+      "thumb": "thumbs/r09-crow-crisp.jpg",
+      "from": "avatar9/shots/crow-crisp.png"
+    },
+    {
+      "id": "r09-crow-longtail",
+      "label": "Longtail crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-longtail.png",
+      "thumb": "thumbs/r09-crow-longtail.jpg",
+      "from": "avatar9/shots/crow-longtail.png"
+    },
+    {
+      "id": "r09-crow-ruff",
+      "label": "Ruff crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-ruff.png",
+      "thumb": "thumbs/r09-crow-ruff.jpg",
+      "from": "avatar9/shots/crow-ruff.png"
+    },
+    {
+      "id": "r09-crow-bean",
+      "label": "Bean crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-bean.png",
+      "thumb": "thumbs/r09-crow-bean.jpg",
+      "from": "avatar9/shots/crow-bean.png"
+    },
+    {
+      "id": "r09-crow-ink",
+      "label": "Ink crow, round 9",
+      "round": 9,
+      "picture": "r09-crow-ink.png",
+      "thumb": "thumbs/r09-crow-ink.jpg",
+      "from": "avatar9/shots/crow-ink.png"
+    },
+    {
+      "id": "r10-crow-button",
+      "label": "Button crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-button.png",
+      "thumb": "thumbs/r10-crow-button.jpg",
+      "from": "avatar10/shots/crow-plump-button.png",
+      "note": "A take on Plump."
+    },
+    {
+      "id": "r10-crow-drowse",
+      "label": "Drowse crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-drowse.png",
+      "thumb": "thumbs/r10-crow-drowse.jpg",
+      "from": "avatar10/shots/crow-plump-drowse.png",
+      "note": "A take on Plump."
+    },
+    {
+      "id": "r10-crow-keen",
+      "label": "Keen crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-keen.png",
+      "thumb": "thumbs/r10-crow-keen.jpg",
+      "from": "avatar10/shots/crow-plump-keen.png",
+      "note": "A take on Plump."
+    },
+    {
+      "id": "r10-crow-amber",
+      "label": "Amber crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-amber.png",
+      "thumb": "thumbs/r10-crow-amber.jpg",
+      "from": "avatar10/shots/crow-plump-amber.png",
+      "note": "A take on Plump."
+    },
+    {
+      "id": "r10-crow-smoke",
+      "label": "Smoke crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-smoke.png",
+      "thumb": "thumbs/r10-crow-smoke.jpg",
+      "from": "avatar10/shots/crow-plump-smoke.png",
+      "note": "A take on Plump."
+    },
+    {
+      "id": "r10-crow-pip",
+      "label": "Pip crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-pip.png",
+      "thumb": "thumbs/r10-crow-pip.jpg",
+      "from": "avatar10/shots/crow-bean-pip.png",
+      "note": "A take on Bean."
+    },
+    {
+      "id": "r10-crow-nap",
+      "label": "Nap crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-nap.png",
+      "thumb": "thumbs/r10-crow-nap.jpg",
+      "from": "avatar10/shots/crow-bean-nap.png",
+      "note": "A take on Bean."
+    },
+    {
+      "id": "r10-crow-scout",
+      "label": "Scout crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-scout.png",
+      "thumb": "thumbs/r10-crow-scout.jpg",
+      "from": "avatar10/shots/crow-bean-scout.png",
+      "note": "A take on Bean."
+    },
+    {
+      "id": "r10-crow-honey",
+      "label": "Honey crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-honey.png",
+      "thumb": "thumbs/r10-crow-honey.jpg",
+      "from": "avatar10/shots/crow-bean-honey.png",
+      "note": "A take on Bean."
+    },
+    {
+      "id": "r10-crow-moon",
+      "label": "Moon crow, round 10",
+      "round": 10,
+      "picture": "r10-crow-moon.png",
+      "thumb": "thumbs/r10-crow-moon.jpg",
+      "from": "avatar10/shots/crow-bean-moon.png",
+      "note": "A take on Bean."
+    }
+  ],
+  "left_out": [
+    {
+      "what": "round 2: the six in the knitted hat (room/shots/avatar-*-hat.png)",
+      "why": "the same six characters, dressed"
+    },
+    {
+      "what": "round 3: the six in the hat and shirt (avatar/shots/*-dressed.png)",
+      "why": "the same six characters, dressed"
+    },
+    {
+      "what": "round 6: Person, Blob and Person, Noodle",
+      "why": "round 5's picks shown again as the ends of the range, near identical"
+    },
+    {
+      "what": "round 10: Plump and Bean",
+      "why": "round 9's pictures, unchanged (the same render)"
+    },
+    {
+      "what": "every lineup, face sheet and icon strip",
+      "why": "composites; each character in them has its own picture here"
+    }
+  ]
+}

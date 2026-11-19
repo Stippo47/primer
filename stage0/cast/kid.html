@@ -1,0 +1,44 @@
+<!doctype html>
+<!--
+  The cast board's one re-render: the placeholder avatar from the first Home sketch (round 1), which was only ever
+  shown inside a whole screen. Drawn here on its own, from the sketch's own code (../screens/js/objects.js), in the
+  hat it wore there, on the same plain wall and floor as rounds 2 to 11, about as tall as their singles.
+  Captured by ../avatar11/tools/capture.mjs --page cast/kid.html --size 414x414 --name r01-kid --out ../cast
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Primer cast, the first sketch avatar</title>
+<style>html, body { margin: 0; background: #141a3c; } canvas { display: block; }</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module">
+import { avatar } from '../screens/js/objects.js';
+
+const W = 414, H = 414, dpr = 2, floorY = 298, feet = 360, SC = 2.4;
+const canvas = document.getElementById('art');
+canvas.width = W * dpr; canvas.height = H * dpr; canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+const ctx = canvas.getContext('2d');
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+// the plain wall and floor of the avatar rounds
+const bg = ctx.createLinearGradient(0, 0, 0, H), k = floorY / H;
+bg.addColorStop(0, '#222b72'); bg.addColorStop(k, '#2c388e'); bg.addColorStop(k, '#c58a5c'); bg.addColorStop(1, '#b57a4e');
+ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+for (let x = 10; x < W; x += 38) { ctx.fillStyle = 'rgba(130,150,255,0.055)'; ctx.fillRect(x, 0, 19, floorY - 12); }
+ctx.fillStyle = '#262f80'; ctx.fillRect(0, floorY - 12, W, 12);
+ctx.fillStyle = 'rgba(10,8,44,0.3)'; ctx.fillRect(0, floorY, W, 8);
+
+// the sketch's avatar is 72 x 122 with its floor at y=122; the hat's bobble pokes 2 above the top, so the view
+// starts 4 higher
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${72 * SC * dpr}" height="${126 * SC * dpr}" viewBox="0 -4 72 126">${avatar()}</svg>`;
+const img = new Image();
+img.onload = () => {
+  ctx.drawImage(img, W / 2 - 36 * SC, feet - 126 * SC, 72 * SC, 126 * SC);
+  window.catalogue = { pictures: [], extra: [], lineups: [] };
+  window.ready = true;
+};
+img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+</script>
+</body>
+</html>
