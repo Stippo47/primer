@@ -67,6 +67,9 @@
 .scene { position: relative; overflow: hidden; -webkit-user-select: none; user-select: none; }
 .scene[data-mode=step] { flex: 1 1 380px; min-height: 260px; max-height: 560px; }
 .video { position: absolute; inset: 0; z-index: 3; background: #090c2b; }
+/* While a video is open the page's own ground is the video's, to the very bottom of the screen: whatever
+   shows below the app's box (the home bar's strip, on a phone that sizes it short) is the same dark. */
+html.vid, html.vid body { background: #090c2b; }
 #app:has(> #view > .video)::after { display: none; }   /* full screen: the picture's ground runs up behind the status bar */
 .vscene, .scene[data-mode=video] { position: absolute; inset: 0; }
 .scene[data-mode=video] { background: radial-gradient(120% 70% at 50% 45%, #1d1a5c 0%, #0d1236 62%, #090c2b 100%); --top: var(--sat); --foot: var(--sab); }
@@ -74,6 +77,23 @@
 .sstage { position: absolute; left: 0; right: 0; top: var(--top); bottom: var(--foot); display: flex; flex-direction: column; }
 .spart { position: relative; flex: 1 1 0; min-height: 0; pointer-events: none; }
 .spart-in { position: absolute; inset: 0; }
+/* shots (js/shots.js): the parts share the picture by slot. Full bleed in a video, under the status bar and
+   the home bar too, so a part that paints its own ground (the sea and sky) fills the screen. A part off
+   screen is hidden, not unmounted. An inset is a rounded window with a white edge and a flat shadow. */
+.sstage.shots { display: block; }
+.scene[data-mode=video] .sstage.shots { top: 0; bottom: 0; }
+.sstage.shots .spart { position: absolute; inset: 0; flex: none; transform-origin: 50% 50%; }
+.sstage.shots .spart[data-off] { visibility: hidden; }
+.sstage.shots .spart[data-slot=top] { bottom: calc(50% + 2px); }
+.sstage.shots .spart[data-slot=bottom] { top: calc(50% + 2px); }
+.sstage.shots .spart[data-slot^=inset] { inset: auto; width: 40%; max-width: 230px; aspect-ratio: 1; border-radius: 22px; overflow: hidden;
+  background: #11174a; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.92), 0 7px 0 3px rgba(6, 8, 48, 0.42); }
+.sstage.shots .spart[data-slot=inset-top-right] { top: calc(var(--top) + 66px); right: 16px; }
+.sstage.shots .spart[data-slot=inset-top-left] { top: calc(var(--top) + 66px); left: 16px; }
+.sstage.shots .spart[data-slot=inset-bottom-right] { bottom: calc(var(--foot) + 150px); right: 16px; }
+.sstage.shots .spart[data-slot=inset-bottom-left] { bottom: calc(var(--foot) + 150px); left: 16px; }
+.scene[data-mode=step] .sstage.shots .spart[data-slot^=inset-top] { top: 12px; }
+.scene[data-mode=step] .sstage.shots .spart[data-slot^=inset-bottom] { bottom: 92px; }
 
 /* the caption: over the picture's foot, on a dark plate; it rises clear of the controls when they're up */
 .scap { position: absolute; z-index: 2; left: 14px; right: 14px; bottom: calc(var(--foot) + 18px); display: flex; justify-content: center; pointer-events: none;

@@ -324,8 +324,12 @@ const wanted = path => path === 'index.json' || path === 'read.json' || path.sta
 // Every line is voiced in all four narrators, so any can be chosen, but a topic plays in one: the one chosen
 // for its subject in Profile, else the topic's own (else Heart). Only that one's clips come down, about a
 // quarter of a topic's voice; the others stay out of storage, and a narrator's clips go once no topic uses
-// it. A clip not here (not down yet, or no signal after a change) is never an error: its line plays from its
-// words, as with Voice off (js/narration.js, clipFor).
+// it. A clip not here is never an error: its line plays from its words, as with Voice off (js/narration.js).
+//
+// A new narrator keeps the old voice going (ruled 2026-11-18, "new narrator, no signal"): after a change, the
+// topic goes on playing in the narrator whose clips are all on the phone until every clip of the new one is
+// down; then it switches, all at once, and the old one's clips go. So a change with no signal, or one half
+// fetched, never leaves a topic silent or speaking in two voices (voiceFor).
 
 // The narrator chosen in Profile for a subject, if any: set by the app.
 let chosenFor = () => null;
@@ -357,19 +361,83 @@ export async function voiceInUse(paths) {
   }
   return out;
 }
-const keepClip = (path, inUse) => { const c = clipOf(path); return !c || !inUse.has(c.topic) || inUse.get(c.topic) === c.narrator; };
+const keepClip = (path, inUse, kept = new Map()) => { const c = clipOf(path); return !c || !inUse.has(c.topic) || inUse.get(c.topic) === c.narrator || kept.get(c.topic) === c.narrator; };
+
+// Every clip of each narrator a topic has, from its voice files on this phone: Map narrator -> Set of paths.
+// A voice file is read once for each version of it (its sha).
+const voiceMemo = new Map();   // path -> { sha, by: Map narrator -> [clip paths] }
+async function clipsByNarrator(topic, paths) {
+  const by = new Map();
+  for (const p of paths) {
+    if (!p.startsWith(`topics/${topic}/voice/`) || !p.endsWith('.json')) continue;
+    const f = await store.files.get(p).catch(() => null);
+    if (!f) continue;
+    let memo = voiceMemo.get(p);
+    if (!memo || memo.sha !== f.sha) {
+      const mine = new Map();
+      try {
+        const v = JSON.parse(f.data);
+        for (const byVoice of Object.values(v.lines || {})) {
+          for (const [n, c] of Object.entries(byVoice || {})) {
+            if (!c || typeof c.clip !== 'string') continue;
+            if (!mine.has(n)) mine.set(n, []);
+            mine.get(n).push(`topics/${topic}/${c.clip}`);
+          }
+        }
+      } catch { /* not a voice file */ }
+      memo = { sha: f.sha, by: mine };
+      voiceMemo.set(p, memo);
+    }
+    for (const [n, list] of memo.by) { if (!by.has(n)) by.set(n, new Set()); for (const c of list) by.get(n).add(c); }
+  }
+  return by;
+}
+
+// The narrator a topic plays in now, and why: { narrator, chosen, waiting, have, of }. chosen is the one in use
+// for it (Profile's choice for its subject, else its own, else Heart, the first it has clips in); narrator is
+// chosen once every clip of it is on this phone, and until then the narrator whose clips all are (the old
+// one), if there is one. waiting: a change is still coming down. have, of: how many of chosen's clips are here.
+export async function voiceFor(topicId) {
+  const paths = await store.files.paths();
+  const here = new Set(paths);
+  const by = await clipsByNarrator(topicId, paths);
+  const f = await store.files.get(`topics/${topicId}/topic.json`).catch(() => null);
+  let t = null;
+  try { t = f ? JSON.parse(f.data) : null; } catch { t = null; }
+  const order = [t && chosenFor(t.subject), t && t.narrator, 'heart'].filter(Boolean);
+  const chosen = order.find(n => by.has(n)) || order[0] || 'heart';
+  // a clip the repo no longer has (looked at since the app opened) doesn't hold a narrator back
+  const gone = p => lastTree && !lastTreeSet.has(p);
+  const count = n => { const all = [...(by.get(n) || [])].filter(p => !gone(p)); return { have: all.filter(p => here.has(p)).length, of: all.length }; };
+  const full = n => { const c = count(n); return c.of > 0 && c.have === c.of; };
+  const mine = count(chosen);
+  if (!by.has(chosen) || full(chosen)) {
+    await keptNow(topicId, chosen);
+    return { narrator: chosen, chosen, waiting: false, ...mine };
+  }
+  const kept = (await store.get('voice-kept').catch(() => null)) || {};
+  const old = [kept[topicId], ...order, ...[...by.keys()].sort()].find(n => n && n !== chosen && full(n));
+  return { narrator: old || chosen, chosen, waiting: true, ...mine };
+}
+// Remembers which narrator each topic last played in whole, to keep while a new one comes down.
+async function keptNow(topicId, narrator) {
+  const kept = (await store.get('voice-kept').catch(() => null)) || {};
+  if (kept[topicId] !== narrator) await store.set('voice-kept', { ...kept, [topicId]: narrator });
+}
 
 // The repo's files at the last pull that could see them: what the voice in use is counted against.
-let lastTree = null;
+let lastTree = null, lastTreeSet = new Set();
 
 // How much of the voice in use for these topics is on this phone: { have, of, narrators }. Worked out from
 // the last look at the repo; `of` is null if there hasn't been one since the app opened.
 export async function voiceHere(topicIds) {
-  if (!lastTree) return { have: 0, of: null, narrators: [] };
+  if (!lastTree) return { have: 0, of: null, narrators: [], playing: [] };
   const inUse = await voiceInUse(lastTree);
   const want = lastTree.filter(p => { const c = clipOf(p); return c && topicIds.includes(c.topic) && inUse.get(c.topic) === c.narrator; });
   const here = new Set(await store.files.paths());
-  return { have: want.filter(p => here.has(p)).length, of: want.length, narrators: topicIds.map(id => inUse.get(id)).filter(Boolean) };
+  const playing = [];
+  for (const id of topicIds) playing.push((await voiceFor(id)).narrator);
+  return { have: want.filter(p => here.has(p)).length, of: want.length, narrators: topicIds.map(id => inUse.get(id)).filter(Boolean), playing };
 }
 
 // Brings down whatever changed: words first, so new lessons show straight away, then media, so lessons
@@ -399,13 +467,29 @@ export async function pull(onWords = () => {}) {
     if (!live.has(path)) { await store.files.del(path); mediaUrls.delete(path); changed = true; }
   }
   if (changed) await onWords();
-  // the words are down, so each topic's narrator is known: only its clips are kept
+  // the words are down, so each topic's narrator is known: only its clips are kept, and while a new one is
+  // still coming down, the old one's too, so the topic keeps a voice (voiceFor)
   lastTree = tree.map(t => t.path);
+  lastTreeSet = live;
   const inUse = await voiceInUse(lastTree);
+  const kept = new Map();
+  for (const topic of inUse.keys()) {
+    const v = await voiceFor(topic);
+    if (v.narrator !== inUse.get(topic)) kept.set(topic, v.narrator);
+  }
   for (const path of have.keys()) {
-    if (live.has(path) && !keepClip(path, inUse)) { await store.files.del(path); mediaUrls.delete(path); }
+    if (live.has(path) && !keepClip(path, inUse, kept)) { await store.files.del(path); mediaUrls.delete(path); }
   }
   await eachAtOnce(todo.filter(t => !t.path.endsWith('.json') && keepClip(t.path, inUse)), 3, bring);
+  // every clip of the new narrator is here: it takes over, and the old one's clips go
+  for (const [topic, old] of kept) {
+    const v = await voiceFor(topic);
+    if (v.narrator === old) continue;
+    for (const path of await store.files.paths()) {
+      const c = clipOf(path);
+      if (c && c.topic === topic && c.narrator === old) { await store.files.del(path); mediaUrls.delete(path); }
+    }
+  }
   await readWhen();
   state.pulledAt = Date.now();
   state.pullProblem = missed ? `${missed} file${missed === 1 ? '' : 's'} didn't come down. It will try again.` : null;

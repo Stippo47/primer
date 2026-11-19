@@ -39,7 +39,11 @@ button:focus-visible { outline: 2px solid var(--sky); outline-offset: 2px; }
     radial-gradient(230px 230px at calc(100% - 34px) 560px, rgba(15, 163, 177, 0.15), transparent 70%),
     radial-gradient(150px 150px at calc(100% - 64px) 130px, rgba(224, 67, 154, 0.11), transparent 70%);
 }
-#app { position: fixed; inset: 0; overflow: hidden; }
+/* The app's box reaches the very bottom of the screen, safe areas included. Installed on an iPhone with a
+   see-through status bar, the page can be laid out a status bar short of the screen, which left a band of
+   the page's ground in the home bar's strip under a video (2026-11-18): there --apph, set from the screen's
+   own height by js/app.js (fitScreen), takes over. */
+#app { position: fixed; top: 0; left: 0; right: 0; height: var(--apph, 100%); overflow: hidden; }
 #view { position: absolute; inset: 0; z-index: 1; }
 
 .screen {

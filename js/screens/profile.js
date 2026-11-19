@@ -116,8 +116,8 @@ export function profileScreen(app) {
 
 // The four narrators for a subject. Its topics name one; choosing another speaks for everything in it.
 // Clips are made in all four on the PC, but only the one in use is kept on the phone: a new choice's clips
-// come down then (it says so, and says so plainly when there's no signal: the lines play from their words
-// until they're down), and the old one's go.
+// come down then, and it says so. Until every one of them is down (no signal, or partway), the old narrator
+// goes on narrating, and the note says that plainly; then the new one takes over and the old one's clips go.
 function pickNarrator(app, topic) {
   if (!topic) return;
   const now = app.narratorFor(topic), own = topic.narrator || '';

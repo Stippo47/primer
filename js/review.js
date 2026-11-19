@@ -65,7 +65,7 @@ export class Review extends Run {
     const item = s && this.byKey.get(s.key);
     if (!item) return super.voiceFor(s);
     const t = item.topic, home = (t.lessons || []).find(l => l.id === item.fact.lesson);
-    return { key: `${t.id}/${home ? home.id : ''}`, timing: home ? home.timing || null : null, order: [this.app.narratorFor(t), t.narrator],
+    return { key: `${t.id}/${home ? home.id : ''}`, timing: home ? home.timing || null : null, order: [this.app.speakerFor(t), t.narrator],
       media: p => this.app.mediaUrl(data.mediaPath(t.id, p)) };
   }
 
@@ -178,7 +178,7 @@ export class Review extends Run {
     this.peeking = new Run(host, {
       topic: item.topic, lesson, start: Math.max(0, at.index), peek: true,
       media: p => this.app.mediaUrl(data.mediaPath(item.topic.id, p)),
-      voice: { on: () => this.app.prefs.voice !== false, set: on => this.app.setPref('voice', on), narrator: this.app.narratorFor(item.topic) },
+      voice: { on: () => this.app.prefs.voice !== false, set: on => this.app.setPref('voice', on), narrator: this.app.speakerFor(item.topic) },
       onLeave: () => { host.remove(); this.peeking = null; },
     });
     await this.peeking.open();

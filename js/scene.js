@@ -19,11 +19,21 @@
 // whole is one timeline: each line's start is known, and the bar is that timeline.
 //
 // Seeking rebuilds the picture: the parts are mounted again, every action before that moment is run at once
-// (an argument named `seconds` set to 0, a stretch's `$p` to how far it had got), and it plays on from there in
-// the line's clip. So any part works in a scene, with no rewind of its own.
+// (an argument named `seconds` set to 0, a stretch's `$p` to how far it had got), whatever was still moving
+// lands (a part's finish()), and it plays on from there in the line's clip. So any part works in a scene, with
+// no rewind of its own.
+//
+// Directing (docs/format.md, "A scene"). Parts in a scene move softly (ctx.motion 'soft': things fade and grow
+// in, nothing rings on a spring), a stretch eases in and out unless told otherwise, and the clip's clock is
+// smoothed between the sound's own ticks, so nothing a stretch drives steps or jitters. With two or more
+// parts, shot actions (js/shots.js) cut between them, split the picture or lay one over a corner. Any action
+// can make a sound effect (js/sfx.js) as it happens: `"sound": "whoosh"`, and a cut makes its own.
 import * as parts from './parts.js';
 import { Clip, clipFor, DEFAULT_NARRATOR } from './narration.js';
 import { ReadAlong, saidOf, splitWords, findWords, readingTimes } from './readalong.js';
+import { Shots, SHOT_SOUND } from './shots.js';
+import { Effects } from './sfx.js';
+import { EASES } from './ease.js';
 
 export { saidOf, splitWords, normWord, findWords, readingTimes, READING } from './readalong.js';
 export { DEFAULT_NARRATOR };
@@ -100,6 +110,9 @@ export class Scene {
     this.pausedFrom = 'playing';
     this.gapLeft = 0;
     this.pos = 0;
+    // shots, when any action takes one or the scene opens on one
+    this.usesShots = this.partNames.length > 1 && (Array.isArray(scene.shot) || this.lines.some(l => (l.do || []).some(a => Array.isArray(a.call) && String(a.call[0]).startsWith('shot.'))));
+    this.sfx = new Effects(opts.effects ? { on: opts.effects } : {});
   }
 
   // ---- building
@@ -144,6 +157,7 @@ export class Scene {
     this.urls = await this.clipUrls();
     this.sound = this.wantSound();
     this.layout();
+    if (this.usesShots) this.shots = new Shots(this.stage, this.partNames, this.scene.shot);
     await this.build(0);
     if (this.gone) return this;
     this.place(0, 0);
@@ -173,7 +187,7 @@ export class Scene {
       holder.className = 'spart-in';
       this.stage.querySelector(`.spart[data-part="${CSS.escape(name)}"]`).append(holder);
       holders[name] = holder;
-      fresh[name] = await parts.mount(spec.part, holder, spec.settings || {}, { media: this.opts.media });
+      fresh[name] = await parts.mount(spec.part, holder, spec.settings || {}, { media: this.opts.media, motion: 'soft' });
       for (const c of spec.calls || []) fresh[name].run(c);
     }
     // the new parts go in over the old ones, which leave only once all are there: seeking never shows an
@@ -185,23 +199,43 @@ export class Scene {
     this.handles = fresh;
     this.holders = holders;
     if (this.gone) { this.dropParts(); return; }
-    for (let j = 0; j < k; j++) for (const a of this.lines[j].do || []) this.run(a, 1, true);
+    if (this.shots) this.shots.reset();
+    for (let j = 0; j < k; j++) for (const a of this.lines[j].do || []) this.run(a, stretchEnd(a), true);
+    this.land();
   }
 
   handle(name) { return this.handles[name] || null; }
 
-  // Runs one action. now: at once (seeking), with `seconds` 0; p: how far through a stretch.
+  // Runs one action. now: at once (seeking), with `seconds` 0 (given or not); p: how far through a stretch,
+  // eased and ranged already. Returns the sound a shot makes, if any.
   run(action, p = 1, now = false) {
+    if (!Array.isArray(action.call)) return null;   // a sound on its own
     const { part, name, args } = splitCall(action.call, this.partNames);
+    if (part === 'shot') return this.shots ? this.shots.run(name, args, now) : null;
     const h = this.handle(part);
-    if (!h) return;
+    if (!h) return null;
     const spec = (h.desc.calls || {})[name];
     const filled = args.map((a, k) => {
       if (a === '$p') return p;
       if (now && spec && spec.args[k] && spec.args[k].name === 'seconds') return 0;
       return a;
     });
+    if (now && spec) spec.args.forEach((a, k) => { if (a.name === 'seconds' && k >= filled.length) { while (filled.length < k) filled.push(undefined); filled.push(0); } });
     try { h.run([name, ...filled]); } catch (e) { console.warn(`scene: ${name}: ${e.message}`); }
+    return null;
+  }
+
+  // Runs an action as it happens, with its sound: its own (`sound`, "none" for none), or the one its shot makes.
+  fire(action, p) {
+    const made = this.run(action, p);
+    const sound = action.sound !== undefined ? action.sound : made;
+    if (sound && sound !== 'none') this.sfx.play(sound);
+  }
+
+  // Whatever is still moving in every part lands now: after the picture is built at a moment.
+  land() {
+    for (const h of Object.values(this.handles)) if (h.finish) { try { h.finish(); } catch (e) { console.warn(`scene: finish: ${e.message}`); } }
+    if (this.shots) this.shots.finish();
   }
 
   // ---- the timeline
@@ -223,7 +257,7 @@ export class Scene {
     const actions = (line.do || []).map((a, n) => {
       if (a.from === undefined && a.to === undefined) return { a, n, t0: a.at === undefined ? 0 : timeOf(a.at, false), span: false };
       const t0 = timeOf(a.from ?? '$start', false);
-      return { a, n, t0, t1: Math.max(t0 + 0.01, timeOf(a.to ?? '$end', true)), span: true };
+      return { a, n, t0, t1: Math.max(t0 + 0.01, timeOf(a.to ?? '$end', true)), span: true, p: stretch(a) };
     });
     return { j, dur, ws, voiced: !!words, actions };
   }
@@ -252,13 +286,14 @@ export class Scene {
       x.began = true;
       if (x.span) {
         const q = Math.min(1, Math.max(0, (t - x.t0) / (x.t1 - x.t0)));
-        this.run(x.a, q, true);
+        this.run(x.a, x.p(q), true);
         x.done = q >= 1;
       } else {
         x.done = true;
         this.run(x.a, 1, true);
       }
     }
+    if (t > 0) this.land();
     this.cap.set(this.lines[j].text);
     this.cap.follow(p.ws);
     if (t > 0) this.cap.paint(t);
@@ -295,14 +330,15 @@ export class Scene {
     const id = this.lines[this.cur.j].id;
     for (const x of this.cur.actions) {
       if (x.done || t < x.t0) continue;
-      if (!x.began) { x.began = true; this.fired.push({ line: id, n: x.n, want: x.t0, at: t, voiced: this.cur.voiced }); }
+      const first = !x.began;
+      if (first) { x.began = true; this.fired.push({ line: id, n: x.n, want: x.t0, at: t, voiced: this.cur.voiced }); }
       if (x.span) {
-        const p = Math.min(1, (t - x.t0) / (x.t1 - x.t0));
-        this.run(x.a, p);
-        if (p >= 1) x.done = true;
+        const q = Math.min(1, (t - x.t0) / (x.t1 - x.t0));
+        if (first) this.fire(x.a, x.p(q)); else this.run(x.a, x.p(q));
+        if (q >= 1) x.done = true;
       } else {
         x.done = true;
-        this.run(x.a);
+        this.fire(x.a);
       }
     }
     this.cap.paint(t);
@@ -375,11 +411,20 @@ export class Scene {
   // The reading clock: seconds into the line, counted from now.
   readFrom(t) { this.readT0 = performance.now() - t * 1000; }
 
+  // The clip's clock, smoothed: a phone reports where the sound has got to in small steps, so between them
+  // the clock runs on by the frame's own time and is eased back onto the sound's, never backward. Anything a
+  // stretch drives (a storm along its track) then moves evenly instead of in little jumps.
   clock(now) {
     const c = this.clip;
     if (c && (c.status === 'playing' || c.status === 'starting' || c.status === 'ended')) {
       c.watch(now);
-      return c.time;
+      const raw = c.time, s = this.smooth;
+      if (c.status !== 'playing' || !s || s.clip !== c) { this.smooth = { clip: c, t: raw, at: now }; return raw; }
+      let t = s.t + Math.max(0, now - s.at) / 1000;
+      t = Math.abs(raw - t) > 0.25 ? raw : t + (raw - t) * 0.15;
+      t = Math.max(s.t, t);
+      this.smooth = { clip: c, t, at: now };
+      return t;
     }
     return (now - this.readT0) / 1000;
   }
@@ -417,6 +462,7 @@ export class Scene {
   // Inside a tap: every clip from line j on gets a fresh player now, started and stopped at once, so it
   // can start by itself when the scene reaches it.
   prime(j) {
+    this.sfx.prime(this.soundsFrom(j));
     if (!this.sound) return;
     for (let k = j; k < this.lines.length; k++) {
       const c = this.urls[k];
@@ -428,6 +474,22 @@ export class Scene {
   }
 
   wantSound() { return !!(this.opts.voice && this.opts.voice()) && !this.failed; }
+
+  // Every sound effect still to come from line j on, in order: what a tap primes players for.
+  soundsFrom(j) {
+    const out = [];
+    for (let k = j; k < this.lines.length; k++) {
+      for (const a of this.lines[k].do || []) {
+        let s = a.sound;
+        if (s === undefined && Array.isArray(a.call) && String(a.call[0]).startsWith('shot.') && this.shots) {
+          const kind = String(a.call[0]).slice(5);
+          s = kind === 'cut' ? SHOT_SOUND[a.call[2] || 'cut'] : SHOT_SOUND[kind];
+        }
+        if (s && s !== 'none') out.push(s);
+      }
+    }
+    return out;
+  }
 
   // From the first picture: by itself when it opens (tap false), or from a tap on play.
   start(tap) {
@@ -446,6 +508,7 @@ export class Scene {
     this.pausedAt = this.state === 'playing' ? Math.min(Math.max(0, this.clock(now)), this.cur.dur) : this.cur.dur;
     this.gapLeft = this.state === 'gap' ? Math.max(0, (this.gapUntil - now) / 1000) : 0;
     if (this.clip) this.clip.pause();
+    this.sfx.stop();
     this.set('paused');
   }
 
@@ -482,7 +545,8 @@ export class Scene {
     const play = auto || this.state !== 'paused';
     if (!auto && play) this.tapped = true;
     this.stopClip();
-    for (const x of this.cur.actions) if (!x.done) { x.done = true; x.began = true; this.run(x.a, 1, true); }
+    for (const x of this.cur.actions) if (!x.done) { x.done = true; x.began = true; this.run(x.a, x.span ? x.p(1) : 1, true); }
+    this.land();
     if (this.i + 1 >= this.lines.length) { this.end(); return; }
     if (!auto && play) this.prime(this.i + 1);
     this.place(this.i + 1, 0);
@@ -553,7 +617,8 @@ export class Scene {
 
   end() {
     this.stopClip();
-    if (this.cur) for (const x of this.cur.actions) if (!x.done) { x.done = true; x.began = true; this.run(x.a, 1, true); }
+    if (this.cur) for (const x of this.cur.actions) if (!x.done) { x.done = true; x.began = true; this.run(x.a, x.span ? x.p(1) : 1, true); }
+    this.land();
     this.cap.finish();
     this.pausedFrom = 'playing';
     this.pausedAt = this.cur ? this.cur.dur : 0;
@@ -698,7 +763,8 @@ export class Scene {
       t: this.state === 'playing' ? this.clock(performance.now()) : null, at: this.where(), total: this.total, starts: this.starts,
       voiced: this.cur ? this.cur.voiced : false, ui: !!this.ui, captions: this.capsOn(), lit: this.cap.state(), tapped: this.tapped,
       clip: this.clip ? { status: this.clip.status, time: this.clip.time, started: this.clip.started, why: this.clip.why } : null,
-      fired: this.fired.slice(), narrators: (this.urls || []).map(c => (c ? c.narrator : null)) };
+      fired: this.fired.slice(), narrators: (this.urls || []).map(c => (c ? c.narrator : null)),
+      shots: this.shots ? this.shots.state() : null, effects: this.sfx.heard.slice() };
   }
 
   // For `primer fit`: line j's caption on screen, still.
@@ -736,6 +802,8 @@ export class Scene {
     this.stopClip();
     for (const c of this.clips) if (c) c.stop();
     this.clips = [];
+    this.sfx.remove();
+    if (this.shots) this.shots.remove();
     this.dropParts();
     document.removeEventListener('visibilitychange', this.onHide);
     if (this.root) {
@@ -744,3 +812,13 @@ export class Scene {
     }
   }
 }
+
+// A stretch's share of the way, from how far through its words it is (q, 0 to 1): eased (`ease`: soft, the
+// default, easing in and out; linear; in; out) and mapped onto `range` ([from, to], 0 to 1 unless given), so
+// a storm can be carried from 0.45 to 0.72 of its track across one line and on from there across the next.
+export function stretch(a) {
+  const ease = EASES[a.ease] || EASES.soft;
+  const [p0, p1] = Array.isArray(a.range) && a.range.length === 2 ? a.range.map(Number) : [0, 1];
+  return q => p0 + (p1 - p0) * ease(Math.max(0, Math.min(1, q)));
+}
+const stretchEnd = a => (a.from !== undefined || a.to !== undefined ? stretch(a)(1) : 1);

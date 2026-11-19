@@ -13,7 +13,8 @@ export async function playVideo(app, topic, node, { next = null, record, media, 
   const lesson = node.file;
   const step = lesson.steps[0];
   const ids = { topic: topic.id, lesson: lesson.id, version: lesson.version || 1 };
-  document.documentElement.classList.add('bare');
+  // bare: no tab bar; vid: the page's own ground is the video's, down to the bottom of the screen
+  document.documentElement.classList.add('bare', 'vid');
   view.innerHTML = `<section class="video" aria-label="${esc(lesson.title)}"><div class="vscene"></div></section>`;
   record({ type: 'start', ...ids, step: step.id });
   let ended = false, gone = false;
@@ -29,7 +30,7 @@ export async function playVideo(app, topic, node, { next = null, record, media, 
     gone = true;
     if (out.scene) out.scene.remove();
     view.innerHTML = '';
-    document.documentElement.classList.remove('bare');
+    document.documentElement.classList.remove('bare', 'vid');
   };
   out.leave = leave;
   const scene = new Scene(view.querySelector('.vscene'), step, {

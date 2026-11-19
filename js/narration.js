@@ -13,8 +13,10 @@
 // - An iPhone starts sound only from a tap. A scene's later lines start by themselves, so every clip still
 //   to come is made, and started and stopped at once, during the tap that starts or resumes the scene
 //   (prime). A clip the phone still refuses fails like a silent one, and the scene reads on from its captions.
-// - Only the clips of the narrator in use come down (js/sync.js). A clip not here yet is never an error: the
-//   line plays from its words, on the reading clock, as with Voice off.
+// - Only the clips of the narrator in use come down (js/sync.js). After a change of narrator, the topic plays
+//   in the old one until every clip of the new one is here (sync.voiceFor, which picks the narrator a scene or
+//   a lesson is handed). A clip not here is never an error: the line plays from its words, on the reading
+//   clock, as with Voice off.
 import { saidOf } from './readalong.js';
 import { factsOfLesson, askKey } from './facts.js';
 
