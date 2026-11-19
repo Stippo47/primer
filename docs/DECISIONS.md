@@ -314,3 +314,10 @@ Their words are in primer-data `notes/answers-2026-11-19b.md`.
 
 - **Good:** the thermometer, the sea, the wind, the number reveal and the tape. Heat lines: **without**.
 - **Still to do:** the sea's warm colour becomes see-through, tinting the water so its detail still shows; a yellow line still peeks out on the wind picture's sand; the abacus reveal moves its beads one at a time, quickly snapping, instead of all at once; the wheels still look off ("the fade is over the numbers?"); the tape's reveal can take longer, starting slow and speeding up, always within one second.
+
+## 2026-11-19: pill eyes, and the style dial missed
+
+Their words are in primer-data `notes/answers-2026-11-19c.md`.
+
+- **Button: pill eyes, no rim** (my pick). Next: the pills turned the other way (lying, not standing), and a variant with a shadow on the eye.
+- **The style dials (gecko, cut-out person): redo, none of them.** "Not what I meant. I don't mean more realistic." My dial read "grown-up" as more lifelike proportions and detail; that's wrong. "Not Cartoon Network / child book" and "more unique" is about the style's own voice, not realism. Next: one character (the gecko) drawn in several distinct stylised directions, none more realistic than now, each with its own shape language and palette, for them to tick, with a question card asking what "more unique" means to them, my reading first.
