@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  Primer: the avatar, fourteenth round. A sketch to react to, not app code. Stills only.
+
+  Round 13's first style, geometric glow (the gecko built from circles, half circles and boxes, lit by a small lamp
+  in the dark), tried on a whole cast: eight animals, a person and a monster. The style lives in one module
+  (js/glow.js: the scene, the shapes, the light, the eyes); each character is data in js/cast.js.
+
+    index.html?pic=fox             one character: fox, mouse, flamingo, capybara, sheep, walrus, turtle, axolotl,
+                                   person, monster
+    index.html?lineup=sheet        all ten side by side
+    index.html?lineup=icons        all ten at icon size
+
+  Modules need http, and this page reaches into ../avatar10 for its path helpers, so serve the stage0 folder.
+  tools/capture.mjs does that itself and writes shots/.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Primer avatar, a cast in geometric glow</title>
+<style>
+  html, body { margin: 0; background: #1b1446; }
+  body { display: flex; align-items: flex-start; justify-content: flex-start; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
