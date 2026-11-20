@@ -326,7 +326,7 @@ export async function mount(el, settings, ctx = {}) {
         const sp = sparks[i], k = (sp.ph + clock * 0.42) % 1;
         const r0 = lerp(90 + 60 * L.cloud, 230 + 120 * L.cloud, k) * (0.75 + 0.25 * sp.d);
         const X = colX + Math.cos(sp.a) * r0 * 1.15, Y = heart + Math.sin(sp.a) * r0 * 0.9;
-        heat(g, C.x(X), C.y(Y), Math.max(5, 13 * s), Math.atan2(-Math.sin(sp.a) * 0.9, Math.cos(sp.a) * 1.15), L.release * Math.sin(Math.PI * k));
+        { const env = Math.sin(Math.PI * k); heat(g, C.x(X), C.y(Y), Math.max(5, 13 * s) * (0.55 + 0.45 * env), Math.atan2(-Math.sin(sp.a) * 0.9, Math.cos(sp.a) * 1.15), L.release * Math.min(1, env * 1.6)); }
       }
     }
 

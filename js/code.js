@@ -26,7 +26,7 @@ export const mixHex = (a, b, k) => { const x = parse(a), y = parse(b); return '#
 export const CODE = {
   heat: { body: '#ffa63d', tip: '#ffe7a3', glow: '#ff9a3c' },
   air: { line: '#8fdcff', light: '#e2f7ff', shade: 'rgba(6,8,48,0.35)' },
-  vapour: { fill: '#d7f1ff', light: '#ffffff' },
+  vapour: { fill: '#dff6ff', light: '#ffffff', rim: '#6fd3ff' },
   cloud: { shade: '#5446a8', mid: '#a69be8', lit: '#ebe7ff', warm: '#ffd9b0' },
   water: { deep: '#0f1f78', mid: '#1c3fb0', molecule: '#36b9ff', light: '#c9f3ff', hydrogen: '#8fe1ff' },
   airMolecule: { body: '#b6aef2', light: '#f3f1ff' },
@@ -48,14 +48,13 @@ export function heat(g, x, y, s, angle = -Math.PI / 2, a = 1) {
   const glow = g.createRadialGradient(0, 0, 0, 0, 0, s * 2.4);
   glow.addColorStop(0, rgba(CODE.heat.glow, 0.42)); glow.addColorStop(1, rgba(CODE.heat.glow, 0));
   g.fillStyle = glow; g.beginPath(); g.arc(0, 0, s * 2.4, 0, TAU); g.fill();
-  const tri = k => { g.beginPath(); g.moveTo(0, -s * k); g.lineTo(s * 0.86 * k, s * 0.62 * k); g.lineTo(-s * 0.86 * k, s * 0.62 * k); g.closePath(); };
+  // one solid rounded triangle, lighter toward its tip (no inner outline: that read as a warning sign)
+  const grad = g.createLinearGradient(0, s * 0.6, 0, -s);
+  grad.addColorStop(0, CODE.heat.body); grad.addColorStop(1, CODE.heat.tip);
   g.lineJoin = 'round';
   g.lineWidth = s * 0.5;
-  g.fillStyle = CODE.heat.body; g.strokeStyle = CODE.heat.body;
-  tri(0.86); g.fill(); g.stroke();
-  g.fillStyle = CODE.heat.tip; g.strokeStyle = CODE.heat.tip; g.lineWidth = s * 0.22;
-  g.translate(0, -s * 0.18);
-  tri(0.42); g.fill(); g.stroke();
+  g.fillStyle = grad; g.strokeStyle = grad;
+  g.beginPath(); g.moveTo(0, -s * 0.86); g.lineTo(s * 0.74, s * 0.53); g.lineTo(-s * 0.74, s * 0.53); g.closePath(); g.fill(); g.stroke();
   g.restore();
 }
 
@@ -154,9 +153,11 @@ export function puff(g, x, y, r, a = 1, turn = 0) {
   for (const [ox, oy, k] of lobes) { shape.moveTo(x + ox * r + k * r, y + oy * r); shape.arc(x + ox * r, y + oy * r, k * r, 0, TAU); }
   g.save();
   g.globalAlpha *= a;
-  g.fillStyle = rgba(CODE.vapour.fill, 0.5);
+  // a soft cyan rim, then the pale body: see-through, but bright enough never to read as grey smoke
+  g.save(); g.translate(0, r * 0.08); g.fillStyle = rgba(CODE.vapour.rim, 0.35); g.fill(shape); g.restore();
+  g.fillStyle = rgba(CODE.vapour.fill, 0.72);
   g.fill(shape);
-  g.fillStyle = rgba(CODE.vapour.light, 0.4);
+  g.fillStyle = rgba(CODE.vapour.light, 0.55);
   g.beginPath(); g.arc(x - r * 0.28, y - r * 0.3, r * 0.42, 0, TAU); g.fill();
   g.restore();
 }

@@ -82,7 +82,8 @@ export async function mount(el, settings, ctx = {}) {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const unit = Math.min(w, h * 0.62);
     const mr = Math.max(5, unit * 0.034);        // a molecule's big atom
-    const floorY = below === 'water' ? h * 0.7 : below === 'ground' ? h * 0.86 : h;
+    // the floor sits well clear of where a scene's caption goes, so what happens on it is seen
+    const floorY = below === 'water' ? h * 0.64 : below === 'ground' ? h * 0.76 : h;
     const top = Math.max(0, h * 0.04);
 
     // the field: a deep blue-violet, warmer as it warms
