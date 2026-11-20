@@ -457,3 +457,13 @@ Studied first (`docs/research/kurzgesagt-study.md` and `-2.md`); the plan is `do
 - **New tools, all general**: the `molecules` part; the sea and sky's shore and land, loop of air, parcel, beam and signs; the map's `winds`, `turning`, `cells`, `frame` and `sign`; `shot.lens` with cuts `through` and `out`.
 - **Sounds are placed by their pictures**: each kind's file, peak and lead are one table (`KINDS` in `js/sfx.js`), and a call can say when its picture lands (`beat`). The made sounds stay until the library picks are wired in; that's one line per kind there.
 - **Left for the phone to judge**: whether the four-minute wind animation holds attention, whether the molecules read as molecules at phone size, the sound balance on the phone's speaker, and whether a quiet music bed under the voice (the study says there's always one) is wanted.
+
+## 2026-11-20: combo tiers, round five on the phone
+
+Their words are in primer-data `notes/answers-2026-11-20a.md`.
+
+- Gems, eternal, celestial, singularity and void: good. Multiverse: **branches**.
+- **Opal: rolling picked, but "still weird. Maybe try voronoi cells?"** Next: rolling's sliding colour inside a voronoi patchwork.
+- **Eclipse is removed** ("won't use eclipse anymore"). My call on the gap: the other tiers keep their starts, so supernova runs from 121 to singularity at 147.
+- **Supernova still weak:** three new styles to pick from.
+- **Sounds: crack 5 only, and tap 2 only.**
