@@ -1,0 +1,59 @@
+{
+  "name": "molecules",
+  "title": "Up close",
+  "about": "Air and water at the scale of molecules, in the series' visual code: air molecules (two atoms each) flying about and bouncing off the walls, water molecules (an oxygen and two hydrogens) jostling in a liquid layer at the bottom, or ground there, or nothing. Everything moves faster the warmer it is. It shows air pressure as the pushes of molecules hitting the floor, crowded air against thin behind a wall that lifts so the crowded side spills into the thin (wind), a bubble of air that warms, spreads out, thins and rises, heat rising off warm ground, and the fastest water molecules breaking free of the surface as vapour, each carrying its heat. Each is a level that glides where it's sent; built labels follow the molecule they name. For scenes and figures: a scene usually reaches it through the sea and sky's surface with a lens.",
+  "module": "molecules.js",
+  "thumb": "thumb.svg",
+  "playground": false,
+  "touch": false,
+  "settings": {
+    "below": { "type": "choice", "options": ["none", "water", "ground"], "default": "none", "about": "What's at the bottom: nothing (air all the way down), water (a liquid layer of water molecules) or ground." },
+    "warm": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0.3, "about": "How warm it is: the molecules move faster and the colours shift warm." },
+    "air": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 1, "about": "How many air molecules: 1 crowded, low numbers thin." },
+    "heat": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "With ground below: heat rising off it as warm triangles, the ground's colour warming and the air just above it moving faster." },
+    "pushes": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Air pressure made visible: each molecule hitting the floor (or the wall) gives it a tiny push, drawn as a short white arrow; more molecules, or faster ones, more pushes." },
+    "split": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "A wall down the middle: crowded air on the left, thin air on the right." },
+    "open": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "The wall lifts: the crowded air spills into the thin side, with moving-air arrows across, until it's even." },
+    "parcel": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "A ring round a bubble of air in the middle. Warm (warm), its molecules spread out and fewer fit inside: it's lighter than the air round it." },
+    "lift": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "The bubble rises, from the bottom (0) to near the top (1)." },
+    "escape": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "With water below: the fastest molecules at the surface break free into the air as vapour, from none to many." },
+    "carry": { "type": "number", "min": 0, "max": 1, "step": 0.1, "default": 0, "about": "Each molecule that breaks free carries a warm triangle of heat away with it." }
+  },
+  "calls": {
+    "warm": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "How warm it is, gliding there (a colour shifting a touch past and back, at least 2.1 seconds unless 0): faster molecules, warmer colours.", "beat": 1.2 },
+    "air": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "How many air molecules: crowded (1) or thin." },
+    "heat": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Heat rising off warm ground into the air." },
+    "pushes": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The pushes of molecules hitting the floor: air pressure." },
+    "split": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "A wall down the middle, crowded air on the left, thin on the right." },
+    "open": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The wall lifts and the crowded air spills into the thin side: wind." },
+    "parcel": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "A ring round a bubble of air in the middle." },
+    "lift": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "The bubble rises (1 near the top)." },
+    "escape": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Water molecules breaking free of the surface as vapour." },
+    "carry": { "args": [{ "name": "level", "type": "number", "min": 0, "max": 1 }, { "name": "seconds", "type": "number", "min": 0, "max": 10, "optional": true }], "about": "Each one that breaks free carries its heat away: a warm triangle." },
+    "tag": { "args": [{ "name": "thing", "type": "choice", "options": ["air", "water", "vapour", "parcel", "floor", "crowded", "thin", "wind"] }, { "name": "text", "type": "text", "optional": true, "maxLength": 28 }], "about": "Names a thing with a built label that follows it: an air molecule, a water molecule, a molecule of vapour that just broke free, the bubble, the floor, the crowded side, the thin side, the wind across. Without text, its label fades away.", "beat": 1.1 },
+    "clear": { "args": [{ "name": "seconds", "type": "number", "min": 0, "max": 5, "optional": true }], "about": "Everything but the air and its warmth back to nothing, and the labels away, over seconds (0.8 unless told)." }
+  },
+  "colours": [],
+  "events": {},
+  "state": {
+    "warm": { "type": "number", "about": "Each level as last sent is in the state by its name: warm, air, heat, pushes, split, open, parcel, lift, escape, carry." }
+  },
+  "needs": {
+    "data": [],
+    "weight": "One canvas and a small module. Molecules are stamps drawn once per size and placed each frame; about 150 at most. It draws every frame while on screen; put away by a scene's shot, it stops."
+  },
+  "example": {
+    "settings": { "below": "water", "warm": 0.7, "air": 0.6, "escape": 0.8, "carry": 1 },
+    "calls": [["tag", "water", "Water molecule"]]
+  },
+  "try": [
+    { "label": "Warm", "call": ["warm", 1, 2] },
+    { "label": "Pushes", "call": ["pushes", 1] },
+    { "label": "Split", "call": ["split", 1] },
+    { "label": "Open", "call": ["open", 1, 3] },
+    { "label": "Bubble", "call": ["parcel", 1] },
+    { "label": "Lift", "call": ["lift", 1, 3] },
+    { "label": "Escape", "call": ["escape", 1] },
+    { "label": "Clear", "call": ["clear"] }
+  ]
+}
