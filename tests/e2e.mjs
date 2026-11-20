@@ -1871,6 +1871,15 @@ try {
         const out = {}; for (const [g, ids] of Object.entries(groups)) { const sigs = ids.map(sig); out[g] = new Set(sigs).size === ids.length; }
         h.remove(); return out })`);
       ok(Object.values(shapes).every(Boolean), 'alike tiers are drawn differently, not just coloured differently: metals, gems, dark stones, sky and the far end each have no two the same once colour is taken out', shapes);
+      // the ideas drawn for the tiers redone (opal three, supernova, eclipse and multiverse two each): each draws,
+      // is never reached by a count, and the table uses the picked one
+      const trials = await ev(`import('/primer/js/combo.js').then(m => {
+        const h = document.createElement('div'); h.className = 'rtop'; document.body.append(h);
+        const drawn = m.TRIALS.map(t => { const c = new m.Combo(h, { count: 130, look: t.id, pips: false }); const d = c.debug(); const kids = c.el.querySelectorAll('.cbody > *').length; c.remove(); return { id: t.id, tier: d.tier, at: t.at, kids }; });
+        const picked = Object.entries(m.PICK).every(([id, idea]) => m.lookOf(id).face === m.lookOf(id + '-' + idea).face);
+        h.remove(); return { drawn, picked } })`);
+      ok(trials.drawn.length === 9 && trials.drawn.every(t => t.tier === t.id && t.at === null && t.kids >= 3) && trials.picked,
+        `the ${trials.drawn.length} ideas for opal, supernova, eclipse and multiverse each draw by name, none reached by a count, and the table uses the picks`, trials);
       // the rule on its own: data plus one mechanism
       const rule = await ev(`import('/primer/js/combo.js').then(m => { const a = m.afterAnswer; return [
         a({ n: 17, cracks: 0 }, 'wrong'), a({ n: 17, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 2 }, 'wrong'),
@@ -1881,9 +1890,15 @@ try {
       // the chip is one part of its own: anything can show one
       const alone = await ev(`import('/primer/js/combo.js').then(m => { const h = document.createElement('div'); document.body.append(h); const c = new m.Combo(h, { count: 48, pips: false }); const d = c.debug(); c.remove(); h.remove(); return d })`);
       ok(alone.tier === 'diamond' && alone.text === '×48' && alone.idle && alone.pips === null, 'the chip stands alone: drawn at 48 on a bare element, it is diamond, ×48, already idling', alone);
-      // the crack and the shatter are samples made by tools/make-sounds.py, which the app decodes and plays
-      const samples = await ev(`Promise.all(['crack', 'shatter'].map(n => __primer.feel.renderSound(n, 1.5).then(s => s ? { n, peak: s.reduce((a, v) => Math.max(a, Math.abs(v)), 0), heard: s.filter(v => Math.abs(v) > 0.01).length / 48000 } : null)))`);
-      ok(samples.every(x => x && x.peak > 0.05 && x.peak < 0.6 && x.heard > 0.03 && x.heard < 1.4), 'the crack and the shatter decode from their files and sound, under a soft peak', samples);
+      // the crack, the shatter and the press are recordings picked from the sound library (one table, kind ->
+      // files), each file decoding and sounding at the level the deck had it, unclipped
+      const samples = await ev(`Promise.all(Object.entries(__primer.feel.RECORDED).flatMap(([n, files]) => files.map(f => __primer.feel.renderSound(n, 1.5, f).then(s => s ? { n, f, peak: s.reduce((a, v) => Math.max(a, Math.abs(v)), 0), heard: s.filter(v => Math.abs(v) > 0.01).length / 48000 } : { n, f }))))`);
+      ok(samples.length === 7 && samples.every(x => x.peak > 0.05 && x.peak < 0.98 && x.heard > 0.015 && x.heard < 1.4),
+        'the crack (3 ice cracks), the shatter (a tile) and the press (3 clicks) decode from their files and sound, unclipped', samples);
+      // a kind's file is picked at random, never the same one twice running
+      const picks = await ev(`Array.from({ length: 40 }, () => __primer.feel.pickFile('crack'))`);
+      ok(picks.every((f, i) => !i || f !== picks[i - 1]) && new Set(picks).size === 3,
+        'a crack plays one of its three files at random, never the one it played last', picks.join(' '));
       await f.tap('.review [data-go=review]');
       await live();
       let c0 = (await dbg()).chip;
@@ -2722,7 +2737,8 @@ try {
   const walk = d => { for (const n of readdirSync(join(ROOT, d))) { const p = join(d, n); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else ownFiles.push(p.split(sep).join('/')); } };
   for (const d of ['css', 'js', 'parts', 'vendor', 'icons', 'sounds']) walk(d);
   const swText = readFileSync(join(ROOT, 'sw.js'), 'utf8');
-  const missing = ownFiles.filter(p => !p.endsWith('.md') && !swText.includes(`'${p}'`));
+  // (the sound library's candidates are for picking by ear, not the app's: what it plays is copied to sounds/)
+  const missing = ownFiles.filter(p => !p.endsWith('.md') && !p.startsWith('sounds/library/') && !swText.includes(`'${p}'`));
   ok(missing.length === 0, "every one of the app's files is kept for offline", missing);
   const appVersion = readFileSync(join(ROOT, 'js', 'app.js'), 'utf8').match(/const VERSION = '([^']+)'/)[1];
   const swVersion = swText.match(/const VERSION = '([^']+)'/)[1];

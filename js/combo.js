@@ -12,18 +12,18 @@
 // a row, is a rare feat (docs/DECISIONS.md, 2026-11-19, has the curve).
 //
 // Every material is drawn the app's way: flat tones lit from the upper left (art.js), a highlight band or
-// facets, never photographic metal. A tier is a face (how the material is made: metal, grain, step cut,
-// cabochon, cluster, princess, brilliant, opal, sky, flow, core, eclipse, lens, hole) with its colours, plus
-// the finish and extras it carries. Tiers that are alike differ by more than colour (ruled 2026-11-19): tin is
-// matte and dented, copper warm with verdigris at its edges and a green side, silver polished with a fine
-// line, gold a raised rim and a glow, platinum a mirror with a sharp horizon and a big twinkle, titanium
-// brushed with a faint anodised rainbow turning round its edge; the gems are each cut their own way and
-// sparkle their own way, bright and deep; obsidian has the ripples of broken glass and a faint oil slick, opal
-// is a black opal whose flames of colour change as the light crosses them; aurora is curtains, nebula clouds
-// with rings round it like an atom's, celestial a gold constellation with a dial turning behind it, eternal
-// white gold with rays turning both ways; and the far end is a star blowing apart, a moon sliding over the
-// sun, light bent round a point and falling into it, other universes in bubbles, and darkness that draws the
-// light in (round four, 2026-11-19). Per tier, it's data; the drawing is shared.
+// facets, never photographic metal. A tier is a face (how the material is made: metal, grain, gem, an opal's,
+// sky, flow, lens, a far-end idea's) with its colours, plus the finish and extras it carries. Tiers that are
+// alike differ by more than colour (ruled 2026-11-19): tin is matte and dented, copper warm with verdigris at
+// its edges and a green side, silver polished with a fine line, gold a raised rim and a glow, platinum a mirror
+// with a sharp horizon and a big twinkle, titanium brushed with a faint anodised rainbow turning round its
+// edge; the gems share one look (round two's) and differ by colour and by how their facet lines run; obsidian
+// has the ripples of broken glass and a faint oil slick, opal a mosaic of colour patches flashing in turn;
+// aurora is curtains, nebula clouds with rings round it like an atom's, celestial a gold constellation with
+// the sun and moon on an orbit round it, eternal white gold on a turning dial with a clock's hands; and the
+// far end is a pulsar's beams sweeping out of a star's remains, a ring of fire round the moon, light bent
+// round a point and falling into it (its ring crossing in front), timelines branching, and darkness that
+// draws the light in (round five, 2026-11-20). Per tier, it's data; the drawing is shared.
 //
 // Shields (ruled 2026-11-18, from their idea): each tier protects the combo from one-off mistakes: wood and
 // tin none, copper to gold one, platinum and up two. A miss with a shield left cracks the chip (one crack per
@@ -61,10 +61,78 @@ const pairOfGlints = (a, b = '#fff', d = 1) => [S(-0.02, 5, 5.5, d, 6, a), S(1.0
 const fourSparkles = (a, b = '#fff', c = a) => [S(-0.07, 8, 5, 0, 3, a), S(0.86, -5, 5.5, 0.75, 3, b), S(1.07, 27, 4.5, 1.5, 3, c), S(0.2, 41, 4, 2.25, 3, b)];
 const fireGlints = cs => cs.map((c, i) => S([0.2, 0.84, 0.62, 1.05, -0.05][i % 5], [6, 8, 31, 17, 24][i % 5], 5 + (i % 2) * 0.5, i * 0.6, 3, c, true));
 
-// Crystal's points: [middle (a share of the width), width, height] from the bottom, back ones first.
-const POINTS = [[0.12, 11, 27], [0.86, 12, 31], [0.34, 12, 35], [0.64, 13, 37], [0.5, 10, 24], [0.02, 9, 19], [0.98, 9, 21]];
-// a glint on the tip of a few of them
-const tipGlints = (ids, cs) => ids.map((k, i) => S(POINTS[k][0], 40 - POINTS[k][2] + 1, 4.5, i * 0.75, 3, cs[i % cs.length]));
+// The tiers redone from fresh ideas (2026-11-20): opal a third time (three ideas), supernova, eclipse and
+// multiverse (two each). Every idea is drawn by the same parts as the rest; PICK says which one each tier uses,
+// and all of them stay in TRIALS (as `<tier>-<idea>`) for the deck's films and so a pick can be changed by
+// changing one word.
+const OPAL_PLAY = ['#2fe0a0', '#38c0ff', '#5a7cff', '#a070ff', '#ff5fb8', '#ff9a3a', '#ffd84a', '#6aff7a'];
+const PALE_OPAL_V = { ink: '#d6e2ff', line: '#5a6a9a', plate: '#20285e', glow: 'rgba(190,210,255,0.2)', edge: '#8a96bc', cink: '#1b2456', cinksh: 'rgba(255,255,255,0.85)', pip: '#c9d6ff', burst: '#ffffff', cglow: 'rgba(170,220,255,0.45)', cglow2: 'rgba(255,150,220,0.42)' };
+const CANDIDATES = {
+  opal: {
+    // harlequin: a light opal whose fire is a mosaic of small diamond-shaped patches, each its own vivid colour,
+    // flashing to another as a wave of light crosses the stone, under a milky skin
+    harlequin: { face: 'harlequin', body: ['#e4eaf6', '#b6c2dc'], play: OPAL_PLAY, glow: true, shine: true,
+      burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#ffe0f4')],
+      pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
+    // rolling: a pearly white opal with its colour rolling across it, the way an opal's fire slides over it as
+    // it tilts: a soft rainbow sweeping slowly under the milk, a second, fainter one the other way
+    rolling: { face: 'rolling', body: ['#f2f5fc', '#c6d0ea'], play: ['#4cf0c0', '#4cc4ff', '#8c84ff', '#ff86d2', '#ffc86a', '#4cf0c0'], glow: true,
+      burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#d8fff4')],
+      pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
+    // boulder: opal in its ironstone: dark brown rock with veins of vivid opal running through it, their colours
+    // shifting as the light moves, and a gloss over the polished face
+    boulder: { face: 'boulder', rock: ['#6c4632', '#3a2216'], veins: [['#2fe0c0', '#38a8ff', '#5a6cff'], ['#7affa0', '#ff5fd0', '#ffb040']], glow: true, shine: '#ffe8d0',
+      burst: ['#7ff0e0', '#5ab0ff', '#ff8fd8', '#ffc870'], sparks: [S(0.98, 4, 5, 1, 3, '#c9fff4')],
+      pips: ['#38a8ff', '#2fe0c0', '#7affa0', '#ffb040', '#ff5fd0'],
+      v: { ink: '#7ff0e0', line: '#6a4a3a', plate: '#2a2040', glow: 'rgba(60,220,200,0.2)', edge: '#24140a', cink: '#fff', cinksh: '#2a1408', pip: '#38c8d0', burst: '#9ff8ea', cglow: 'rgba(50,210,200,0.45)', cglow2: 'rgba(255,120,210,0.4)' } },
+  },
+  supernova: {
+    // collapse: a star in the dark, slowly shrinking and heating from orange to white, then falling in on itself
+    // and bursting: a flash, and a shell of fire racing out past the chip; the star swells back (every 6 s)
+    collapse: { face: 'collapse', star: ['#fff7d0', '#ffc050', '#ff6a3a'], hot: '#cfe6ff', shell: ['#ffd27a', '#ff6a3a'], glow: true,
+      burst: ['#fff2a8', '#ffb040', '#e8463a', '#cfe6ff'], sparks: [],
+      pips: ['#fff2a8', '#ffd060', '#ffb040', '#f07a3a', '#e8463a'],
+      v: { ink: '#ffc070', line: '#8a3a2a', plate: '#2c2050', glow: 'rgba(255,150,80,0.26)', edge: '#1a0610', cink: '#fff', cinksh: '#3a0a10', halo: 'rgba(30,6,16,0.7)', pip: '#ffb040', burst: '#fff2a8', cglow: 'rgba(255,150,70,0.6)', cglow2: 'rgba(255,240,200,0.6)' } },
+    // pulsar: what a supernova leaves: a glowing cloud of torn red and gold threads round a tiny spinning star,
+    // which sweeps two beams of light round like a lighthouse, out past the chip, blinking as they pass
+    pulsar: { face: 'pulsar', fil: ['#ff6a4a', '#ffb040', '#ff8ac0', '#ffd27a'], cloud: '#5f8fff', beam: '#d6e8ff', glow: true,
+      burst: ['#d6e8ff', '#ffb040', '#ff6a4a', '#ffffff'], sparks: [],
+      pips: ['#cfe6ff', '#8fb8ff', '#ffd27a', '#ffb040', '#ff6a4a'],
+      v: { ink: '#ffc8a0', line: '#6a3a5a', plate: '#1c1a4a', glow: 'rgba(120,160,255,0.24)', edge: '#06061a', cink: '#fff', cinksh: '#1a0a2a', halo: 'rgba(10,8,30,0.75)', pip: '#ffb040', burst: '#d6e8ff', cglow: 'rgba(100,150,255,0.5)', cglow2: 'rgba(255,140,90,0.5)' } },
+  },
+  eclipse: {
+    // transit: the moon crossing the sun, whole: the sun alone in a blue sky, a bite, a crescent, and at
+    // totality the sky goes dark, the stars come out and the corona shows; a bead of light at each edge as it
+    // begins and ends (every 6 s)
+    transit: { face: 'transit', day: ['#5a7ae0', '#2c3c9a'], night: ['#0b0a22', '#05050e'], sun: '#fff6d6', corona: ['#fff8e0', '#ffd27a'], glow: true,
+      burst: ['#fffbe8', '#ffe08a', '#cfe3ff'], sparks: [],
+      crack: ['rgba(0,0,0,0.6)', 'rgba(255,244,210,0.8)'],
+      v: { ink: '#fff0c8', line: '#6a6040', plate: '#14143a', glow: 'rgba(255,240,200,0.24)', edge: '#05050e', cink: '#fff8e0', cinksh: '#000', halo: 'rgba(0,0,0,0.8)', pip: '#fff0c8', burst: '#fffbe8', cglow: 'rgba(255,236,190,0.6)', cglow2: 'rgba(120,160,255,0.55)' } },
+    // annular: the ring of fire: the moon a little too small to hide the sun, so a blazing ring shows round it,
+    // flames licking off its edge, a bright point running round the ring, and a gold halo
+    annular: { face: 'annular', fire: ['#fff6c8', '#ffc040', '#ff7a2a'], flame: '#ff5a6a', glow: true,
+      burst: ['#fff2a8', '#ffc040', '#ff7a2a', '#ff5a6a'], sparks: [],
+      crack: ['rgba(0,0,0,0.6)', 'rgba(255,220,160,0.8)'], pips: ['#fff2a8', '#ffd060', '#ffc040', '#ff9a3a', '#ff5a6a'],
+      v: { ink: '#ffd27a', line: '#6a4a30', plate: '#1a1230', glow: 'rgba(255,190,90,0.24)', edge: '#05030c', cink: '#fff6d8', cinksh: '#000', halo: 'rgba(0,0,0,0.85)', pip: '#ffc040', burst: '#fff2a8', cglow: 'rgba(255,170,60,0.6)', cglow2: 'rgba(255,90,110,0.45)' } },
+  },
+  multiverse: {
+    // nested: universes inside universes: frames the chip's shape, each its own colour with its own stars,
+    // coming out of the middle and growing past the edge, out round the chip, one after another, endlessly
+    nested: { face: 'nested', bg: ['#1c1656', '#0a0828'], frames: ['#2fd0ff', '#ff6fd0', '#ffd060', '#7dffb0'], glow: true,
+      burst: ['#2fd0ff', '#ff6fd0', '#d0c0ff', '#ffd060'], sparks: [],
+      crack: ['rgba(0,0,0,0.55)', 'rgba(210,230,255,0.75)'], pips: ['#2fd0ff', '#6aa8ff', '#9a80ff', '#d070f0', '#ff6fd0'],
+      v: { ink: '#c0b0ff', line: '#4a3aa0', plate: '#221c60', glow: 'rgba(160,120,255,0.22)', edge: '#0a0828', cink: '#fff', cinksh: '#0a0828', halo: 'rgba(10,8,40,0.7)', pip: '#9a80ff', burst: '#d0c0ff', cglow: 'rgba(150,110,255,0.5)', cglow2: 'rgba(47,208,255,0.4)' } },
+    // branches: timelines splitting: glowing threads flowing along, branching off one another again and again,
+    // each branch taking its own colour, running out past the chip on both sides
+    branches: { face: 'branches', bg: ['#181050', '#08061e'], lanes: ['#2fd0ff', '#ff6fd0', '#ffd060', '#7dffb0'], glow: true,
+      burst: ['#2fd0ff', '#ff6fd0', '#d0c0ff', '#ffd060'], sparks: [],
+      crack: ['rgba(0,0,0,0.55)', 'rgba(210,230,255,0.75)'], pips: ['#2fd0ff', '#6aa8ff', '#9a80ff', '#d070f0', '#ff6fd0'],
+      v: { ink: '#c0b0ff', line: '#4a3aa0', plate: '#221c60', glow: 'rgba(160,120,255,0.22)', edge: '#08061e', cink: '#fff', cinksh: '#08061e', halo: 'rgba(8,6,30,0.75)', pip: '#9a80ff', burst: '#d0c0ff', cglow: 'rgba(150,110,255,0.5)', cglow2: 'rgba(255,111,208,0.4)' } },
+  },
+};
+// The idea each redone tier uses (my picks, 2026-11-20; the deck shows them all).
+export const PICK = { opal: 'harlequin', supernova: 'pulsar', eclipse: 'annular', multiverse: 'branches' };
+const pick = id => CANDIDATES[id][PICK[id]];
 
 // Each tier, lowest first. at: the count that reaches it. shields: misses it forgives. v: its colours for CSS
 // (ink, line, plate and glow for the best run elsewhere; edge, number ink and its shadow, pips, burst ring,
@@ -117,36 +185,32 @@ export const TIERS = [
     burst: ['#ffffff', '#e4e6f8', '#c9f0ff'], sparks: [{ ...S(0.93, 3, 10, 1.25, 3, '#ffffff', true), big: true }, S(-0.03, 33, 4, 2.4, 3, '#e8f6ff')],
     v: { ink: '#eef0ff', line: '#6a6f9e', plate: '#2a2e64', glow: 'rgba(230,232,255,0.2)', edge: '#6a71a0', cink: '#22264f', cinksh: 'rgba(255,255,255,0.85)', pip: '#e4e6f8', burst: '#ffffff', cglow: 'rgba(220,225,255,0.45)' } },
 
-  // the gems: each its own cut and its own sparkle, and all of them deep, bright and glowing (round two's
-  // richness, 2026-11-19: big bright facets, the light running across them, sparkles round the chip)
-  // emerald: the emerald cut, broad steps round a wide table with its corners cut, the table split by a long
-  // reflection; the light runs along the steps; a few flecks inside (its garden); a slow green sheen
-  { id: 'emerald', name: 'Emerald', at: 26, shields: 2,
-    face: 'step', base: '#34cc80', deep: '#063f2b', glow: true, shine: '#d8ffec', sp: 6,
+  // the gems: one shared look, round two's, brought back (2026-11-20: "where they were all pretty similar. Just
+  // shift how the lines work"): big bright facets lit from the upper left, the light running across them every
+  // three seconds, a white sweep, four sparkles circling the chip and a strong glow. Besides colour, what tells
+  // them apart is only how the facet lines run (cut, gemCut below).
+  // emerald: the step cut, round two's own: a table split along a slant, the steps above and below it split
+  // at the middle
+  { id: 'emerald', name: 'Emerald', at: 26, shields: 2, face: 'gem', cut: 'step', base: '#2fc47a', deep: '#053d2a', glow: true, shine: true,
     burst: ['#9ff5c8', '#e3fff0', '#1fa864'], sparks: fourSparkles('#c8ffe4'),
-    v: { ink: '#7ef0b4', line: '#22805a', plate: '#1d3256', glow: 'rgba(47,196,122,0.24)', edge: '#0e5a38', cink: '#fff', cinksh: '#0b5a36', pip: '#3fd88c', burst: '#9ff5c8', cglow: 'rgba(47,196,122,0.62)' } },
-  // sapphire: a cabochon, polished round, lit at the top and glowing from within at the bottom, with the
-  // six-rayed star of a star sapphire gliding over it
-  { id: 'sapphire', name: 'Sapphire', at: 31, shields: 2,
-    face: 'cab', base: '#4a86f5', deep: '#0a1a66', inner: '#8fc0ff', star: '#f2f6ff', glow: true, burst: ['#a9c8ff', '#e6efff', '#2f5fd0'], sparks: fourSparkles('#d6e4ff'),
-    v: { ink: '#8fb6ff', line: '#2a4fa0', plate: '#1d2c66', glow: 'rgba(63,124,240,0.26)', edge: '#1a3a9a', cink: '#fff', cinksh: '#0d2a7a', pip: '#5a90ff', burst: '#a9c8ff', cglow: 'rgba(63,124,240,0.62)' } },
-  // crystal: a cluster of purple points standing up, lit on one side, the light running from point to point,
-  // glints on their tips and round the chip
-  { id: 'crystal', name: 'Crystal', at: 36, shields: 2,
-    face: 'cluster', base: '#b28cf8', deep: '#2a0f5e', ground: ['#7446c8', '#3c1a88'], glow: true,
-    burst: ['#c9a8ff', '#efe3ff', '#9b6cf0'], sparks: [...tipGlints([3, 2, 1], ['#efe3ff', '#fff', '#dccbff']), S(-0.07, 8, 5, 0.4, 3, '#efe3ff'), S(1.07, 27, 4.5, 1.9, 3, '#fff')],
-    v: { ink: '#c9a8ff', line: '#5a3a9a', plate: '#2e2462', glow: 'rgba(166,124,245,0.26)', edge: '#3a1c80', cink: '#fff', cinksh: '#3a1490', pip: '#b48cff', burst: '#c9a8ff', cglow: 'rgba(166,124,245,0.62)' },
+    v: { ink: '#7ef0b4', line: '#22805a', plate: '#1d3256', glow: 'rgba(47,196,122,0.24)', edge: '#0e5a38', cink: '#fff', cinksh: '#0b5a36', pip: '#3fd88c', burst: '#9ff5c8', cglow: 'rgba(47,196,122,0.6)' } },
+  // sapphire: the cushion: four whole steps round the table, the table crossed corner to corner
+  { id: 'sapphire', name: 'Sapphire', at: 31, shields: 2, face: 'gem', cut: 'cross', base: '#3f7cf0', deep: '#0a1a66', glow: true, shine: true,
+    burst: ['#a9c8ff', '#e6efff', '#2f5fd0'], sparks: fourSparkles('#d6e4ff'),
+    v: { ink: '#8fb6ff', line: '#2a4fa0', plate: '#1d2c66', glow: 'rgba(63,124,240,0.26)', edge: '#1a3a9a', cink: '#fff', cinksh: '#123a99', pip: '#5a90ff', burst: '#a9c8ff', cglow: 'rgba(63,124,240,0.6)' } },
+  // crystal: the zigzag: lines zigzagging across the table, the steps above and below it split in three
+  { id: 'crystal', name: 'Crystal', at: 36, shields: 2, face: 'gem', cut: 'zigzag', base: '#a97ef4', deep: '#2a0f5e', glow: true, shine: true,
+    burst: ['#c9a8ff', '#efe3ff', '#9b6cf0'], sparks: fourSparkles('#efe3ff', '#fff', '#dccbff'),
+    v: { ink: '#c9a8ff', line: '#5a3a9a', plate: '#2e2462', glow: 'rgba(166,124,245,0.26)', edge: '#4c2a94', cink: '#fff', cinksh: '#5a2fb0', pip: '#b48cff', burst: '#c9a8ff', cglow: 'rgba(166,124,245,0.6)' },
     crown: { base: '#a67cf5', shade: '#6f43c9', lit: '#d9c6ff', jewel: '#ff9ab8', shine: '#ffe3ec' } },
-  // ruby: the princess cut, rings of facets closing on the middle (a cross of chevrons), lit ring by ring,
-  // with an ember glowing deep inside, a warm sheen and fiery glints
-  { id: 'ruby', name: 'Ruby', at: 42, shields: 2,
-    face: 'princess', base: '#e43560', deep: '#4a0418', ember: '#ff8a3a', fire: ['#ffd1e4', '#ffb04d'], glow: true, shine: '#ffd6e2',
-    burst: ['#ff9ab0', '#ffd1e4', '#e8335a', '#ffb04d'], sparks: fireGlints(['#ffd1e4', '#ffb04d', '#ff6fa3', '#ffffff', '#ff9ac4']),
-    v: { ink: '#ff8fa8', line: '#8a2a44', plate: '#30224e', glow: 'rgba(232,51,90,0.24)', edge: '#7a0e28', cink: '#fff', cinksh: '#5a0418', pip: '#f04a70', burst: '#ff9ab0', cglow: 'rgba(240,60,100,0.58)' } },
-  // diamond: the brilliant, a star of facets, its fire, quick sparkles all round, and a clean white sweep (no
-  // rainbow sheen, 2026-11-19)
-  { id: 'diamond', name: 'Diamond', at: 48, shields: 2, face: 'brilliant', glow: true, shine: true,
-    burst: ['#ff6fa3', '#ffcf3d', '#2fd0ff', '#2fe0a0', '#a67cf5'], sparks: fireGlints(['#ff6fa3', '#ffcf3d', '#2fd0ff', '#2fe0a0', '#a67cf5']),
+  // ruby: the rose: facets fanning out like a star from a point in the middle, a ring of them round it
+  { id: 'ruby', name: 'Ruby', at: 42, shields: 2, face: 'gem', cut: 'rose', base: '#de2c55', deep: '#4a0418', glow: true, shine: true,
+    burst: ['#ff9ab0', '#ffd1e4', '#e8335a', '#ffb04d'], sparks: fourSparkles('#ffd1e4', '#fff', '#ffb0c4'),
+    v: { ink: '#ff8fa8', line: '#8a2a44', plate: '#30224e', glow: 'rgba(232,51,90,0.24)', edge: '#8a1430', cink: '#fff', cinksh: '#6a0620', pip: '#f04a70', burst: '#ff9ab0', cglow: 'rgba(240,60,100,0.55)' } },
+  // diamond: the brilliant: an eight-sided table, a star facet on each side of it and three fanning from each
+  // corner, with a little fire caught in a few; a white sweep (no rainbow, 2026-11-19)
+  { id: 'diamond', name: 'Diamond', at: 48, shields: 2, face: 'gem', cut: 'brilliant', base: '#cdeeff', deep: '#3d7cb8', fire: ['#ff9ac4', '#ffe066', '#7fe6ff', '#c9a8ff'], glow: true, shine: true,
+    burst: ['#ff6fa3', '#ffcf3d', '#2fd0ff', '#2fe0a0', '#a67cf5'], sparks: fourSparkles('#ffd6ea', '#ffffff', '#c8f6ff'),
     v: { ink: '#c4f2ff', line: '#3b7aa3', plate: '#1f3062', glow: 'rgba(160,225,255,0.22)', edge: '#4f8fc0', cink: '#163a7a', cinksh: 'rgba(255,255,255,0.9)', pip: '#def6ff', burst: '#c9f1ff', cglow: 'rgba(170,230,255,0.55)' },
     crown: { base: '#d7f1ff', shade: '#8fc6ea', lit: '#ffffff', jewel: '#49c6ff', shine: '#e6fbff' } },
 
@@ -160,13 +224,8 @@ export const TIERS = [
     burst: ['#b3a6ff', '#7d6cf0', '#ffffff'], sparks: [S(0.98, 4, 5.5, 0.5, 3, '#c9bfff')],
     crack: ['rgba(0,0,0,0.7)', 'rgba(200,190,255,0.75)'],
     v: { ink: '#b3a6ff', line: '#4a3f80', plate: '#1a163e', glow: 'rgba(140,120,255,0.18)', edge: '#06040f', cink: '#e9e4ff', cinksh: '#000', pip: '#7d6cf0', burst: '#b3a6ff', cglow: 'rgba(120,100,240,0.4)' } },
-  // opal: a black opal, deep blue-black, packed with play-of-colour: flames of vivid colour that change as a
-  // wave of light crosses them, the way an opal's colours shift as it tilts, with a gloss sweeping with it
-  { id: 'opal', name: 'Opal', at: 62, shields: 2,
-    face: 'opal', milk: ['#1c2c66', '#0b1238'], veil: '#060a26', play: ['#22f0a0', '#22c8ff', '#3a6cff', '#9a5cff', '#ff4fb8', '#ff8a2a', '#ffe23a', '#5cff6a'], glow: true, shine: '#ffffff',
-    burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#c9fff0')],
-    pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'],
-    v: { ink: '#9ff0d8', line: '#3a6a9a', plate: '#141c50', glow: 'rgba(80,230,200,0.2)', edge: '#070a24', cink: '#fff', cinksh: '#050820', halo: 'rgba(5,8,32,0.8)', pip: '#5fe0b8', burst: '#ffffff', cglow: 'rgba(40,220,180,0.45)', cglow2: 'rgba(160,90,255,0.5)' } },
+  // opal: a third try (2026-11-20), three ideas drawn (CANDIDATES.opal) and one picked
+  { id: 'opal', name: 'Opal', at: 62, shields: 2, ...pick('opal') },
   // titanium: brushed grey, fine lines along it, with the anodised rainbow round its edge, faint, turning
   // slowly round the border
   { id: 'titanium', name: 'Titanium', at: 70, shields: 2,
@@ -197,62 +256,43 @@ export const TIERS = [
     crack: ['rgba(0,0,0,0.55)', 'rgba(255,220,250,0.75)'], pips: ['#ff8fc8', '#e070e0', '#b070f0', '#7d8cf7', '#4f9ff0'],
     v: { ink: '#f0a8f0', line: '#7a3a9a', plate: '#24205e', glow: 'rgba(200,90,220,0.24)', edge: '#120a30', cink: '#fff', cinksh: '#1a0c3e', pip: '#d070e0', burst: '#ffb0f0', cglow: 'rgba(210,90,230,0.6)', cglow2: 'rgba(90,140,255,0.6)' } },
   // celestial: deep blue, a gold constellation between gold stars, a shooting star crossing it, a gold rim,
-  // a gold spark circling, and a gold dial like an astrolabe's turning behind it
+  // and the sun and the moon going round it on one tilted gold orbit, across the front of the chip and round
+  // behind it (2026-11-20: its dial went to eternal, "celestial needs something else")
   { id: 'celestial', name: 'Celestial', at: 98, shields: 2,
-    face: 'sky', glow: true, sky: ['#13206a', '#0b1446'], stars: 7, starC: '#ffe9a6', lines: '#ffd75a', rim: ['#fff4c8', '#ffc83d', '#ffe08a'], orbit: { c: '#fff1b8' },
-    bands: [[0.55, 6, 1, 13, 4, '#2c3c9a', 0.55]], shoot: { c: '#fff4c8' }, wheel: { c: '#ffd75a' },
+    face: 'sky', glow: true, sky: ['#13206a', '#0b1446'], stars: 7, starC: '#ffe9a6', lines: '#ffd75a', rim: ['#fff4c8', '#ffc83d', '#ffe08a'],
+    bands: [[0.55, 6, 1, 13, 4, '#2c3c9a', 0.55]], shoot: { c: '#fff4c8' }, orrery: { ring: '#ffd75a', sun: '#ffcf4a', moon: '#e4eaff' },
     burst: ['#ffe9a6', '#ffd75a', '#8fb0ff', '#ffffff'], sparks: [S(0.96, -3, 5, 3, 6, '#fff1b8')],
     crack: ['rgba(0,0,0,0.55)', 'rgba(255,240,200,0.8)'], pips: ['#ffe9a6', '#ffd75a', '#d6c48a', '#8fb0ff', '#5a7cff'],
     v: { ink: '#ffe08a', line: '#7a6a30', plate: '#1a2260', glow: 'rgba(255,220,120,0.22)', edge: '#070c30', cink: '#fff4c8', cinksh: '#0a1240', pip: '#ffd75a', burst: '#ffe9a6', cglow: 'rgba(255,215,110,0.5)', cglow2: 'rgba(80,120,255,0.55)' } },
-  // eternal: white gold, two sets of pale rays turning opposite ways behind it, motes of light rising, a
-  // spark tracing a figure of eight
+  // eternal: white gold, with the gold dial that was celestial's turning behind it as a clock face, its two
+  // hands going round (the long one ticking, the short one sweeping), pale rays behind that, motes of light
+  // rising and a spark tracing a figure of eight (2026-11-20: "Eternal should get the disk ... with clock hands")
   { id: 'eternal', name: 'Eternal', at: 108, shields: 2,
-    face: 'metal', base: '#fff0cc', lit: '#fffaf0', shade: '#eed39a', line: false, shine: '#fff6d8', glow: true, rays: { c: '#fff2c4', two: true }, orbit: { c: '#fffbe8', fig8: true },
-    motes: { c: '#fff6d0' },
+    face: 'metal', base: '#fff0cc', lit: '#fffaf0', shade: '#eed39a', line: false, shine: '#fff6d8', glow: true, rays: { c: '#fff2c4', faint: true }, orbit: { c: '#fffbe8', fig8: true },
+    wheel: { c: '#ffd75a', hands: '#fff3c4' }, motes: { c: '#fff6d0' },
     burst: ['#fffbe8', '#ffe9a6', '#ffffff'], sparks: [],
     v: { ink: '#fff3d0', line: '#8a7a50', plate: '#2c2a5a', glow: 'rgba(255,240,200,0.24)', edge: '#c4a258', cink: '#5a3a0a', cinksh: 'rgba(255,255,255,0.9)', pip: '#ffeab0', burst: '#fffbe8', cglow: 'rgba(255,236,190,0.7)', cglow2: 'rgba(200,220,255,0.55)' } },
 
-  // the far end: a star exploding, a sun hidden, space falling into a point, worlds beside ours, and nothing
-  // (2026-11-19: bigger, richer, the top of the ladder)
-  // supernova: a star blowing apart: white hot in the middle, burning out to red through streaks of its
-  // shell, flaring every beat, a shock ring of fire and a blue one racing out after it, spikes of light and
-  // bits flung outward
-  { id: 'supernova', name: 'Supernova', at: 121, shields: 2,
-    face: 'core', stops: ['#ffffff', '#fff2a8', '#ffb040', '#e8463a'], fil: ['#fff6c8', '#ff8a3a', '#ffd060', '#8fc0ff'], glow: true,
-    shock: ['#ffb040', '#6fb0ff'], rays: { c: '#ffd890', burst: true }, debris: { c: ['#fff2a8', '#ffb040', '#ffffff', '#ff7a4a'] },
-    burst: ['#fff2a8', '#ffb040', '#e8463a', '#6fb0ff'], sparks: fourSparkles('#fff2a8', '#ffffff', '#cfe3ff'),
-    pips: ['#fff2a8', '#ffd060', '#ffb040', '#f07a3a', '#e8463a'],
-    v: { ink: '#ffc070', line: '#8a3a2a', plate: '#2c2050', glow: 'rgba(255,150,80,0.26)', edge: '#9a2a1a', cink: '#4a0a14', cinksh: 'rgba(255,255,255,0.85)', pip: '#ffb040', burst: '#fff2a8', cglow: 'rgba(255,170,80,0.7)', cglow2: 'rgba(90,160,255,0.55)' } },
-  // eclipse: a black moon sliding across the sun: the corona's streamers shimmering round it, a thin bright
-  // ring where the sun shows, and the diamond ring flaring on whichever edge the sun peeks past; long pale
-  // streamers of corona turning behind the chip
-  { id: 'eclipse', name: 'Eclipse', at: 134, shields: 2,
-    face: 'eclipse', sky: ['#0d0c22', '#07060f'], corona: ['#fff8e0', '#ffd27a'], glow: true, rays: { c: '#fff4d8', fine: true },
-    burst: ['#fffbe8', '#ffe08a', '#cfe3ff'], sparks: [],
-    crack: ['rgba(0,0,0,0.6)', 'rgba(255,244,210,0.8)'],
-    v: { ink: '#fff0c8', line: '#6a6040', plate: '#14143a', glow: 'rgba(255,240,200,0.24)', edge: '#000', cink: '#fff8e0', cinksh: '#000', halo: 'rgba(0,0,0,0.85)', pip: '#fff0c8', burst: '#fffbe8', cglow: 'rgba(255,236,190,0.65)', cglow2: 'rgba(170,200,255,0.55)' } },
+  // the far end: a star's death, a sun hidden, space falling into a point, worlds beside ours, and nothing.
+  // Supernova, eclipse and multiverse were redone from fresh ideas (2026-11-20), two each (CANDIDATES)
+  { id: 'supernova', name: 'Supernova', at: 121, shields: 2, ...pick('supernova') },
+  { id: 'eclipse', name: 'Eclipse', at: 134, shields: 2, ...pick('eclipse') },
   // singularity: not a black-hole drawing (2026-11-19) but what one does: starlight bent into a ring round
   // the whole chip, bright arcs of lensed stars sliding round it, rings of space flowing inward to a point,
-  // sparks spiralling in, and a second, wider ring of bent light round the outside
+  // sparks spiralling in, and a second, wider ring of bent light round the outside, tilted, its far half
+  // behind the chip and its near half across the front of it (2026-11-20)
   { id: 'singularity', name: 'Singularity', at: 147, shields: 2,
     face: 'lens', lens: { ring: ['#ffffff', '#d6c8ff', '#8a6cf0'], fall: ['#b49cff', '#7fd8ff', '#d6c8ff'], arc: '#ffffff' }, glow: true,
     spiral: { c: '#e6dcff' },
     burst: ['#ffffff', '#d6c8ff', '#8a6cf0', '#7fd8ff'], sparks: [],
     crack: ['rgba(0,0,0,0.6)', 'rgba(214,200,255,0.75)'], pips: ['#f0eaff', '#d6c8ff', '#b49cff', '#8a6cf0', '#5a3ad0'],
     v: { ink: '#d6c8ff', line: '#5a3aa0', plate: '#0e0c24', glow: 'rgba(160,130,255,0.24)', edge: '#000', cink: '#fff', cinksh: '#000', halo: 'rgba(10,6,30,0.9)', pip: '#b49cff', burst: '#ffffff', cglow: 'rgba(150,120,255,0.6)', cglow2: 'rgba(100,200,255,0.45)' } },
-  // multiverse: deep indigo with whole other universes drifting through it in bubbles (one starry, one
-  // golden, one teal), and cyan, magenta and gold copies of the chip fanning out of step behind it
-  { id: 'multiverse', name: 'Multiverse', at: 163, shields: 2,
-    face: 'flow', stops: ['#2a2070', '#3d2c96', '#1f3c94', '#33207e', '#2a2070'], dark: true, glow: true,
-    bubbles: [[0.14, 10, 7, '#2fd0ff'], [0.5, 32, 6, '#ff6fd0'], [0.8, 12, 8, '#ffd060'], [0.33, 30, 4.5, '#7dffb0'], [0.66, 6, 4, '#c0a0ff']],
-    echo: { c: ['#2fd0ff', '#ff6fd0', '#ffd060'] },
-    burst: ['#2fd0ff', '#ff6fd0', '#d0c0ff', '#ffd060'], sparks: [S(-0.04, 4, 5, 1, 6, '#9feaff'), S(1.03, 30, 4.5, 4, 6, '#ffb0ea')],
-    crack: ['rgba(0,0,0,0.55)', 'rgba(210,230,255,0.75)'], pips: ['#2fd0ff', '#6aa8ff', '#9a80ff', '#d070f0', '#ff6fd0'],
-    v: { ink: '#c0b0ff', line: '#4a3aa0', plate: '#221c60', glow: 'rgba(160,120,255,0.22)', edge: '#140f40', cink: '#fff', cinksh: '#140f40', pip: '#9a80ff', burst: '#d0c0ff', cglow: 'rgba(150,110,255,0.5)', cglow2: 'rgba(47,208,255,0.4)' } },
-  // void: the end of everything: a hole of deep space, two layers of stars and faint far galaxies drifting
-  // in it, darkness spreading round it, and specks of light drawn in from outside and going out
+  { id: 'multiverse', name: 'Multiverse', at: 163, shields: 2, ...pick('multiverse') },
+  // void: the end of everything: a hole of deep space with faint far galaxies, its stars falling inward to the
+  // middle and going out, darkness spreading round it, and specks of light from all round it falling in too,
+  // shrinking and dimming as they go (2026-11-20: going in, not drifting left)
   { id: 'void', name: 'Void', at: 179, shields: 2, sample: 190,
-    face: 'sky', sky: ['#04051a', '#020310'], stars: 0, drift: true, galaxies: true, rim: ['#ffffff', '#c8d0ff', '#ffffff'], rimO: 0.3,
+    face: 'sky', sky: ['#04051a', '#020310'], stars: 0, infall: { c: '#e6eaff' }, galaxies: true, rim: ['#ffffff', '#c8d0ff', '#ffffff'], rimO: 0.3,
     abyss: true, debris: { c: ['#c8d0ff', '#ffffff', '#9fb0ff'], in: true },
     burst: ['#ffffff', '#c8d0ff'], sparks: [],
     crack: ['rgba(0,0,0,0.6)', 'rgba(220,226,255,0.6)'],
@@ -287,10 +327,15 @@ export const SPARE = [
     v: { ink: '#ffb870', line: '#6a3a20', plate: '#0e0c24', glow: 'rgba(255,150,70,0.24)', edge: '#000', cink: '#fff', cinksh: '#000', pip: '#ff9a4a', burst: '#ffd9a0', cglow: 'rgba(255,140,60,0.55)' } },
 ].map(t => ({ ...t, at: null, shields: 0 }));
 
+// Every idea drawn for the tiers redone on 2026-11-20, picked or not, by `<tier>-<idea>`: never reached by a
+// count, for the deck's films and so a pick can be changed.
+export const TRIALS = Object.entries(CANDIDATES).flatMap(([tier, ideas]) => Object.entries(ideas).map(([idea, look]) =>
+  ({ ...look, id: `${tier}-${idea}`, name: `${tier[0].toUpperCase()}${tier.slice(1)} (${idea})`, at: null, shields: 0 })));
+
 // a count to film each tier at: the middle of its range
 TIERS.forEach((t, i) => { t.sample ??= i + 1 < TIERS.length ? Math.floor((t.at + TIERS[i + 1].at) / 2) : t.at + 10; });
 
-const BY = Object.fromEntries([...TIERS, ...SPARE].map(t => [t.id, t]));
+const BY = Object.fromEntries([...TIERS, ...SPARE, ...TRIALS].map(t => [t.id, t]));
 // The tiers in use, by how many right in a row reach each (the table is already in order).
 export const LADDER = TIERS.slice().sort((a, b) => a.at - b.at);
 export const lookOf = id => BY[id] || null;
@@ -328,7 +373,7 @@ export const tierCrown = n => crown(crownOf(tierOf(n)));
 // Each tier's colours as custom properties on its class, made from the table once.
 function tierStyles() {
   let css = '';
-  for (const t of [...TIERS, ...SPARE]) {
+  for (const t of [...TIERS, ...SPARE, ...TRIALS]) {
     const v = t.v;
     css += `.tier-${t.id}{--tier-ink:${v.ink};--tier-line:${v.line};--tier-plate:${v.plate};--tier-glow:${v.glow};--c-edge:${v.edge};--c-ink:${v.cink};`
       + `--c-ink-sh:${v.cinksh};--c-pip:${v.pip};--c-burst:${v.burst};${v.cglow ? `--c-glow:${v.cglow};` : ''}${v.cglow2 ? `--c-glow2:${v.cglow2};` : ''}${v.halo ? `--c-halo:${v.halo};` : ''}`
@@ -359,29 +404,16 @@ const flash = (pts, d, o = 0.5, c = '#ffffff', p = 0) => `<i class="fx" style="$
 // lighter toward white, or deeper toward the gem's own dark
 const lift = (c, k) => mix(c, '#ffffff', k);
 const sink = (c, deep, k) => mix(c, deep, k);
-// lit (k > 0) or in shade (k < 0), for a facet facing the light by k
-const toned = (b, deep, k) => (k >= 0 ? lift(b, 0.5 * Math.min(1, k)) : sink(b, deep, 0.5 * Math.min(1, -k)));
+// ---- the gems: one look, the facet lines running five ways
 
-// Nested rings of facets (the emerald's steps, the princess's chevrons): each ring is an inset [x, y, corner
-// cut] from the chip's edge; between two rings, a facet along each side, facing out that way. face: how much
-// it faces the light at the upper left (1 toward it, -1 away).
-function ringPts(W, x, y, c) {
-  const R = W - x, B = H - y;
-  return c > 0 ? [[x + c, y], [R - c, y], [R, y + c], [R, B - c], [R - c, B], [x + c, B], [x, B - c], [x, y + c]] : [[x, y], [R, y], [R, B], [x, B]];
+// Where a ray from the chip's middle at `deg` meets its edge, measured as if the chip were square (so 45
+// degrees is a corner).
+function rimAt(W, deg) {
+  const t = (deg * Math.PI) / 180, x = Math.cos(t), y = Math.sin(t), s = 1 / Math.max(Math.abs(x), Math.abs(y));
+  return [W / 2 + x * s * (W / 2), H / 2 + y * s * (H / 2)];
 }
-function ringFacets(W, rings) {
-  const out = [];
-  for (let r = 0; r < rings.length - 1; r++) {
-    const P = ringPts(W, ...rings[r]), Q = ringPts(W, ...rings[r + 1]);
-    for (let k = 0; k < P.length; k++) {
-      const j = (k + 1) % P.length, ex = P[j][0] - P[k][0], ey = P[j][1] - P[k][1], len = Math.hypot(ex, ey);
-      if (len < 0.5) continue;
-      const pts = [P[k], P[j], Q[j], Q[k]];
-      out.push({ pts, ring: r, side: k, face: (ey / len) * -0.55 + (-ex / len) * -0.83, mx: (P[k][0] + P[j][0] + Q[j][0] + Q[k][0]) / 4 });
-    }
-  }
-  return { facets: out, table: ringPts(W, ...rings.at(-1)) };
-}
+// The chip's edge from one such angle to another, its corners included.
+const rimFrom = (W, a, b) => [rimAt(W, a), ...[45, 135, 225, 315, 405].filter(c => c > a && c < b).map(c => rimAt(W, c)), rimAt(W, b)];
 
 // The brilliant (diamond), seen from above: an eight-sided table, a star facet on each of its long sides
 // reaching to the edge, and three facets fanning from each corner.
@@ -398,8 +430,226 @@ function brilliant(W) {
     },
   };
 }
-const DIAMOND_TONES = { tl: ['#ffffff', '#f2fbff', '#e6f6ff'], tr: ['#eaf8ff', '#d9f1fe', '#c3e7fb'], br: ['#a6d6f3', '#94cbee', '#b0dcf6'], bl: ['#c9e9fb', '#d6effd', '#bde3f9'],
-  star: { top: '#f7fdff', left: '#e2f5ff', right: '#b8e2f9', bottom: '#a9d8f4' }, table: '#e9f7ff' };
+
+// A cut's facets on a W x H chip, each [points, how far in it lies: 0 a step at the edge, 1 the table]. The
+// table sits 9 px in from the sides, 7 from the top and 10 from the bottom, as in round two.
+function gemCut(W, cut) {
+  const a = 9, b = 7, c = 10, m = W / 2, cy = (b + H - c) / 2;
+  const TL = [0, 0], TR = [W, 0], BR = [W, H], BL = [0, H], tl = [a, b], tr = [W - a, b], br = [W - a, H - c], bl = [a, H - c];
+  const along = (p, q, k) => [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k];
+  const edge = list => list.map(pts => [pts, 0]), table = list => list.map(pts => [pts, 1]);
+  if (cut === 'step') {
+    // round two's step cut: the steps above and below the table split at the middle, the table along a slant
+    const Mt = [m, 0], mt = [m, b], Mb = [m, H], mb = [m, H - c], s0 = [W * 0.4, b], s1 = [W * 0.6, H - c];
+    return [...edge([[TL, Mt, mt, tl], [Mt, TR, tr, mt], [TL, tl, bl, BL], [TR, BR, br, tr], [BL, bl, mb, Mb], [Mb, mb, br, BR]]), ...table([[tl, s0, s1, bl], [s0, tr, br, s1]])];
+  }
+  if (cut === 'cross') {
+    // four whole steps, the table crossed corner to corner
+    const C = [m, cy];
+    return [...edge([[TL, TR, tr, tl], [TR, BR, br, tr], [BR, BL, bl, br], [BL, TL, tl, bl]]), ...table([[tl, tr, C], [tr, br, C], [br, bl, C], [bl, tl, C]])];
+  }
+  if (cut === 'zigzag') {
+    // the steps above and below split in three; a line zigzags across the table, down and up and down
+    const top = [0, 1, 2, 3].map(k => along(tl, tr, k / 3)), TOP = [0, 1, 2, 3].map(k => along(TL, TR, k / 3));
+    const bot = [0, 1, 2, 3].map(k => along(bl, br, k / 3)), BOT = [0, 1, 2, 3].map(k => along(BL, BR, k / 3));
+    const low = [bl, ...[0, 1, 2].map(k => along(bl, br, (k + 0.5) / 3)), br];
+    const out = edge([[TL, tl, bl, BL], [TR, BR, br, tr]]);
+    for (let k = 0; k < 3; k++) out.push([[TOP[k], TOP[k + 1], top[k + 1], top[k]], 0], [[BOT[k + 1], BOT[k], bot[k], bot[k + 1]], 0]);
+    out.push([[top[0], low[1], low[0]], 1]);
+    for (let k = 0; k < 3; k++) out.push([[top[k], top[k + 1], low[k + 1]], 1], [[top[k + 1], low[k + 2], low[k + 1]], 1]);
+    return out;
+  }
+  if (cut === 'rose') {
+    // a star: six facets meeting at a point in the middle, and a ring of facets fanning from them to the edge
+    const C = [m, H / 2], P = [0, 1, 2, 3, 4, 5].map(i => { const t = ((30 + 60 * i) * Math.PI) / 180; return [m + Math.cos(t) * W * 0.21, H / 2 + Math.sin(t) * 8.5]; });
+    const out = [];
+    for (let i = 0; i < 6; i++) {
+      const p = P[i], q = P[(i + 1) % 6], a0 = 30 + 60 * i;
+      out.push([[p, ...rimFrom(W, a0, a0 + 30)], 0], [[p, rimAt(W, a0 + 30), q], 0.5], [[q, ...rimFrom(W, a0 + 30, a0 + 60).reverse()], 0]);
+    }
+    for (let i = 0; i < 6; i++) out.push([[C, P[i], P[(i + 1) % 6]], 1]);
+    return out;
+  }
+  // the brilliant: an eight-sided table, a star facet on each side of it, three fanning from each corner
+  const { table: T, star: St, corner: Co } = brilliant(W);
+  return [...Object.values(Co).flat().map(t => [t, 0]), ...Object.values(St).map(t => [t, 0.5]), [T, 1]];
+}
+
+// The gems' shared look: each facet toned by how much it faces the light at the upper left (the steps at the
+// edge strongly, the table gently), a faint lit line along every facet's edge so the cut reads, and the light
+// running across the facets left to right every three seconds.
+const LIGHT = [-0.55, -0.83];
+function gemFace(L, W, c) {
+  const b = L.base, d = L.deep, m = W / 2;
+  const facets = gemCut(W, L.cut).map(([pts, inn]) => {
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    const nx = (cx - m) / m, ny = (cy - H / 2) / (H / 2), len = Math.hypot(nx, ny) || 1;
+    return { pts, inn, cx, k: ((nx / len) * LIGHT[0] + (ny / len) * LIGHT[1]) * (1 - 0.65 * inn) + 0.12 * inn };
+  });
+  const tone = k => (k >= 0 ? lift(b, 0.46 * Math.min(1, k)) : sink(b, d, 0.46 * Math.min(1, -k)));
+  let body = facets.map(f => poly(f.pts, tone(f.k))).join('');
+  body += facets.map(f => `<path d="${pathOf(f.pts)}" fill="none" stroke="${lift(b, 0.75)}" stroke-width="0.6" stroke-linejoin="round" opacity="0.35"/>`).join('');
+  // fire (diamond): a little colour caught in a few facets
+  (L.fire || []).forEach((col, i) => { body += poly(facets[[2, 7, 10, 13][i] % facets.length].pts, col, 0.3); });
+  let lit = facets.filter(f => f.k > -0.3).sort((p, q) => p.cx - q.cx);
+  if (lit.length > 10) lit = lit.filter((_, i) => i % Math.ceil(lit.length / 10) === 0);
+  const fx = lit.map(f => flash(f.pts, 1.3 * (f.cx / W) + 0.15 * f.inn, f.k > 0.25 ? 0.55 : 0.38)).join('');
+  return c.svgOf(body + shineArc(0.8)) + fx + c.shine;
+}
+
+// ---- opal, three ideas (2026-11-20)
+
+const milkVeil = (W, c, o) => {
+  const g = uid('cmv');
+  return c.svgOf(`<radialGradient id="${g}" cx="0.45" cy="0.42" r="0.75"><stop offset="0.3" stop-color="#ffffff" stop-opacity="${f1(o * 0.25)}"/><stop offset="1" stop-color="#ffffff" stop-opacity="${o}"/></radialGradient>
+    <rect width="${W}" height="${H}" fill="url(#${g})"/><path d="${c.band}" fill="#fff" opacity="0.22"/>${shineArc(0.9)}`);
+};
+const bodyOf = (W, cs, id) => `<linearGradient id="${id}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="${cs[0]}"/><stop offset="1" stop-color="${cs[1]}"/></linearGradient><rect width="${W}" height="${H}" fill="url(#${id})"/>`;
+
+// harlequin: small diamond-shaped patches of colour, every few flashing to another as the light crosses
+function harlequinFace(L, W, c) {
+  const r = rng(503 + W), P = L.play, hw = 5.5, hh = 4.6;
+  let body = bodyOf(W, L.body, uid('chq')), fx = '';
+  for (let j = 0; j * hh <= H + hh; j++) {
+    for (let x = (j % 2) * hw - hw; x <= W + hw; x += 2 * hw) {
+      const y = j * hh, pts = [[x, y - hh], [x + hw, y], [x, y + hh], [x - hw, y]], k = Math.floor(r() * P.length);
+      body += poly(pts, P[k], f1(0.75 + r() * 0.25)) + poly([[x, y - hh], [x + hw, y], [x - hw, y]], '#ffffff', 0.16);
+      if (r() < 0.3) fx += `<i class="fx play" style="${clipOf(pts)};--d:${f1(1.5 * ((x / W) * 0.7 + (y / H) * 0.3))}s;background:${P[(k + 3 + Math.floor(r() * 3)) % P.length]}"></i>`;
+    }
+  }
+  return c.svgOf(body) + fx + milkVeil(W, c, 0.38) + c.shine;
+}
+
+// rolling: a soft rainbow sweeping across under the milk, a fainter one the other way, the milk mottled so the
+// colour shows in patches
+function rollingFace(L, W, c) {
+  const r = rng(77 + W), stops = L.play.map((s, i) => `${s} ${f1((i / (L.play.length - 1)) * 100)}%`).join(','), gm = uid('crm');
+  const roll = (cls, o) => `<i class="cskew"><i class="cflow ${cls}" style="width:${3 * W}px;opacity:${o};background:linear-gradient(90deg,${stops});background-size:${W}px 100%"></i></i>`;
+  let milk = `<radialGradient id="${gm}"><stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>`;
+  for (let i = 0; i < 8; i++) milk += `<ellipse cx="${f1(r() * W)}" cy="${f1(r() * H)}" rx="${f1(7 + r() * 9)}" ry="${f1(4 + r() * 5)}" fill="url(#${gm})" opacity="${f1(0.4 + r() * 0.4)}"/>`;
+  return c.svgOf(bodyOf(W, L.body, uid('crl'))) + roll('', 0.8) + roll('back', 0.35) + c.svgOf(milk) + milkVeil(W, c, 0.45);
+}
+
+// boulder: veins of opal through brown ironstone, their colours crossing over to a second set and back
+function boulderFace(L, W, c) {
+  const r = rng(91 + W);
+  let rock = bodyOf(W, L.rock, uid('cbo'));
+  for (let i = 0; i < 10; i++) rock += `<ellipse cx="${f1(r() * W)}" cy="${f1(r() * H)}" rx="${f1(2 + r() * 5)}" ry="${f1(1.2 + r() * 2.5)}" fill="${r() < 0.5 ? '#24120a' : '#8e5e44'}" opacity="${f1(0.25 + r() * 0.25)}"/>`;
+  const shapes = [[0.22, 4, 0.4, 2.2, 1.8], [0.47, 2.5, 3.3, 1.2, 1], [0.64, 5, 2.1, 3.4, 2.6], [0.88, 3, 4.6, 1.6, 1.4]];
+  const veins = set => `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">${ribbons(W, shapes.map((s, i) => [...s, set[i % set.length], 0.95]))}
+    ${ribbons(W, shapes.map(([y, a, p, t]) => [y - t / (3 * H), a, p, t * 0.25, 0.2, '#ffffff', 0.45]))}</svg>`;
+  return c.svgOf(rock) + veins(L.veins[0]) + `<i class="cveins">${veins(L.veins[1])}</i>` + c.svgOf(`<path d="${c.band}" fill="#fff" opacity="0.14"/>${shineArc(0.75)}`) + c.shine;
+}
+
+// ---- the far end's new ideas (2026-11-20)
+
+// faint stars scattered in a dark sky, the same every time for a width
+const scatterStars = (W, seed, n, o = 0.7) => {
+  const r = rng(seed + W);
+  return Array.from({ length: n }, () => `<circle cx="${f1(r() * W)}" cy="${f1(2 + r() * (H - 4))}" r="${f1(0.4 + r() * 0.5)}" fill="#fff" opacity="${f1(o * (0.4 + r() * 0.6))}"/>`).join('');
+};
+const darkOf = (W, cs, id) => `<radialGradient id="${id}" cx="0.5" cy="0.5" r="0.7"><stop offset="0" stop-color="${cs[0]}"/><stop offset="0.6" stop-color="${cs[1]}"/><stop offset="1" stop-color="${cs[2]}"/></radialGradient><rect width="${W}" height="${H}" fill="url(#${id})"/>`;
+
+// supernova, collapse: the star shrinking and heating, falling in, a flash, a shell of fire racing out
+const shellBg = L => `radial-gradient(closest-side, transparent 56%, ${rgba(L.shell[0], 0.95)} 68%, ${rgba(L.shell[1], 0.7)} 80%, transparent 95%)`;
+function collapseFace(L, W, c) {
+  const [w, y, o] = L.star;
+  return c.svgOf(darkOf(W, ['#3a1030', '#160820', '#08040f'], uid('cnv')) + scatterStars(W, 23, 10))
+    + `<i class="cnshell" style="background:${shellBg(L)}"></i>`
+    + `<i class="cball" style="background:radial-gradient(closest-side, ${w}, ${y} 42%, ${o} 70%, ${rgba(o, 0)})"><i style="background:radial-gradient(closest-side, #fff, ${L.hot} 45%, ${rgba(L.hot, 0)})"></i></i>`
+    + '<i class="cnflash"></i>';
+}
+
+// supernova, pulsar: torn threads of gas round a tiny star sweeping two beams round
+const beamsBg = (c, o) => `conic-gradient(from -7deg, transparent 0deg, ${rgba(c, o)} 7deg, transparent 14deg 180deg, ${rgba(c, o)} 187deg, transparent 194deg)`;
+function pulsarFace(L, W, c) {
+  const r = rng(71 + W), cx = W / 2, cy = H / 2, gc = uid('cps');
+  let fil = '';
+  for (let i = 0; i < 30; i++) {
+    const a = (i / 30) * Math.PI * 2 + r() * 0.3, r0 = 4 + r() * 6, r1 = r0 + 6 + r() * 12, bend = (r() - 0.5) * 0.7, rm = (r0 + r1) / 2;
+    const at = (ang, rad) => `${f1(cx + Math.cos(ang) * rad * 1.7)} ${f1(cy + Math.sin(ang) * rad)}`;
+    fil += `<path d="M${at(a, r0)}Q${at(a + bend, rm)} ${at(a + bend * 0.4, r1)}" fill="none" stroke="${L.fil[i % L.fil.length]}" stroke-width="${f1(0.6 + r() * 0.8)}" stroke-linecap="round" opacity="${f1(0.35 + r() * 0.4)}"/>`;
+  }
+  return c.svgOf(darkOf(W, ['#1c1a50', '#0e0c2e', '#06061a'], uid('cps')) + scatterStars(W, 31, 8)
+      + `<radialGradient id="${gc}"><stop offset="0" stop-color="${L.cloud}" stop-opacity="0.55"/><stop offset="1" stop-color="${L.cloud}" stop-opacity="0"/></radialGradient>
+      <ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(W * 0.42)}" ry="15" fill="url(#${gc})"/>${fil}${shineArc(0.45)}`)
+    + `<i class="cbeams in"><i style="background:${beamsBg(L.beam, 0.55)}"></i></i>`
+    + `<i class="cpsr" style="background:radial-gradient(closest-side, #fff, ${rgba(L.beam, 0.8)} 40%, transparent)"></i>`;
+}
+
+// eclipse, transit: the moon crossing the sun whole, the sky going dark at totality
+function transitFace(L, W, c) {
+  const cx = W / 2, cy = H / 2, R = 12, gs = uid('ctr'), gc = uid('ctr'), r = rng(43 + W);
+  let streamers = '';
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + r() * 0.3, len = R * (1.5 + r() * 1.1), w = 1.6 + r() * 1.6;
+    const tip = [cx + Math.cos(a) * len * 1.25, cy + Math.sin(a) * len], ux = -Math.sin(a), uy = Math.cos(a);
+    streamers += poly([[cx + ux * w * 2, cy + uy * w * 2], tip, [cx - ux * w * 2, cy - uy * w * 2]], L.corona[0], 0.26);
+  }
+  const corona = `<i class="ctcor"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><radialGradient id="${gc}"><stop offset="0.42" stop-color="${L.corona[0]}" stop-opacity="0.95"/><stop offset="0.62" stop-color="${L.corona[1]}" stop-opacity="0.4"/><stop offset="1" stop-color="${L.corona[1]}" stop-opacity="0"/></radialGradient>
+    ${streamers}<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(R * 2.5)}" ry="${f1(R * 1.9)}" fill="url(#${gc})"/></svg></i>`;
+  const sun = `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><radialGradient id="${gs}"><stop offset="0.5" stop-color="${L.sun}" stop-opacity="0.6"/><stop offset="1" stop-color="${L.sun}" stop-opacity="0"/></radialGradient>
+    <circle cx="${f1(cx)}" cy="${f1(cy)}" r="${R + 6}" fill="url(#${gs})"/><circle cx="${f1(cx)}" cy="${f1(cy)}" r="${R}" fill="${L.sun}"/></svg>`;
+  const bead = side => `<i class="cbead2${side > 0 ? ' r' : ''}" style="left:${f1(cx + side * R - 13)}px;top:${f1(cy - 13)}px">${twinkleSvg(26, 12, '#ffffff')}</i>`;
+  const gn = uid('ctn');
+  return c.svgOf(`<linearGradient id="${gn}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${L.night[0]}"/><stop offset="1" stop-color="${L.night[1]}"/></linearGradient><rect width="${W}" height="${H}" fill="url(#${gn})"/>${scatterStars(W, 47, 12, 0.9)}`)
+    + `<i class="cday" style="background:linear-gradient(${L.day[0]}, ${L.day[1]})"></i>` + corona + sun
+    + `<i class="cmoon2" style="left:${f1(cx - 14)}px;top:${f1(cy - 14)}px"></i>` + bead(1) + bead(-1)
+    + c.svgOf(shineArc(0.45));
+}
+
+// eclipse, annular: a ring of fire round a moon too small to hide the sun, flames licking off it
+function annularFace(L, W, c) {
+  const cx = W / 2, cy = H / 2, R = 14.5, Rm = 11.6, g = uid('can'), gh = uid('can'), [f0, f1c, f2] = L.fire;
+  const body = darkOf(W, ['#1a1028', '#0c0a1c', '#05040c'], uid('can')) + scatterStars(W, 53, 8)
+    + `<radialGradient id="${gh}"><stop offset="0" stop-color="${f1c}" stop-opacity="0.55"/><stop offset="0.5" stop-color="${f2}" stop-opacity="0.18"/><stop offset="1" stop-color="${f2}" stop-opacity="0"/></radialGradient>
+    <ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(R * 2.4)}" ry="${f1(R * 1.45)}" fill="url(#${gh})"/>
+    <radialGradient id="${g}"><stop offset="0.72" stop-color="${f0}"/><stop offset="0.88" stop-color="${f1c}"/><stop offset="1" stop-color="${f2}"/></radialGradient>
+    <circle cx="${f1(cx)}" cy="${f1(cy)}" r="${R}" fill="url(#${g})"/>`;
+  const flames = `<i class="cflames" style="left:${f1(cx - 24)}px;top:${f1(cy - 24)}px"><i style="background:repeating-conic-gradient(from 0deg, ${rgba(L.flame, 0.85)} 0deg 4deg, transparent 7deg 15deg)"></i>`
+    + `<i class="b" style="background:repeating-conic-gradient(from 5deg, ${rgba(f1c, 0.7)} 0deg 2.5deg, transparent 5deg 7.5deg)"></i></i>`;
+  const moon = `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle cx="${f1(cx)}" cy="${f1(cy)}" r="${Rm}" fill="#06040c"/>
+    <circle cx="${f1(cx)}" cy="${f1(cy)}" r="${Rm + 0.5}" fill="none" stroke="${f0}" stroke-width="0.8" opacity="0.8"/></svg>`;
+  const runner = `<i class="crun" style="left:${f1(cx)}px;top:${f1(cy)}px"><i style="left:${f1(R - 1.6 - 7)}px">${twinkleSvg(14, 6.5, '#ffffff')}</i></i>`;
+  return c.svgOf(body) + flames + moon + runner + c.svgOf(shineArc(0.45));
+}
+
+// multiverse, nested: frames the chip's shape coming out of the middle and growing past the edge, each its
+// own colour with its own few stars (and drawn again behind the chip, so they carry on out round it)
+const nestFrames = (L, out) => L.frames.map((col, i) => {
+  const r = rng(19 + i * 7);
+  const stars = out ? '' : Array.from({ length: 4 }, () => `<b style="left:${f1(10 + r() * 80)}%;top:${f1(12 + r() * 76)}%"></b>`).join('');
+  return `<i class="cnest${out ? ' out' : ''}" style="--d:${-i * 1.5}s;transform:scale(${[0.18, 0.36, 0.72, 1.3][i % 4]});border-color:${out ? rgba(col, 0.75) : col};${out ? '' : `background:${rgba(col, 0.1)}`}">${stars}</i>`;
+}).join('');
+function nestedFace(L, W, c) {
+  return c.svgOf(darkOf(W, [L.bg[0], L.bg[0], L.bg[1]], uid('cne')) + scatterStars(W, 61, 6, 0.5)) + nestFrames(L, false) + c.svgOf(shineArc(0.5));
+}
+
+// multiverse, branches: one timeline along the middle, others forking off it and off each other, each its own
+// colour, fading as they run on; drawn over x0 .. x0 + w (in the chip's own x), repeating every W
+function threadsOf(L, W, x0, w) {
+  const [cyan, pink, gold, green] = L.lanes, main = '#e8e2ff';
+  // [from x (a share of W), from y, to y, length (a share of W), colour]
+  const forks = [[0.04, 20, 11, 0.72, cyan], [0.3, 11, 4, 0.55, pink], [0.46, 20, 29, 0.7, gold], [0.68, 29, 36, 0.5, green], [0.84, 20, 13, 0.3, pink]];
+  let defs = '', lines = `<path d="M${x0} 20H${x0 + w}" stroke="${main}" stroke-width="3.2" opacity="0.18"/><path d="M${x0} 20H${x0 + w}" stroke="${main}" stroke-width="1.1" opacity="0.85"/>`;
+  for (let p = Math.floor(x0 / W) - 1; p * W < x0 + w; p++) {
+    for (const [fx, y0, y1, len, col] of forks) {
+      const x = (p + fx) * W, end = x + len * W, g = uid('cbr');
+      defs += `<linearGradient id="${g}" gradientUnits="userSpaceOnUse" x1="${f1(x)}" y1="0" x2="${f1(end)}" y2="0"><stop offset="0" stop-color="${col}"/><stop offset="0.6" stop-color="${col}" stop-opacity="0.8"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient>`;
+      const d = `M${f1(x)} ${y0}C${f1(x + 7)} ${y0} ${f1(x + 6)} ${y1} ${f1(x + 13)} ${y1}H${f1(end)}`;
+      lines += `<path d="${d}" fill="none" stroke="url(#${g})" stroke-width="3.2" opacity="0.25"/><path d="${d}" fill="none" stroke="url(#${g})" stroke-width="1.1"/>`
+        + `<circle cx="${f1(x + 0.5)}" cy="${y0}" r="1.5" fill="#fff"/>`;
+    }
+  }
+  return `<svg width="${w}" height="${H}" viewBox="${x0} 0 ${w} ${H}" aria-hidden="true">${defs}${lines}</svg>`;
+}
+function branchesFace(L, W, c) {
+  return c.svgOf(darkOf(W, [L.bg[0], L.bg[0], L.bg[1]], uid('cbf')) + scatterStars(W, 67, 7, 0.5))
+    + `<i class="cthread" style="left:${-W}px;width:${3 * W}px">${threadsOf(L, W, -W, 3 * W)}</i>` + c.svgOf(shineArc(0.5));
+}
+
+const FACES = { gem: gemFace, harlequin: harlequinFace, rolling: rollingFace, boulder: boulderFace, collapse: collapseFace, pulsar: pulsarFace,
+  transit: transitFace, annular: annularFace, nested: nestedFace, branches: branchesFace };
 
 // Waves of light (aurora, celestial): bands that repeat every W, drawn 2W wide so the strip can slide by W and
 // land where it started. Each band: [middle (a share of H), wave height, phase, thickness, its swell, colour, opacity].
@@ -424,43 +674,6 @@ function cloudsOf(W, clouds) {
     for (const dx of [-W, 0, W, 2 * W]) body += `<ellipse cx="${f1(x * W + dx)}" cy="${y}" rx="${f1(r * 1.5)}" ry="${r}" fill="url(#${g})"/>`;
   });
   return defs + body;
-}
-
-// Bubbles of other universes (multiverse) on a strip 2W wide repeating every W: [x (a share of W), y, radius,
-// colour], each a sphere of its own light with a rim, a highlight and a few stars of its own.
-function bubblesOf(W, list) {
-  let defs = '', body = '';
-  list.forEach(([x, y, rr, c], n) => {
-    const g = uid('cbub'), r = rng(53 + n * 7);
-    defs += `<radialGradient id="${g}" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="${c}" stop-opacity="0.12"/><stop offset="0.7" stop-color="${c}" stop-opacity="0.3"/><stop offset="0.92" stop-color="${lift(c, 0.4)}" stop-opacity="0.85"/><stop offset="1" stop-color="${lift(c, 0.6)}" stop-opacity="0.3"/></radialGradient>`;
-    const dots = Array.from({ length: 3 }, () => [(r() - 0.5) * rr * 1.1, (r() - 0.5) * rr * 1.1, 0.4 + r() * 0.35]);
-    for (const dx of [0, W]) {
-      const cx = x * W + dx;
-      body += `<circle cx="${f1(cx)}" cy="${y}" r="${rr}" fill="url(#${g})"/>`
-        + dots.map(([a, b, s]) => `<circle cx="${f1(cx + a)}" cy="${f1(y + b)}" r="${f1(s)}" fill="#fff" opacity="0.9"/>`).join('')
-        + `<path d="M${f1(cx - rr * 0.72)} ${f1(y - rr * 0.3)}A${rr * 0.78} ${rr * 0.78} 0 0 1 ${f1(cx + rr * 0.1)} ${f1(y - rr * 0.76)}" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>`;
-    }
-  });
-  return defs + body;
-}
-
-// Stars on a strip 2W wide that repeat every W, for the void's two drifting layers.
-// galaxies: a few far smudges among them too (a soft oval with a bright middle, tilted)
-function starStrip(W, seed, n, size, o, galaxies = false) {
-  const r = rng(seed);
-  let dots = '';
-  for (let i = 0; i < n; i++) {
-    const x = r() * W, y = 3 + r() * (H - 6), s = size * (0.6 + r() * 0.6), a = o * (0.5 + r() * 0.5);
-    for (const dx of [0, W]) dots += `<circle cx="${f1(x + dx)}" cy="${f1(y)}" r="${f1(s)}" fill="#fff" opacity="${f1(a)}"/>`;
-  }
-  if (galaxies) {
-    const g = uid('cgal');
-    dots += `<radialGradient id="${g}"><stop offset="0" stop-color="#fff" stop-opacity="0.85"/><stop offset="0.3" stop-color="#b8c4ff" stop-opacity="0.4"/><stop offset="1" stop-color="#8090ff" stop-opacity="0"/></radialGradient>`;
-    for (const [x, y, rx, a] of [[0.22, 9, 6, -25], [0.7, 30, 4.5, 30]]) {
-      for (const dx of [0, W]) dots += `<ellipse cx="${f1(x * W + dx)}" cy="${y}" rx="${rx}" ry="${f1(rx * 0.38)}" transform="rotate(${a} ${f1(x * W + dx)} ${y})" fill="url(#${g})"/>`;
-    }
-  }
-  return `<svg width="${2 * W}" height="${H}" viewBox="0 0 ${2 * W} ${H}" aria-hidden="true">${dots}</svg>`;
 }
 
 // ---- the metals' finishes, laid over the metal
@@ -585,168 +798,15 @@ function face(L, W) {
     return (L.anodised ? anodisedOf(L) : '') + svgOf(body + shineArc(L.arc ?? 0.85)) + slick + shine;
   }
 
-  if (L.face === 'step') {
-    // the emerald cut: long steps round a wide table, its corners cut; the light walks along the steps from
-    // left to right, slowly; a few flecks in the table
-    // two broad steps (round two's bold planes) rather than three thin ones, lit brightly toward the light
-    const b = L.base, d = L.deep;
-    const { facets, table } = ringFacets(W, [[0, 0, 8.5], [5.5, 4.4, 6.5], [10.5, 8.6, 4.5]]);
-    let body = `<rect width="${W}" height="${H}" fill="${sink(b, d, 0.25)}"/>`;
-    for (const f of facets) body += poly(f.pts, toned(b, d, f.face * (1.15 - 0.25 * f.ring) + 0.12 - 0.1 * f.ring));
-    // the table, split by a long reflection into a light half and a deeper half (its depth)
-    const [tx0, ty0] = table[7], [tx1] = table[2], ty1 = table[4][1], tw = tx1 - tx0;
-    body += poly(table, lift(b, 0.14));
-    body += poly([[tx0 + tw * 0.55, ty0 - 6], [tx1 + 6, ty0 - 6], [tx1 + 6, ty1 + 6], [tx0 + tw * 0.4, ty1 + 6]], sink(b, d, 0.12), 0.9);
-    body += poly([[tx0 + tw * 0.14, ty0 - 5], [tx0 + tw * 0.3, ty0 - 5], [tx0 + tw * 0.16, ty1 + 5], [tx0 + tw * 0.0, ty1 + 5]], lift(b, 0.45), 0.7);
-    const r = rng(17 + W);
-    for (let i = 0; i < 4; i++) body += `<circle cx="${f1(tx0 + 3 + r() * (tw - 6))}" cy="${f1(ty0 + r() * (ty1 - ty0))}" r="${f1(0.5 + r() * 0.6)}" fill="${sink(b, d, 0.55)}" opacity="0.6"/>`;
-    // the light runs along the steps, left to right, every three seconds, bright
-    const fx = facets.map(f => flash(f.pts, 1.4 * (f.mx / W) + f.ring * 0.12, f.face > 0 ? 0.62 : 0.42, '#eafff4')).join('')
-      + flash(table, 0.75, 0.3, '#eafff4');
-    return svgOf(body + shineArc(0.75)) + fx + shine;
-  }
-
-  if (L.face === 'princess') {
-    // the princess cut: rings of facets closing on the middle, so the corners make a cross of chevrons,
-    // light and dark by turns; an ember glows deep inside; the light runs ring by ring, inward
-    const b = L.base, d = L.deep;
-    const { facets, table } = ringFacets(W, [[0, 0, 0], [W * 0.12, 4.6, 0], [W * 0.24, 9.2, 0], [W * 0.36, 13.8, 0]]);
-    let body = '';
-    for (const f of facets) body += poly(f.pts, toned(b, d, f.face * 0.95 + (f.ring % 2 ? -0.12 : 0.28)));
-    body += poly(table, lift(b, 0.26));
-    const fire = L.fire || [];
-    if (fire[0]) body += poly(facets.find(f => f.ring === 1 && f.side === 1).pts, fire[0], 0.4);
-    if (fire[1]) body += poly(facets.find(f => f.ring === 2 && f.side === 3).pts, fire[1], 0.4);
-    const ember = `<i class="cember" style="background:radial-gradient(closest-side, ${rgba(L.ember, 0.85)}, ${rgba(L.ember, 0.3)} 55%, transparent)"></i>`;
-    const fx = facets.map(f => flash(f.pts, f.ring * 0.45 + f.side * 0.1, f.side < 1 || f.side === 3 ? 0.65 : 0.42, '#ffe1ea')).join('');
-    return svgOf(body + shineArc(0.7)) + ember + fx + shine;
-  }
-
-  if (L.face === 'cab') {
-    // a cabochon: a polished dome, lit at the upper left and deep at its edges, with the six-rayed star of a
-    // star sapphire riding on it and gliding as the light moves
-    const g = uid('ccab'), b = L.base, d = L.deep;
-    // its depth: light coming back up through the stone, a glow low on the far side from the highlight
-    const gi = uid('ccab');
-    const body = `<radialGradient id="${g}" cx="0.42" cy="0.36" r="0.75"><stop offset="0" stop-color="${lift(b, 0.4)}"/><stop offset="0.45" stop-color="${lift(b, 0.06)}"/>
-      <stop offset="0.85" stop-color="${sink(b, d, 0.45)}"/><stop offset="1" stop-color="${d}"/></radialGradient>
-      <radialGradient id="${gi}"><stop offset="0" stop-color="${L.inner || lift(b, 0.4)}" stop-opacity="0.85"/><stop offset="1" stop-color="${L.inner || lift(b, 0.4)}" stop-opacity="0"/></radialGradient>
-      <rect width="${W}" height="${H}" fill="url(#${g})"/>
-      <ellipse cx="${f1(W * 0.6)}" cy="${f1(H * 0.78)}" rx="${f1(W * 0.34)}" ry="9" fill="url(#${gi})"/>
-      <ellipse cx="${f1(W * 0.32)}" cy="9" rx="${f1(W * 0.22)}" ry="4.4" fill="#ffffff" opacity="0.42"/>
-      <ellipse cx="${f1(W * 0.27)}" cy="8" rx="${f1(W * 0.08)}" ry="2" fill="#ffffff" opacity="0.6"/>`;
-    // the star: three rays crossing, each a thin lens of light, and a soft middle
-    const cx = W / 2, cy = H * 0.46, ray = (deg, len) => {
-      const a = (deg * Math.PI) / 180, ux = Math.cos(a), uy = Math.sin(a), w = 1.1;
-      return poly([[cx - ux * len, cy - uy * len], [cx - uy * w, cy + ux * w], [cx + ux * len, cy + uy * len], [cx + uy * w, cy - ux * w]], L.star, 0.9);
-    };
-    const star = `<i class="cstar"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-      <radialGradient id="${g}s"><stop offset="0" stop-color="${L.star}" stop-opacity="0.9"/><stop offset="1" stop-color="${L.star}" stop-opacity="0"/></radialGradient>
-      ${ray(0, W * 0.5)}${ray(60, 22)}${ray(120, 22)}<circle cx="${f1(cx)}" cy="${f1(cy)}" r="6" fill="url(#${g}s)"/></svg></i>`;
-    return svgOf(body + shineArc(0.8)) + star + shine;
-  }
-
-  if (L.face === 'cluster') {
-    // a cluster of crystal points standing up from the bottom, each lit on its left side and in shade on its
-    // right, a bright line up its ridge; the light runs from point to point
-    const b = L.base, d = L.deep, g = uid('cclu');
-    let body = `<linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${L.ground[0]}"/><stop offset="1" stop-color="${L.ground[1]}"/></linearGradient>
-      <rect width="${W}" height="${H}" fill="url(#${g})"/>`;
-    let fx = '';
-    POINTS.forEach(([xs, w, h], i) => {
-      const x = xs * W, top = H - h, tip = top + w * 0.75, foot = H + 2, back = i < 2 ? 0.25 : 0;
-      const left = [[x - w / 2, foot], [x - w / 2, tip], [x, top], [x, foot]], right = [[x, foot], [x, top], [x + w / 2, tip], [x + w / 2, foot]];
-      body += poly(left, back ? lift(b, 0.06) : lift(b, 0.3)) + poly(right, sink(b, d, 0.22 + back))
-        + poly([[x - w / 2, tip], [x, top], [x, tip + 2]], lift(b, 0.55), 0.85)
-        + `<path d="M${f1(x)} ${f1(top + 0.5)}V${foot}" stroke="#fff" stroke-width="0.8" opacity="0.6"/>`;
-      fx += flash(left, i * 0.4, 0.62, '#f6efff') + (back ? '' : flash(right, i * 0.4 + 0.2, 0.3, '#e9dcff'));
-    });
-    return svgOf(body + shineArc(0.55)) + fx + shine;
-  }
-
-  if (L.face === 'brilliant') {
-    const { table: T, star: St, corner: C } = brilliant(W);
-    // lit from the upper left: each corner's three facets in its own tones, the light ones toward the light
-    const tones = DIAMOND_TONES;
-    let body = '';
-    for (const [corner, tris] of Object.entries(C)) tris.forEach((t, i) => { body += poly(t, tones[corner][i]); });
-    body += poly(St.top, tones.star.top) + poly(St.left, tones.star.left) + poly(St.right, tones.star.right) + poly(St.bottom, tones.star.bottom) + poly(T, tones.table);
-    // its fire: a little colour caught in a few facets
-    const fire = L.fire || ['#ff9ac4', '#ffe066', '#7fe6ff', '#c9a8ff'];
-    body += poly(C.tr[2], fire[0], 0.32) + poly(C.bl[1], fire[1], 0.3) + poly(C.br[0], fire[2], 0.3) + poly(St.right, fire[3], 0.22);
-    const svg = svgOf(body + shineArc(0.9));
-    const fx = flash(C.tl[1], 0, 0.75) + flash(St.left, 0.3, 0.6, '#ffd1e4') + flash(St.top, 0.6, 0.75) + flash(T, 0.9, 0.45, '#fff4bf')
-      + flash(C.tr[1], 1.2, 0.6, '#c8f6ff') + flash(St.right, 1.5, 0.6) + flash(C.br[1], 1.8, 0.55, '#d8ffe9') + flash(St.bottom, 2.1, 0.55, '#ffd1e4');
-    return svg + fx + shine;
-  }
+  if (FACES[L.face]) return FACES[L.face](L, W, { svgOf, shine, band, low });
 
   if (L.face === 'flow') {
     // a colour that drifts through the chip (a strip repeating every W, sliding by W), with the band and shade
-    // laid over it; the multiverse's bubbles of other universes drifting the other way over that
+    // laid over it
     const strip = `<i class="cflow" style="width:${2 * W}px;background:linear-gradient(90deg,${L.stops.join(',')});background-size:${W}px 100%"></i>`;
     const over = `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${band}" fill="#fff" opacity="${L.dark ? 0.1 : 0.32}"/>
       <path d="${low}" fill="#0c0830" opacity="${L.dark ? 0.35 : 0.14}"/>${shineArc(L.dark ? 0.55 : 0.85)}</svg>`;
-    const bubbles = L.bubbles ? `<i class="crib slow" style="width:${2 * W}px"><svg width="${2 * W}" height="${H}" viewBox="0 0 ${2 * W} ${H}" aria-hidden="true">${bubblesOf(W, L.bubbles)}</svg></i>` : '';
-    return strip + (L.dark ? starsOf(W, 5) : '') + bubbles + over + shine;
-  }
-
-  if (L.face === 'opal') {
-    // play-of-colour: soft flames of colour deep in milky white, long and leaning every which way, packed
-    // close so they overlap; each has a second colour that comes up as a wave of light crosses the stone left
-    // to right, the gloss sweeping with it, the way an opal's colours change as it tilts; the milk lies over
-    // it all, thicker at the edges
-    const r = rng(311 + W), P = L.play, g = uid('cmilk'), gv = uid('cveil');
-    let defs = `<linearGradient id="${g}" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="${L.milk[0]}"/><stop offset="1" stop-color="${L.milk[1]}"/></linearGradient>`;
-    const grad = P.map(c => { const id = uid('cpl'); defs += `<radialGradient id="${id}"><stop offset="0" stop-color="${lift(c, 0.25)}"/><stop offset="0.5" stop-color="${c}" stop-opacity="0.95"/><stop offset="0.78" stop-color="${c}" stop-opacity="0.7"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient>`; return id; });
-    let body = `${defs}<rect width="${W}" height="${H}" fill="url(#${g})"/>`, fx = '';
-    const n = Math.round(W / 2.3);
-    for (let i = 0; i < n; i++) {
-      // spread evenly along the stone, wandering up and down, packed so they cover it
-      const x = ((i + 0.5 + (r() - 0.5) * 0.8) / n) * W, y = 4 + r() * (H - 8), rx = 6 + r() * 6, ry = 2.6 + r() * 2.8, a = (i % 2 ? 30 : -20) + (r() - 0.5) * 50;
-      const k = Math.floor(r() * P.length), k2 = (k + 2 + Math.floor(r() * 3)) % P.length;
-      body += `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(rx)}" ry="${f1(ry)}" transform="rotate(${f1(a)} ${f1(x)} ${f1(y)})" fill="url(#${grad[k]})" opacity="${f1(0.7 + r() * 0.3)}"/>`;
-      fx += `<i class="fx play" style="left:${f1(x - rx)}px;top:${f1(y - ry)}px;width:${f1(2 * rx)}px;height:${f1(2 * ry)}px;right:auto;bottom:auto;transform:rotate(${f1(a)}deg);--d:${f1(1.5 * (x / W) + (r() - 0.5) * 0.3)}s;`
-        + `background:radial-gradient(closest-side, ${lift(P[k2], 0.3)}, ${P[k2]} 50%, ${rgba(P[k2], 0.7)} 78%, transparent)"></i>`;
-    }
-    // a few pinpoints of fire
-    for (let i = 0; i < 6; i++) body += `<circle cx="${f1(r() * W)}" cy="${f1(4 + r() * (H - 8))}" r="${f1(0.6 + r() * 0.5)}" fill="${P[Math.floor(r() * P.length)]}"/>`;
-    const veil = `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-      <radialGradient id="${gv}" cx="0.45" cy="0.42" r="0.7"><stop offset="0.35" stop-color="${L.veil}" stop-opacity="0.08"/><stop offset="1" stop-color="${L.veil}" stop-opacity="0.65"/></radialGradient>
-      <rect width="${W}" height="${H}" fill="url(#${gv})"/><path d="${band}" fill="#fff" opacity="0.16"/><path d="${low}" fill="#4a4a8a" opacity="0.1"/>${shineArc(0.9)}</svg>`;
-    return svgOf(body) + fx + veil + shine;
-  }
-
-  if (L.face === 'core') {
-    // light from the middle outward: white hot in the middle, its colour toward the edges; the supernova's
-    // shell torn into streaks round it, and a flare in the middle on every beat
-    const g = uid('ccore'), st = L.stops, cx = W / 2, cy = H / 2;
-    let fil = '';
-    if (L.fil) {
-      const r = rng(71 + W);
-      for (let i = 0; i < 26; i++) {
-        const a = (i / 26) * Math.PI * 2 + r() * 0.2, r0 = 6 + r() * 5, r1 = r0 + 7 + r() * 14, c = L.fil[i % L.fil.length];
-        fil += `<path d="M${f1(cx + Math.cos(a) * r0 * 1.5)} ${f1(cy + Math.sin(a) * r0)}L${f1(cx + Math.cos(a) * r1 * 1.5)} ${f1(cy + Math.sin(a) * r1)}" stroke="${c}" stroke-width="${f1(0.8 + r() * 0.9)}" stroke-linecap="round" opacity="${f1(0.35 + r() * 0.35)}"/>`;
-      }
-    }
-    const flare = L.fil ? `<i class="cflare" style="background:radial-gradient(closest-side, #ffffff, ${rgba(st[1], 0.7)} 40%, transparent)"></i>` : '';
-    return svgOf(`<radialGradient id="${g}" cx="0.5" cy="0.5" r="0.75">
-      ${st.map((c, i) => `<stop offset="${f1([0, 0.3, 0.65, 1][i])}" stop-color="${c}"/>`).join('')}</radialGradient>
-      <rect width="${W}" height="${H}" fill="url(#${g})"/>${fil}${shineArc(0.6)}`) + flare;
-  }
-
-  if (L.face === 'eclipse') {
-    // the sun hidden: a dark sky; the corona round the sun, its streamers shimmering (two layers turning
-    // opposite ways); the sun's disc; and the moon over it, sliding a little to and fro, so a thin crescent of
-    // sun shows on one side and then the other, the diamond ring flaring on that edge each time
-    const [top, low2] = L.sky, cx = W / 2, cy = H / 2, R = 12.5, g = uid('ccor');
-    const body = `<rect width="${W}" height="${H}" fill="${top}"/><path d="M0 ${f1(H * 0.62)}C${f1(W * 0.4)} ${f1(H * 0.56)} ${f1(W * 0.7)} ${f1(H * 0.6)} ${W} ${f1(H * 0.54)}V${H}H0Z" fill="${low2}"/>
-      <radialGradient id="${g}" r="0.5"><stop offset="0.45" stop-color="${L.corona[0]}" stop-opacity="0.8"/><stop offset="0.62" stop-color="${L.corona[1]}" stop-opacity="0.35"/><stop offset="1" stop-color="${L.corona[1]}" stop-opacity="0"/></radialGradient>
-      <ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(R * 2.4)}" ry="${f1(R * 1.9)}" fill="url(#${g})"/>`;
-    const streamers = [['', 4, 26], [' back', 2.5, 17]].map(([cls, a, b]) => `<i class="ccorona${cls}"><i style="background:repeating-conic-gradient(from ${cls ? 9 : 0}deg, ${rgba(L.corona[0], 0.6)} 0deg ${a}deg, transparent ${a + 3}deg ${b}deg, ${rgba(L.corona[1], 0.4)} ${b}deg ${b + 2}deg, transparent ${b + 4}deg 30deg)"></i></i>`).join('');
-    const sun = `<svg class="cface" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle cx="${f1(cx)}" cy="${f1(cy)}" r="${R + 1.4}" fill="#fffbea"/><circle cx="${f1(cx)}" cy="${f1(cy)}" r="${R + 2.4}" fill="none" stroke="#ffb0c8" stroke-width="0.8" opacity="0.6"/></svg>`;
-    const moon = `<i class="cmoon" style="left:${f1(cx - R)}px;top:${f1(cy - R)}px;width:${2 * R}px;height:${2 * R}px"></i>`;
-    const bead = side => `<i class="cbead${side > 0 ? ' r' : ''}" style="left:${f1(cx + side * (R + 1) - 15)}px;top:${f1(cy - 4 - 15)}px">${twinkleSvg(30, 14, '#ffffff')}</i>`;
-    return svgOf(body) + streamers + sun + moon + bead(-1) + bead(1);
+    return strip + (L.dark ? starsOf(W, 5) : '') + over + shine;
   }
 
   if (L.face === 'lens') {
@@ -801,7 +861,16 @@ function face(L, W) {
     // a nearer layer of light, sliding quicker (aurora)
     + (L.near ? `<i class="crib quick" style="width:${2 * W}px"><svg width="${2 * W}" height="${H}" viewBox="0 0 ${2 * W} ${H}" aria-hidden="true">${ribbons(W, L.near)}</svg></i>` : '');
   const clouds = L.clouds ? `<i class="crib slow" style="width:${2 * W}px"><svg width="${2 * W}" height="${H}" viewBox="0 0 ${2 * W} ${H}" aria-hidden="true">${cloudsOf(W, L.clouds)}</svg></i>` : '';
-  const drift = L.drift ? `<i class="crib far" style="width:${2 * W}px">${starStrip(W, 11, 14, 0.7, 0.6, L.galaxies)}</i><i class="crib near" style="width:${2 * W}px">${starStrip(W, 29, 5, 1.2, 0.95)}</i>` : '';
+  // far galaxies, still (void): a soft oval with a bright middle, tilted, and a few faint stars
+  let far = '';
+  if (L.galaxies) {
+    const g = uid('cgal');
+    far = svgOf(`<radialGradient id="${g}"><stop offset="0" stop-color="#fff" stop-opacity="0.85"/><stop offset="0.3" stop-color="#b8c4ff" stop-opacity="0.4"/><stop offset="1" stop-color="#8090ff" stop-opacity="0"/></radialGradient>
+      ${[[0.2, 9, 6, -25], [0.74, 30, 4.5, 30]].map(([x, y, rx, a]) => `<ellipse cx="${f1(x * W)}" cy="${y}" rx="${rx}" ry="${f1(rx * 0.38)}" transform="rotate(${a} ${f1(x * W)} ${y})" fill="url(#${g})"/>`).join('')}${scatterStars(W, 11, 9, 0.6)}`);
+  }
+  // stars falling inward to the middle from all round, shrinking and going out (void): each rides a spoke,
+  // the spokes flattened to the chip's shape
+  const infall = L.infall ? INFALL.map(([a, d, sz]) => `<i class="cinf" style="transform:scaleY(${f1(H / W)}) rotate(${a}deg)"><i style="--d:${d}s;width:${sz}px;height:${sz}px;margin-top:${-sz / 2}px;background:${L.infall.c}"></i></i>`).join('') : '';
   // a shooting star across it now and then (celestial)
   const shoot = L.shoot ? `<i class="cshoot" style="background:linear-gradient(90deg, transparent, ${rgba(L.shoot.c, 0.9)} 80%, #fff)"></i>` : '';
   let lines = '';
@@ -819,44 +888,85 @@ function face(L, W) {
       <stop offset="0" stop-color="${L.rim[0]}"/><stop offset="0.55" stop-color="${L.rim[1]}"/><stop offset="1" stop-color="${L.rim[2]}"/></linearGradient>
       <rect x="1.2" y="1.2" width="${W - 2.4}" height="${H - 2.4}" rx="12" fill="none" stroke="url(#${id2})" stroke-width="2.4" opacity="${L.rimO ?? 1}"/>${shineArc(0.55)}</svg>`;
   }
-  return sky + clouds + strip + drift + lines + stars + shoot + rim;
+  return sky + clouds + strip + far + infall + lines + stars + shoot + rim;
 }
+
+// The void's falling stars and specks: [spoke angle, delay (s), size], twelve on a three-second beat.
+const INFALL = [[5, 0, 2.4], [38, 1.7, 1.8], [70, 0.6, 2.2], [104, 2.3, 1.8], [131, 1.1, 2.6], [163, 0.3, 2], [196, 2, 2.4], [228, 0.9, 1.8], [253, 2.6, 2.2],
+  [287, 1.4, 2], [318, 0.45, 2.6], [344, 2.2, 1.8]];
 
 // Twinkling stars in a sky: fixed places, so a constellation can join them.
 const STAR_AT = [[0.14, 8, 1.7, 0], [0.4, 5, 1.3, 1], [0.7, 9, 1.6, 2], [0.88, 24, 1.3, 0.5], [0.28, 30, 1.2, 1.5], [0.56, 33, 1.4, 2.5], [0.08, 20, 1.1, 1.2], [0.8, 34, 1.2, 2.2]];
 const starsOf = (W, n, c = '#fff') => STAR_AT.slice(0, n)
   .map(([x, y, s, d]) => `<i class="cst" style="left:${f1(x * W - s)}px;top:${f1(y - s)}px;width:${f1(s * 2)}px;height:${f1(s * 2)}px;--d:${d}s;background:${c}"></i>`).join('');
 
-// The shared extras round the chip, from the table: rays turning behind (or bursting), motes rising, sparks
-// drawn into the middle, rings pulsing in or out, echoes of the chip drifting, rings like an atom's round it,
-// a dial turning behind it, shock rings racing out, bits flung out or drawn in, darkness spreading round it.
+// The shared extras round the chip, from the table: rays turning behind, motes rising, sparks drawn into the
+// middle, rings like an atom's round it, the sun and moon on an orbit, a dial turning behind it (with a
+// clock's hands), specks drawn in, darkness spreading round it, a pulsar's beams, a supernova's shell racing
+// out, frames growing out past the chip, threads running on past its sides.
 function extras(L, W) {
   let s = '';
   if (L.abyss) s += '<i class="cabyss"></i>';
   if (L.rays) {
-    const fine = L.rays.fine, cone = fine ? `${rgba(L.rays.c, 0.5)} 0deg 2.5deg,transparent 2.5deg 15deg` : `${rgba(L.rays.c, 0.55)} 0deg 8deg,transparent 8deg 30deg`;
-    s += `<i class="crays${L.rays.burst ? ' burst' : ''}${fine ? ' fine' : ''}"><i style="background:repeating-conic-gradient(from 0deg,${cone})"></i></i>`;
-    if (L.rays.two) s += `<i class="crays two"><i style="background:repeating-conic-gradient(from 15deg,${rgba(L.rays.c, 0.35)} 0deg 3deg,transparent 3deg 15deg)"></i></i>`;
+    const o = L.rays.faint ? 0.3 : 0.55;
+    s += `<i class="crays"><i style="background:repeating-conic-gradient(from 0deg,${rgba(L.rays.c, o)} 0deg 8deg,transparent 8deg 30deg)"></i></i>`;
   }
-  if (L.wheel) s += `<i class="cwheel"><i style="background:repeating-conic-gradient(from 0deg,${rgba(L.wheel.c, 0.9)} 0deg 1.4deg,transparent 1.4deg 10deg)"></i>`
-    + `<i class="major" style="background:repeating-conic-gradient(from -1deg,${L.wheel.c} 0deg 2.4deg,transparent 2.4deg 30deg)"></i>`
-    + `<i class="band" style="background:radial-gradient(closest-side, transparent 88%, ${rgba(L.wheel.c, 0.75)} 90% 92.5%, transparent 94.5%)"></i></i>`;
-  if (L.shock) s += L.shock.map((c, i) => `<i class="cshock" style="--d:${i * 1.5}s;background:radial-gradient(closest-side, transparent 60%, ${rgba(c, 0.45)} 68%, ${c} 76%, ${rgba(c, 0.5)} 84%, transparent 94%)"></i>`).join('');
-  if (L.echo) s += L.echo.c.map((c, i) => `<i class="cecho e${i}" style="background:${rgba(c, 0.55)}"></i>`).join('');
-  if (L.pulse) s += [0, 1].map(i => `<i class="cpulse${L.pulse.out ? ' out' : ''}" style="--d:${i * 1.5}s;border-color:${L.pulse.c[i % L.pulse.c.length]}"></i>`).join('');
+  if (L.wheel) {
+    // a dial like an astrolabe's turning behind the chip: fine ticks, a bold one every 30 degrees, a thin ring;
+    // and on eternal a clock's two hands on it, the long one ticking round twice in six seconds, the short one
+    // sweeping round once (behind the chip, so they show past its sides)
+    const hands = L.wheel.hands ? `<i class="hand long"><b style="background:${L.wheel.hands}"></b></i><i class="hand"><b style="background:${L.wheel.hands}"></b></i>` : '';
+    s += `<i class="cwheel"><i style="background:repeating-conic-gradient(from 0deg,${rgba(L.wheel.c, 0.9)} 0deg 1.4deg,transparent 1.4deg 10deg)"></i>`
+      + `<i class="major" style="background:repeating-conic-gradient(from -1deg,${L.wheel.c} 0deg 2.4deg,transparent 2.4deg 30deg)"></i>`
+      + `<i class="band" style="background:radial-gradient(closest-side, transparent 88%, ${rgba(L.wheel.c, 0.75)} 90% 92.5%, transparent 94.5%)"></i>${hands}</i>`;
+  }
+  // a pulsar's two beams sweeping round behind the chip (and, fainter, across it: in its face)
+  if (L.beam) s += `<i class="cbeams"><i style="background:${beamsBg(L.beam, 0.7)}"></i></i>`;
+  // the supernova's shell racing out past the chip after the flash
+  if (L.shell) s += `<i class="cnout" style="background:${shellBg(L)}"></i>`;
+  // the multiverse's frames carrying on out round the chip, and its threads running on past its sides
+  if (L.frames) s += nestFrames(L, true);
+  if (L.lanes) s += `<i class="cthreads"><i class="cthread" style="left:${16 - W}px;width:${3 * W}px">${threadsOf(L, W, -W, 3 * W)}</i></i>`;
+  if (L.orrery) s += orreryOf(L, W);
   if (L.motes) s += [[0.1, 0], [0.32, 1.1], [0.55, 0.4], [0.78, 1.8], [0.94, 2.5], [0.22, 2.2]]
     .map(([x, d]) => `<i class="cmote" style="left:${f1(x * W - 2)}px;--d:${d}s;background:${L.motes.c}"></i>`).join('');
   if (L.spiral) s += [0, 120, 240].map((a, i) => `<i class="cspin" style="transform:scaleY(0.42) rotate(${a}deg)"><i style="--d:${i}s"><i style="background:${L.spiral.c}"></i></i></i>`).join('');
   if (L.debris) {
-    // eight bits on spokes round the middle, flattened to the chip's shape: flung out from it, or drawn in
-    // from outside to its edge and gone
-    s += [8, 52, 97, 141, 187, 232, 276, 321].map((a, i) => `<i class="cdeb${L.debris.in ? ' in' : ''}" style="transform:scaleY(0.45) rotate(${a}deg)"><i style="--d:${f1((i * 0.37) % 3)}s;background:linear-gradient(90deg, transparent, ${L.debris.c[i % L.debris.c.length]})"></i></i>`).join('');
+    // specks on spokes all round the middle, flattened to the chip's shape, drawn in from outside: shrinking
+    // and dimming as they fall to its edge, and gone (void)
+    s += INFALL.map(([a, d], i) => `<i class="cdeb in" style="transform:scaleY(0.45) rotate(${a + 9}deg)"><i style="--d:${f1((d * 1.37) % 3)}s;background:radial-gradient(closest-side, #fff, ${L.debris.c[i % L.debris.c.length]} 55%, transparent)"></i></i>`).join('');
   }
   if (L.atom) s += atomOf(L, W);
   if (L.lens) {
-    // the outer ring of bent light (singularity): a faint ring round the chip, two bright arcs sliding round it
+    // the outer ring of bent light (singularity): a ring round the chip, tilted, two bright arcs sliding round
+    // it; drawn twice, the whole of it behind the chip and its near (lower) half again in front, so it reads
+    // as a ring seen at a slant, passing behind the chip at the top and across it at the bottom
     const { ring, arc } = L.lens;
-    s += `<i class="carcs out" style="width:${W + 30}px;height:56px;background:radial-gradient(closest-side, transparent 86%, ${rgba(ring[1], 0.55)} 93%, transparent 99%)"><i style="background:conic-gradient(from 90deg, transparent 0deg 30deg, ${rgba(arc, 0.95)} 50deg, transparent 75deg 210deg, ${rgba(ring[1], 0.9)} 230deg, transparent 255deg)"></i></i>`;
+    const outer = cls => `<i class="carcs out${cls}" style="width:${W + 28}px;height:36px;background:radial-gradient(closest-side, transparent 80%, ${rgba(ring[1], 0.6)} 90%, transparent 99%)"><i style="background:conic-gradient(from 90deg, transparent 0deg 30deg, ${rgba(arc, 0.95)} 50deg, transparent 75deg 210deg, ${rgba(ring[1], 0.9)} 230deg, transparent 255deg)"></i></i>`;
+    // the near half as a lit arc over the chip, so it reads clearly in front
+    const rx = (W + 28) / 2 * 0.9, ry = 16, cx = (W + 28) / 2, gf = uid('cfr');
+    const near = `M${f1(cx - rx)} 18A${f1(rx)} ${ry} 0 0 0 ${f1(cx + rx)} 18`;
+    s += outer('') + outer(' front') + `<svg class="cnear" width="${W + 28}" height="36" viewBox="0 0 ${W + 28} 36" aria-hidden="true">
+      <linearGradient id="${gf}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${ring[1]}" stop-opacity="0.1"/><stop offset="0.5" stop-color="${ring[0]}" stop-opacity="0.95"/><stop offset="1" stop-color="${ring[1]}" stop-opacity="0.1"/></linearGradient>
+      <path d="${near}" fill="none" stroke="${ring[2]}" stroke-width="4" opacity="0.35"/><path d="${near}" fill="none" stroke="url(#${gf})" stroke-width="1.6"/></svg>`;
+  }
+  return s;
+}
+
+// The sun and the moon on one tilted orbit round the chip (celestial), drawn as an atom's ring is (below): the
+// whole orbit behind the chip and its near half again in front; the sun and the moon ride opposite ends of one
+// arm turning once in six seconds, each turning back as it goes so it stays upright (the moon's dark side
+// always the same way).
+function orreryOf(L, W) {
+  const a = W / 2 + 11, o = L.orrery, tilt = -9;
+  const bodies = `<i class="carm" style="--p:6s"><i class="cdot sun" style="left:${f1(a - 6)}px;--p:6s;background:radial-gradient(closest-side, #fff, ${o.sun} 45%, ${rgba(o.sun, 0.5)} 70%, transparent)"></i>`
+    + `<i class="cdot moon" style="left:${f1(-a - 4.5)}px;--p:6s;background:radial-gradient(circle at 66% 38%, transparent 42%, ${o.moon} 46% 68%, transparent 71%)"></i></i>`;
+  let s = '';
+  for (const half of ['back', 'front']) {
+    const place = half === 'front' ? `left:6px;top:${f1(-a)}px` : `left:${f1(-a)}px;top:${f1(-a)}px`;
+    const ring = `<i class="cell" style="${place};width:${f1(2 * a)}px;height:${f1(2 * a)}px;border-color:${rgba(o.ring, 0.75)}">${bodies}</i>`;
+    const inner = half === 'front' ? `<i class="chalf" style="left:${f1(-a - 6)}px;width:${f1(2 * a + 12)}px;height:${f1(a * ATOM_K + 8)}px">${ring}</i>` : ring;
+    s += `<i class="catom orrery ${half}" style="transform:rotate(${tilt}deg)"><i>${inner}</i></i>`;
   }
   return s;
 }
