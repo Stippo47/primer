@@ -311,6 +311,22 @@ export function label(g, ax, ay, text, { age = 1e6, side = 1, out = 0, width = I
   return box;
 }
 
+// A term's pill alone, centred at x, y (a route's name in a scene, where its line is the leader). Kept on the
+// screen's width.
+export function pill(g, text, x, y, { a = 1, width = Infinity, colour = CODE.pill.fill } = {}) {
+  if (a <= 0.01) return;
+  g.save();
+  g.globalAlpha *= a;
+  g.font = `800 14px ${CODE.font}`;
+  const tw = g.measureText(text).width + 22, th = 28;
+  x = Math.max(tw / 2 + 6, Math.min(width - tw / 2 - 6, x));
+  g.fillStyle = CODE.pill.under; roundRect(g, x - tw / 2, y - th / 2 + 3, tw, th, th / 2); g.fill();
+  g.fillStyle = colour; roundRect(g, x - tw / 2, y - th / 2, tw, th, th / 2); g.fill();
+  g.fillStyle = CODE.pill.text; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, x, y + 1);
+  g.restore();
+}
+
 // ---------------------------------------------------------------- molecules
 
 // Molecules are ready-made stamps (a gradient each, drawn once per size), placed each frame with drawImage:

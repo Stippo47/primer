@@ -20,7 +20,7 @@ import { SPHERE } from './views.js';
 import { STYLE, SST, warmBandsNow, rgba, mix, MOTION } from './look.js';
 import { dot, chip, mark } from './marks.js';
 import { Glide, soft as softEase } from '../../js/ease.js';
-import { streaks, label as builtLabel } from '../../js/code.js';
+import { streaks, label as builtLabel, pill } from '../../js/code.js';
 import { AIR_LAYERS } from './air.js';
 
 const TAU = Math.PI * 2, RAD = Math.PI / 180, DEG = 180 / Math.PI;
@@ -67,6 +67,21 @@ const backdrop = {
   draw(d) {
     const { c, view: v } = d;
     if (v.round) {
+      // in a scene, a quiet field of stars far behind the globe: a layer of depth (they turn with the world)
+      if (d.soft) {
+        const shift = ((v.centre[0] % 360) + 360) % 360;
+        c.save();
+        for (let i = 0; i < 70; i++) {
+          const hx = Math.sin(i * 12.9898) * 43758.5453, hy = Math.sin(i * 78.233) * 12345.678;
+          const fx = hx - Math.floor(hx), fy = hy - Math.floor(hy);
+          const x = ((fx * v.w * 1.6 - shift * v.w * 0.0025) % (v.w * 1.6) + v.w * 1.6) % (v.w * 1.6) - v.w * 0.3, y = fy * v.h;
+          if (Math.hypot(x - v.cx, y - v.cy) < v.r * 1.04) continue;
+          c.globalAlpha = 0.25 + 0.45 * ((i * 0.37) % 1);
+          c.fillStyle = i % 7 ? '#c9d4ff' : '#ffe9b8';
+          c.beginPath(); c.arc(x, y, i % 5 ? 0.9 : 1.6, 0, TAU); c.fill();
+        }
+        c.restore();
+      }
       const glow = c.createRadialGradient(v.cx, v.cy, v.r * 0.86, v.cx, v.cy, v.r * 1.16);
       glow.addColorStop(0, rgba('#4f7cff', 0.6)); glow.addColorStop(0.35, rgba('#4f7cff', 0.25)); glow.addColorStop(1, rgba('#4f7cff', 0));
       c.fillStyle = glow; c.beginPath(); c.arc(v.cx, v.cy, v.r * 1.16, 0, TAU); c.fill();
@@ -289,7 +304,9 @@ function routeLabel(d, rt, placed) {
   const a = shown(rt, d, false) * softEase(clamp01((p - 0.5) / 0.25));
   if (a <= 0.01) return;
   c.save(); c.globalAlpha = a;
-  chip(c, rt.label, best.cx, best.cy, { k: 1, width: v.w });
+  // in a scene a route's name is a term's pill, the series' label colour; in a lesson, the plain plate
+  if (d.soft) pill(c, rt.label, best.cx, best.cy, { width: v.w });
+  else chip(c, rt.label, best.cx, best.cy, { k: 1, width: v.w });
   c.restore();
 }
 

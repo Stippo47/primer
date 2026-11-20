@@ -587,8 +587,8 @@ export async function mount(el, settings, ctx = {}) {
       // middle), gliding there: room beside it for the loops on its edge. A flat map stays put.
       frame(x = 0, y = 0, seconds = 1.6) {
         const now = performance.now();
-        offX.go(Math.max(-0.5, Math.min(0.5, Number(x) || 0)), ms(seconds), now);
-        offY.go(Math.max(-0.5, Math.min(0.5, Number(y) || 0)), ms(seconds), now);
+        offX.go(Math.max(-2.5, Math.min(2.5, Number(x) || 0)), ms(seconds), now);
+        offY.go(Math.max(-2.5, Math.min(2.5, Number(y) || 0)), ms(seconds), now);
         wake();
       },
       // A sign standing on the world at a place, a word or a number on its board (High, +2 C); called again

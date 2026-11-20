@@ -26,7 +26,7 @@ import { molecule, heat, air, label as drawLabel, glow, mixHex, rgba, CODE } fro
 const TAU = Math.PI * 2;
 const LEVELS = ['warm', 'air', 'heat', 'pushes', 'split', 'open', 'parcel', 'lift', 'escape', 'carry'];
 const COLOURED = new Set(['warm']);
-const N_AIR = 110, N_SPLIT_RIGHT = 26, N_VAPOUR = 10, N_PARCEL = 7;
+const N_AIR = 84, N_SPLIT_RIGHT = 20, N_VAPOUR = 8, N_PARCEL = 6, N_FAR = 46;
 // a bounce between 0 and 1: where something moving at constant speed from x ends up between two walls
 const tri = x => { const m = ((x % 2) + 2) % 2; return m < 1 ? m : 2 - m; };
 const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -61,6 +61,8 @@ export async function mount(el, settings, ctx = {}) {
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) waters.push({ u: (c + 0.5 + (r % 2) * 0.5) / (COLS + 0.5), v: (r + 0.55) / ROWS, ph: R() * TAU, ph2: R() * TAU, ang: R() * TAU, spin: (R() - 0.5) * 2 });
   const vapours = Array.from({ length: N_VAPOUR }, (_, i) => ({ ph: i / N_VAPOUR + R() * 0.04, vx: (R() - 0.5) * 0.4, ang: R() * TAU, i }));
   const specks = Array.from({ length: 40 }, () => ({ u: R(), v: R(), s: 0.5 + R(), ph: R() * TAU }));
+  // far molecules: smaller, dimmer and slower, behind the rest, so the picture has depth
+  const far = Array.from({ length: N_FAR }, () => ({ u: R(), v: R(), vx: (R() - 0.5) * 0.12, vy: (R() - 0.5) * 0.12, ang: R() * TAU, spin: (R() - 0.5) * 2 }));
 
   function size() {
     w = Math.max(10, el.clientWidth || el.getBoundingClientRect().width); h = Math.max(10, el.clientHeight || el.getBoundingClientRect().height);
@@ -79,7 +81,7 @@ export async function mount(el, settings, ctx = {}) {
     tauHot += step * (0.55 + 1.5 * Math.max(L.warm, 0.9));
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const unit = Math.min(w, h * 0.62);
-    const mr = Math.max(4, unit * 0.026);        // a molecule's big atom
+    const mr = Math.max(5, unit * 0.034);        // a molecule's big atom
     const floorY = below === 'water' ? h * 0.7 : below === 'ground' ? h * 0.86 : h;
     const top = Math.max(0, h * 0.04);
 
@@ -91,6 +93,12 @@ export async function mount(el, settings, ctx = {}) {
     g.fillStyle = 'rgba(190,200,255,0.35)';
     for (const sp of specks) { g.beginPath(); g.arc((sp.u * w + t * 6 * sp.s) % w, sp.v * floorY + Math.sin(t * 0.6 + sp.ph) * 6, 0.8 * sp.s, 0, TAU); g.fill(); }
 
+    // the far layer: small, dim, slow
+    for (const m of far) {
+      const x = w * tri(m.u + m.vx * tau * 0.6), y = floorY * 0.97 * tri(m.v + m.vy * tau * 0.6);
+      molecule(g, below === 'water' && m.u < 0 ? 'water' : 'air', x, y, mr * 0.5, { angle: m.ang + m.spin * tau, a: 0.32, warm: clamp01(warmRaw) * 0.5, dpr });
+    }
+
     // the ground, or the water, at the bottom
     if (below === 'ground') {
       const gk = L.heat;
@@ -101,7 +109,7 @@ export async function mount(el, settings, ctx = {}) {
     }
     let waterTop = floorY;
     if (below === 'water') {
-      const col = mixHex(CODE.water.mid, '#c0407a', clamp01(warmRaw) * 0.55);
+      const col = mixHex(CODE.water.mid, '#d8487a', Math.max(0, Math.min(1.1, warmRaw)) * 0.72);
       const wv = x => floorY + Math.sin(x / 40 + t * 1.3) * 3;
       const water = g.createLinearGradient(0, floorY, 0, h);
       water.addColorStop(0, col); water.addColorStop(1, CODE.water.deep);

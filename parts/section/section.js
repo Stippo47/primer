@@ -31,7 +31,7 @@ const LEVELS = ['sun', 'warm', 'vapour', 'rise', 'cloud', 'release', 'inflow', '
 const COLOURED = new Set(['warm', 'ground']);
 // The framings: the middle of what's shown and how much of it, in world units [x, y, width, height].
 export const VIEWS = {
-  wide: [0, 330, 600, 1240],
+  wide: [0, 370, 620, 1310],
   sea: [0, -110, 520, 520],
   surface: [0, 90, 520, 560],
   air: [0, 330, 620, 760],
@@ -295,13 +295,9 @@ export async function mount(el, settings, ctx = {}) {
         const env = Math.min(1, k * 7) * (conv > 0 ? 1 : 1 - softEase(clamp01((k - 0.78) / 0.22)));
         const r = Math.max(5, (9 + 8 * k) * p.r * s);
         const px = C.x(X), py = C.y(Y);
-        // the heat it holds, hidden inside it: a warm core seen through the puff (it shows as heat flowing,
-        // triangles, only once it's let go)
-        if (L.carry > 0.01) {
-          const core = g.createRadialGradient(px, py + r * 0.05, 0, px, py + r * 0.05, r * 0.8);
-          core.addColorStop(0, rgbaHex('#ffd08a', 0.95 * env * L.carry * (1 - conv))); core.addColorStop(0.45, rgbaHex('#ff9f45', 0.6 * env * L.carry * (1 - conv))); core.addColorStop(1, rgbaHex('#ff9f45', 0));
-          g.fillStyle = core; g.beginPath(); g.arc(px, py + r * 0.05, r * 0.8, 0, TAU); g.fill();
-        }
+        // the heat it holds is hidden inside it: with carry, only a faint warm halo round the puff (heat shows
+        // as heat flowing, the triangles, once it's let go)
+        if (L.carry > 0.01) glow(g, px, py, r * 2.1, '#ffb35c', env * L.carry * (1 - conv) * 0.38);
         puff(g, px, py, r * (1 - conv * 0.7), env * (1 - conv) * 0.95, p.turn + t * 0.2);
         if (conv > 0) {
           // drops of water forming where the puff was
@@ -322,6 +318,18 @@ export async function mount(el, settings, ctx = {}) {
       }
     }
 
+    // the heat let go inside the cloud: warm triangles streaming out of it into the air around, drawn behind
+    // the cloud so they're seen leaving it
+    if (L.release > 0.01 && L.cloud > 0.05) {
+      const n = Math.round(sparks.length * L.release);
+      for (let i = 0; i < n; i++) {
+        const sp = sparks[i], k = (sp.ph + clock * 0.42) % 1;
+        const r0 = lerp(90 + 60 * L.cloud, 230 + 120 * L.cloud, k) * (0.75 + 0.25 * sp.d);
+        const X = colX + Math.cos(sp.a) * r0 * 1.15, Y = heart + Math.sin(sp.a) * r0 * 0.9;
+        heat(g, C.x(X), C.y(Y), Math.max(5, 13 * s), Math.atan2(-Math.sin(sp.a) * 0.9, Math.cos(sp.a) * 1.15), L.release * Math.sin(Math.PI * k));
+      }
+    }
+
     // the cloud: puffs billowing up into place as the level reaches them, each boiling gently
     if (L.cloud > 0.005) {
       const shown = [];
@@ -334,17 +342,6 @@ export async function mount(el, settings, ctx = {}) {
           r: Math.max(1, p.r * s * grow * (1 + 0.035 * Math.sin(t * 0.9 + p.ph))), f: p.f });
       }
       drawCloud(g, shown, { warm: L.release * 0.8 });
-    }
-
-    // the heat let go inside the cloud: warm triangles streaming out of its heart into the air around it
-    if (L.release > 0.01 && L.cloud > 0.05) {
-      const n = Math.round(sparks.length * L.release);
-      for (let i = 0; i < n; i++) {
-        const sp = sparks[i], k = (sp.ph + clock * 0.42) % 1;
-        const r0 = lerp(30, 170 + 90 * L.cloud, k) * sp.d;
-        const X = colX + Math.cos(sp.a) * r0 * 1.15, Y = heart + Math.sin(sp.a) * r0 * 0.9;
-        heat(g, C.x(X), C.y(Y), Math.max(4, 11 * s), Math.atan2(-Math.sin(sp.a) * 0.9, Math.cos(sp.a) * 1.15), L.release * Math.sin(Math.PI * k));
-      }
     }
 
     // rain: thin slanted streaks under the cloud

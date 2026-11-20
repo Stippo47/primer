@@ -104,7 +104,7 @@ const winds = {
 // Gold arrows along the latitudes, each covering the same share of a turn (so in the same time, each bit of
 // ground goes round once a day): long at the equator, where the ground has farthest to go, short near the
 // poles. Speeds named at the equator, 30 and 60 degrees.
-export const GROUND = [[0, '1,670 km/h'], [15, ''], [30, '1,450 km/h'], [45, ''], [60, '835 km/h'], [75, '']];
+export const GROUND = [[0, '1,670 km/h'], [15, ''], [30, '1,450 km/h'], [45, ''], [60, '840 km/h'], [75, '']];
 const turning = {
   id: 'turning', base: false,
   draw(d) {
@@ -157,7 +157,7 @@ export const CELLS = {
   ferrel: { lat: [32, 58], z: [0.16, 0.66], start: -0.75, dir: 1, name: 'Ferrel cell' },
   polar: { lat: [62, 87], z: [0.16, 0.56], start: 0.25, dir: -1, name: 'Polar cell' },
 };
-const LAYER = 0.3;   // the air's thickness, as a share of the globe's radius
+const LAYER = 0.24;   // the air's thickness, as a share of the globe's radius
 function cellPoint(cell, s) {
   const C = CELLS[cell];
   const a = (C.start + C.dir * 2 * s) * Math.PI;

@@ -180,6 +180,7 @@ export class Shots {
   // Every moving part at `now`. True while any still moves.
   frame(now) {
     let titling = false;
+    const rims = [];
     for (const t of this.titles) {
       const kin = soft(clamp01((now - t.t0) / MS.title)), kout = t.out ? soft(clamp01((now - t.out) / (MS.title * 0.7))) : 0;
       t.el.style.opacity = String((kin * (1 - kout)).toFixed(3));
@@ -201,6 +202,8 @@ export class Shots {
           const r0 = L.r0, r1 = full, kk = mv.kind === 'through-in' ? e : 1 - e;
           const r = r0 * Math.pow(r1 / r0, kk);
           if (el) el.style.clipPath = k >= 1 && mv.kind === 'through-in' ? '' : `circle(${r.toFixed(1)}px at ${L.cx.toFixed(1)}px ${L.cy.toFixed(1)}px)`;
+          // the lens's white rim rides the circle's edge, fading as it fills the picture (or as it shrinks away)
+          rims.push({ x: L.cx, y: L.cy, r: mv.kind === 'out-old' ? r * Math.pow(0.6, e) : r, a: k >= 1 ? 0 : mv.kind === 'through-in' ? 1 - e : Math.min(1, 1.4 * (1 - e)) });
           const sc = mv.kind === 'through-in' ? 1 : Math.pow(0.6, e);
           tf = `scale(${sc.toFixed(4)})`;
           if (mv.kind === 'out-old') { if (el) el.style.transformOrigin = `${L.cx}px ${L.cy}px`; }
@@ -247,7 +250,7 @@ export class Shots {
       }
       if (k >= 1) this.moves.delete(n);
     }
-    const lensing = this.drawLens(now);
+    const lensing = this.lens ? this.drawLens(now) : this.drawRims(rims);
     return this.moves.size > 0 || titling || lensing;
   }
 
@@ -293,17 +296,7 @@ export class Shots {
     const vis = (1 - shut);
     const r = L.r * open * (1 - T(shut));
     if (el) el.style.clipPath = `circle(${Math.max(0, r).toFixed(1)}px at ${L.cx.toFixed(1)}px ${L.cy.toFixed(1)}px)`;
-    if (!this.ring) {
-      this.ring = document.createElement('canvas');
-      this.ring.className = 'slensring';
-      this.ring.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none';
-      this.stage.append(this.ring);
-    }
-    const c = this.ring, dpr = Math.min(2, window.devicePixelRatio || 1), W = this.stage.clientWidth, H = this.stage.clientHeight;
-    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
-    const g = c.getContext('2d');
-    g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.clearRect(0, 0, W, H);
+    const g = this.ringContext();
     g.globalAlpha = vis;
     // the leader, from the dot to the circle's edge
     const dx = L.cx - L.ax, dy = L.cy - L.ay, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
@@ -320,6 +313,35 @@ export class Shots {
     }
     if (L.shut && shut >= 1) { this.dropLens(); return false; }
     return age < 1000 || !!L.shut;
+  }
+
+  // The rims of circles zooming through or out (no lens open meanwhile).
+  drawRims(rims) {
+    if (!rims.length) { if (this.ring) { this.ring.remove(); this.ring = null; } return false; }
+    const g = this.ringContext();
+    for (const rm of rims) {
+      if (rm.a <= 0.01 || rm.r <= 1) continue;
+      g.globalAlpha = rm.a;
+      g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.beginPath(); g.arc(rm.x, rm.y, rm.r, 0, Math.PI * 2); g.stroke();
+    }
+    g.globalAlpha = 1;
+    return false;
+  }
+
+  // The canvas over the stage the lens's dot, leader and rim are drawn on, cleared and sized to the stage.
+  ringContext() {
+    if (!this.ring) {
+      this.ring = document.createElement('canvas');
+      this.ring.className = 'slensring';
+      this.ring.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none';
+      this.stage.append(this.ring);
+    }
+    const c = this.ring, dpr = Math.min(2, window.devicePixelRatio || 1), W = this.stage.clientWidth, H = this.stage.clientHeight;
+    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, W, H);
+    return g;
   }
 
   // Takes the lens away at once: its part back off screen (unless something else shows it), its ring gone.
@@ -341,7 +363,6 @@ export class Shots {
     const geo = L ? { cx: L.cx, cy: L.cy, r0: L.r } : how === 'out' && this.lastLens ? { ...this.lastLens } : { cx: W / 2, cy: H * 0.45, r0: Math.min(W, H) * 0.08 };
     // through: remember where it went in, so coming out shrinks back to the same place
     if (how === 'through') this.lastLens = { cx: geo.cx, cy: geo.cy, r0: geo.r0 };
-    if (this.ring) { this.ring.remove(); this.ring = null; }
     this.lens = null;
     const el = this.el(part);
     if (now) {
