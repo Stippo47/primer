@@ -2,14 +2,15 @@
 // grows (ruled 2026-11-18: tiers, not flames; each tier livelier than the last, calmly).
 //
 // TIERS is the one table: every tier's look, the count that reaches it, and its shields. The 23 the designer
-// kept (2026-11-19), low to high above plain: wood, tin, copper, silver, gold, platinum, emerald, sapphire,
-// crystal, ruby, diamond, obsidian, opal, titanium, aurora, nebula, celestial, eternal, supernova, eclipse,
-// singularity, multiverse, void. The ones they didn't keep are in SPARE, drawn the same way but never reached
+// kept (2026-11-19), less eclipse (taken off 2026-11-20), low to high above plain: wood, tin, copper, silver,
+// gold, platinum, emerald, sapphire, crystal, ruby, diamond, obsidian, opal, titanium, aurora, nebula,
+// celestial, eternal, supernova, singularity, multiverse, void. The ones they didn't keep are in SPARE, drawn the same way but never reached
 // by a count, so one can come back by moving its line (a film can still show one by name, `look`).
 //
 // Where each starts: the gap to the next tier grows as the run does, three tiers to a step (3, 4, 5, 6, 8,
 // 10, 13, 16), so a short review still reaches a few, a long one keeps reaching new ones, and void, at 179 in
-// a row, is a rare feat (docs/DECISIONS.md, 2026-11-19, has the curve).
+// a row, is a rare feat (docs/DECISIONS.md, 2026-11-19, has the curve). Eclipse's going left the others'
+// starts as they were, so supernova's run is the long one, 121 to 147.
 //
 // Every material is drawn the app's way: flat tones lit from the upper left (art.js), a highlight band or
 // facets, never photographic metal. A tier is a face (how the material is made: metal, grain, gem, an opal's,
@@ -18,12 +19,13 @@
 // its edges and a green side, silver polished with a fine line, gold a raised rim and a glow, platinum a mirror
 // with a sharp horizon and a big twinkle, titanium brushed with a faint anodised rainbow turning round its
 // edge; the gems share one look (round two's) and differ by colour and by how their facet lines run; obsidian
-// has the ripples of broken glass and a faint oil slick, opal a mosaic of colour patches flashing in turn;
+// has the ripples of broken glass and a faint oil slick, opal a patchwork of irregular cells over a sliding
+// rainbow, each flashing to its own colour as the light rolls across;
 // aurora is curtains, nebula clouds with rings round it like an atom's, celestial a gold constellation with
 // the sun and moon on an orbit round it, eternal white gold on a turning dial with a clock's hands; and the
-// far end is a pulsar's beams sweeping out of a star's remains, a ring of fire round the moon, light bent
-// round a point and falling into it (its ring crossing in front), timelines branching, and darkness that
-// draws the light in (round five, 2026-11-20). Per tier, it's data; the drawing is shared.
+// far end is a star throwing off shock fronts of colour one after another, light bent round a point and
+// falling into it (its ring crossing in front), timelines branching, and darkness that draws the light in
+// (rounds five and six, 2026-11-20). Per tier, it's data; the drawing is shared.
 //
 // Shields (ruled 2026-11-18, from their idea): each tier protects the combo from one-off mistakes: wood and
 // tin none, copper to gold one, platinum and up two. A miss with a shield left cracks the chip (one crack per
@@ -61,11 +63,12 @@ const pairOfGlints = (a, b = '#fff', d = 1) => [S(-0.02, 5, 5.5, d, 6, a), S(1.0
 const fourSparkles = (a, b = '#fff', c = a) => [S(-0.07, 8, 5, 0, 3, a), S(0.86, -5, 5.5, 0.75, 3, b), S(1.07, 27, 4.5, 1.5, 3, c), S(0.2, 41, 4, 2.25, 3, b)];
 const fireGlints = cs => cs.map((c, i) => S([0.2, 0.84, 0.62, 1.05, -0.05][i % 5], [6, 8, 31, 17, 24][i % 5], 5 + (i % 2) * 0.5, i * 0.6, 3, c, true));
 
-// The tiers redone from fresh ideas (2026-11-20): opal a third time (three ideas), supernova, eclipse and
-// multiverse (two each). Every idea is drawn by the same parts as the rest; PICK says which one each tier uses,
+// The tiers redone from fresh ideas (2026-11-20): opal a third time (three ideas) and a fourth (two voronoi
+// patchworks), supernova (two, then three more), eclipse and multiverse (two each). Every idea is drawn by the same parts as the rest; PICK says which one each tier uses,
 // and all of them stay in TRIALS (as `<tier>-<idea>`) for the deck's films and so a pick can be changed by
 // changing one word.
 const OPAL_PLAY = ['#2fe0a0', '#38c0ff', '#5a7cff', '#a070ff', '#ff5fb8', '#ff9a3a', '#ffd84a', '#6aff7a'];
+const ROLL_PLAY = ['#4cf0c0', '#4cc4ff', '#8c84ff', '#ff86d2', '#ffc86a', '#4cf0c0'];
 const PALE_OPAL_V = { ink: '#d6e2ff', line: '#5a6a9a', plate: '#20285e', glow: 'rgba(190,210,255,0.2)', edge: '#8a96bc', cink: '#1b2456', cinksh: 'rgba(255,255,255,0.85)', pip: '#c9d6ff', burst: '#ffffff', cglow: 'rgba(170,220,255,0.45)', cglow2: 'rgba(255,150,220,0.42)' };
 const CANDIDATES = {
   opal: {
@@ -76,7 +79,7 @@ const CANDIDATES = {
       pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
     // rolling: a pearly white opal with its colour rolling across it, the way an opal's fire slides over it as
     // it tilts: a soft rainbow sweeping slowly under the milk, a second, fainter one the other way
-    rolling: { face: 'rolling', body: ['#f2f5fc', '#c6d0ea'], play: ['#4cf0c0', '#4cc4ff', '#8c84ff', '#ff86d2', '#ffc86a', '#4cf0c0'], glow: true,
+    rolling: { face: 'rolling', body: ['#f2f5fc', '#c6d0ea'], play: ROLL_PLAY, glow: true,
       burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#d8fff4')],
       pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
     // boulder: opal in its ironstone: dark brown rock with veins of vivid opal running through it, their colours
@@ -85,6 +88,15 @@ const CANDIDATES = {
       burst: ['#7ff0e0', '#5ab0ff', '#ff8fd8', '#ffc870'], sparks: [S(0.98, 4, 5, 1, 3, '#c9fff4')],
       pips: ['#38a8ff', '#2fe0c0', '#7affa0', '#ffb040', '#ff5fd0'],
       v: { ink: '#7ff0e0', line: '#6a4a3a', plate: '#2a2040', glow: 'rgba(60,220,200,0.2)', edge: '#24140a', cink: '#fff', cinksh: '#2a1408', pip: '#38c8d0', burst: '#9ff8ea', cglow: 'rgba(50,210,200,0.45)', cglow2: 'rgba(255,120,210,0.4)' } },
+    // round six (rolling picked, "still weird. Maybe try voronoi cells?"): rolling's rainbow under the milk,
+    // broken into a patchwork of irregular cells, each flashing to its own colour as the light rolls across;
+    // fine: small cells, about 7 px; large: about 13 px
+    fine: { face: 'voronoi', cell: 7, body: ['#f2f5fc', '#c6d0ea'], play: OPAL_PLAY, roll: ROLL_PLAY, glow: true, shine: true,
+      burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#d8fff4')],
+      pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
+    large: { face: 'voronoi', cell: 13, body: ['#f2f5fc', '#c6d0ea'], play: OPAL_PLAY, roll: ROLL_PLAY, glow: true, shine: true,
+      burst: ['#ffd6e8', '#c9f3ea', '#d3e6ff', '#ffe9b8'], sparks: [S(0.98, 4, 5, 1, 3, '#ffffff'), S(-0.04, 30, 4.5, 2.4, 3, '#d8fff4')],
+      pips: ['#ff8fbf', '#ffc860', '#5fe0b8', '#7fb0ff', '#c09aff'], v: PALE_OPAL_V },
   },
   supernova: {
     // collapse: a star in the dark, slowly shrinking and heating from orange to white, then falling in on itself
@@ -99,6 +111,23 @@ const CANDIDATES = {
       burst: ['#d6e8ff', '#ffb040', '#ff6a4a', '#ffffff'], sparks: [],
       pips: ['#cfe6ff', '#8fb8ff', '#ffd27a', '#ffb040', '#ff6a4a'],
       v: { ink: '#ffc8a0', line: '#6a3a5a', plate: '#1c1a4a', glow: 'rgba(120,160,255,0.24)', edge: '#06061a', cink: '#fff', cinksh: '#1a0a2a', halo: 'rgba(10,8,30,0.75)', pip: '#ffb040', burst: '#d6e8ff', cglow: 'rgba(100,150,255,0.5)', cglow2: 'rgba(255,140,90,0.5)' } },
+    // round six ("supernova still weak. Try 3 styles"), none of them a pulsar or a collapse:
+    // shells: shock fronts of the star's layers racing out one after another, each its own colour
+    shells: { face: 'shells', shocks: [['#eaf4ff', '#8fc8ff'], ['#fff2b0', '#ffc040'], ['#ffc070', '#ff7a2a'], ['#ff9a7a', '#e8303a']], core: '#cfe6ff', glow: true,
+      burst: ['#eaf4ff', '#ffd060', '#ff7a2a', '#e8303a'], sparks: [],
+      pips: ['#cfe6ff', '#ffe08a', '#ffc040', '#ff7a2a', '#e8303a'],
+      v: { ink: '#ffc890', line: '#7a3a3a', plate: '#22183e', glow: 'rgba(255,160,80,0.26)', edge: '#140616', cink: '#fff', cinksh: '#2a0a14', halo: 'rgba(20,6,20,0.8)', pip: '#ffb040', burst: '#fff2b0', cglow: 'rgba(255,150,70,0.6)', cglow2: 'rgba(140,190,255,0.5)' } },
+    // ringneb: a bright core in a tilted ring strung with pearls of light that flare as the core's flash
+    // reaches them, a pink and teal haze blooming round it
+    ringneb: { face: 'ringneb', ring: ['#fff0f6', '#ff7ab8'], pearl: '#ffe6f2', core: '#bfe0ff', haze: ['#ff6fb0', '#3fd0d8'], glow: true,
+      burst: ['#ffffff', '#ff9ac8', '#7fe6f0', '#bfe0ff'], sparks: [],
+      pips: ['#bfe0ff', '#9fe8f0', '#ffd0e6', '#ff9ac8', '#ff6fb0'],
+      v: { ink: '#ffb8dc', line: '#6a3a7a', plate: '#201648', glow: 'rgba(255,120,190,0.24)', edge: '#0a0620', cink: '#fff', cinksh: '#1a0a2e', halo: 'rgba(12,6,32,0.8)', pip: '#ff8ac0', burst: '#ffe6f2', cglow: 'rgba(255,110,180,0.55)', cglow2: 'rgba(60,210,220,0.5)' } },
+    // rays: rays of light bursting out past the chip, debris streaking out along them
+    rays: { face: 'rays', sunburst: '#fff4d0', ejecta: ['#ff8a4a', '#ffd060', '#5fe0d0', '#ff6fa8'], core: '#fff2c0', glow: true,
+      burst: ['#fff4d0', '#ffd060', '#ff8a4a', '#5fe0d0'], sparks: [],
+      pips: ['#fff4d0', '#ffe08a', '#ffc050', '#ff8a4a', '#ff6fa8'],
+      v: { ink: '#ffd890', line: '#7a4a3a', plate: '#261a40', glow: 'rgba(255,190,100,0.26)', edge: '#160810', cink: '#fff', cinksh: '#2a0c10', halo: 'rgba(24,8,16,0.8)', pip: '#ffc050', burst: '#fff4d0', cglow: 'rgba(255,180,90,0.6)', cglow2: 'rgba(95,224,208,0.45)' } },
   },
   eclipse: {
     // transit: the moon crossing the sun, whole: the sun alone in a blue sky, a bite, a crescent, and at
@@ -130,8 +159,9 @@ const CANDIDATES = {
       v: { ink: '#c0b0ff', line: '#4a3aa0', plate: '#221c60', glow: 'rgba(160,120,255,0.22)', edge: '#08061e', cink: '#fff', cinksh: '#08061e', halo: 'rgba(8,6,30,0.75)', pip: '#9a80ff', burst: '#d0c0ff', cglow: 'rgba(150,110,255,0.5)', cglow2: 'rgba(255,111,208,0.4)' } },
   },
 };
-// The idea each redone tier uses (my picks, 2026-11-20; the deck shows them all).
-export const PICK = { opal: 'harlequin', supernova: 'pulsar', eclipse: 'annular', multiverse: 'branches' };
+// The idea each redone tier uses (2026-11-20: multiverse their pick, opal and supernova mine from round six's
+// ideas; the decks show them all). Eclipse has left the ladder; its ideas stay drawable in TRIALS.
+export const PICK = { opal: 'large', supernova: 'shells', multiverse: 'branches' };
 const pick = id => CANDIDATES[id][PICK[id]];
 
 // Each tier, lowest first. at: the count that reaches it. shields: misses it forgives. v: its colours for CSS
@@ -273,10 +303,10 @@ export const TIERS = [
     burst: ['#fffbe8', '#ffe9a6', '#ffffff'], sparks: [],
     v: { ink: '#fff3d0', line: '#8a7a50', plate: '#2c2a5a', glow: 'rgba(255,240,200,0.24)', edge: '#c4a258', cink: '#5a3a0a', cinksh: 'rgba(255,255,255,0.9)', pip: '#ffeab0', burst: '#fffbe8', cglow: 'rgba(255,236,190,0.7)', cglow2: 'rgba(200,220,255,0.55)' } },
 
-  // the far end: a star's death, a sun hidden, space falling into a point, worlds beside ours, and nothing.
-  // Supernova, eclipse and multiverse were redone from fresh ideas (2026-11-20), two each (CANDIDATES)
+  // the far end: a star's death, space falling into a point, worlds beside ours, and nothing. Supernova and
+  // multiverse were redone from fresh ideas (2026-11-20, CANDIDATES); eclipse is gone from the ladder
+  // ("won't use eclipse anymore"), and the others kept their starts, so supernova runs from 121 to 147
   { id: 'supernova', name: 'Supernova', at: 121, shields: 2, ...pick('supernova') },
-  { id: 'eclipse', name: 'Eclipse', at: 134, shields: 2, ...pick('eclipse') },
   // singularity: not a black-hole drawing (2026-11-19) but what one does: starlight bent into a ring round
   // the whole chip, bright arcs of lensed stars sliding round it, rings of space flowing inward to a point,
   // sparks spiralling in, and a second, wider ring of bent light round the outside, tilted, its far half
@@ -530,6 +560,55 @@ function rollingFace(L, W, c) {
   return c.svgOf(bodyOf(W, L.body, uid('crl'))) + roll('', 0.8) + roll('back', 0.35) + c.svgOf(milk) + milkVeil(W, c, 0.45);
 }
 
+// Voronoi cells over the chip (opal, round six): seeds on a staggered grid about `size` apart, shaken loose,
+// each cell the chip's box cut down to the part nearer its seed than any other. Worked out once per width and
+// size, then kept.
+const VORONOI = new Map();
+function voronoi(W, size, seed) {
+  const key = `${W}:${size}:${seed}`;
+  if (VORONOI.has(key)) return VORONOI.get(key);
+  const r = rng(seed + W * 3), nx = Math.max(2, Math.round(W / size)), ny = Math.max(2, Math.round(H / size)), dx = W / nx, dy = H / ny, seeds = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx + (j % 2); i++) seeds.push([(i - (j % 2) * 0.5 + 0.1 + r() * 0.8) * dx, (j + 0.1 + r() * 0.8) * dy]);
+  const box = [[-1, -1], [W + 1, -1], [W + 1, H + 1], [-1, H + 1]];
+  const cells = seeds.map((p, k) => {
+    let pts = box;
+    for (const [m, q] of seeds.entries()) {
+      if (m === k || !pts.length) continue;
+      // keep the side nearer p: where (x - midpoint) . (q - p) <= 0
+      const ux = q[0] - p[0], uy = q[1] - p[1], c0 = (ux * (p[0] + q[0]) + uy * (p[1] + q[1])) / 2, side = v => v[0] * ux + v[1] * uy - c0, out = [];
+      pts.forEach((a, i) => {
+        const b = pts[(i + 1) % pts.length], sa = side(a), sb = side(b);
+        if (sa <= 0) out.push(a);
+        if ((sa <= 0) !== (sb <= 0)) { const t = sa / (sa - sb); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); }
+      });
+      pts = out;
+    }
+    const cx = pts.reduce((s, v) => s + v[0], 0) / pts.length, cy = pts.reduce((s, v) => s + v[1], 0) / pts.length;
+    return { pts, cx, cy };
+  }).filter(c => c.pts.length > 2);
+  VORONOI.set(key, cells);
+  return cells;
+}
+
+// voronoi: rolling's rainbow still slides under the milk, but broken into a patchwork of irregular cells, each
+// its own colour lit from its upper left; as the light rolls across, each cell in turn flashes to a colour of
+// its own, so the colour shifts cell by cell (the flash is the cell's shape in a flat colour, faded in and out)
+function voronoiFace(L, W, c) {
+  const r = rng(311 + W + L.cell), P = L.play, cells = voronoi(W, L.cell, 17), g = uid('cvo');
+  const stops = L.roll.map((s, i) => `${s} ${f1((i / (L.roll.length - 1)) * 100)}%`).join(',');
+  const roll = `<i class="cskew"><i class="cflow" style="width:${3 * W}px;opacity:0.85;background:linear-gradient(90deg,${stops});background-size:${W}px 100%"></i></i>`;
+  let cellsSvg = P.map((col, i) => `<linearGradient id="${g}${i}" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="${lift(col, 0.5)}"/><stop offset="1" stop-color="${col}"/></linearGradient>`).join('');
+  let fx = '', last = -1;
+  for (const cell of cells) {
+    let k = Math.floor(r() * P.length);
+    if (k === last) k = (k + 3) % P.length;
+    last = k;
+    cellsSvg += `<path d="${pathOf(cell.pts)}" fill="url(#${g}${k})" opacity="${f1(0.5 + r() * 0.25)}" stroke="#ffffff" stroke-width="0.4" stroke-opacity="0.22" stroke-linejoin="round"/>`;
+    fx += `<i class="fx play" style="${clipOf(cell.pts)};--d:${f1(1.35 * (cell.cx / W) + 0.3 * (cell.cy / H))}s;background:${rgba(P[(k + 2 + Math.floor(r() * 4)) % P.length], 0.92)}"></i>`;
+  }
+  return c.svgOf(bodyOf(W, L.body, uid('cvb'))) + roll + c.svgOf(cellsSvg) + fx + milkVeil(W, c, L.milk ?? 0.3) + c.shine;
+}
+
 // boulder: veins of opal through brown ironstone, their colours crossing over to a second set and back
 function boulderFace(L, W, c) {
   const r = rng(91 + W);
@@ -575,6 +654,83 @@ function pulsarFace(L, W, c) {
       <ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(W * 0.42)}" ry="15" fill="url(#${gc})"/>${fil}${shineArc(0.45)}`)
     + `<i class="cbeams in"><i style="background:${beamsBg(L.beam, 0.55)}"></i></i>`
     + `<i class="cpsr" style="background:radial-gradient(closest-side, #fff, ${rgba(L.beam, 0.8)} 40%, transparent)"></i>`;
+}
+
+// ---- supernova, round six: three more ideas (2026-11-20)
+
+// shells: the star throwing off its layers, one shock front after another, each its own colour (white-blue,
+// gold, orange, red), racing out from a hot core through the chip and on past its edge, one every one and a
+// half seconds; their edges ragged and churning. Drawn inside the chip and again behind it (out), the same
+// size and time, so a front carries on past the edge unbroken.
+const shockBg = ([a, b]) => `radial-gradient(closest-side, transparent 50%, ${rgba(a, 0)} 54%, ${rgba(a, 0.95)} 64%, ${rgba(b, 0.8)} 75%, ${rgba(b, 0.3)} 86%, transparent 96%)`;
+function raggedMask(seed) {
+  const r = rng(seed), stops = [];
+  for (let a = 0; a < 360; a += 2 + r() * 3) stops.push(`rgba(0,0,0,${f1(0.5 + r() * 0.5)}) ${f1(a)}deg`);
+  stops.push(`${stops[0].split(' ')[0]} 360deg`);
+  const m = `conic-gradient(${stops.join(',')})`;
+  return `-webkit-mask-image:${m};mask-image:${m}`;
+}
+const shocksOf = (L, out) => L.shocks.map((s, i) => `<i class="cshock${out ? ' out' : ''}" style="--d:${f1(-i * 1.5)}s;background:${shockBg(s)};${raggedMask(613 + i * 29)}"></i>`).join('');
+const coreOf = (c, cls = 'ccore3') => `<i class="${cls}" style="background:radial-gradient(closest-side, #fff, #fff 22%, ${rgba(c, 0.9)} 45%, ${rgba(c, 0)})"></i>`;
+function shellsFace(L, W, c) {
+  return c.svgOf(darkOf(W, ['#2c1446', '#140a2a', '#06040f'], uid('csh')) + scatterStars(W, 83, 9)) + shocksOf(L, false) + coreOf(L.core) + c.svgOf(shineArc(0.45));
+}
+
+// ringneb: a bright core inside a ring of gas the star threw off long before, tilted, strung with knots of
+// light like pearls (as round the supernova of 1987); every three seconds the core flashes, its light runs
+// out to the ring and the pearls flare one after another round it, while a haze of pink and teal blooms
+// round the chip and fades
+const RING_TILT = -14;
+function ringAt(W, t, k = 1) {
+  const rx = W * 0.4 * k, ry = 11 * k, a = (RING_TILT * Math.PI) / 180, x = rx * Math.cos(t), y = ry * Math.sin(t);
+  return [W / 2 + x * Math.cos(a) - y * Math.sin(a), H / 2 + x * Math.sin(a) + y * Math.cos(a)];
+}
+function ringnebFace(L, W, c) {
+  const cx = W / 2, cy = H / 2, gr = uid('crn'), gh = uid('crn'), gi = uid('crn'), [lit, deep] = L.ring, rx = W * 0.4, ry = 11;
+  const ell = (k, dy, extra) => `<ellipse cx="${f1(cx)}" cy="${f1(cy + dy)}" rx="${f1(rx * k)}" ry="${f1(ry * k)}" transform="rotate(${RING_TILT} ${f1(cx)} ${f1(cy + dy)})" ${extra}/>`;
+  const body = darkOf(W, ['#221448', '#100a2c', '#05040f'], uid('crn')) + scatterStars(W, 89, 9)
+    + `<radialGradient id="${gh}" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="${L.haze[0]}" stop-opacity="0.6"/><stop offset="0.6" stop-color="${L.haze[1]}" stop-opacity="0.28"/><stop offset="1" stop-color="${L.haze[1]}" stop-opacity="0"/></radialGradient>
+    <ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(W * 0.5)}" ry="19" fill="url(#${gh})"/>
+    <radialGradient id="${gi}"><stop offset="0.55" stop-color="${deep}" stop-opacity="0"/><stop offset="1" stop-color="${deep}" stop-opacity="0.3"/></radialGradient>
+    <linearGradient id="${gr}" x1="0" y1="0" x2="1" y2="0.4"><stop offset="0" stop-color="${deep}"/><stop offset="0.5" stop-color="${lit}"/><stop offset="1" stop-color="${deep}"/></linearGradient>`
+    // the faint outer rings above and below, as that supernova's had
+    + ell(0.78, -9.5, `fill="none" stroke="${deep}" stroke-width="0.7" opacity="0.35"`) + ell(0.78, 9.5, `fill="none" stroke="${deep}" stroke-width="0.7" opacity="0.35"`)
+    + ell(1, 0, `fill="url(#${gi})"`) + ell(1, 0, `fill="none" stroke="${deep}" stroke-width="5" opacity="0.5"`) + ell(1, 0, `fill="none" stroke="url(#${gr})" stroke-width="2.2"`);
+  const pearls = Array.from({ length: 11 }, (_, i) => {
+    const [x, y] = ringAt(W, (i / 11) * Math.PI * 2 + 0.3);
+    return `<i class="cpearl" style="left:${f1(x - 4)}px;top:${f1(y - 4)}px;--d:${f1(0.55 + i * 0.07)}s;background:radial-gradient(closest-side, #fff, ${rgba(L.pearl, 0.9)} 40%, ${rgba(lit, 0)})"></i>`;
+  }).join('');
+  const pulse = `<i class="cpulse" style="left:${f1(cx - rx)}px;top:${f1(cy - ry)}px;width:${f1(2 * rx)}px;height:${f1(2 * ry)}px;background:radial-gradient(closest-side, transparent 62%, ${rgba('#ffffff', 0.75)} 82%, ${rgba(lit, 0.4)} 92%, transparent)"></i>`;
+  return c.svgOf(body) + pulse + pearls + coreOf(L.core, 'ccore3 flash') + c.svgOf(shineArc(0.45));
+}
+
+// rays: the blast as light: rays of uneven width bursting out from a white-hot middle, a fresh burst every
+// three-quarters of a second, out past the chip on every side, and debris flung out along them, streaks of
+// gas with bright heads, slowing as they go (drawn inside the chip and again behind it, so both carry on
+// past the edge)
+function sunburstBg(L, seed) {
+  const r = rng(seed);
+  let a = r() * 10;
+  const stops = [];
+  while (a < 352) {
+    const w = 3 + r() * 6, o = 0.7 + r() * 0.3, c = r() < 0.35 ? L.ejecta[1] : L.sunburst;
+    stops.push(`transparent ${f1(a)}deg`, `${rgba(c, o)} ${f1(a + w / 2)}deg`, `transparent ${f1(a + w)}deg`);
+    a += w + 5 + r() * 13;
+  }
+  return `conic-gradient(${stops.join(',')})`;
+}
+const SPOKES = [[8, 0, 1], [33, 1.6, 0], [61, 0.7, 2], [92, 2.3, 3], [118, 1.1, 1], [147, 0.2, 0], [176, 1.9, 2], [204, 0.9, 3], [229, 2.6, 0], [258, 0.45, 1], [287, 1.4, 2], [313, 2.15, 3], [340, 1.25, 0]];
+function sunburstOf(L, inside) {
+  const rays = [0, 1].map(k => `<i class="${k ? 'b' : ''}" style="background:${sunburstBg(L, 401 + k * 17)}"></i>`).join('');
+  const ejecta = SPOKES.map(([a, d, k]) => `<i class="cej" style="transform:scaleY(0.6) rotate(${a}deg)"><i style="--d:${d}s;background:linear-gradient(90deg, transparent, ${rgba(L.ejecta[k], 0.85)} 65%, #fff)"></i></i>`).join('');
+  return `<i class="csun${inside ? ' in' : ''}">${rays}</i><i class="cejs${inside ? ' in' : ''}">${ejecta}</i>`;
+}
+function raysFace(L, W, c) {
+  const g = uid('cry');
+  return c.svgOf(darkOf(W, ['#3a1c2c', '#170a22', '#07040f'], uid('cry')) + scatterStars(W, 97, 7)
+      + `<radialGradient id="${g}"><stop offset="0" stop-color="${L.core}" stop-opacity="0.7"/><stop offset="0.5" stop-color="${L.ejecta[0]}" stop-opacity="0.22"/><stop offset="1" stop-color="${L.ejecta[0]}" stop-opacity="0"/></radialGradient>
+      <ellipse cx="${f1(W / 2)}" cy="20" rx="${f1(W * 0.46)}" ry="18" fill="url(#${g})"/>`)
+    + sunburstOf(L, true) + coreOf(L.core) + c.svgOf(shineArc(0.45));
 }
 
 // eclipse, transit: the moon crossing the sun whole, the sky going dark at totality
@@ -648,8 +804,8 @@ function branchesFace(L, W, c) {
     + `<i class="cthread" style="left:${-W}px;width:${3 * W}px">${threadsOf(L, W, -W, 3 * W)}</i>` + c.svgOf(shineArc(0.5));
 }
 
-const FACES = { gem: gemFace, harlequin: harlequinFace, rolling: rollingFace, boulder: boulderFace, collapse: collapseFace, pulsar: pulsarFace,
-  transit: transitFace, annular: annularFace, nested: nestedFace, branches: branchesFace };
+const FACES = { gem: gemFace, harlequin: harlequinFace, rolling: rollingFace, boulder: boulderFace, voronoi: voronoiFace, collapse: collapseFace, pulsar: pulsarFace,
+  shells: shellsFace, ringneb: ringnebFace, rays: raysFace, transit: transitFace, annular: annularFace, nested: nestedFace, branches: branchesFace };
 
 // Waves of light (aurora, celestial): bands that repeat every W, drawn 2W wide so the strip can slide by W and
 // land where it started. Each band: [middle (a share of H), wave height, phase, thickness, its swell, colour, opacity].
@@ -924,6 +1080,11 @@ function extras(L, W) {
   if (L.beam) s += `<i class="cbeams"><i style="background:${beamsBg(L.beam, 0.7)}"></i></i>`;
   // the supernova's shell racing out past the chip after the flash
   if (L.shell) s += `<i class="cnout" style="background:${shellBg(L)}"></i>`;
+  // the supernova's shock fronts carrying on out past the chip, its haze blooming round it, its rays and
+  // debris flying on out past it
+  if (L.shocks) s += shocksOf(L, true);
+  if (L.haze) s += `<i class="chaze" style="background:radial-gradient(closest-side, ${rgba(L.haze[0], 0.5)}, ${rgba(L.haze[1], 0.22)} 55%, transparent)"></i>`;
+  if (L.sunburst) s += sunburstOf(L, false);
   // the multiverse's frames carrying on out round the chip, and its threads running on past its sides
   if (L.frames) s += nestFrames(L, true);
   if (L.lanes) s += `<i class="cthreads"><i class="cthread" style="left:${16 - W}px;width:${3 * W}px">${threadsOf(L, W, -W, 3 * W)}</i></i>`;
