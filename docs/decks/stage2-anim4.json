@@ -1,0 +1,193 @@
+{
+ "title": "Animations, round four",
+ "topic": "stage2",
+ "order": 20,
+ "cards": [
+  {
+   "id": "anim4",
+   "kind": "report",
+   "rarity": "epic",
+   "title": "Animations, round four",
+   "text": "Every note from round three, met: clouds, loops, the trades, streaks, spin, captions, the engine, the end.",
+   "why": "Mark any part that's off, and pin anything that looks wrong in a film. The films carry their sound; each soundtrack is attached too, in case a film plays silent.",
+   "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom.\n\nThe three animations were re-voiced where their words changed, in all four narrators. The films here are the changed sections, 20 to 35 seconds each, at phone size, with their sound; if a film plays silent, play the clip under it.\n\nThe list of what I found wrong in my own films and fixed is docs/stage2/anim4-critique.md.",
+   "parts": [
+    {
+     "id": "cloud",
+     "title": "The cloud, redrawn",
+     "text": "One cloud for the whole series: a flat base, a cauliflower top, three tones lit from the upper left, growing from a small heap to a storm cloud with an anvil. (34 s)\n\nBefore and after: the engine's storm cloud, and the cloud where the air rises at the equator. The film is the cloud forming and towering in the engine (the same film as the engine feeding itself).",
+     "images": [
+      "../stage2/shots-anim4/cloud-before-engine.jpg",
+      "../stage2/shots-anim4/cloud-after-engine.jpg",
+      "../stage2/shots-anim4/cloud-before-equator.jpg",
+      "../stage2/shots-anim4/cloud-after-equator.jpg",
+      "../stage2/shots-anim4/cloud-stages.jpg"
+     ],
+     "videos": [
+      "../stage2/shots-anim4/engine-tower.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/engine-tower-sound.m4a",
+       "label": "The engine feeds itself: its sound"
+      }
+     ]
+    },
+    {
+     "id": "loops",
+     "title": "The loops of air",
+     "text": "Each loop is a rounded band along the edge, faintly lit inside, with arrowheads riding round it so it turns like a belt; the Hadley loop rises up through a storm cloud. (60 s)",
+     "images": [
+      "../stage2/shots-anim4/loops-before.jpg",
+      "../stage2/shots-anim4/loops-after.jpg"
+     ],
+     "videos": [
+      "../stage2/shots-anim4/wind-sun.mp4",
+      "../stage2/shots-anim4/wind-loops.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/wind-sun-sound.m4a",
+       "label": "The sun, and rising air: its sound"
+      },
+      {
+       "src": "../stage2/shots-anim4/wind-loops-sound.m4a",
+       "label": "The loops of air: its sound"
+      }
+     ]
+    },
+    {
+     "id": "trades",
+     "title": "Why the trades blow from the east",
+     "text": "Air isn't fixed to the ground: it keeps the eastward speed it had (1,450 km/h) while the ground beneath it speeds up to 1,670, so it falls behind, to the west. (52 s)\n\nYou asked: \"Why is the wind not moving the other way, pulled by the equator to move faster?\" The new lines meet that thought head on, with a parcel of air on its way south showing its own speed and the ground's:\n\n\"Now picture some air near thirty degrees, about to flow toward the equator. Like the ground under it, it's already moving east, at about 1,450 kilometres an hour.\"\n\"As it flows south, the ground beneath it moves east faster and faster. You might expect the air to be dragged along, and to speed up too.\"\n\"But air isn't fixed to the ground. It slides over it, and keeps the eastward speed it had.\"\n\"So the ground pulls ahead, and the air falls behind it, to the west.\"\n\"Friction with the ground drags on it, and slowly brings it up to speed. But fresh air keeps arriving from the north.\"\n\"So, seen from the ground, the air keeps blowing in from the east. That's why the trade winds blow from east to west.\"",
+     "videos": [
+      "../stage2/shots-anim4/wind-trades-a.mp4",
+      "../stage2/shots-anim4/wind-trades-b.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/wind-trades-a-sound.m4a",
+       "label": "The trades, part one: its sound"
+      },
+      {
+       "src": "../stage2/shots-anim4/wind-trades-b-sound.m4a",
+       "label": "The trades, part two: its sound"
+      }
+     ]
+    },
+    {
+     "id": "streaks",
+     "title": "Wind streaks, no gaps",
+     "text": "The streaks now fill the globe evenly: each starts in its own equal share of the sphere, so no empty pockets; near the calm belts they slow and dim instead of vanishing. (20 s)",
+     "videos": [
+      "../stage2/shots-anim4/wind-right.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/wind-right-sound.m4a",
+       "label": "Always to its right: its sound"
+      }
+     ]
+    },
+    {
+     "id": "spin",
+     "title": "Every hurricane spins",
+     "text": "Counterclockwise north of the equator, clockwise south of it, about seven seconds a turn, its streaks circling with it. (56 s)",
+     "videos": [
+      "../stage2/shots-anim4/engine-start.mp4",
+      "../stage2/shots-anim4/spin-counter.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/engine-start-sound.m4a",
+       "label": "What it runs on: its sound"
+      },
+      {
+       "src": "../stage2/shots-anim4/spin-counter-sound.m4a",
+       "label": "The spin, and where they start: its sound"
+      }
+     ]
+    },
+    {
+     "id": "captions",
+     "title": "Captions",
+     "text": "No box behind the words, a dark halo round each letter instead; slightly bigger; at most two lines, in phrases that follow the voice. The CC button sits beside the speaker. (29 s)\n\nThe captions button was hidden whenever no voice was playing, which may be why it was hard to find. It's now always there, as the CC box beside the speaker in the top right (tap the picture to bring the controls up): filled when they're on, crossed out when off. With the voice on, your choice is kept. With no voice the captions are the only words, so they come on, and the button hides them for that viewing only. Lessons' read-along words are unchanged.",
+     "images": [
+      "../stage2/shots-anim4/captions-before.jpg",
+      "../stage2/shots-anim4/captions-after.jpg",
+      "../stage2/shots-anim4/captions-button.jpg"
+     ],
+     "videos": [
+      "../stage2/shots-anim4/engine-warm.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/engine-warm-sound.m4a",
+       "label": "Warm water, up close: its sound"
+      }
+     ]
+    },
+    {
+     "id": "heat",
+     "title": "Heat carried, then let go",
+     "text": "One idea per picture, one scale per picture: the close-up; one bubble of warm, wet air rising and cooling; a lens into it where vapour sticks into drops and lets its heat go. (31 s)\n\nYour note: \"Too many things shown at once in slightly different styles.\" No picture now mixes molecules, vapour puffs and cloud. The scale changes with a lens or a cut: molecules up close, then the sea and sky with a single bubble, then the molecules again inside the bubble (drops forming, each molecule letting its heat triangle go, the mirror of evaporation).\n\n\"Each molecule that escapes takes some heat with it. So the water left behind gets a little cooler.\"\n\"That heat isn't lost. It's hidden inside the vapour, and it goes wherever the air takes it.\"\n\"Remember the rising bubble? Warm, wet air is lighter too, so it rises.\"\n\"As it climbs, it spreads out and cools. And cooler air can't hold as much vapour.\"\n\"A little way up, it's cool enough for the vapour to turn back into tiny drops of water.\"\n\"And as it does, it gives up the heat it was carrying.\"",
+     "images": [
+      "../stage2/shots-anim4/heat-before.jpg",
+      "../stage2/shots-anim4/heat-after.jpg"
+     ],
+     "videos": [
+      "../stage2/shots-anim4/engine-heat.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/engine-heat-sound.m4a",
+       "label": "Heat carried, then let go: its sound"
+      }
+     ]
+    },
+    {
+     "id": "feeds",
+     "title": "The engine feeds itself",
+     "text": "Out of the lens, the bubble has become the first heap of a cloud, warmed by the heat let go; then one thing at a time: faster rising, the Low, air rushing in, the storm from above. (34 s)\n\nYour note: \"Small water vapour, big balls, and clouds all at once in a chain looks weird.\" At this scale there are no puffs or drops: the vapour the incoming air picks up shows as the arrows warming.\n\n\"Billions of drops together make a cloud. And the heat they let go warms the air inside it.\"\n\"That heat is the hurricane's fuel.\"\n\"Warmed, the air rises faster still, and the cloud towers higher.\"\n\"All that rising air leaves less air pressing down on the sea. The pressure at the surface drops.\"\n\"So, just like a sea breeze, air rushes in from all around to fill the gap.\"\n\"On its way in, it picks up more warm vapour from the sea, and rises in turn.\"\n\"More vapour, more heat, faster rising, stronger winds. The engine feeds itself.\"",
+     "images": [
+      "../stage2/shots-anim4/feeds-before.jpg",
+      "../stage2/shots-anim4/feeds-after.jpg"
+     ],
+     "videos": [
+      "../stage2/shots-anim4/engine-tower.mp4",
+      "../stage2/shots-anim4/engine-season.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/engine-tower-sound.m4a",
+       "label": "The engine feeds itself: its sound"
+      },
+      {
+       "src": "../stage2/shots-anim4/engine-season-sound.m4a",
+       "label": "Fuel, and the season: its sound"
+      }
+     ]
+    },
+    {
+     "id": "end",
+     "title": "The hook, and the end",
+     "text": "No jumps: over cooler water the storm shrinks, loosens, slows and fades over several seconds; the storm that reaches land comes in on one smooth track and dies away over land. (31 s)",
+     "videos": [
+      "../stage2/shots-anim4/spin-end.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim4/spin-end-sound.m4a",
+       "label": "The hook, and the end: its sound"
+      }
+     ]
+    },
+    {
+     "id": "voice",
+     "title": "\"No sound played\"",
+     "text": "Found: a clip still loading was called silent after 2.5 s, and one slow start turned the voice off for the whole animation. Now loading is waited for, and one quiet line costs only itself.\n\nWhat happened: when you tap play, Primer gets every line's clip ready at once (about 45 of them), so the phone can take a moment to have the first one ready. The old rule called a clip silent if its clock stood still for 2.5 seconds after being asked to play, even while it was still loading, and then read the rest of the animation without a voice. That matches \"No sound played\", then the voice working.\n\nNow:\n- A clip still loading is waited for; only about 10 seconds with nothing to play counts as silent.\n- A phone that wants a tap but never says so (its first clip neither refused nor started) gets a wait on its first picture with play showing, never \"No sound played\".\n- One clip that plays no sound costs only its line, which reads on from its caption; the next line tries its own clip. Only two in a row say \"No sound played\".\n- A start refused outside a tap stops and asks for one tap (\"Tap play to hear the voice\"), once.\n\nA test reproduces each case. Only the phone can show whether this was the cause there; if it ever happens again, a screenshot of the note helps."
+    }
+   ]
+  }
+ ]
+}

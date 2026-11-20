@@ -7,10 +7,13 @@
 //   temperature      the thing's own colour shifting (with a small overshoot) and a number on a sign     sign()
 //   moving air       pale cyan dashed rounded arrows, the dashes running along                           air()
 //   water vapour     pale translucent round puffs                                                        puff()
-//   cloud            billows of overlapping puffs in three tones: lit, lavender, violet shade            cloud()
-//   spin             thin arc streaks circling a still shape                                             streaks()
+//   cloud            a flat base, a cauliflower top, three tones lit from the upper left; grows to an anvil cloud()
+//   spin             the storm turning, with thin arc streaks circling it the same way                   streaks()
 //   a term           a built label: a dot, a bent leader line, a pill that unrolls with its word         label()
 //   molecules        glossy stamps: water (one big atom, two small), air (two atoms)                     molecule()
+//
+// One idea per picture, at one scale (round four): molecules, vapour puffs and clouds are never mixed in one
+// picture; a scene changes scale with a lens or a cut.
 //
 // Everything is a pure function of what it's given (positions, an age in ms, a phase), so any frame can be
 // drawn on its own, and nothing blurs: glows are gradients or ready-made stamps (DECISIONS, 2026-11-17).
@@ -27,7 +30,7 @@ export const CODE = {
   heat: { body: '#ffa63d', tip: '#ffe7a3', glow: '#ff9a3c' },
   air: { line: '#8fdcff', light: '#e2f7ff', shade: 'rgba(6,8,48,0.35)' },
   vapour: { fill: '#dff6ff', light: '#ffffff', rim: '#6fd3ff' },
-  cloud: { shade: '#5446a8', mid: '#a69be8', lit: '#ebe7ff', warm: '#ffd9b0' },
+  cloud: { lit: '#f6f3ff', mid: '#c3b8f4', low: '#9d90e2', shade: '#7464cc', base: '#4f3fa6', warm: '#ffdcb8' },
   water: { deep: '#0f1f78', mid: '#1c3fb0', molecule: '#36b9ff', light: '#c9f3ff', hydrogen: '#8fe1ff' },
   airMolecule: { body: '#b6aef2', light: '#f3f1ff' },
   pill: { fill: '#7b4cf0', under: '#4f2bb0', text: '#ffffff' },
@@ -162,37 +165,158 @@ export function puff(g, x, y, r, a = 1, turn = 0) {
   g.restore();
 }
 
-// A cloud: puffs [{ x, y, r }] on the screen, drawn as billows in three tones (a violet shade showing in the
-// gaps and below, a lavender body, a lit face up and to the left), each tone one shape so nothing overlaps
-// in see-through layers. warm (0..1) tints the lit face, when heat is being let go inside it.
-export function cloud(g, puffs, { warm = 0, a = 1 } = {}) {
-  if (!puffs.length || a <= 0.01) return;
-  const mid = mixHex(CODE.cloud.mid, '#d9a0c8', warm * 0.5), lit = mixHex(CODE.cloud.lit, CODE.cloud.warm, warm * 0.55);
-  g.save();
-  g.globalAlpha *= a;
-  // a deep shade behind the whole cloud, showing in the gaps between billows and along its underside
-  const back = new Path2D();
-  for (const q of puffs) { if (q.r < 0.4) continue; back.moveTo(q.x + q.r * 0.1 + q.r * 1.04, q.y + q.r * 0.2); back.ellipse(q.x + q.r * 0.1, q.y + q.r * 0.2, q.r * 1.04, q.r * 1.04 * (q.f || 1), 0, 0, TAU); }
-  g.fillStyle = CODE.cloud.shade; g.fill(back);
-  // then each billow from the back (highest) to the front (lowest), each with its own shaded rim, body and lit
-  // face, so the front ones overlap the ones behind with a dark scallop: the cauliflower look
-  const order = puffs.filter(q => q.r >= 0.4).sort((p, q) => p.y - q.y || p.x - q.x);
-  // a billow can be squashed (f < 1: flatter, as along an anvil's top)
-  const disc = (x, y, r, f = 1) => { g.beginPath(); g.ellipse(x, y, r, r * f, 0, 0, TAU); g.fill(); };
-  for (const q of order) {
-    const f = q.f || 1;
-    g.fillStyle = CODE.cloud.shade; disc(q.x + q.r * 0.05, q.y + q.r * 0.12 * f, q.r, f);
-    g.fillStyle = mid; disc(q.x, q.y, q.r * 0.93, f);
-    g.fillStyle = lit; disc(q.x - q.r * 0.16, q.y - q.r * 0.19 * f, q.r * 0.7, f);
+// A cloud, growing from a first small heap into a towering storm cloud with an anvil: one flat-vector drawing
+// for the whole series (round four: "clouds look off"). What makes it read as a cloud at phone size:
+//   - a clear silhouette: a flat base (where rising air first cools enough for drops to form) and a cauliflower
+//     top of big rounded billows, narrower as it towers, never a pile of equal balls;
+//   - three tones lit from one side (the upper left, where the series' sun is): a near-white lit face on each
+//     billow's sunny side, a lavender body, a violet shade on the side away from the light, the lower billows
+//     darker than the upper ones (light from above), and a shaded band along the flat base;
+//   - growth that a real cumulus has: a small heap wider than it is tall, then taller and narrower, the new
+//     billows swelling up out of the top, and at the very end an anvil spreading flat at the ceiling.
+// The cloud is worked out in its own units (its base's middle at 0, 0, up positive; a grown tower about 5 tall)
+// from `level` alone (0.05 a first heap, 0.25 a small cumulus, 0.5 a tower, 0.8 a storm cloud, 1 with its
+// anvil), so any frame can be drawn on its own. Drawn with its base's middle at screen x, y, `size` pixels a
+// unit, its up turned by `angle` (radians, 0 up the screen: a cloud standing on a globe's edge leans out with
+// it). t: seconds, for its gentle boiling. warm (0..1): heat being let go inside it, a warm tint. a: opacity.
+// Cheap: about sixty discs in three tones, one clip; no blur.
+const CLOUD_ROWS = (() => {
+  const R = mulberry(41), rows = [];
+  for (let k = 0; k < 11; k++) {
+    // rows staggered, so the billows never line up into columns of balls
+    const us = k % 2 ? [-0.72, 0.02, 0.76] : [-1, -0.36, 0.34, 1], row = [];
+    for (const u0 of us) {
+      const u = u0 + (R() - 0.5) * 0.16;
+      row.push({ u, dy: (R() - 0.5) * 0.18, rn: 0.88 + R() * 0.34 - Math.abs(u) * 0.12, ph: R() * TAU });
+    }
+    rows.push({ y: 0.36 + k * 0.52, billows: row });
   }
+  return rows;
+})();
+const ANVIL = Array.from({ length: 9 }, (_, i) => { const u = (i / 8) * 2 - 1; return { u, rn: 1 - Math.abs(u) * 0.35, dy: (1 - u * u) * 0.25, ph: i * 1.7 }; });
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+// How tall and how wide the cloud is at a level, in its units: [height of the tower's top, its half-width].
+export function cloudSize(level) {
+  const L = clamp01(level);
+  const tall = 0.55 + 4.75 * Math.pow(clamp01(L / 0.86), 1.15);
+  const wide = 0.9 + 0.75 * Math.sqrt(clamp01(L / 0.5)) + 0.25 * clamp01((L - 0.5) / 0.4);
+  return [tall, wide];
+}
+// The billows at a level, in the cloud's units: [{ x, y, r, k (0..1 how far it has swelled in), up (0..1 its
+// height in the cloud) }], and the anvil's spread (0 none).
+export function cloudBillows(level, t = 0) {
+  const L = clamp01(level), [tall, wide] = cloudSize(L), out = [];
+  const anvil = clamp01((L - 0.8) / 0.2);
+  for (const row of CLOUD_ROWS) {
+    // a row shows once the cloud has grown up to it; it swells up into place over the next bit of growth
+    const k = clamp01((tall - row.y + 0.2) / 0.75);
+    if (k <= 0.01) continue;
+    const f = clamp01(row.y / Math.max(0.7, tall));
+    // its half-width: a cumulus is widest a third of the way up, rounding off into its dome at the top
+    // (a storm cloud, capped by its anvil, keeps its width higher up)
+    const lo = 0.4 + 0.3 * clamp01((L - 0.6) / 0.25);
+    const dome = Math.sqrt(Math.max(0, 1 - Math.pow(clamp01((f - lo) / (1.02 - lo)), 2.4)));
+    const half = wide * (0.8 + 0.24 * Math.sin(Math.PI * Math.min(1, f * 1.6))) * Math.max(0.35, dome);
+    // big billows: bold lobes on the body, a little smaller up a tall tower
+    const rr = (0.58 + 0.3 * Math.min(1, wide / 1.6)) * (1 - 0.16 * clamp01((row.y - 1.8) / 3.2));
+    const grow = MOTION.furniture.ease(k);
+    for (const b of row.billows) {
+      const r = rr * b.rn * (0.4 + 0.6 * grow) * (1 + 0.03 * Math.sin(t * 0.9 + b.ph));
+      const lift = (1 - b.u * b.u) * 0.22;
+      out.push({ x: b.u * Math.max(0.04, half - r * 0.5) + Math.sin(t * 0.5 + b.ph) * 0.03, y: row.y + b.dy + lift - (1 - grow) * 0.5 + Math.sin(t * 0.7 + b.ph) * 0.03, r, f: 1, up: f, side: b.u });
+    }
+  }
+  // the anvil: a flat plate spreading out from the top of the tower along the ceiling, with low swells on top
+  // the anvil: the tower's top flaring out flat along the ceiling, farther one way (downwind), with a few
+  // low swells along its top
+  let plate = null;
+  if (anvil > 0.01) {
+    const top = tall + 0.1, thick = 0.6 + 0.45 * anvil;
+    plate = { top, thick, left: wide * 0.75 + anvil * 2.3, right: wide * 0.75 + anvil * 3.1, neck: wide * 0.62 };
+    for (const b of ANVIL) {
+      const k = clamp01((anvil * 1.4 - Math.abs(b.u)) / 0.4);
+      if (k <= 0.01 || Math.abs(b.u) > 0.8) continue;
+      const span = b.u < 0 ? plate.left : plate.right;
+      const r = (0.5 + 0.3 * anvil) * b.rn * (0.6 + 0.4 * k) * (1 + 0.03 * Math.sin(t * 0.8 + b.ph));
+      out.push({ x: b.u * span * 0.85, y: top + thick * (0.42 - 0.5 * b.u * b.u) + Math.sin(t * 0.6 + b.ph) * 0.025, r, f: 0.5, up: 1, swell: true });
+    }
+  }
+  return { billows: out, tall, wide, anvil, plate };
+}
+export function cloud(g, x, y, size, { level = 0.5, angle = 0, t = 0, warm = 0, a = 1 } = {}) {
+  if (a <= 0.01 || level <= 0.004 || size <= 0) return;
+  const { billows, tall, wide, plate } = cloudBillows(level, t);
+  if (!billows.length) return;
+  const W = warm * 0.3;
+  const lit = mixHex(CODE.cloud.lit, CODE.cloud.warm, W), mid = mixHex(CODE.cloud.mid, '#e2a6c4', W * 0.6);
+  const midLow = mixHex(CODE.cloud.low, '#b7799f', W * 0.4), shade = CODE.cloud.shade, base = CODE.cloud.base;
+  // a first heap fades in as it forms, rather than popping
+  const born = clamp01(level / 0.06);
+  g.save();
+  g.globalAlpha *= a * born;
+  g.translate(x, y);
+  g.rotate(angle);
+  g.scale(size, -size);   // the cloud's own units from here: up is positive
+  // the anvil's plate, flaring out of the tower: wound counterclockwise (up positive), as the billows' discs
+  // are, so the union has no holes. dy moves it up, k shrinks its thickness (for the lit face).
+  const plateAt = (p, dx = 0, dy = 0, k = 1) => {
+    const { top, thick, left, right, neck } = plate, y0 = top + dy, hi = y0 + thick * 0.5 * k, lo = y0 - thick * 0.5;
+    p.moveTo(-left + dx, y0);
+    p.bezierCurveTo(-left * 0.7 + dx, lo - thick * 0.1, -neck * 1.2 + dx, lo - thick * 0.3, -neck + dx, lo - thick * 0.9);
+    p.lineTo(neck + dx, lo - thick * 0.9);
+    p.bezierCurveTo(neck * 1.2 + dx, lo - thick * 0.3, right * 0.7 + dx, lo - thick * 0.1, right + dx, y0);
+    p.bezierCurveTo(right * 0.96 + dx, hi, right * 0.5 + dx, hi + thick * 0.08, dx, hi + thick * 0.06);
+    p.bezierCurveTo(-left * 0.5 + dx, hi + thick * 0.08, -left * 0.96 + dx, hi, -left + dx, y0);
+    p.closePath();
+  };
+  // its silhouette: every billow, and the anvil, cut flat along the base
+  const sil = new Path2D();
+  for (const q of billows) { sil.moveTo(q.x + q.r, q.y); sil.ellipse(q.x, q.y, q.r, q.r * q.f, 0, 0, TAU); }
+  if (plate) plateAt(sil);
+  g.save();
+  g.beginPath(); g.rect(-50, 0, 100, 60); g.clip();
+  g.clip(sil, 'nonzero');
+  // Three tones as three big shapes, each the union of every billow moved a little: the whole silhouette in
+  // shade; the body over it, every billow nudged toward the light, so a band of shade stays along the
+  // edges away from it; and the lit face, every billow above the lowest part shrunk and nudged further
+  // toward the light, so the lit top meets the body in a scalloped line (the cauliflower) and the lower part
+  // of the cloud, in its own shadow, stays in the body's tone.
+  g.fillStyle = shade; g.fill(sil);
+  const RIM = 0.17;
+  const body = new Path2D(), face = new Path2D(), low = new Path2D();
+  for (const q of billows) {
+    const rx = q.r, ry = q.r * q.f, s = Math.min(rx, ry);
+    body.moveTo(q.x - RIM + rx, q.y + RIM * 0.9); body.ellipse(q.x - RIM, q.y + RIM * 0.9, rx, ry, 0, 0, TAU);
+    if (q.up < 0.26) { const k = 0.84; low.moveTo(q.x + rx * k, q.y - s * 0.3); low.ellipse(q.x, q.y - s * 0.3, rx * k, ry * k, 0, 0, TAU); }
+    // the lit faces shrink lower down the cloud, so its body's tone shows more there: light from above
+    // (and the billows down the side away from the light have none: that side is in the body's tone)
+    if ((q.up >= 0.3 || tall < 1.4) && !(q.side > 0.55 && tall >= 1.4)) { const k = q.swell ? 0.86 : tall < 1.4 ? 0.8 : 0.7 + 0.12 * clamp01((q.up - 0.3) / 0.5); face.moveTo(q.x - s * 0.36 + rx * k, q.y + s * 0.26); face.ellipse(q.x - s * 0.36, q.y + s * 0.26, rx * k, ry * k, 0, 0, TAU); }
+  }
+  // the anvil: a deep band of shade along its underside, its upper part lit
+  if (plate) {
+    plateAt(body, -0.06, plate.thick * 0.32);
+    const cx = (plate.right - plate.left) / 2 - 0.15, rx = (plate.left + plate.right) / 2 * 0.98, ry = plate.thick * 0.62;
+    face.moveTo(cx + rx, plate.top + plate.thick * 0.32); face.ellipse(cx, plate.top + plate.thick * 0.32, rx, ry, 0, 0, TAU);
+  }
+  g.fillStyle = mid; g.fill(body);
+  g.fillStyle = lit; g.fill(face);
+  // the lower billows, in the cloud's own shadow: a deeper body tone
+  if (tall >= 1.4) { g.save(); g.clip(body); g.fillStyle = rgba(midLow, 0.75); g.fill(low); g.restore(); }
+  // the flat base: a band of shade along the bottom, fading up into the body
+  const bh = Math.min(0.55, 0.18 + tall * 0.06);
+  const band = g.createLinearGradient(0, 0, 0, bh);
+  band.addColorStop(0, rgba(base, 0.95)); band.addColorStop(0.45, rgba(base, 0.6)); band.addColorStop(1, rgba(base, 0));
+  g.fillStyle = band; g.fillRect(-50, 0, 100, bh);
+  g.restore();
   g.restore();
 }
 
 // ---------------------------------------------------------------- spin
 
-// Spin, shown by streaks, not by turning the thing (study 2, 1.8): thin translucent arcs circling a still
-// shape at x, y of radius R. t in seconds; dir 1 turns counterclockwise on the screen (a storm north of the
-// equator, seen from above), -1 clockwise. Inner streaks go faster.
+// Spin, shown by streaks (study 2, 1.8): thin translucent arcs circling a shape at x, y of radius R, which
+// turns with them (round four: a storm shown still read as "not spinning"). t in seconds; dir 1 turns
+// counterclockwise on the screen (a storm north of the equator, seen from above), -1 clockwise. Inner streaks
+// go faster.
 export function streaks(g, x, y, R, t, dir = 1, a = 1) {
   if (a <= 0.01 || R < 2) return;
   g.save();

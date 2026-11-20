@@ -13,6 +13,9 @@
 //   lift      it rises like a bubble in water
 //   escape    the fastest water molecules at the surface breaking free into the air as vapour; with carry,
 //   carry     each takes a warm triangle of heat with it
+//   condense  vapour up in the air (each with its heat, with carry) slowing and sticking together into tiny
+//             drops of water, one molecule after another: the opposite of escape
+//   release   the molecules that have joined a drop let their heat go: each triangle flies off into the air
 //
 // Built labels (js/code.js, label) follow the molecule they name as it moves. Motion is worked out from time
 // alone (a molecule's path is a bounce between walls, a function of how far it has gone), so every frame can
@@ -24,9 +27,12 @@ import { Glide, Shift, soft as softEase, clamp01, lerp, rng, MOTION } from '../.
 import { molecule, heat, air, label as drawLabel, glow, mixHex, rgba, CODE } from '../../js/code.js';
 
 const TAU = Math.PI * 2;
-const LEVELS = ['warm', 'air', 'heat', 'pushes', 'split', 'open', 'parcel', 'lift', 'escape', 'carry'];
+const LEVELS = ['warm', 'air', 'heat', 'pushes', 'split', 'open', 'parcel', 'lift', 'escape', 'carry', 'condense', 'release'];
 const COLOURED = new Set(['warm']);
-const N_AIR = 84, N_SPLIT_RIGHT = 20, N_VAPOUR = 8, N_PARCEL = 6, N_FAR = 46;
+const N_AIR = 84, N_SPLIT_RIGHT = 20, N_VAPOUR = 8, N_PARCEL = 6, N_FAR = 46, N_COND = 21;
+// where the drops form, as shares of the box, and how the molecules that join one pack round its middle
+const DROPS = [[0.3, 0.36], [0.7, 0.28], [0.55, 0.62]];
+const PACK = [[0, 0], [1, 0], [-0.5, 0.87], [-0.5, -0.87], [0.5, 0.87], [-1, 0], [0.5, -0.87]];
 // a bounce between 0 and 1: where something moving at constant speed from x ends up between two walls
 const tri = x => { const m = ((x % 2) + 2) % 2; return m < 1 ? m : 2 - m; };
 const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -61,6 +67,9 @@ export async function mount(el, settings, ctx = {}) {
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) waters.push({ u: (c + 0.5 + (r % 2) * 0.5) / (COLS + 0.5), v: (r + 0.55) / ROWS, ph: R() * TAU, ph2: R() * TAU, ang: R() * TAU, spin: (R() - 0.5) * 2 });
   const vapours = Array.from({ length: N_VAPOUR }, (_, i) => ({ ph: i / N_VAPOUR + R() * 0.04, vx: (R() - 0.5) * 0.4, ang: R() * TAU, i }));
   const specks = Array.from({ length: 40 }, () => ({ u: R(), v: R(), s: 0.5 + R(), ph: R() * TAU }));
+  // vapour up in the air, to condense: each flies about, and has its turn to join a drop (its slot in one)
+  const conds = Array.from({ length: N_COND }, (_, i) => ({ u: R(), v: R() * 0.9, vx: (R() - 0.5) * 0.34, vy: (R() - 0.5) * 0.34, ang: R() * TAU, spin: (R() - 0.5) * 2.4,
+    drop: i % DROPS.length, slot: Math.floor(i / DROPS.length), turn: (i + 0.5) / N_COND, flyTo: R() * TAU, i }));
   // far molecules: smaller, dimmer and slower, behind the rest, so the picture has depth
   const far = Array.from({ length: N_FAR }, () => ({ u: R(), v: R(), vx: (R() - 0.5) * 0.12, vy: (R() - 0.5) * 0.12, ang: R() * TAU, spin: (R() - 0.5) * 2 }));
 
@@ -278,13 +287,59 @@ export async function mount(el, settings, ctx = {}) {
       }
     }
 
+    // condensing: vapour in the air (with its heat) slowing and sticking together into drops, one molecule
+    // after another, each drop a bead of liquid round the molecules packed in it; with release, the joined
+    // molecules let their heat go, each triangle flying off into the air and fading
+    let dropAt = null, condAt = null, heatAt = null;
+    if (L.condense > 0.002 || (L.carry > 0.01 && below === 'none' && L.escape < 0.01)) {
+      const cond = L.condense, rel = L.release;
+      const joined = DROPS.map(() => 0);
+      for (const m of conds) if (cond >= m.turn) joined[m.drop] += clamp01((cond - m.turn) / 0.08);
+      // the drops: a bead of water, round what has joined it, growing
+      DROPS.forEach(([du, dv], j) => {
+        const n = joined[j];
+        if (n <= 0.02) return;
+        const x = du * w, y = top + dv * (gasBot - top), r = mr * (1.35 + 1.05 * Math.sqrt(n));
+        const bead = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+        bead.addColorStop(0, rgba(CODE.water.light, 0.55)); bead.addColorStop(0.5, rgba(CODE.water.molecule, 0.32)); bead.addColorStop(1, rgba(CODE.water.mid, 0.5));
+        g.fillStyle = bead; g.beginPath(); g.arc(x, y, r * clamp01(n), 0, TAU); g.fill();
+        g.strokeStyle = rgba(CODE.water.light, 0.55 * clamp01(n)); g.lineWidth = Math.max(1.5, mr * 0.18);
+        g.beginPath(); g.arc(x, y, r * clamp01(n) * 0.9, Math.PI * 1.08, Math.PI * 1.5); g.stroke();
+        if (j === 0) dropAt = [x + r * 0.7, y - r * 0.7];
+      });
+      for (const m of conds) {
+        const q = cond >= m.turn ? MOTION.furniture.ease(clamp01((cond - m.turn) / 0.08)) : 0;
+        // free: flying about, slower than in the warm air below
+        const fx = mr + (w - 2 * mr) * tri(m.u + m.vx * tau * 0.8), fy = top + mr + (gasBot - top - 2 * mr) * tri(m.v + m.vy * tau * 0.8);
+        // joined: packed in its drop, jostling a little
+        const [du, dv] = DROPS[m.drop], [pu, pv] = PACK[m.slot % PACK.length];
+        const jx = du * w + pu * mr * 1.7 + Math.sin(tau * 2.4 + m.i) * mr * 0.12, jy = top + dv * (gasBot - top) + pv * mr * 1.7 + Math.sin(tau * 2 + m.i * 1.3) * mr * 0.12;
+        const x = lerp(fx, jx, q), y = lerp(fy, jy, q);
+        molecule(g, 'water', x, y, mr * 1.05, { angle: m.ang + m.spin * tau * (1 - q * 0.8), warm: 0.1, dpr });
+        if (!condAt && q === 0) condAt = [x, y];
+        // its heat: carried with it while it's free and once it has joined, until release lets it go
+        if (L.carry > 0.01) {
+          const go = rel > 0.002 && q >= 1 ? clamp01((rel - m.turn * 0.75) / 0.25) : 0;
+          if (go < 1) {
+            const fly = MOTION.furniture.ease(go), dir = m.flyTo;
+            const hx = x + mr * 1.7 + Math.cos(dir) * fly * mr * 9, hy = y - mr * 1.5 - fly * mr * 7 + Math.sin(dir) * fly * mr * 3;
+            // it shrinks as it fades, so it never dims to a brown outline
+            heat(g, hx, hy, Math.max(5, mr * 0.9) * (1 - 0.85 * fly), -Math.PI / 2 + 0.3 + fly * 0.4, L.carry * (1 - fly));
+            if (go > 0.05 && !heatAt) heatAt = [hx, hy];
+          }
+        }
+      }
+    }
+
     // labels, on the molecule (or the thing) they name, following it
     let busy = false;
     for (const [thing, tg] of tags) {
       let at = null;
       if (thing === 'air') { const m = shownAir.find(x => !x.right) || shownAir[0]; at = m && airAt.get(m.i); }
       else if (thing === 'water' && below === 'water') { const m = waters[2]; at = [m.u * w + Math.sin(tau * 2.6 + m.ph) * (w / (COLS + 0.5)) * (0.18 + 0.22 * L.warm), floorY + m.v * (h - floorY) * 0.92 + Math.sin(tau * 2.2 + m.ph2) * ((h - floorY) / ROWS) * (0.18 + 0.22 * L.warm) * 0.6]; }
-      else if (thing === 'vapour') at = vapourAt;
+      else if (thing === 'vapour') at = vapourAt || condAt;
+      else if (thing === 'drop') at = dropAt;
+      else if (thing === 'heat') at = heatAt;
       else if (thing === 'parcel' && parcelAt) at = [parcelAt[0] + parcelAt[2] * 0.7, parcelAt[1] - parcelAt[2] * 0.7];
       else if (thing === 'floor') at = [w * 0.3, gasBot + mr];
       else if (thing === 'crowded' && split > 0.01) at = [w * 0.34, gasTop + (gasBot - gasTop) * 0.22, -1];

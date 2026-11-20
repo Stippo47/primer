@@ -7,7 +7,11 @@
 // - Every play gets a new player. An <audio> that has played before can end at once with no length after
 //   the app comes back; a fresh one doesn't. A clip that ends at once with no length is tried once more.
 // - A clip isn't called silent until its clock has stood still for about 2.5 seconds after being asked to
-//   play: sound can be slow to start, the first time after installing above all.
+//   play: sound can be slow to start, the first time after installing above all. And a clip still loading
+//   (it hasn't the data to play yet) isn't standing still, it's waiting: its 2.5 seconds start once it has
+//   the data, and only a clip that has had nothing to play for about 10 seconds counts as silent. (Round four:
+//   "No sound played", then it started. A tap primes every clip to come at once, so the first one can take a
+//   moment to be ready on the phone.)
 // - The phone's sound is left alone: nothing here touches navigator.audioSession. A plain <audio> plays
 //   with the silent switch on without claiming anything, and claiming it stopped the person's music.
 // - An iPhone starts sound only from a tap. A scene's later lines start by themselves, so every clip still
@@ -21,6 +25,7 @@ import { saidOf } from './readalong.js';
 import { factsOfLesson, askKey } from './facts.js';
 
 export const STILL_MS = 2500;
+export const LOAD_MS = 10000;   // a clip with nothing loaded to play this long, after being asked to, is silent
 const QUICK_END = 0.05; // an "ended" this early, with no length, is the phone's stale-player fault
 export const DEFAULT_NARRATOR = 'heart';
 const plain = s => String(s || '').replace(/\*/g, '').split(/\s+/).filter(Boolean).join(' ');
@@ -218,7 +223,8 @@ export class Clip {
     if (!this.el || this.status === 'ended' || this.status === 'failed') this.make();
     const el = this.el;
     this.status = 'starting';
-    this.movedAt = performance.now();
+    this.movedAt = this.askedAt = performance.now();
+    this.waiting = false;
     this.raw = el.currentTime;
     let asked;
     try { asked = el.play(); } catch { this.fail('refused'); return; }
@@ -241,7 +247,7 @@ export class Clip {
     if (!this.el) this.make();
     try { this.el.currentTime = Math.max(0, t); } catch { /* not loaded yet: it starts at 0 */ }
     this.raw = this.el.currentTime;
-    this.movedAt = performance.now();
+    this.movedAt = this.waitedFrom = performance.now();
   }
 
   // The clip's clock, in seconds. Read every frame by the scene.
@@ -256,13 +262,21 @@ export class Clip {
     return Number.isFinite(d) && d > 0 ? d : 0;
   }
 
-  // Called every frame while it's wanted: notices the clock moving, or standing still too long.
+  // Whether it's still getting the data to play (not yet able to play on, and no error): waiting, not silent.
+  get loading() {
+    const el = this.el;
+    return !!el && !el.error && el.networkState !== 3 && el.readyState < 3;
+  }
+
+  // Called every frame while it's wanted: notices the clock moving, or standing still too long. While it's
+  // loading the clock waits without counting; once it can play, its 2.5 seconds start.
   watch(now = performance.now()) {
     if (!this.el || (this.status !== 'starting' && this.status !== 'playing')) return;
     const t = this.el.currentTime;
     if (t !== this.raw) {
       this.raw = t;
       this.movedAt = now;
+      this.waiting = false;
       if (this.status === 'starting') {
         this.status = 'playing';
         this.started = now - t * 1000;
@@ -270,6 +284,12 @@ export class Clip {
       }
       return;
     }
+    if (this.loading) {
+      this.waiting = true;
+      if (now - Math.max(this.askedAt || 0, this.waitedFrom || 0) > LOAD_MS) this.fail('silent');
+      return;
+    }
+    if (this.waiting) { this.waiting = false; this.movedAt = now; }
     if (now - this.movedAt > STILL_MS) this.fail('silent');
   }
 
@@ -277,6 +297,8 @@ export class Clip {
     // Ended at once with no length: the stale-player fault seen on the phone. Once more, on a new player.
     if ((!this.length || this.raw < QUICK_END) && this.status === 'starting' && !this.retried) {
       this.retried = true;
+      // a new player, made now, outside any tap: if the phone refuses it, the scene asks for a tap
+      this.inTap = false;
       this.make();
       this.play();
       return;

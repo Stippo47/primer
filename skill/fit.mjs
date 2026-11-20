@@ -59,7 +59,7 @@ const server = createServer(async (req, res) => {
 await new Promise(r => server.listen(Number(args.port) || 0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
-const CAPTION_LINES = 4;   // as js/scene.js
+const CAPTION_LINES = 2;   // as js/scene.js: a caption shows a page of at most two lines at a time
 const SCREENS = [{ name: 'small', w: 375, h: 667, insets: '20,0' }, { name: 'big', w: 414, h: 896, insets: '48,34' }];
 // The longest line of feedback a step can show, so the measure with feedback is the worst case.
 function longestWhy(s) {
@@ -112,7 +112,7 @@ try {
     if (r.kind === 'scene' && (sm.over > 0 || bg.over > 0)) {
       verdict = 'scrolls';
       const w = sm.over > 0 ? sm : bg;
-      words = `doesn't fit at line ${w.line}: its caption takes ${w.lines} lines on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}, over the picture; a caption reads best in ${CAPTION_LINES} or fewer. Split the line`;
+      words = `doesn't fit at line ${w.line}: a page of its caption takes ${w.lines} lines on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}, over the picture; a caption shows ${CAPTION_LINES} at a time. A word or a phrase too long for a page: reword it`;
     } else if (sm.over > 0 || bg.over > 0) {
       verdict = 'scrolls';
       words = `doesn't fit: it scrolls by ${Math.max(sm.over, bg.over)} px on the ${sm.over > 0 ? 'smallest iPhone' : 'iPhone 11'}. Cut words, or use a smaller form`;

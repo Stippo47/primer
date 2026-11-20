@@ -18,7 +18,7 @@ import { geoPath, geoInterpolate, geoDistance } from 'd3-geo';
 import { loadWorld, countryAt } from './world.js';
 import { makeView, SPHERE } from './views.js';
 import { LAYERS, mirroredBand, latBand, makeRoute, progressOf, headOf, parallel, makeSpiral } from './layers.js';
-import { BELTS, CELLS, makeWinds, makeCells } from './air.js';
+import { BELTS, CELLS, makeWinds, makeCells, makeParcel } from './air.js';
 import { STYLE, colourOf, rampAt } from './look.js';
 import { Glide } from '../../js/ease.js';
 
@@ -73,7 +73,7 @@ export async function mount(el, settings, ctx = {}) {
   const set = (now = performance.now()) => view.set(w, h, centre, zoom, tilt.at(now), heading.at(now), offX.at(now), offY.at(now));
 
   // ---- what's on the map: everything a call adds, read by the layers
-  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], spirals: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1), key: null,
+  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], spirals: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1), weak: new Glide(0), parcels: [], key: null,
     winds: null, turning: null, cells: null, signs: [] };
   let contents = 0, tapped = null;
   const changed = () => { contents++; wake(); };
@@ -168,7 +168,7 @@ export async function mount(el, settings, ctx = {}) {
   function prune(now) {
     const done = it => it.out && now >= it.out.t0 + it.out.ms;
     let base = false;
-    for (const key of ['points', 'markers', 'routes', 'spirals', 'bands', 'parallels']) {
+    for (const key of ['points', 'markers', 'routes', 'spirals', 'bands', 'parallels', 'parcels']) {
       const before = m[key].length;
       m[key] = m[key].filter(it => !done(it));
       if (key === 'bands' || key === 'parallels') base = base || m[key].length !== before;
@@ -466,6 +466,13 @@ export async function mount(el, settings, ctx = {}) {
         m.grow.go(Math.max(0.1, Number(scale) || 1), ms(seconds), performance.now());
         wake();
       },
+      // A storm dying away: every hurricane on the map, from full strength (0) to gone (1), gliding there over
+      // seconds (3 unless told). On the way it shrinks to about two thirds, loosens (its bands unwind, its eye
+      // fills in, its white greys), turns ever slower, and in its last stretch fades out. 0 brings it back.
+      weaken(level = 1, seconds = 3) {
+        m.weak.go(clamp01(Number(level)), ms(seconds), performance.now());
+        wake();
+      },
       // Writes a place's name on the map: an ocean, a sea, a continent (places.json) or a country. Off takes
       // it away, fading.
       label(name, on = true) {
@@ -591,6 +598,28 @@ export async function mount(el, settings, ctx = {}) {
         offY.go(Math.max(-2.5, Math.min(2.5, Number(y) || 0)), ms(seconds), now);
         wake();
       },
+      // A parcel of air set off from a place toward a latitude, keeping the eastward speed it started with: it
+      // drifts west of its aim heading for the equator (the ground beneath it moving ever faster), east heading
+      // for a pole. progress (0..1) how far it has gone, gliding there over seconds (or driven by a stretch);
+      // show: its path, its speeds (its own and the ground's, as arrows with their km/h) or both; drag (0..1)
+      // how far friction has brought its speed up to the ground's. Called again with the same start and
+      // latitude, it carries on. No latitude: it goes.
+      parcel(from, toLat, progress = 1, seconds = 2, show = 'both', drag) {
+        const at = placeOf(from), now = performance.now();
+        if (!at) return;
+        const old = m.parcels.find(pc => !pc.out && Math.abs(pc.from[0] - at[0]) < 1e-6 && Math.abs(pc.from[1] - at[1]) < 1e-6);
+        if (toLat === undefined || toLat === null || toLat === false) { if (old) old.out = out(now, 450); wake(); return; }
+        const t = ms(seconds), lat = Math.max(-89, Math.min(89, Number(toLat) || 0));
+        if (old && old.toLat === lat) {
+          old.g.go(clamp01(Number(progress)), t, now);
+          if (['path', 'speeds', 'both'].includes(show)) old.show = show;
+          if (drag !== undefined && drag !== null) old.drag.go(clamp01(Number(drag)), t, now);
+        } else {
+          if (old) old.out = out(now, 450);
+          m.parcels.push(makeParcel(at, lat, { now, progress: Number(progress), seconds: t / 1000, drag: Number(drag) || 0, show: ['path', 'speeds', 'both'].includes(show) ? show : 'both' }));
+        }
+        wake();
+      },
       // A sign standing on the world at a place, a word or a number on its board (High, +2 C); called again
       // at the same place with new words, the board pops again. No text: it goes.
       sign(place, text, colour = 'pink') {
@@ -634,9 +663,10 @@ export async function mount(el, settings, ctx = {}) {
         };
         if (!what || what === 'all') {
           m.pin = null; m.selected = null;
-          items = [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.spirals, ...m.labels.values(), ...(m.key ? [m.key] : []), ...m.signs, ...air()];
+          items = [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.spirals, ...m.labels.values(), ...(m.key ? [m.key] : []), ...m.signs, ...m.parcels, ...air()];
         } else if (what === 'winds') items = air();
         else if (what === 'signs') items = m.signs;
+        else if (what === 'parcels') items = m.parcels;
         else if (ROUTE[what]) items = m.routes.filter(r => r.kind === ROUTE[what]);
         else if (what === 'labels') items = [...m.labels.values()];
         else items = Array.isArray(m[what]) ? m[what] : [];
@@ -664,11 +694,12 @@ export async function mount(el, settings, ctx = {}) {
     finish() {
       const now = performance.now(), past = now - 60000;
       if (turn) { centre = turn.path(1); turn = null; }
-      for (const gl of [zoomG, tilt, heading, drift, m.grow, offX, offY]) gl.go(gl.to, 0, now);
+      for (const gl of [zoomG, tilt, heading, drift, m.grow, m.weak, offX, offY]) gl.go(gl.to, 0, now);
       if (m.winds) { for (const b of Object.values(m.winds.belts)) { b.a.go(b.a.to, 0, now); b.bend.go(b.bend.to, 0, now); b.born = past; } if (m.winds.names.on) m.winds.names.born = past; }
       if (m.turning) m.turning.born = past;
       if (m.cells) for (const c of Object.values(m.cells.cells)) { c.p.go(c.p.to, 0, now); if (c.named) c.named = past; }
       for (const sg of m.signs) sg.born = past;
+      for (const pc of m.parcels) { pc.g.go(pc.g.to, 0, now); pc.drag.go(pc.drag.to, 0, now); pc.born = past; }
       zoom = zoomG.to;
       if (zoomAnim) { zoom = zoomAnim.to; zoomAnim = null; }
       for (const rt of m.routes) { rt.g.go(rt.g.to, 0, now); rt.born = past; }
@@ -690,10 +721,11 @@ export async function mount(el, settings, ctx = {}) {
       named: [...m.labels].map(([name, L]) => ({ name, kind: L.kind, at: L.at, fading: !!L.out })), parallels: m.parallels.map(p => p.lat),
       spirals: m.spirals.map(s => ({ at: s.at, bend: s.bend.at(performance.now()), fading: !!s.out })), style: styleName, key: !!(m.key && !m.key.out),
       camera: { centre: roundC(), zoom: roundZ(), tilt: tilt.at(performance.now()), heading: heading.at(performance.now()), following: !!follow, drift: drift.at(performance.now()), moving: !!turn || zoomG.moving(performance.now()) },
-      grow: m.grow.at(performance.now()), soft,
+      grow: m.grow.at(performance.now()), weak: m.weak.at(performance.now()), spun: m.spun || 0, soft,
       winds: m.winds ? Object.fromEntries(Object.entries(m.winds.belts).map(([k, b]) => [k, { shown: Math.round(b.a.at(performance.now()) * 100) / 100, bend: Math.round(b.bend.at(performance.now()) * 100) / 100 }])) : null,
       turning: !!(m.turning && !m.turning.out), cells: m.cells && !m.cells.out ? Object.fromEntries(Object.entries(m.cells.cells).map(([k, c]) => [k, Math.round(c.p.at(performance.now()) * 100) / 100])) : null,
-      frame: [offX.at(performance.now()), offY.at(performance.now())], signs: m.signs.filter(sg => !sg.out).map(sg => sg.text) }),
+      frame: [offX.at(performance.now()), offY.at(performance.now())], signs: m.signs.filter(sg => !sg.out).map(sg => sg.text),
+      parcels: m.parcels.filter(pc => !pc.out).map(pc => ({ from: pc.from, to: pc.toLat, progress: Math.round(pc.g.at(performance.now()) * 100) / 100, drag: Math.round(pc.drag.at(performance.now()) * 100) / 100, show: pc.show })) }),
     remove() {
       gone = true;
       if (raf) cancelAnimationFrame(raf);

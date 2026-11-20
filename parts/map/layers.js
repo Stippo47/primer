@@ -33,6 +33,9 @@ export const spring = (k, bounce) => {
 };
 // Something arriving. Lively (a lesson, the Playground): it pops in on the approved spring. Soft (a scene,
 // d.soft): it grows in smoothly over a little longer, with no ring, so a narrated picture never snaps.
+// a hurricane in a scene turns this fast: in seconds of a lesson storm's turning (1.6 radians) a second, so
+// about 0.9 radians a second, a turn in about seven seconds
+const SCENE_SPIN = 0.56;
 const pop = (d, t0, ms = 520) => (d.soft ? softEase(ramp(d.now, t0, t0 + ms * 1.4)) : spring(ramp(d.now, t0, t0 + ms), MOTION.bounce));
 // How visible a thing is: fading out once `clear` sends it away (it.out), and, in a scene, fading in as it
 // comes (it.born). Things that grow in by scale instead pass born: false.
@@ -547,17 +550,26 @@ const marks = {
   draw(d) {
     const { c: g, view: v, m, now, S, W } = d, width = v.w;
     let busy = false;
-    // a storm's spin: in a lesson the drawing turns; in a scene it stays still (only breathing) and thin streaks
-    // circle it instead, the way the series shows spin (study 2, 1.8)
-    const turning = (at, t0) => ({ size: v.size, turn: d.soft ? 0 : (now - t0) / 1000, south: at[1] < 0 });
+    // a storm's spin: every hurricane turns, counterclockwise north of the equator and clockwise south of it
+    // (round four: "why is the hurricane not spinning?"). In a lesson as it always has; in a scene calmly
+    // (about seven seconds a turn), with thin streaks circling it too, the way the series shows spin (study 2,
+    // 1.8). Weakening (the map's weaken), it shrinks, loosens, slows and fades: its turn is counted up frame by
+    // frame, so slowing never makes it jump.
+    const weak = m.weak.at(now);
+    if (m.weak.moving(now)) busy = true;
+    m.spun = (m.spun || 0) + (d.soft ? ((d.dt || 16) / 1000) * SCENE_SPIN * (1 - 0.8 * weak) : 0);
+    const strength = 1 - weak;
+    const turning = (at, t0) => ({ size: v.size, turn: d.soft ? m.spun : (now - t0) / 1000, south: at[1] < 0, strength: 1 - 0.85 * softEase(clamp01(weak / 0.9)) });
     const spin = (at, x, y, k) => {
       if (!d.soft || k <= 0.05) return;
       const R = Math.max(12, 20 * v.size) * k;
-      streaks(g, x, y, R * 1.05, now / 1000, at[1] < 0 ? -1 : 1, Math.min(1, k * 1.2));
+      streaks(g, x, y, R * 1.05, m.spun * 1.1, at[1] < 0 ? -1 : 1, Math.min(1, k * 1.2) * strength * strength);
     };
     const grow = m.grow.at(now);
     if (m.grow.moving(now)) busy = true;
-    const scaled = (kind, k) => (kind === 'storm' ? k * grow : k);
+    // weakening, a storm also shrinks to about two thirds, and in its last stretch fades away
+    const fadeOf = kind => (kind === 'storm' ? 1 - softEase(clamp01((weak - 0.55) / 0.45)) : 1);
+    const scaled = (kind, k) => (kind === 'storm' ? k * grow * (1 - 0.32 * softEase(weak)) : k);
     for (const p of m.points) {
       if (!v.visible(p.at)) continue;
       const [x, y] = v.proj(p.at), a = shown(p, d, false), k = d.soft ? pop(d, p.born) : 1;
@@ -581,7 +593,7 @@ const marks = {
       if (!v.visible(mk.at)) continue;
       const [x, y] = v.proj(mk.at), k = pop(d, mk.t0), a = shown(mk, d, false);
       if (a <= 0.01) continue;
-      g.save(); g.globalAlpha = a;
+      g.save(); g.globalAlpha = a * fadeOf(mk.kind);
       const above = mark(g, mk.kind, x, y, { k: scaled(mk.kind, k), ...turning(mk.at, mk.t0) });
       if (mk.kind === 'storm') spin(mk.at, x, y, scaled('storm', k));
       if (mk.label) chip(g, mk.label, x, y - above, { k, width });
@@ -593,7 +605,7 @@ const marks = {
       const at = headOf(rt, progressOf(rt, now)), a = shown(rt, d, false);
       if (!v.visible(at) || a <= 0.01) continue;
       const [x, y] = v.proj(at), k = pop(d, rt.born);
-      g.save(); g.globalAlpha = a;
+      g.save(); g.globalAlpha = a * fadeOf(rt.rider);
       mark(g, rt.rider, x, y, { k: scaled(rt.rider, k), ...turning(at, rt.born) });
       if (rt.rider === 'storm') spin(at, x, y, scaled('storm', k));
       g.restore();
@@ -642,7 +654,7 @@ const key = {
 };
 
 // The stack, bottom to top.
-export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, AIR_LAYERS.cells, AIR_LAYERS.winds, AIR_LAYERS.turning, routes, names, marks, AIR_LAYERS.signs, routeNames, key];
+export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, AIR_LAYERS.cells, AIR_LAYERS.winds, AIR_LAYERS.turning, routes, AIR_LAYERS.parcels, names, marks, AIR_LAYERS.signs, routeNames, key];
 
 // ---------------------------------------------------------------- shapes used by more than one call
 

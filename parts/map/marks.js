@@ -30,13 +30,15 @@ export function chip(g, text, x, y, { k = 1, gold = false, width = Infinity } = 
   g.restore();
 }
 
-// A marker of a kind at x, y, popped in by k (0..1). size is the map's size factor; turn the time in
-// seconds a storm has been turning; south whether it's south of the equator (it turns the other way).
+// A marker of a kind at x, y, popped in by k (0..1). size is the map's size factor; turn how far a storm has
+// turned (in seconds at its full speed: a lesson's storm turns 1.6 radians a second); south whether it's
+// south of the equator (it turns the other way); strength (0..1) how strong a storm is: weaker, its bands
+// unwind and its deck greys and thins (a storm dying away).
 // Returns how far above x, y its label goes.
-export function mark(g, kind, x, y, { k = 1, size = 1, turn = 0, south = false } = {}) {
+export function mark(g, kind, x, y, { k = 1, size = 1, turn = 0, south = false, strength = 1 } = {}) {
   if (kind === 'storm') {
     const R = Math.max(12, 20 * size);
-    if (R * k > 0.5) storm(g, x, y, R * k, -0.4 + turn * 1.6 * (south ? 1 : -1));
+    if (R * k > 0.5) storm(g, x, y, R * k, -0.4 + turn * 1.6 * (south ? 1 : -1), strength);
     return R + 22;
   }
   if (kind === 'ring') {
@@ -80,10 +82,12 @@ function ribbon(p, at, width, n = 44) {
 const spiral = (a0, turn, r0, r1) => s => { const r = r0 * Math.pow(r1 / r0, s), a = a0 + turn * s; return [r * Math.cos(a), r * Math.sin(a)]; };
 
 // Seen from straight above: a round deck of cloud with grooves wound into it, a thin veil below, a raised
-// wall round the eye. `angle` falling turns it counterclockwise on screen.
-export function storm(ctx, x, y, R, angle) {
-  const g = 1, d = STORM.depth * R / 28;
-  const T = { white: STORM.fill, shade: STORM.shade, mid: mix(STORM.fill, STORM.shade, 0.5), deep: mix(STORM.tired, STORM.swirl, 1) };
+// wall round the eye. `angle` falling turns it counterclockwise on screen. strength (0..1): at full strength
+// as approved; lower, it loosens (the deck shrinks inside a wider, thinner veil, its grooves unwind, the eye
+// wall sinks and fills in) and greys toward the tired tone.
+export function storm(ctx, x, y, R, angle, strength = 1) {
+  const g = clamp01(strength), d = STORM.depth * R / 28;
+  const T = { white: mix(STORM.tired, STORM.fill, g), shade: mix('#b9bedf', STORM.shade, g), mid: mix(STORM.fill, STORM.shade, 0.5), deep: mix(STORM.tired, STORM.swirl, g) };
   const rd = R * lerp(0.72, 0.96, g);
   const veil = new Path2D(), rv = rd * lerp(1.2, 1.26, g);
   disc(veil, 0, 0, rv);
@@ -101,7 +105,7 @@ export function storm(ctx, x, y, R, angle) {
       s => R * lerp(0.085, 0.03, s) * Math.pow(Math.sin(Math.min(1, s * 1.2 + 0.03) * PI), 0.5) + 0.01, 70);
   }
   const wall = new Path2D();
-  disc(wall, 0, 0, R * 0.4);
+  disc(wall, 0, 0, R * lerp(0.2, 0.4, g));
   const slab = (p, fill, under, dd) => {
     if (dd) { ctx.save(); ctx.translate(0, dd); ctx.fillStyle = under; ctx.fill(p); ctx.restore(); }
     ctx.fillStyle = fill; ctx.fill(p);
@@ -117,7 +121,7 @@ export function storm(ctx, x, y, R, angle) {
   slab(top, T.white, T.shade, d);
   ctx.save(); ctx.clip(top); ctx.fillStyle = T.shade; ctx.fill(grooves); ctx.restore();
   slab(wall, T.white, T.shade, d * 0.8);
-  const er = R * 0.18;
+  const er = R * lerp(0.08, 0.18, g);
   ctx.save();
   ctx.beginPath(); ctx.arc(0, 0, er, 0, TAU); ctx.clip();
   ctx.fillStyle = T.shade; ctx.fillRect(-er, -er, er * 2, er * 2);

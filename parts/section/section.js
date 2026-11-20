@@ -20,7 +20,7 @@
 // mount(el, settings, ctx) -> { calls, state, on, remove, busy, finish, debug }.
 
 import { Glide, Shift, soft as softEase, clamp01, lerp, rng, MOTION } from '../../js/ease.js';
-import { heat, air, loopShare, along, puff, cloud as drawCloud, sign as drawSign, label as drawLabel, glow, mixHex, rgba as rgbaHex } from '../../js/code.js';
+import { heat, air, loopShare, along, puff, cloud as drawCloud, cloudSize, sign as drawSign, label as drawLabel, glow, mixHex, rgba as rgbaHex } from '../../js/code.js';
 import { chip } from '../map/marks.js';
 import { mix, rgba } from '../map/look.js';
 
@@ -31,14 +31,16 @@ const LEVELS = ['sun', 'warm', 'vapour', 'rise', 'cloud', 'release', 'inflow', '
 const COLOURED = new Set(['warm', 'ground']);
 // The framings: the middle of what's shown and how much of it, in world units [x, y, width, height].
 export const VIEWS = {
-  wide: [0, 370, 620, 1310],
+  wide: [0, 410, 620, 1400],
   sea: [0, -110, 520, 520],
   surface: [0, 90, 520, 560],
   air: [0, 330, 620, 760],
   cloud: [0, 620, 700, 620],
+  base: [0, 330, 430, 620],
   top: [0, 820, 760, 520],
 };
 const BASE = 450;            // where vapour turns back into drops: the cloud's base
+const CLOUD_UNIT = 80;       // world units to one of the cloud drawing's own (js/code.js): a storm cloud tops out near 900
 const SIGN_AT = { left: -170, middle: 0, right: 170 };
 // The thermometer: where it stands (its bulb in the sea, its tube up into the air) and its scale.
 const GAUGE = { x: -150, bulb: -46, top: 290, lo: 10, hi: 35 };
@@ -70,44 +72,17 @@ export async function mount(el, settings, ctx = {}) {
   const tags = new Map();   // thing -> { text, born, out }
   const signs = new Map();  // where -> { text, colour, born, out, num, unit }
   // a parcel of air: where it is (0 at the surface, 1 at the cloud base) and the temperature on its tag
-  const parcel = { h: new Glide(0), temp: new Glide(26), on: false, born: 0, out: null };
+  const parcel = { h: new Glide(0), temp: new Glide(26), on: false, born: 0, out: null, x: -110 };
   // the thermometer: its reading glides; shown or not
   const gauge = { value: new Glide(20), unit: '°C', born: 0, out: null, on: false };
   // the sun crossing the sky, once a day, while days pass (days): how far through the day it is
   let dayPhase = 0.35;
   let w = 0, h = 0, dpr = 1, raf = 0, gone = false, last = 0, frames = 0, clock = 0;
 
-  // The cloud: puffs, made once from a seeded random. A tower over the column, wider in the middle, and an anvil
-  // spreading at the top. Each puff has the cloud level at which it's born: the middle first at every height,
-  // then out to the sides, each height after the one below, so the cloud billows upward and outward from
-  // the rising air (never laid out along its base first).
+  // The cloud is the series' one cloud drawing (js/code.js, cloud): it grows from a first small heap at the
+  // base into a storm cloud with an anvil, worked out from its level each frame. CLOUD_UNIT world units to
+  // one of its own.
   const R = rng(7);
-  const puffs = [];
-  const ROWS = 12;
-  for (let r = 0; r < ROWS; r++) {
-    const hk = r / (ROWS - 1), y = 476 + hk * 390;
-    // narrow where it starts, bulging through the middle, a little narrower again under the anvil
-    const half = 58 + 92 * Math.sin(Math.PI * Math.min(1, 0.12 + hk * 0.95)) * (hk < 0.85 ? 1 : 0.85);
-    const n = 2 + Math.round(half / 28);
-    for (let i = 0; i < n; i++) {
-      const sx = (i / (n - 1)) * 2 - 1, edge = Math.abs(sx);
-      puffs.push({ x: sx * half + (R() - 0.5) * 26, y: y + (R() - 0.5) * 30 + (1 - sx * sx) * 22, r: 24 + R() * 14 + (1 - edge) * 30,
-        need: 0.02 + hk * 0.68 + edge * 0.12 + R() * 0.03, ph: R() * TAU });
-    }
-  }
-  // the anvil: a wide, flat-topped layer spreading out from the middle at the top of the storm
-  for (let row = 0; row < 3; row++) {
-    const n = 15 - row * 2;
-    for (let i = 0; i < n; i++) {
-      const sx = (i / (n - 1)) * 2 - 1, edge = Math.abs(sx);
-      const spanX = 350 - row * 70;
-      puffs.push({ x: sx * spanX + (R() - 0.5) * 24, y: 905 - row * 36 + (R() - 0.5) * 10 - edge * 16, r: (row === 0 ? 44 : 50) + R() * 12 - edge * 10, f: row === 0 ? 0.62 : 0.8,
-        need: 0.82 + edge * 0.15 + row * 0.01 + R() * 0.01, ph: R() * TAU });
-    }
-  }
-  // the first of it is a small knot of bubbles right over the column, where the rising air first makes cloud
-  for (const [x, y, r, need] of [[0, 488, 30, 0], [-27, 480, 22, 0.012], [25, 476, 21, 0.02], [5, 506, 24, 0.008], [-8, 462, 18, 0.028]]) puffs.push({ x, y, r, need, ph: R() * TAU });
-  puffs.sort((a, b) => a.need - b.need);
   // vapour: a fixed set of puffs, each on its own loop up from the sea
   const vap = Array.from({ length: 44 }, (_, i) => ({ x: shore === 'right' ? -330 + R() * 320 : (R() - 0.5) * 2 * 330, ph: R(), sway: R() * TAU, r: 0.8 + R() * 0.5, turn: R() * TAU, i }));
   // heat rising off a warm surface, and the heat let go in the cloud
@@ -137,7 +112,7 @@ export async function mount(el, settings, ctx = {}) {
   }
 
   const level = (k, now) => clamp01(lv[k].at(now));
-  const cloudTop = c => 478 + Math.max(0.08, c) * 420;
+  const cloudTop = c => BASE + Math.max(0.6, cloudSize(c)[0]) * CLOUD_UNIT;
   // the land's surface height at x (nothing where there's sea)
   const landAt = X => (shore === 'land' ? 10 + 4 * Math.sin(X / 70) : shore === 'right' && X > 18 ? Math.min(16, (X - 18) * 0.5) + 3 * Math.sin(X / 55) : null);
   const surfaceAt = (X, t) => { const l = landAt(X); return l === null ? Math.sin(X / 70 + t * 1.1) * 5 + Math.sin(X / 31 - t * 0.7) * 2 : l; };
@@ -318,30 +293,19 @@ export async function mount(el, settings, ctx = {}) {
       }
     }
 
-    // the heat let go inside the cloud: warm triangles streaming out of it into the air around, drawn behind
-    // the cloud so they're seen leaving it
-    if (L.release > 0.01 && L.cloud > 0.05) {
-      const n = Math.round(sparks.length * L.release);
-      for (let i = 0; i < n; i++) {
-        const sp = sparks[i], k = (sp.ph + clock * 0.42) % 1;
-        const r0 = lerp(90 + 60 * L.cloud, 230 + 120 * L.cloud, k) * (0.75 + 0.25 * sp.d);
-        const X = colX + Math.cos(sp.a) * r0 * 1.15, Y = heart + Math.sin(sp.a) * r0 * 0.9;
-        { const env = Math.sin(Math.PI * k); heat(g, C.x(X), C.y(Y), Math.max(5, 13 * s) * (0.55 + 0.45 * env), Math.atan2(-Math.sin(sp.a) * 0.9, Math.cos(sp.a) * 1.15), L.release * Math.min(1, env * 1.6)); }
-      }
-    }
-
-    // the cloud: puffs billowing up into place as the level reaches them, each boiling gently
+    // the cloud: the series' cloud, growing from its first heap at the base into a storm cloud as its level
+    // rises, its middle over the column; with heat let go inside it, its lit face warms
     if (L.cloud > 0.005) {
-      const shown = [];
-      for (const p of puffs) {
-        const k = clamp01((L.cloud - p.need) / 0.13);
-        if (k <= 0.01) continue;
-        const grow = MOTION.furniture.ease(k);
-        const spread = 0.78 + 0.22 * L.cloud;
-        shown.push({ x: C.x(colX + p.x * spread + Math.sin(t * 0.5 + p.ph) * 3), y: C.y(p.y - (1 - grow) * 70 + Math.sin(t * 0.7 + p.ph) * 4),
-          r: Math.max(1, p.r * s * grow * (1 + 0.035 * Math.sin(t * 0.9 + p.ph))), f: p.f });
+      drawCloud(g, C.x(colX), C.y(BASE), CLOUD_UNIT * s, { level: L.cloud, t, warm: L.release * 0.7 });
+      // the heat let go inside it: a few warm triangles rising up through it, fading as they go
+      if (L.release > 0.01) {
+        const [tall, wide] = cloudSize(L.cloud);
+        for (let i = 0; i < 6; i++) {
+          const sp = sparks[i], k = (sp.ph + clock * 0.3) % 1;
+          const X = colX + (sp.d - 0.7) * wide * CLOUD_UNIT * 1.1 + Math.sin(t * 0.8 + i) * 6, Y = BASE + 30 + k * tall * CLOUD_UNIT * 0.7;
+          heat(g, C.x(X), C.y(Y), Math.max(5, 12 * s), -Math.PI / 2, L.release * Math.sin(Math.PI * k) * 0.95);
+        }
       }
-      drawCloud(g, shown, { warm: L.release * 0.8 });
     }
 
     // rain: thin slanted streaks under the cloud
@@ -445,13 +409,24 @@ export async function mount(el, settings, ctx = {}) {
       }
     }
 
-    // air rushing in along the surface toward the column, then turning up into it, on a two-second loop
+    // air rushing in along the surface toward the column, then turning up into it, on a two-second loop; with
+    // carry, it's picking up warm vapour from the sea on its way: the arrows warm, and a soft warm sheen lies
+    // along the sea under them
     if (L.inflow > 0.01) {
+      const inflowCol = mixHex('#8fdcff', '#ffcf9a', L.carry * 0.5);
+      if (L.carry > 0.01) {
+        for (const side of sides) {
+          const x0 = C.x(colX + side * 360), x1 = C.x(colX + side * 40), y0 = C.y(0) - 2, y1 = C.y(120);
+          const sheen = g.createLinearGradient(0, y0, 0, y1);
+          sheen.addColorStop(0, rgbaHex('#ffc58a', 0.22 * L.carry * L.inflow)); sheen.addColorStop(1, rgbaHex('#ffc58a', 0));
+          g.fillStyle = sheen; g.fillRect(Math.min(x0, x1), y1, Math.abs(x1 - x0), y0 - y1);
+        }
+      }
       for (const side of sides) {
         for (const [lane, off] of [[34, 0], [84, 0.5]]) {
           const path = k => { const X = colX + side * lerp(360, 46, softEase(Math.min(1, k * 1.12))); return [X, (landAt(X) ?? 0) + lane + Math.pow(clamp01((k - 0.62) / 0.38), 2) * 210]; };
           const q = (clock * 0.5 + off) % 1, [hd, tl] = loopShare(q);
-          air(g, along(path, tl, hd).map(P), { phase: clock * 1.4, w: aw, a: L.inflow * (1 - softEase(clamp01((q - 0.82) / 0.18))) });
+          air(g, along(path, tl, hd).map(P), { phase: clock * 1.4, w: aw, a: L.inflow * (1 - softEase(clamp01((q - 0.82) / 0.18))), colour: inflowCol });
         }
       }
     }
@@ -479,7 +454,7 @@ export async function mount(el, settings, ctx = {}) {
       const born = softEase(clamp01((now - parcel.born) / 500)), gone = parcel.out ? 1 - clamp01((now - parcel.out.t0) / parcel.out.ms) : 1;
       const a = born * gone, hk = clamp01(parcel.h.at(now));
       if (a > 0.01) {
-        const X = colX - 110, Y = lerp(70, BASE - 40, hk), rr = (44 + 30 * hk) * s;
+        const X = colX + parcel.x, Y = lerp(70, BASE + 20, hk), rr = (44 + 30 * hk) * s;
         const px = C.x(X), py = C.y(Y);
         parcelAt = [X, Y];
         const tint = mixHex('#ffb86b', '#7fd6ff', hk);
@@ -663,11 +638,14 @@ export async function mount(el, settings, ctx = {}) {
       signs.set(where, sg);
       wake();
     },
-    // A parcel of air rising up the column: height 0 at the surface to 1 at the cloud's base, gliding there over
-    // seconds, with the temperature on its tag counting to `temperature`. With no height it goes.
-    parcel(height, seconds = 1.6, temperature) {
+    // A parcel of air rising beside the column (where: side) or up the column itself (column, where it becomes
+    // the cloud's first heap as the cloud forms and it goes): height 0 at the surface to 1 at the cloud's base,
+    // gliding there over seconds, with the temperature on its tag counting to `temperature`. With no height it
+    // goes (over seconds, half a second unless told).
+    parcel(height, seconds = 1.6, temperature, where) {
       const now = performance.now();
-      if (height === undefined || height === null || height === false) { if (parcel.on && !parcel.out) parcel.out = { t0: now, ms: 450 }; wake(); return; }
+      if (height === undefined || height === null || height === false) { if (parcel.on && !parcel.out) parcel.out = { t0: now, ms: arguments.length > 1 && Number(seconds) > 0 ? ms(seconds) : 450 }; wake(); return; }
+      if (where === 'column' || where === 'side') parcel.x = where === 'column' ? 0 : -110;
       if (!parcel.on || parcel.out) { parcel.h.go(clamp01(Number(height) || 0), 0, now); parcel.born = now; parcel.on = true; parcel.out = null; }
       parcel.h.go(clamp01(Number(height) || 0), ms(seconds), now);
       if (Number.isFinite(Number(temperature))) parcel.temp.go(Number(temperature), parcel.born === now ? 0 : ms(seconds), now);

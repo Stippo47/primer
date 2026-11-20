@@ -1228,11 +1228,18 @@ class Fit(Work):
 
 class SceneFit(SceneWork):
     def test_fit_draws_every_line_of_a_scene(self):
-        dest = self.scene_topic(lambda S: line(S, 'end').update(text='And that is the end of the made-up scene. ' * 12, do=[]))
+        # a long caption is shown a page of at most two lines at a time, cut at its phrases: it fits
+        dest = self.scene_topic(lambda S: line(S, 'end').update(text='And that is the end of the made-up scene. ' * 6, do=[]))
         r = run('fit', dest / 'engine.json', '--json', '--debug-port', os.environ.get('PRIMER_TEST_DEBUG', '9341'))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         res = json.loads(r.stdout.strip().splitlines()[-1])['engine']['steps']
         self.assertEqual(len(res), 1)
+        self.assertIn(res[0]['verdict'], ('fits', 'tight'), res)
+        # a word too long for any page doesn't
+        dest = self.scene_topic(lambda S: line(S, 'end').update(text='The ' + 'unendingly' * 9 + ' end.', do=[]))
+        r = run('fit', dest / 'engine.json', '--json', '--debug-port', os.environ.get('PRIMER_TEST_DEBUG', '9341'))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        res = json.loads(r.stdout.strip().splitlines()[-1])['engine']['steps']
         self.assertEqual(res[0]['verdict'], 'scrolls')
         self.assertIn('at line end', res[0]['words'])
         r = run('fit', SCENES, '--json', '--debug-port', os.environ.get('PRIMER_TEST_DEBUG', '9341'))
