@@ -479,3 +479,18 @@ Their words are in primer-data `notes/answers-2026-11-20a.md`.
   **Pick: shells.** It's the most colourful and the most plainly an explosion, and always moving; in the far-end group, rays reads as a dark chip with a light in it, and the ring nebula looks like an orbit, close to celestial's and nebula's rings.
 - **Multiverse: branches** (their pick, set in `PICK`).
 - All new motion is transforms and opacity on small layers, rings and rays are gradients, the ragged edges and fades are static masks, no blur; outside the chip, the new layers stay inside the space round it the old supernova used.
+
+## 2026-11-20: animations round three on the phone
+
+Their words are in primer-data `notes/answers-2026-11-20b.md`. All three animations and the new path: good on the card. A big step; what's left:
+
+- **Clouds look off** (the sun-and-rising-air section, the pins card, the engine). The cloud's drawing gets redone.
+- **The loops of air: "weird".**
+- **The trade winds aren't understood yet:** "Why is the wind not moving the other way, pulled by the equator to move faster?" The script must meet that thought head on: air isn't attached to the ground; it keeps the eastward speed it had, so it lags as it reaches faster ground, and friction only slowly drags it along.
+- **Empty pockets** in the wind streaks around the globe.
+- **The hurricane must spin** (two notes). This overturns the study's "a still storm with streaks round it".
+- **Captions:** no background, fewer lines at a time, slightly bigger text, and an obvious way to turn them on and off.
+- **The engine's heat carried and let go, and the engine feeding itself: problem.** Too many things at once, in slightly different styles that don't mesh: small vapour, big balls and clouds in a chain. The close-up is good. One consistent style, fewer elements at a time.
+- **Spin, the hook and the end:** the hurricane jumps, or fades out abruptly over land.
+- **"No sound played" for the voice once in Primer, then it started.** A bug to find.
+- For Riffle (another project): films there should play with their sound, so soundtracks needn't be attached separately.
