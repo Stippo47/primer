@@ -97,8 +97,14 @@ const FILES = [
   'sounds/wind.m4a',
   'sounds/fizz.m4a',
   'sounds/rumble.m4a',
-  'sounds/crack.m4a',
-  'sounds/shatter.m4a',
+  // the press, crack and shatter recordings (js/feel.js, RECORDED)
+  'sounds/tap-2-click.m4a',
+  'sounds/tap-9-switch.m4a',
+  'sounds/tap-10-switch-soft.m4a',
+  'sounds/crack-3-ice.m4a',
+  'sounds/crack-4-ice-short.m4a',
+  'sounds/crack-5-ice-break.m4a',
+  'sounds/shatter-5-tile.m4a',
 ];
 
 self.addEventListener('install', e => {

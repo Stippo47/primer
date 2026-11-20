@@ -11,8 +11,9 @@ parts/parts.json ("scene", "sounds") and js/sfx.js.
 Each is written as a WAV, then encoded with ffmpeg to AAC in an .m4a (mono, 44.1 kHz, 96 kbps), the format
 the voice clips use. --wav keeps the WAVs beside them.
 
-The combo's crack and shatter are made here too (COMBO, below); --candidates DIR also writes every
-candidate for them to DIR, to be heard side by side, and --only names the few to make.
+The combo's crack and shatter were made here too, until recordings from the sound library replaced them
+(2026-11-19, js/feel.js RECORDED); --candidates DIR still writes the made ones to DIR, to be heard side by
+side, and --only names the few to make.
 """
 import argparse
 import math
@@ -345,7 +346,7 @@ def shatter_shower():
 
 CRACKS = {'crack-a-porcelain': crack_porcelain, 'crack-b-glass': crack_glass, 'crack-c-ceramic': crack_ceramic}
 SHATTERS = {'shatter-a-cascade': shatter_cascade, 'shatter-b-chimes': shatter_chimes, 'shatter-c-shower': shatter_shower}
-COMBO = {'crack': crack_porcelain, 'shatter': shatter_cascade}   # the picks the app plays
+COMBO = {}   # the app plays library recordings for the crack and the shatter now (js/feel.js, RECORDED)
 COMBO_LUFS = -27.5
 
 

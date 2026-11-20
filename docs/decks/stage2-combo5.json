@@ -1,0 +1,108 @@
+{
+  "title": "Combo tiers, round five",
+  "topic": "stage2",
+  "order": 17,
+  "cards": [
+    {
+      "id": "tiers-round-five",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The tiers, round five",
+      "text": "Gems back to one shared look, eternal's clock dial, a new celestial, singularity and void fixed, sounds in.",
+      "why": "Your notes on round four: gems revert and shift the lines, opal not, eternal gets the disk, celestial something else, singularity's ring in front, void's stars going in, the other three redone. The new ideas are on the Spreads after this.",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom.\n\nOnly the looks named here changed. Metals, obsidian, aurora and nebula are untouched, and so are thresholds and shields.\n\nEach part's first film shows its group side by side; the rest are one tier each, six seconds, looping, bigger than on the phone. Opal, supernova, eclipse and multiverse each have their ideas on a Spread of their own after this card, with my pick ticked; the app uses my picks for now, and changing one is one word.\n\nThe sounds are wired as you picked them. They play only with Effects on (Profile), which is still off by default.",
+      "parts": [
+        {
+          "id": "gems",
+          "title": "The gems",
+          "text": "All five are drawn the same way again, round two's look: big bright facets, the light running across them, a white sweep, four sparkles circling, a strong glow. They differ by colour and by how the lines run: emerald round two's step cut, sapphire a cross over the table, crystal a zigzag, ruby a six-pointed star, diamond the brilliant.",
+          "videos": ["../stage2/shots-combo5/groups/gems.mp4", "../stage2/shots-combo5/tiers/07-emerald.mp4", "../stage2/shots-combo5/tiers/08-sapphire.mp4", "../stage2/shots-combo5/tiers/09-crystal.mp4", "../stage2/shots-combo5/tiers/10-ruby.mp4", "../stage2/shots-combo5/tiers/11-diamond.mp4", "../stage2/shots-combo5/groups/stones.mp4"]
+        },
+        {
+          "id": "eternal-celestial",
+          "title": "Eternal and celestial",
+          "text": "Eternal has celestial's gold dial turning behind it, with a clock's two hands: the long one ticks round, the short one sweeps. Celestial has the sun and the moon on one tilted gold orbit, passing behind the chip at the top and across its front at the bottom.",
+          "videos": ["../stage2/shots-combo5/groups/sky.mp4", "../stage2/shots-combo5/tiers/18-eternal.mp4", "../stage2/shots-combo5/tiers/17-celestial.mp4"]
+        },
+        {
+          "id": "singularity-void",
+          "title": "Singularity and void",
+          "text": "Singularity's outer ring is tilted, its near half crossing in front of the chip at the bottom, the far half behind at the top. Void's stars fall inward to the middle from all round, shrinking and going out, and specks from all round the outside fall in to its edge. Nothing drifts left now.",
+          "videos": ["../stage2/shots-combo5/groups/far.mp4", "../stage2/shots-combo5/tiers/21-singularity.mp4", "../stage2/shots-combo5/tiers/23-void.mp4"]
+        },
+        {
+          "id": "sounds",
+          "title": "Sounds wired",
+          "text": "Crack: the three ice cracks, one at random each time and never the same twice running. Shatter: the tile. Button presses: the click, the switch and the soft switch. Levels as on the sounds deck. The films have the crack and shatter in, though the phone plays films silent.",
+          "audio": [
+            { "src": "../../sounds/crack-3-ice.m4a", "label": "Crack 3, ice" },
+            { "src": "../../sounds/crack-4-ice-short.m4a", "label": "Crack 4, ice, short" },
+            { "src": "../../sounds/crack-5-ice-break.m4a", "label": "Crack 5, ice breaking" },
+            { "src": "../../sounds/shatter-5-tile.m4a", "label": "Shatter 5, tile" },
+            { "src": "../../sounds/tap-2-click.m4a", "label": "Tap 2, click" },
+            { "src": "../../sounds/tap-9-switch.m4a", "label": "Tap 9, switch" },
+            { "src": "../../sounds/tap-10-switch-soft.m4a", "label": "Tap 10, soft switch" }
+          ],
+          "videos": ["../stage2/shots-combo5/moments/crack-1-gold.mp4", "../stage2/shots-combo5/moments/crack-2-crystal.mp4", "../stage2/shots-combo5/moments/shatter-gold.mp4", "../stage2/shots-combo5/moments/shatter-crystal.mp4"]
+        }
+      ]
+    },
+    {
+      "id": "opal-ideas",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Opal: three ideas",
+      "text": "Three different opals. Tick the ones you like.",
+      "why": "My pick is harlequin: it reads as an opal, colour in patches that change as the light crosses. Rolling looks more like a holographic sticker and goes milky for part of its loop; boulder reads as stripes.",
+      "pick": ["opal-harlequin"],
+      "details": "Each film is six seconds, looping, bigger than on the phone. The app uses harlequin for now.\n\nIf none is right, say what an opal should look like to you (a photo helps) and I'll draw from that.",
+      "items": [
+        { "id": "opal-harlequin", "label": "Harlequin", "video": "../stage2/shots-combo5/ideas/opal-harlequin.mp4", "text": "A light opal: small diamond-shaped patches of vivid colour under a milky skin, a few flashing to another colour as the light crosses." },
+        { "id": "opal-rolling", "label": "Rolling", "video": "../stage2/shots-combo5/ideas/opal-rolling.mp4", "text": "A pearly opal with a soft rainbow sliding under the milk, a fainter one going the other way." },
+        { "id": "opal-boulder", "label": "Boulder", "video": "../stage2/shots-combo5/ideas/opal-boulder.mp4", "text": "Veins of opal through brown ironstone, their colours crossing over to a second set and back." }
+      ]
+    },
+    {
+      "id": "supernova-ideas",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Supernova: two ideas",
+      "text": "Two fresh supernovas. Tick the ones you like.",
+      "why": "My pick is pulsar: it's always alive, and nothing else on the ladder looks like it. Collapse tells the explosion as a story but is quiet for four seconds of every six.",
+      "pick": ["supernova-pulsar"],
+      "details": "Each film is six seconds, looping. The app uses pulsar for now.",
+      "items": [
+        { "id": "supernova-pulsar", "label": "Pulsar", "video": "../stage2/shots-combo5/ideas/supernova-pulsar.mp4", "text": "What a supernova leaves: torn red and gold threads of gas round a tiny star, sweeping two beams round like a lighthouse, out past the chip." },
+        { "id": "supernova-collapse", "label": "Collapse", "video": "../stage2/shots-combo5/ideas/supernova-collapse.mp4", "text": "A star slowly shrinking and heating to white, falling in on itself, a flash, and a shell of fire racing out past the chip." }
+      ]
+    },
+    {
+      "id": "eclipse-ideas",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Eclipse: two ideas",
+      "text": "Two fresh eclipses. Tick the ones you like.",
+      "why": "My pick is annular, the ring of fire: it's new. Transit works as a story, but at totality it's last round's black moon and corona again, which you didn't like.",
+      "pick": ["eclipse-annular"],
+      "details": "Each film is six seconds, looping. The app uses annular for now.",
+      "items": [
+        { "id": "eclipse-annular", "label": "Ring of fire", "video": "../stage2/shots-combo5/ideas/eclipse-annular.mp4", "text": "The moon a little too small to hide the sun: a blazing ring round it, flames licking off its edge, a bright point running round." },
+        { "id": "eclipse-transit", "label": "Transit", "video": "../stage2/shots-combo5/ideas/eclipse-transit.mp4", "text": "The moon crossing the sun whole: blue sky, a bite, then totality with the sky dark, stars out and the corona; a bead of light at each edge." }
+      ]
+    },
+    {
+      "id": "multiverse-ideas",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Multiverse: two ideas",
+      "text": "Two fresh multiverses. Tick the ones you like.",
+      "why": "My pick is branches: timelines splitting off one another says many worlds most plainly, and the threads running out past the chip's sides make it feel bigger.",
+      "pick": ["multiverse-branches"],
+      "details": "Each film is six seconds, looping. The app uses branches for now.",
+      "items": [
+        { "id": "multiverse-branches", "label": "Branches", "video": "../stage2/shots-combo5/ideas/multiverse-branches.mp4", "text": "One timeline along the middle, others forking off it and off each other, each its own colour, running out past the chip's sides." },
+        { "id": "multiverse-nested", "label": "Nested", "video": "../stage2/shots-combo5/ideas/multiverse-nested.mp4", "text": "Universes inside universes: frames of the chip's shape, each its own colour with its own stars, growing out of the middle and on out round the chip." }
+      ]
+    }
+  ]
+}
