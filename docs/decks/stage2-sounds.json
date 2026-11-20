@@ -1,0 +1,772 @@
+{
+  "title": "Sounds from a library",
+  "topic": "stage2",
+  "order": 14,
+  "kind": "board",
+  "cards": [
+    {
+      "id": "sounds-whoosh",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Whoosh: 9 to hear",
+      "text": "Tick every one of these whooshes that sounds nice. A rush of air for a push or a zoom to another picture.",
+      "why": "My guesses: 1 and 2, smooth rise and fall at about a second, like a push. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "whoosh-1-soft-rush",
+        "whoosh-2-low-tail"
+      ],
+      "details": "A rush of air for a push or a zoom to another picture.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "whoosh-1-soft-rush",
+          "label": "1. Soft even rush of air",
+          "audio": "../../sounds/library/candidates/whoosh-1-soft-rush.m4a",
+          "text": "1.37 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-2-low-tail",
+          "label": "2. Low whoosh, long fading tail",
+          "audio": "../../sounds/library/candidates/whoosh-2-low-tail.m4a",
+          "text": "0.97 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-3-bright-quick",
+          "label": "3. Brighter, quicker whoosh",
+          "audio": "../../sounds/library/candidates/whoosh-3-bright-quick.m4a",
+          "text": "0.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-4-fast-swish",
+          "label": "4. Classic fast swish",
+          "audio": "../../sounds/library/candidates/whoosh-4-fast-swish.m4a",
+          "text": "0.43 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-5-airy-swoosh",
+          "label": "5. Airy swoosh",
+          "audio": "../../sounds/library/candidates/whoosh-5-airy-swoosh.m4a",
+          "text": "0.47 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-6-deep-fade",
+          "label": "6. Deep whoosh that fades slowly",
+          "audio": "../../sounds/library/candidates/whoosh-6-deep-fade.m4a",
+          "text": "1.59 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-7-long-low",
+          "label": "7. Long low rush",
+          "audio": "../../sounds/library/candidates/whoosh-7-long-low.m4a",
+          "text": "1.84 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-8-light-slow",
+          "label": "8. Light, slow swoosh",
+          "audio": "../../sounds/library/candidates/whoosh-8-light-slow.m4a",
+          "text": "1.78 s. From Freesound (CC0)."
+        },
+        {
+          "id": "whoosh-9-short-punchy",
+          "label": "9. Short punchy whoosh",
+          "audio": "../../sounds/library/candidates/whoosh-9-short-punchy.m4a",
+          "text": "0.33 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-cut",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Cut: 9 to hear",
+      "text": "Tick every one of these cuts that sounds nice. A short soft puff for a plain cut from one picture to the next.",
+      "why": "My guesses: 1 (the softest, lowest puff) and 2 (short and light). I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "cut-1-low-puff",
+        "cut-2-tiny-swish"
+      ],
+      "details": "A short soft puff for a plain cut from one picture to the next.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "cut-1-low-puff",
+          "label": "1. Low soft puff",
+          "audio": "../../sounds/library/candidates/cut-1-low-puff.m4a",
+          "text": "0.27 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-2-tiny-swish",
+          "label": "2. Tiny swish",
+          "audio": "../../sounds/library/candidates/cut-2-tiny-swish.m4a",
+          "text": "0.27 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-3-quick-swing",
+          "label": "3. Quick swing",
+          "audio": "../../sounds/library/candidates/cut-3-quick-swing.m4a",
+          "text": "0.18 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-4-folder-swish",
+          "label": "4. Papery folder swish",
+          "audio": "../../sounds/library/candidates/cut-4-folder-swish.m4a",
+          "text": "0.49 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-5-breathy",
+          "label": "5. Breathy short whoosh",
+          "audio": "../../sounds/library/candidates/cut-5-breathy.m4a",
+          "text": "0.52 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-6-paper-swipe",
+          "label": "6. Paper swiped on a surface",
+          "audio": "../../sounds/library/candidates/cut-6-paper-swipe.m4a",
+          "text": "0.60 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-7-dry-rush",
+          "label": "7. Dry rush up and away",
+          "audio": "../../sounds/library/candidates/cut-7-dry-rush.m4a",
+          "text": "0.60 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-8-glassy-reverse",
+          "label": "8. Glassy reversed swish",
+          "audio": "../../sounds/library/candidates/cut-8-glassy-reverse.m4a",
+          "text": "0.27 s. From Freesound (CC0)."
+        },
+        {
+          "id": "cut-9-very-quick",
+          "label": "9. Very quick woosh",
+          "audio": "../../sounds/library/candidates/cut-9-very-quick.m4a",
+          "text": "0.15 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-swell",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Swell: 8 to hear",
+      "text": "Tick every one of these swells that sounds nice. A rising swell: something growing, a storm strengthening.",
+      "why": "My guesses: 1 and 2, the warmest and smoothest climbs; the cymbal ones are brighter. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "swell-1-cinematic",
+        "swell-2-guitar"
+      ],
+      "details": "A rising swell: something growing, a storm strengthening.\n\nAll 8 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "swell-1-cinematic",
+          "label": "1. Warm cinematic swell",
+          "audio": "../../sounds/library/candidates/swell-1-cinematic.m4a",
+          "text": "2.21 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-2-guitar",
+          "label": "2. Guitar swell, tonal",
+          "audio": "../../sounds/library/candidates/swell-2-guitar.m4a",
+          "text": "2.92 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-3-airy-riser",
+          "label": "3. Airy riser",
+          "audio": "../../sounds/library/candidates/swell-3-airy-riser.m4a",
+          "text": "2.37 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-4-noise-riser",
+          "label": "4. Noise riser, stops at the top",
+          "audio": "../../sounds/library/candidates/swell-4-noise-riser.m4a",
+          "text": "1.96 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-5-dense-riser",
+          "label": "5. Dense riser",
+          "audio": "../../sounds/library/candidates/swell-5-dense-riser.m4a",
+          "text": "1.56 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-6-reverse-cymbal",
+          "label": "6. Reversed crash cymbal",
+          "audio": "../../sounds/library/candidates/swell-6-reverse-cymbal.m4a",
+          "text": "1.52 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-7-shiny-cymbal",
+          "label": "7. Short shiny reversed cymbal",
+          "audio": "../../sounds/library/candidates/swell-7-shiny-cymbal.m4a",
+          "text": "1.25 s. From Freesound (CC0)."
+        },
+        {
+          "id": "swell-8-glassy-cymbal",
+          "label": "8. Glassy reversed cymbal",
+          "audio": "../../sounds/library/candidates/swell-8-glassy-cymbal.m4a",
+          "text": "1.69 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-pop",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Pop: 9 to hear",
+      "text": "Tick every one of these pops that sounds nice. A small round pop: a point or a name arriving.",
+      "why": "My guesses: 1 and 2, the roundest and least clicky. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "pop-1-round-drip",
+        "pop-2-bubble-bloop"
+      ],
+      "details": "A small round pop: a point or a name arriving.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "pop-1-round-drip",
+          "label": "1. Round pop, like a drip",
+          "audio": "../../sounds/library/candidates/pop-1-round-drip.m4a",
+          "text": "0.13 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-2-bubble-bloop",
+          "label": "2. Bubble bloop, rising",
+          "audio": "../../sounds/library/candidates/pop-2-bubble-bloop.m4a",
+          "text": "0.33 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-3-cartoon-clean",
+          "label": "3. Clean cartoon pop",
+          "audio": "../../sounds/library/candidates/pop-3-cartoon-clean.m4a",
+          "text": "0.10 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-4-small-pop",
+          "label": "4. Small pop",
+          "audio": "../../sounds/library/candidates/pop-4-small-pop.m4a",
+          "text": "0.09 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-5-mouth-pop",
+          "label": "5. Mouth pop",
+          "audio": "../../sounds/library/candidates/pop-5-mouth-pop.m4a",
+          "text": "0.23 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-6-hollow-pop",
+          "label": "6. Hollow pop",
+          "audio": "../../sounds/library/candidates/pop-6-hollow-pop.m4a",
+          "text": "0.23 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-7-bubble",
+          "label": "7. Single bubble",
+          "audio": "../../sounds/library/candidates/pop-7-bubble.m4a",
+          "text": "0.22 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-8-tiny-pop",
+          "label": "8. Tiny bright pop",
+          "audio": "../../sounds/library/candidates/pop-8-tiny-pop.m4a",
+          "text": "0.07 s. From Freesound (CC0)."
+        },
+        {
+          "id": "pop-9-soft-drop",
+          "label": "9. Soft low drop",
+          "audio": "../../sounds/library/candidates/pop-9-soft-drop.m4a",
+          "text": "0.11 s. From Kenney (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-chime",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Chime: 10 to hear",
+      "text": "Tick every one of these chimes that sounds nice. A soft chime: a term worth remembering.",
+      "why": "My guesses: 1 (two quick notes) and 2 (a struck bowl, softest attack). I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "chime-1-two-notes",
+        "chime-2-singing-bowl"
+      ],
+      "details": "A soft chime: a term worth remembering.\n\nAll 10 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "chime-1-two-notes",
+          "label": "1. Two quick notes, rising",
+          "audio": "../../sounds/library/candidates/chime-1-two-notes.m4a",
+          "text": "0.32 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-2-singing-bowl",
+          "label": "2. Singing bowl, struck",
+          "audio": "../../sounds/library/candidates/chime-2-singing-bowl.m4a",
+          "text": "2.20 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-3-notification",
+          "label": "3. Two soft notification notes",
+          "audio": "../../sounds/library/candidates/chime-3-notification.m4a",
+          "text": "0.32 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-4-chime",
+          "label": "4. Chime with a long ring",
+          "audio": "../../sounds/library/candidates/chime-4-chime.m4a",
+          "text": "1.42 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-5-bell-ding",
+          "label": "5. Bell ding",
+          "audio": "../../sounds/library/candidates/chime-5-bell-ding.m4a",
+          "text": "1.22 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-6-little-bell",
+          "label": "6. Little bell",
+          "audio": "../../sounds/library/candidates/chime-6-little-bell.m4a",
+          "text": "1.42 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-7-glockenspiel",
+          "label": "7. Glockenspiel flourish",
+          "audio": "../../sounds/library/candidates/chime-7-glockenspiel.m4a",
+          "text": "2.08 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-8-ding",
+          "label": "8. Soft high ding",
+          "audio": "../../sounds/library/candidates/chime-8-ding.m4a",
+          "text": "1.10 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-9-major-sixth",
+          "label": "9. Two notes a sixth apart",
+          "audio": "../../sounds/library/candidates/chime-9-major-sixth.m4a",
+          "text": "0.24 s. From Freesound (CC0)."
+        },
+        {
+          "id": "chime-10-bell-ting",
+          "label": "10. Short bell ting",
+          "audio": "../../sounds/library/candidates/chime-10-bell-ting.m4a",
+          "text": "0.26 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-wind",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Wind: 6 to hear",
+      "text": "Tick every one of these winds that sounds nice. Wind that builds and dies away: air rushing in.",
+      "why": "My guesses: 1 (it swells and dies by itself) and 2. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "wind-1-swelling-gust",
+        "wind-2-gust"
+      ],
+      "details": "Wind that builds and dies away: air rushing in.\n\nAll 6 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "wind-1-swelling-gust",
+          "label": "1. Gust that swells and dies",
+          "audio": "../../sounds/library/candidates/wind-1-swelling-gust.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "wind-2-gust",
+          "label": "2. Wind gust",
+          "audio": "../../sounds/library/candidates/wind-2-gust.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "wind-3-soft-wind",
+          "label": "3. Soft steady wind",
+          "audio": "../../sounds/library/candidates/wind-3-soft-wind.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "wind-4-low-wind",
+          "label": "4. Low short wind",
+          "audio": "../../sounds/library/candidates/wind-4-low-wind.m4a",
+          "text": "2.29 s. From Freesound (CC0)."
+        },
+        {
+          "id": "wind-5-howling",
+          "label": "5. Howling wind",
+          "audio": "../../sounds/library/candidates/wind-5-howling.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "wind-6-whistling",
+          "label": "6. Whistling breath of wind",
+          "audio": "../../sounds/library/candidates/wind-6-whistling.m4a",
+          "text": "2.55 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-fizz",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Fizz: 9 to hear",
+      "text": "Tick every one of these fizzes that sounds nice. Fizz and small bubbles: water evaporating.",
+      "why": "My guesses: 1 (a glass of soda) and 2 (bubbles rising one by one). I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "fizz-1-soda",
+        "fizz-2-rising-bubbles"
+      ],
+      "details": "Fizz and small bubbles: water evaporating.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "fizz-1-soda",
+          "label": "1. Soda fizzing in a glass",
+          "audio": "../../sounds/library/candidates/fizz-1-soda.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-2-rising-bubbles",
+          "label": "2. Bubbles rising, one by one",
+          "audio": "../../sounds/library/candidates/fizz-2-rising-bubbles.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-3-tablet",
+          "label": "3. Tablet dissolving",
+          "audio": "../../sounds/library/candidates/fizz-3-tablet.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-4-fizz-crackle",
+          "label": "4. Fizz with small crackles",
+          "audio": "../../sounds/library/candidates/fizz-4-fizz-crackle.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-5-pouring",
+          "label": "5. Fizzy drink being poured",
+          "audio": "../../sounds/library/candidates/fizz-5-pouring.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-6-gentle-bubbles",
+          "label": "6. Gentle bubbles with fizz",
+          "audio": "../../sounds/library/candidates/fizz-6-gentle-bubbles.m4a",
+          "text": "1.88 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-7-bubbling",
+          "label": "7. Bubbling, busier",
+          "audio": "../../sounds/library/candidates/fizz-7-bubbling.m4a",
+          "text": "2.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-8-bubble-burst",
+          "label": "8. Short burst of bubbles",
+          "audio": "../../sounds/library/candidates/fizz-8-bubble-burst.m4a",
+          "text": "0.89 s. From Freesound (CC0)."
+        },
+        {
+          "id": "fizz-9-bubbles",
+          "label": "9. Bubbles in water",
+          "audio": "../../sounds/library/candidates/fizz-9-bubbles.m4a",
+          "text": "1.46 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-rumble",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Rumble: 9 to hear",
+      "text": "Tick every one of these rumbles that sounds nice. A far-off rumble: a storm cloud.",
+      "why": "My guesses: 1 and 2, even and low, with no sudden clap. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "rumble-1-rolling",
+        "rumble-2-steady"
+      ],
+      "details": "A far-off rumble: a storm cloud.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "rumble-1-rolling",
+          "label": "1. Rolling thunder",
+          "audio": "../../sounds/library/candidates/rumble-1-rolling.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-2-steady",
+          "label": "2. Steady low rumble",
+          "audio": "../../sounds/library/candidates/rumble-2-steady.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-3-distant",
+          "label": "3. Distant thunder",
+          "audio": "../../sounds/library/candidates/rumble-3-distant.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-4-rolling-far",
+          "label": "4. Rolling thunder, farther off",
+          "audio": "../../sounds/library/candidates/rumble-4-rolling-far.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-5-soft-thunder",
+          "label": "5. Soft thunder rumble",
+          "audio": "../../sounds/library/candidates/rumble-5-soft-thunder.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-6-thunder-roll",
+          "label": "6. Thunder roll, fading",
+          "audio": "../../sounds/library/candidates/rumble-6-thunder-roll.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-7-underwater",
+          "label": "7. Thunder underwater, very low",
+          "audio": "../../sounds/library/candidates/rumble-7-underwater.m4a",
+          "text": "2.74 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-8-storm",
+          "label": "8. Storm thunder, bigger",
+          "audio": "../../sounds/library/candidates/rumble-8-storm.m4a",
+          "text": "3.50 s. From Freesound (CC0)."
+        },
+        {
+          "id": "rumble-9-clap-roll",
+          "label": "9. Thunderclap then rumble",
+          "audio": "../../sounds/library/candidates/rumble-9-clap-roll.m4a",
+          "text": "3.36 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-crack",
+      "version": 1,
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Crack: 9 to hear",
+      "text": "Tick every one of these cracks that sounds nice. Something cracking: a shield taking a miss.",
+      "why": "My guesses: 1 and 2, real breaks with no ring to them, so not twinkly. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "crack-1-windshield",
+        "crack-2-glass-pane"
+      ],
+      "details": "Something cracking: a shield taking a miss.\n\nAll 9 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card (a little louder than the animation sounds, as a crack or a break should be).\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "crack-1-windshield",
+          "label": "1. Windshield cracking, spreading",
+          "audio": "../../sounds/library/candidates/crack-1-windshield.m4a",
+          "text": "1.30 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-2-glass-pane",
+          "label": "2. Glass pane cracking",
+          "audio": "../../sounds/library/candidates/crack-2-glass-pane.m4a",
+          "text": "1.19 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-3-ice",
+          "label": "3. Ice cracking",
+          "audio": "../../sounds/library/candidates/crack-3-ice.m4a",
+          "text": "0.73 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-4-ice-short",
+          "label": "4. Ice cracking, short",
+          "audio": "../../sounds/library/candidates/crack-4-ice-short.m4a",
+          "text": "0.63 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-5-ice-break",
+          "label": "5. Ice breaking",
+          "audio": "../../sounds/library/candidates/crack-5-ice-break.m4a",
+          "text": "0.48 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-6-ice-bending",
+          "label": "6. Ice bending and creaking",
+          "audio": "../../sounds/library/candidates/crack-6-ice-bending.m4a",
+          "text": "0.44 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-7-snap",
+          "label": "7. Sharp crack",
+          "audio": "../../sounds/library/candidates/crack-7-snap.m4a",
+          "text": "0.46 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-8-eggshell",
+          "label": "8. Eggshell cracking, crunchy",
+          "audio": "../../sounds/library/candidates/crack-8-eggshell.m4a",
+          "text": "1.30 s. From Freesound (CC0)."
+        },
+        {
+          "id": "crack-9-wood",
+          "label": "9. Wood cracking (not glass)",
+          "audio": "../../sounds/library/candidates/crack-9-wood.m4a",
+          "text": "1.00 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-shatter",
+      "version": 1,
+      "kind": "board",
+      "rarity": "rare",
+      "title": "Shatter: 10 to hear",
+      "text": "Tick every one of these shatters that sounds nice. Something breaking apart: the combo lost.",
+      "why": "My guesses: 1 (a ceramic dish) and 2 (glass smashed hard): full breaks, little ring. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "shatter-1-dish",
+        "shatter-2-glass-hard"
+      ],
+      "details": "Something breaking apart: the combo lost.\n\nAll 10 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card (a little louder than the animation sounds, as a crack or a break should be).\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "shatter-1-dish",
+          "label": "1. Ceramic dish breaking",
+          "audio": "../../sounds/library/candidates/shatter-1-dish.m4a",
+          "text": "0.80 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-2-glass-hard",
+          "label": "2. Glass smashed hard",
+          "audio": "../../sounds/library/candidates/shatter-2-glass-hard.m4a",
+          "text": "0.80 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-3-dish-small",
+          "label": "3. Smaller dish breaking",
+          "audio": "../../sounds/library/candidates/shatter-3-dish-small.m4a",
+          "text": "0.80 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-4-big-dish",
+          "label": "4. Big dish breaking",
+          "audio": "../../sounds/library/candidates/shatter-4-big-dish.m4a",
+          "text": "0.92 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-5-tile",
+          "label": "5. Tile breaking",
+          "audio": "../../sounds/library/candidates/shatter-5-tile.m4a",
+          "text": "0.49 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-6-bottle",
+          "label": "6. Bottle shattering",
+          "audio": "../../sounds/library/candidates/shatter-6-bottle.m4a",
+          "text": "0.94 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-7-glass-smash",
+          "label": "7. Glass smashing, longer spill",
+          "audio": "../../sounds/library/candidates/shatter-7-glass-smash.m4a",
+          "text": "1.14 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-8-glass",
+          "label": "8. Breaking glass",
+          "audio": "../../sounds/library/candidates/shatter-8-glass.m4a",
+          "text": "0.75 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-9-glass-bright",
+          "label": "9. Breaking glass, brighter",
+          "audio": "../../sounds/library/candidates/shatter-9-glass-bright.m4a",
+          "text": "0.65 s. From Freesound (CC0)."
+        },
+        {
+          "id": "shatter-10-glass-short",
+          "label": "10. Glass break, short",
+          "audio": "../../sounds/library/candidates/shatter-10-glass-short.m4a",
+          "text": "0.55 s. From Freesound (CC0)."
+        }
+      ]
+    },
+    {
+      "id": "sounds-tap",
+      "version": 1,
+      "kind": "board",
+      "rarity": "common",
+      "title": "Button press: 10 to hear",
+      "text": "Tick every one of these presses that sounds nice. A button press (Effects, off until you pick).",
+      "why": "My guesses: 1 and 2, short plain clicks with nothing tonal. I can't listen, so those come from what I could measure (shape, brightness, no clipping or hiss); go by your ear.",
+      "pick": [
+        "tap-1-ui-click",
+        "tap-2-click"
+      ],
+      "details": "A button press (Effects, off until you pick).\n\nAll 10 are recordings from free libraries under CC0 (no credit needed; it is kept in sounds/library/SOURCES.md anyway). Each is cut to its useful moment, faded at the ends, and levelled to match the others on this card.\n\nNothing is wired into the app yet: what you tick goes in after this deck.",
+      "items": [
+        {
+          "id": "tap-1-ui-click",
+          "label": "1. Plain button click",
+          "audio": "../../sounds/library/candidates/tap-1-ui-click.m4a",
+          "text": "0.11 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-2-click",
+          "label": "2. Small plastic click",
+          "audio": "../../sounds/library/candidates/tap-2-click.m4a",
+          "text": "0.08 s. From Kenney (CC0)."
+        },
+        {
+          "id": "tap-3-soft-tap",
+          "label": "3. Soft tap",
+          "audio": "../../sounds/library/candidates/tap-3-soft-tap.m4a",
+          "text": "0.10 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-4-low-thump",
+          "label": "4. Low soft thump",
+          "audio": "../../sounds/library/candidates/tap-4-low-thump.m4a",
+          "text": "0.07 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-5-wood",
+          "label": "5. Light knock on wood",
+          "audio": "../../sounds/library/candidates/tap-5-wood.m4a",
+          "text": "0.12 s. From Kenney (CC0)."
+        },
+        {
+          "id": "tap-6-key",
+          "label": "6. Keyboard key, down and up",
+          "audio": "../../sounds/library/candidates/tap-6-key.m4a",
+          "text": "0.17 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-7-menu-click",
+          "label": "7. Click with a tiny ring",
+          "audio": "../../sounds/library/candidates/tap-7-menu-click.m4a",
+          "text": "0.09 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-8-glass-tap",
+          "label": "8. Tap on glass",
+          "audio": "../../sounds/library/candidates/tap-8-glass-tap.m4a",
+          "text": "0.18 s. From Freesound (CC0)."
+        },
+        {
+          "id": "tap-9-switch",
+          "label": "9. Switch flicked",
+          "audio": "../../sounds/library/candidates/tap-9-switch.m4a",
+          "text": "0.17 s. From Kenney (CC0)."
+        },
+        {
+          "id": "tap-10-switch-soft",
+          "label": "10. Softer switch",
+          "audio": "../../sounds/library/candidates/tap-10-switch-soft.m4a",
+          "text": "0.18 s. From Kenney (CC0)."
+        }
+      ]
+    }
+  ]
+}
