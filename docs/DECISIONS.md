@@ -390,3 +390,14 @@ My calls on the section above, sent as deck `stage2-combo3` for the phone check:
 - **Animation sounds have their own switch** (their GO): on by default; Effects is the press sounds only and stays off.
 - **Narrator samples**: "Hello, I'm Heart. I'll read your lessons to you." for each of the four, in `narrators/` in the data repo, made by `primer voice` (or `primer samples`), kept on the phone always, played on choosing a narrator and from a play button beside each.
 - **The bottom band**: 0.5.5's screen-height fit is undone. The app's box is fixed to the window's edges with nothing sized from the screen, the safe areas are padding inside, and the page's own ground is the app's dark (the tab bar's, the screen's, or the video's while one plays). If it still shows, tapping the version in Profile five times shows what the phone reports (heights, insets, standalone), to screenshot.
+
+## 2026-11-19: animations round two, combo tiers and sounds on the phone
+
+Their words are in primer-data `notes/answers-2026-11-19f.md`, with the pinned frames in `notes/pins-anim2/` and the band picture `notes/img-2026-11-19-band-space.jpg`.
+
+- **Animations: decent, still far from the aim.** "You can't create the same quality as Kurzgesagt but my hope is for you to get close." Study first: a Sonnet agent watches and studies about five Kurzgesagt videos with the video skill; if its study is thin, an Opus agent studies five others. Then go all out: there is no rush on length; explain in detail and say why (not "winds from the west" but why the winds blow that way), maybe a separate animation on how wind works, since the lesson leans on it. Pinned dislikes: the "Its fuel: heat" title chip, the heat-spark vapour lines ("I don't like the look of these heat lines in general"), the evaporation scene overall ("just meh"), and the cloud building up from a line.
+- **The script rewording: good. Narrator samples: good.**
+- **Sound effects come from a sound library**, with a board per kind of sound to tick every one that sounds nice. Same for the crack and shatter: the made ones were "too twinkly", not like something breaking.
+- **The bottom band is now dead space under the tab bar.** Waiting on the hidden screen panel's numbers to fix it for certain.
+- **Combo tiers:** thresholds and shields good. Copper's side goes green; titanium's rainbow fainter, with a slow turn round the border; platinum loses the rainbow and gets a larger star twinkle at the end of its shine; the gems other than diamond "reverted" (back toward round two's richer look), diamond loses its rainbow sheen; obsidian gets a slight oil-slick hue; opal "meh"; the sky tiers underwhelm (nebula could have animated, shifting electron-like rings); the far end underwhelms and the black-hole art is disliked.
+- **Forms round five: good** (beads slide, the tape's unit).
