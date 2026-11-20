@@ -2743,7 +2743,8 @@ try {
     const lensOpen = await ev(`(()=>{const e=document.querySelector('.video .spart[data-part=close]');return {clip:e.style.clipPath,off:e.hasAttribute('data-off'),ring:!!document.querySelector('.video .slensring')}})()`);
     ok(lensOpen.clip.startsWith('circle(') && !lensOpen.off && lensOpen.ring, 'a lens opens a circle onto the closer view, with its dot, leader and rim drawn over the picture', lensOpen);
     await shot('53c-lens');
-    await waitFor(`__dv.scene.debug().shots.layout.close === 'full' && !__dv.scene.debug().shots.moving.length`, 15000);
+    // (under load the wider view is switched off a frame or two after the move ends: wait for the whole of it)
+    await waitFor(`__dv.scene.debug().shots.layout.close === 'full' && !__dv.scene.debug().shots.moving.length && document.querySelector('.video .spart[data-part=sea]').hasAttribute('data-off') && !document.querySelector('.video .spart[data-part=close]').style.clipPath`, 15000);
     const through = await ev(`(()=>{const e=document.querySelector('.video .spart[data-part=close]');return {clip:e.style.clipPath,sea:document.querySelector('.video .spart[data-part=sea]').hasAttribute('data-off')}})()`);
     ok(through.clip === '' && through.sea, 'zooming through, the circle grows until the closer view fills the picture, and the wider one goes', through);
     await waitFor(`__dv.scene.debug().shots.layout.sea === 'full' && !__dv.scene.debug().shots.moving.length`, 15000);
