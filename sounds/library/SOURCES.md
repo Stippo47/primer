@@ -10,6 +10,20 @@ Then each was cut to its useful moment, high-passed (90 Hz; wind 60, rumble 45: 
 faded at both ends, levelled (effects -27.5 LUFS, taps -28, crack and shatter -25; the crack and shatter lean on a fast
 limiter of up to 8 dB to get there) and saved as mono AAC .m4a, 44.1 kHz, 80 kbps.
 
+## In the app
+
+Picked by ear (2026-11-19) and copied unchanged into `sounds/`, where the service worker keeps them for offline
+use. `js/feel.js` (`RECORDED`) plays them, one of a kind's files at random, never the same one twice running.
+The scenes' own picks (whoosh, cut, swell and the rest) are wired in separately with the animations.
+
+| In `sounds/` | Plays as | Source |
+|---|---|---|
+| `crack-3-ice.m4a`, `crack-4-ice-short.m4a`, `crack-5-ice-break.m4a` | the combo's crack (a shield taking a miss) | Freesound 177215, 624163, 719973 |
+| `shatter-5-tile.m4a` | the combo's shatter (losing it) | Freesound 583310 |
+| `tap-2-click.m4a`, `tap-9-switch.m4a`, `tap-10-switch-soft.m4a` | every button press (with Effects on) | Kenney, UI Audio |
+
+## Every candidate
+
 | File | What it is | Source | Author | Original title | Licence |
 |---|---|---|---|---|---|
 | `whoosh-1-soft-rush.m4a` | Soft even rush of air | [Freesound 683096](https://freesound.org/people/florianreichelt/sounds/683096/) | florianreichelt | Woosh | CC0 1.0 |

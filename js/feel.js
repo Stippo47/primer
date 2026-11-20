@@ -1,8 +1,10 @@
 // The feel of every press, in one place: a soft sound, a tick under the thumb and a little spring.
 //
-// Sound. Effects are made on the spot with Web Audio: rounded sine notes, like a soft mallet on wood,
-// through a gentle low-pass. Nothing square or buzzy, nothing 8-bit, nothing loud. They start off
-// (ruled 2026-11-18: the press sounds are disliked until better ones are chosen by ear).
+// Sound. A press, the combo's crack and its shatter are recordings the designer picked by ear from the sound
+// library (2026-11-19, sounds/library/SOURCES.md): RECORDED below, each kind a list of files, one played at
+// random each time and never the same one twice running. The answers' and the end's notes are made on the
+// spot with Web Audio: rounded sine notes, like a soft mallet on wood, through a gentle low-pass. Nothing
+// square or buzzy, nothing 8-bit, nothing loud. All of them follow Effects, which starts off.
 // The app never claims the phone's sound for itself: it leaves navigator.audioSession alone. Saying its
 // sound was media ('playback') stopped the person's own music the moment Primer opened. The cost: a
 // generated tone follows the silent switch. Voice clips (stage 2) are plain <audio>, which the phone test
@@ -93,39 +95,55 @@ function grit(c, at, freq, { level = 0.12, decay = 0.08, q = 1.2 } = {}, dest = 
 
 // Each sound is a few notes: [delay in seconds, frequency, options], or [delay, 'grit', centre, options].
 const SOUNDS = {
-  tap: [[0, 392, { level: 0.11, decay: 0.12 }]],
-  select: [[0, 523.25, { level: 0.1, decay: 0.16 }]],
-  on: [[0, 440, { level: 0.1, decay: 0.14 }], [0.06, 587.33, { level: 0.1, decay: 0.2 }]],
-  off: [[0, 587.33, { level: 0.09, decay: 0.14 }], [0.06, 440, { level: 0.09, decay: 0.2 }]],
   right: [[0, 587.33, { level: 0.2, decay: 0.7 }], [0.11, 880, { level: 0.17, decay: 0.95 }]],
   close: [[0, 587.33, { level: 0.16, decay: 0.55 }], [0.11, 739.99, { level: 0.13, decay: 0.7 }]],
   wrong: [[0, 349.23, { level: 0.16, decay: 0.42, partial: 0.03 }], [0.13, 293.66, { level: 0.14, decay: 0.6, partial: 0.03 }]],
   done: [[0, 523.25, { level: 0.15, decay: 0.8 }], [0.1, 659.25, { level: 0.14, decay: 0.85 }], [0.2, 783.99, { level: 0.14, decay: 0.95 }], [0.32, 1046.5, { level: 0.12, decay: 1.3 }]],
   pop: [[0, 659.25, { level: 0.1, decay: 0.18 }]],
 };
-// The combo's crack (a shield taking a miss) and shatter (losing it) are samples instead: a porcelain tink
-// with a soft knock under it, and a bright break cascading away over a soft thump, made by
-// tools/make-sounds.py (redone 2026-11-19: the made-on-the-spot ones were "bad sound"). They're levelled in
-// the file, about -27.5 LUFS like the scenes' sounds, so they skip the low-pass and the half level.
-const SAMPLES = { crack: 'crack', shatter: 'shatter' };
-const decoded = new Map();   // name -> AudioBuffer, or the promise of one
-export const SOUND_NAMES = [...Object.keys(SOUNDS), ...Object.keys(SAMPLES)];
-const sampleUrl = name => new URL(`../sounds/${SAMPLES[name]}.m4a`, import.meta.url).href;
+// The recorded sounds, by kind: the files in sounds/ (CC0 recordings from the library, picked 2026-11-19).
+// crack: a shield taking a miss, ice cracking (3, 4 and 5). shatter: losing the combo, a tile breaking (5).
+// tap: every button press (tap, select, on and off all play it): a click (2), a switch (9), a softer switch
+// (10). They're levelled in the file as the deck had them (the taps at -28 LUFS, the crack and the shatter
+// at -25), so they skip the low-pass and the half level the made notes go through.
+export const RECORDED = {
+  crack: ['crack-3-ice', 'crack-4-ice-short', 'crack-5-ice-break'],
+  shatter: ['shatter-5-tile'],
+  tap: ['tap-2-click', 'tap-9-switch', 'tap-10-switch-soft'],
+};
+// The names a press can ask for that play a recorded kind instead of their own.
+const PLAYS = { tap: 'tap', select: 'tap', on: 'tap', off: 'tap', crack: 'crack', shatter: 'shatter' };
+const kindOf = name => PLAYS[name] || null;
+export const SOUND_NAMES = [...Object.keys(SOUNDS), ...Object.keys(PLAYS)];
+const decoded = new Map();   // file -> AudioBuffer, or the promise of one
+const fileUrl = file => new URL(`../sounds/${file}.m4a`, import.meta.url).href;
 
-function decode(c, name) {
-  if (!decoded.has(name)) {
-    const p = fetch(sampleUrl(name)).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
-      .then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))   // the callback form, for older Safari
-      .then(buf => { decoded.set(name, buf); return buf; }, () => { decoded.delete(name); return null; });
-    decoded.set(name, p);
-  }
-  return decoded.get(name);
+// One of a kind's files at random, never the one it played last (unless it has only one).
+const lastOf = {};
+export function pickFile(kind, random = Math.random) {
+  const files = RECORDED[kind];
+  if (!files) return null;
+  let k = Math.floor(random() * files.length);
+  if (files.length > 1 && k === lastOf[kind]) k = (k + 1 + Math.floor(random() * (files.length - 1))) % files.length;
+  lastOf[kind] = k;
+  return files[k];
 }
-// Ready the samples ahead (a review starting), so the first crack sounds on time. Only with Effects on.
-export function preload(names = Object.keys(SAMPLES)) {
+
+function decode(c, file) {
+  if (!decoded.has(file)) {
+    const p = fetch(fileUrl(file)).then(r => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+      .then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))   // the callback form, for older Safari
+      .then(buf => { decoded.set(file, buf); return buf; }, () => { decoded.delete(file); return null; });
+    decoded.set(file, p);
+  }
+  return decoded.get(file);
+}
+// Ready the recordings ahead (a review starting, a finger coming down), so the first sounds on time. Only
+// with Effects on.
+export function preload(names = Object.keys(RECORDED)) {
   if (!prefs.effects) return;
   const c = engine();
-  if (c) for (const n of names) if (SAMPLES[n]) decode(c, n);
+  if (c) for (const n of names) for (const file of RECORDED[kindOf(n) || n] || []) decode(c, file);
 }
 function playSample(c, buf, at, dest) {
   const src = c.createBufferSource();
@@ -137,12 +155,13 @@ function playSample(c, buf, at, dest) {
 export function sound(name) {
   played.push(name);
   if (played.length > 50) played.shift();
-  if (!prefs.effects || !(SOUNDS[name] || SAMPLES[name])) return false;
+  const kind = kindOf(name);
+  if (!prefs.effects || !(SOUNDS[name] || kind)) return false;
   const c = engine();
   if (!c) return false;
-  if (SAMPLES[name]) {
+  if (kind) {
     // ready: at once. Not yet: when it is, unless that's too late to go with what it's for.
-    const got = decode(c, name), asked = performance.now();
+    const got = decode(c, pickFile(kind)), asked = performance.now();
     if (got instanceof AudioBuffer) playSample(c, got, c.currentTime + 0.005, c.destination);
     else got.then(buf => { if (buf && performance.now() - asked < 250) playSample(c, buf, c.currentTime + 0.005, c.destination); });
     return true;
@@ -158,13 +177,15 @@ function play(c, dest, t0, name) {
   }
 }
 
-// For films: a sound rendered to samples (mono, 48 kHz), the same as it plays, Effects on or not.
-export async function renderSound(name, seconds = 1.5) {
+// For films: a sound rendered to samples (mono, 48 kHz), the same as it plays, Effects on or not. A recorded
+// kind renders its first file, or the one named (`file`).
+export async function renderSound(name, seconds = 1.5, file = null) {
   const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-  if (!OAC || !(SOUNDS[name] || SAMPLES[name])) return null;
+  const kind = kindOf(name);
+  if (!OAC || !(SOUNDS[name] || kind)) return null;
   const c = new OAC(1, Math.ceil(48000 * seconds), 48000);
-  if (SAMPLES[name]) {
-    const b = await fetch(sampleUrl(name)).then(r => r.arrayBuffer());
+  if (kind) {
+    const b = await fetch(fileUrl(file || RECORDED[kind][0])).then(r => r.arrayBuffer());
     playSample(c, await new Promise((ok, no) => c.decodeAudioData(b, ok, no)), 0.01, c.destination);
   } else play(c, chain(c), 0.01, name);
   const buf = await c.startRendering();
@@ -255,6 +276,7 @@ export function wire(root = document) {
   root.addEventListener('pointerdown', e => {
     const el = e.target.closest(PRESSABLE);
     if (!el || el.disabled || el.closest('.hap')) return;
+    preload(['tap']);   // the press sounds, ready by the time the finger lifts
     letGo();
     held = el;
     heldAt = performance.now();
