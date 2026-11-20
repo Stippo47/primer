@@ -159,9 +159,9 @@ const CANDIDATES = {
       v: { ink: '#c0b0ff', line: '#4a3aa0', plate: '#221c60', glow: 'rgba(160,120,255,0.22)', edge: '#08061e', cink: '#fff', cinksh: '#08061e', halo: 'rgba(8,6,30,0.75)', pip: '#9a80ff', burst: '#d0c0ff', cglow: 'rgba(150,110,255,0.5)', cglow2: 'rgba(255,111,208,0.4)' } },
   },
 };
-// The idea each redone tier uses (2026-11-20: multiverse their pick, opal and supernova mine from round six's
-// ideas; the decks show them all). Eclipse has left the ladder; its ideas stay drawable in TRIALS.
-export const PICK = { opal: 'large', supernova: 'shells', multiverse: 'branches' };
+// The idea each redone tier uses (2026-11-20, all their picks: opal's fine cells, supernova's rays, multiverse's
+// branches; the decks show the rest). Eclipse has left the ladder; its ideas stay drawable in TRIALS.
+export const PICK = { opal: 'fine', supernova: 'rays', multiverse: 'branches' };
 const pick = id => CANDIDATES[id][PICK[id]];
 
 // Each tier, lowest first. at: the count that reaches it. shields: misses it forgives. v: its colours for CSS

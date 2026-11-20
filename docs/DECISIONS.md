@@ -494,3 +494,7 @@ Their words are in primer-data `notes/answers-2026-11-20b.md`. All three animati
 - **Spin, the hook and the end:** the hurricane jumps, or fades out abruptly over land.
 - **"No sound played" for the voice once in Primer, then it started.** A bug to find.
 - For Riffle (another project): films there should play with their sound, so soundtracks needn't be attached separately.
+
+## 2026-11-20: combo round six on the phone
+
+Their words are in primer-data `notes/answers-2026-11-20c.md`. The far end and the dark stones: good. **Opal: fine cells. Supernova: rays**, but "try ones that are less complex inside the icon and more around it. May remove supernova altogether". Both picks are in. Supernova's next ideas wait for a quiet moment (simple chip face, the burst happening around it); it may go.
