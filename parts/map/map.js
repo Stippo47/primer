@@ -18,6 +18,7 @@ import { geoPath, geoInterpolate, geoDistance } from 'd3-geo';
 import { loadWorld, countryAt } from './world.js';
 import { makeView, SPHERE } from './views.js';
 import { LAYERS, mirroredBand, latBand, makeRoute, progressOf, headOf, parallel, makeSpiral } from './layers.js';
+import { BELTS, CELLS, makeWinds, makeCells } from './air.js';
 import { STYLE, colourOf, rampAt } from './look.js';
 import { Glide } from '../../js/ease.js';
 
@@ -66,13 +67,14 @@ export async function mount(el, settings, ctx = {}) {
   let w = 0, h = 0, dpr = 1;
   let centre = Array.isArray(S.view) ? [Number(S.view[0]) || 0, Number(S.view[1]) || 0] : [-40, 15];
   let zoom = Math.max(1, Math.min(ZOOM_MAX, Number(S.zoom) || 1));
-  const tilt = new Glide(0), heading = new Glide(0), zoomG = new Glide(zoom), drift = new Glide(0);
+  const tilt = new Glide(0), heading = new Glide(0), zoomG = new Glide(zoom), drift = new Glide(0), offX = new Glide(0), offY = new Glide(0);
   let vel = [0, 0], dragging = false, pinching = null, touchedAt = 0, turn = null, zoomAnim = null, follow = null;
   let camVel = [0, 0], lastCentre = centre.slice();
-  const set = (now = performance.now()) => view.set(w, h, centre, zoom, tilt.at(now), heading.at(now));
+  const set = (now = performance.now()) => view.set(w, h, centre, zoom, tilt.at(now), heading.at(now), offX.at(now), offY.at(now));
 
   // ---- what's on the map: everything a call adds, read by the layers
-  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], spirals: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1), key: null };
+  const m = { highlights: new Map(), bands: [], table: null, points: [], markers: [], routes: [], spirals: [], labels: new Map(), parallels: [], pin: null, selected: null, selectedAt: 0, grow: new Glide(1), key: null,
+    winds: null, turning: null, cells: null, signs: [] };
   let contents = 0, tapped = null;
   const changed = () => { contents++; wake(); };
 
@@ -115,7 +117,7 @@ export async function mount(el, settings, ctx = {}) {
     // a path drawer onto any canvas path, for shapes that change every frame (a growing route)
     pathTo: target => geoPath(view.proj, target),
   };
-  const viewKey = () => `${view.kind},${centre[0].toFixed(3)},${centre[1].toFixed(3)},${zoom.toFixed(4)},${(view.lift || 0).toFixed(2)},${(view.heading || 0).toFixed(3)},${w},${h}`;
+  const viewKey = () => `${view.kind},${centre[0].toFixed(3)},${centre[1].toFixed(3)},${zoom.toFixed(4)},${(view.lift || 0).toFixed(2)},${(view.heading || 0).toFixed(3)},${w},${h},${(view.cx || 0).toFixed(2)},${(view.cy || 0).toFixed(2)}`;
   function ready(c, now, dt) {
     const key = viewKey();
     if (key !== shapeKey) { shapes = new Map(); shapeKey = key; }
@@ -175,6 +177,13 @@ export async function mount(el, settings, ctx = {}) {
     for (const [k, it] of m.labels) if (done(it)) m.labels.delete(k);
     if (m.table && done(m.table)) { m.table = null; base = true; }
     if (m.key && done(m.key)) m.key = null;
+    m.signs = m.signs.filter(it => !done(it));
+    if (m.turning && done(m.turning)) m.turning = null;
+    if (m.cells && done(m.cells)) m.cells = null;
+    if (m.winds) {
+      for (const [k, b] of Object.entries(m.winds.belts)) if (b.a.to <= 0 && !b.a.moving(now)) delete m.winds.belts[k];
+      if (!Object.keys(m.winds.belts).length && !m.winds.names.out) m.winds = null;
+    }
     if (base) contents++;
   }
 
@@ -204,7 +213,7 @@ export async function mount(el, settings, ctx = {}) {
       if (k >= 1) { zoom = zoomAnim.to; zoomAnim = null; zoomG.go(zoom, 0, now); done = true; }
       moving = true;
     }
-    if (tilt.moving(now) || heading.moving(now)) moving = true;
+    if (tilt.moving(now) || heading.moving(now) || offX.moving(now) || offY.moving(now)) moving = true;
     // following a track's head: the camera keeps the storm in the middle, catching up softly (a critically
     // damped glide: it sets off from the speed the camera had, eases into the chase and never overshoots)
     if (follow && !turn && !dragging && !pinching) {
@@ -526,6 +535,73 @@ export async function mount(el, settings, ctx = {}) {
         if (!m.key || m.key.out) m.key = { born: now };
         wake();
       },
+      // The wind belts blowing over the world as streaks: which belt (trades, westerlies, polar, all, or none to
+      // take them away) and its bend: 0 as the winds would blow if the Earth stood still (straight toward the
+      // equator, or the pole), 1 as they really blow, swung by the Earth's turning. Called again, the bend
+      // glides there over seconds. names: each belt's name, built on the side facing you.
+      winds(which = 'all', bend = 1, seconds = 1.4, names = false) {
+        const now = performance.now(), t = ms(seconds);
+        if (!m.winds) m.winds = makeWinds();
+        const W = m.winds;
+        if (which === 'none') {
+          for (const b of Object.values(W.belts)) b.a.go(0, Math.max(t, 500), now);
+          if (W.names.on && !W.names.out) W.names.out = { t0: now, ms: 450 };
+          wake();
+          return;
+        }
+        const list = which === 'all' ? Object.keys(BELTS) : BELTS[which] ? [which] : [];
+        for (const name of list) {
+          const old = W.belts[name], b = clamp01(Number(bend));
+          if (!old || old.a.to <= 0) W.belts[name] = { a: new Glide(0).go(1, soft ? 900 : 0, now), bend: new Glide(b), born: now };
+          else old.bend.go(b, t, now);
+        }
+        if (names === true && (!W.names.on || W.names.out)) W.names = { on: true, born: now, out: null };
+        if (names === false && W.names.on && !W.names.out) W.names.out = { t0: now, ms: 450 };
+        wake();
+      },
+      // The ground's own speed as the Earth turns: gold arrows along the latitudes, long at the equator, short
+      // near the poles, with the speeds named. both: south of the equator too. false takes them away.
+      turning(on = true, labels = true, both = false) {
+        const now = performance.now();
+        if (on === false) { if (m.turning && !m.turning.out) m.turning.out = out(now, 450); wake(); return; }
+        if (!m.turning || m.turning.out) m.turning = { born: now, labels: labels !== false, both: !!both };
+        else { m.turning.labels = labels !== false; m.turning.both = !!both; }
+        wake();
+      },
+      // The loops of air on a globe's right-hand edge (hadley, ferrel, polar, all, or none), each drawn as far as
+      // progress (0..1: its four arrows in turn), gliding there over seconds. south: the southern loops too.
+      cells(which = 'all', progress = 1, seconds = 1.4, south = false) {
+        const now = performance.now(), t = ms(seconds);
+        if (which === 'none') { if (m.cells && !m.cells.out) m.cells.out = out(now, 500); wake(); return; }
+        if (!m.cells || m.cells.out) m.cells = makeCells();
+        m.cells.south = !!south;
+        const p = clamp01(Number(progress));
+        for (const name of which === 'all' ? Object.keys(CELLS) : CELLS[which] ? [which] : []) {
+          const cell = m.cells.cells[name] || (m.cells.cells[name] = { p: new Glide(0), named: 0 });
+          cell.p.go(p, t, now);
+          if (p > 0.6 && !cell.named) cell.named = now + t * 0.6;
+        }
+        wake();
+      },
+      // Moves the globe off the middle of the picture, x and y as shares of its width and height (0, 0 is the
+      // middle), gliding there: room beside it for the loops on its edge. A flat map stays put.
+      frame(x = 0, y = 0, seconds = 1.6) {
+        const now = performance.now();
+        offX.go(Math.max(-2.5, Math.min(2.5, Number(x) || 0)), ms(seconds), now);
+        offY.go(Math.max(-2.5, Math.min(2.5, Number(y) || 0)), ms(seconds), now);
+        wake();
+      },
+      // A sign standing on the world at a place, a word or a number on its board (High, +2 C); called again
+      // at the same place with new words, the board pops again. No text: it goes.
+      sign(place, text, colour = 'pink') {
+        const at = placeOf(place), now = performance.now();
+        if (!at) return;
+        const old = m.signs.find(sg => !sg.out && Math.abs(sg.at[0] - at[0]) < 1e-6 && Math.abs(sg.at[1] - at[1]) < 1e-6);
+        if (text === undefined || text === null || text === '' || text === false) { if (old) old.out = out(now, 420); wake(); return; }
+        if (old) { old.text = String(text); old.colour = colour; if (old.born < now - 900) old.born = now - 500; }
+        else m.signs.push({ at, text: String(text), colour, born: now });
+        wake();
+      },
       // A path drawn as far as `progress` (0..1), with something riding its head. Called again with the
       // same path, it moves that track on (gliding there over `seconds`, carrying on from the speed it had),
       // so a scene can drive one storm along by steps without it ever stopping short.
@@ -551,10 +627,17 @@ export async function mount(el, settings, ctx = {}) {
         const now = performance.now(), t = ms(seconds === undefined || seconds === null ? (soft ? 0.5 : 0) : seconds);
         const ROUTE = { flows: 'flow', arcs: 'arc', tracks: 'track' };
         let items;
+        // the air's things: the belts fade by their own level, the rest like any other item
+        const air = () => {
+          if (m.winds) { for (const b of Object.values(m.winds.belts)) b.a.go(0, Math.max(1, t), now); if (m.winds.names.on && !m.winds.names.out) m.winds.names.out = out(now, Math.max(1, t)); }
+          return [...(m.turning ? [m.turning] : []), ...(m.cells ? [m.cells] : [])];
+        };
         if (!what || what === 'all') {
           m.pin = null; m.selected = null;
-          items = [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.spirals, ...m.labels.values(), ...(m.key ? [m.key] : [])];
-        } else if (ROUTE[what]) items = m.routes.filter(r => r.kind === ROUTE[what]);
+          items = [...baseItems(), ...m.points, ...m.markers, ...m.routes, ...m.spirals, ...m.labels.values(), ...(m.key ? [m.key] : []), ...m.signs, ...air()];
+        } else if (what === 'winds') items = air();
+        else if (what === 'signs') items = m.signs;
+        else if (ROUTE[what]) items = m.routes.filter(r => r.kind === ROUTE[what]);
         else if (what === 'labels') items = [...m.labels.values()];
         else items = Array.isArray(m[what]) ? m[what] : [];
         if (!(t > 0)) for (const it of items) it.out = out(now - 2, 1);
@@ -581,7 +664,11 @@ export async function mount(el, settings, ctx = {}) {
     finish() {
       const now = performance.now(), past = now - 60000;
       if (turn) { centre = turn.path(1); turn = null; }
-      for (const gl of [zoomG, tilt, heading, drift, m.grow]) gl.go(gl.to, 0, now);
+      for (const gl of [zoomG, tilt, heading, drift, m.grow, offX, offY]) gl.go(gl.to, 0, now);
+      if (m.winds) { for (const b of Object.values(m.winds.belts)) { b.a.go(b.a.to, 0, now); b.bend.go(b.bend.to, 0, now); b.born = past; } if (m.winds.names.on) m.winds.names.born = past; }
+      if (m.turning) m.turning.born = past;
+      if (m.cells) for (const c of Object.values(m.cells.cells)) { c.p.go(c.p.to, 0, now); if (c.named) c.named = past; }
+      for (const sg of m.signs) sg.born = past;
       zoom = zoomG.to;
       if (zoomAnim) { zoom = zoomAnim.to; zoomAnim = null; }
       for (const rt of m.routes) { rt.g.go(rt.g.to, 0, now); rt.born = past; }
@@ -603,7 +690,10 @@ export async function mount(el, settings, ctx = {}) {
       named: [...m.labels].map(([name, L]) => ({ name, kind: L.kind, at: L.at, fading: !!L.out })), parallels: m.parallels.map(p => p.lat),
       spirals: m.spirals.map(s => ({ at: s.at, bend: s.bend.at(performance.now()), fading: !!s.out })), style: styleName, key: !!(m.key && !m.key.out),
       camera: { centre: roundC(), zoom: roundZ(), tilt: tilt.at(performance.now()), heading: heading.at(performance.now()), following: !!follow, drift: drift.at(performance.now()), moving: !!turn || zoomG.moving(performance.now()) },
-      grow: m.grow.at(performance.now()), soft }),
+      grow: m.grow.at(performance.now()), soft,
+      winds: m.winds ? Object.fromEntries(Object.entries(m.winds.belts).map(([k, b]) => [k, { shown: Math.round(b.a.at(performance.now()) * 100) / 100, bend: Math.round(b.bend.at(performance.now()) * 100) / 100 }])) : null,
+      turning: !!(m.turning && !m.turning.out), cells: m.cells && !m.cells.out ? Object.fromEntries(Object.entries(m.cells.cells).map(([k, c]) => [k, Math.round(c.p.at(performance.now()) * 100) / 100])) : null,
+      frame: [offX.at(performance.now()), offY.at(performance.now())], signs: m.signs.filter(sg => !sg.out).map(sg => sg.text) }),
     remove() {
       gone = true;
       if (raf) cancelAnimationFrame(raf);

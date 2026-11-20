@@ -54,10 +54,12 @@ SPOKEN_FIELDS = {'explain': ('text',), 'check': ('ask', 'right', 'why'), 'play':
 SCENE_FILE_FIELDS = {'v', 'title', 'version', 'minutes', 'parts', 'lines', 'sources', 'shot'}
 LINE_FIELDS = {'id', 'text', 'say', 'do', 'hold'}
 ACTION_FIELDS = {'call', 'at', 'from', 'to', 'sound', 'ease', 'range'}
-# A stretch's ease (js/ease.js, EASES): soft eases in and out, the default.
-EASES = ('soft', 'linear', 'in', 'out')
+# A stretch's ease (js/ease.js, EASES): soft eases in and out, the default; the motion families measured in the
+# second study (camera, transition, furniture, process, accumulate) by name.
+EASES = ('soft', 'linear', 'in', 'out', 'camera', 'transition', 'furniture', 'process', 'accumulate')
 LINE_LIMIT = 200          # characters in a caption
-LINES_RANGE = (2, 30)
+LINES_RANGE = (2, 30)     # a scene step in a lesson
+ANIMATION_LINES = (2, 60) # an animation on the path, which can run four minutes or so (ruled 2026-11-18, 2026-11-19)
 SYMBOLS = re.compile(r'[°%/&+=<>@#~^]')   # read aloud in ways no one can be sure of: say how, with "say"
 
 # The four narrators kept from stage 0, each made by the engine that has it. Nobody's voice is copied:
@@ -680,8 +682,9 @@ def split_call(call, part_names):
     return (part_names[0] if len(part_names) == 1 else None), head, call[1:]
 
 
-def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
-    """A scene: an animation's file, or a scene step. voice: its timing file, if it has been voiced."""
+def check_scene(scene, where, rep, kit, base, voice=None, narrator=None, most=LINES_RANGE):
+    """A scene: an animation's file, or a scene step. voice: its timing file, if it has been voiced. most: how
+    many lines it usually has (an animation can run longer than a scene step)."""
     parts_ = scene.get('parts')
     descs = {}
     if not isinstance(parts_, dict) or not parts_:
@@ -701,8 +704,8 @@ def check_scene(scene, where, rep, kit, base, voice=None, narrator=None):
     if not isinstance(lines, list) or not lines:
         rep.err(where, '"lines" is the script: a list of lines, each { "id", "text", "do": [...] }')
         return
-    if not LINES_RANGE[0] <= len(lines) <= LINES_RANGE[1]:
-        rep.warn(where, f'{len(lines)} lines: a scene is usually {LINES_RANGE[0]} to {LINES_RANGE[1]}; split a long one into steps')
+    if not most[0] <= len(lines) <= most[1]:
+        rep.warn(where, f'{len(lines)} lines: a scene is usually {most[0]} to {most[1]}; split a long one in two')
     seen = set()
     for n, line in enumerate(lines):
         lid = line.get('id') if isinstance(line, dict) else None
@@ -972,7 +975,7 @@ def check_scene_file(scene, where, rep, kit, base, key, narrator=None):
             rep.err(f'{where}.sources[{i}]', 'a source has an id, and a title or who it\'s by')
         elif not s.get('checked'):
             rep.warn(f'{where}.sources[{i}]', '"checked": when it was read, or "recalled" if it wasn\'t re-read')
-    check_scene(scene, where, rep, kit, base, scene_voice(base, key), narrator)
+    check_scene(scene, where, rep, kit, base, scene_voice(base, key), narrator, ANIMATION_LINES)
 
 
 def check_step(step, w, rep, kit, base, ctx, ask=False):

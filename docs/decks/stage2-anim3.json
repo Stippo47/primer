@@ -1,0 +1,310 @@
+{
+ "title": "Animations, round three",
+ "topic": "stage2",
+ "order": 16,
+ "cards": [
+  {
+   "id": "wind",
+   "kind": "report",
+   "rarity": "epic",
+   "title": "How wind works",
+   "text": "New, 3:44: what wind is, why it blows, and why the trades and westerlies blow the way they do.",
+   "why": "You asked: \"Winds from the west doesn't give you much to work off of. Why are the winds blowing that way. Maybe even a separate lesson/animation on how wind works.\"",
+   "details": "To update: close Primer fully and open it again; Profile shows 0.6.0 at the bottom.\n\nFilms in Riffle play silent, so each film's sound (the voice and the effects together) is attached under it as its own clip: play the clip alongside the film, or open the animation in Primer to hear them together. The whole animation, with its sound, is also in the shots folder.\n\nIt opens the topic now, before the engine, with a lesson after it. It starts from molecules, because every later step leans on \"warm air is lighter, so it rises\" and \"air flows from crowded to thin\".\n\nThe swerve (the Coriolis effect) is set up by the ground's own speed: the equator moves east at about 1,670 km/h, slower toward the poles, so air heading for the equator falls behind (the trades blow from the east) and air heading for the poles gets ahead (the westerlies). The spin animation recalls this instead of teaching it again. I left out a merry-go-round demonstration: one explanation used twice seemed clearer than two. If the swerve doesn't land on the phone, that's the next thing to add.\n\nNew tools, all general: molecules up close (pressure as pushes, a wall that lifts into wind, a rising bubble, evaporation), the sea and sky's shore, loop of air and beam of sunlight, and on the globe the wind belts (with their bend from a still Earth to a spinning one), the ground's speed, the loops of air on the globe's edge, and signs.\n\nSCRIPT\n\n\"You can't see the wind. But it can push a storm the size of a country right across an ocean.\"\n\"So what is wind, really? Why does it blow at all? And why does it blow the way it does?\"\n\"To find out, we need to start very, very small.\"\n\"Air is made of molecules: tiny specks, far too small to see, zipping around in every direction.\"\n\"They crash into each other, and into everything around them.\"\n\"Every crash is a tiny push. Add up all those pushes, and you get air pressure.\"\n\"Where air is crowded, there are more pushes: high pressure. Where it's thin, there are fewer: low pressure.\"\n\"Let the two meet, and air pushes out of the crowd into the space. That flow of air is wind.\"\n\"So what makes air crowded in one place, and thin in another? Mostly, heat.\"\n\"Warm the air, and its molecules speed up, and shove each other farther apart.\"\n\"So the same space holds fewer of them. Warm air is lighter than the cooler air around it.\"\n\"And just like a bubble in water, it rises.\"\n\"You've felt this at the beach, on a sunny afternoon.\"\n\"The sun warms the land much faster than the sea.\"\n\"So the air over the land warms up, grows lighter, and rises.\"\n\"That leaves less air pressing down on the land: lower pressure.\"\n\"So cooler, crowded air pushes in off the sea to fill the gap. That's a sea breeze.\"\n\"High up, the air flows back out over the sea, and sinks again. A loop of moving air.\"\n\"The whole planet works the same way. It's just much, much bigger.\"\n\"Near the equator, the sun shines down almost straight on.\"\n\"Near the poles, the same sunlight comes in at a slant, and spreads out over far more ground.\"\n\"So the tropics soak up far more heat than the poles do.\"\n\"All along the equator, hot, wet air rises, in towering clouds.\"\n\"About fifteen kilometres up, at the top of the weather, it can't rise any higher, so it spreads out toward the poles.\"\n\"On the way it cools and grows heavier, and around thirty degrees north and south, it sinks back down.\"\n\"Sinking air brings high pressure, and clear, dry skies. That's why so many deserts lie near thirty degrees.\"\n\"Down near the ground, the air flows back toward the equator, to fill the gap.\"\n\"This giant loop is a Hadley cell, and its winds near the ground are the trade winds.\"\n\"Farther north, two more loops turn beside it, like gears.\"\n\"So between thirty and sixty degrees, the air near the ground flows toward the pole.\"\n\"If the Earth stood still, that's how the winds would blow: straight toward the equator, or the pole.\"\n\"But the Earth spins, once a day, from west to east.\"\n\"The ground at the equator has the farthest to go, so it moves fastest: about 1,670 kilometres an hour.\"\n\"Toward the poles, the circles get smaller, and the ground moves slower.\"\n\"Now picture air flowing toward the equator. It starts out moving east, along with the slower ground it came from.\"\n\"But the ground under it moves east faster and faster. The air can't keep up, so it falls behind, to the west.\"\n\"Seen from the ground, it blows in from the east. That's why the trade winds blow from east to west.\"\n\"Air flowing toward the pole does the opposite. It's moving east faster than the ground it reaches, so it pulls ahead.\"\n\"So between thirty and sixty degrees, the winds blow from the west: the westerlies.\"\n\"This swerve is called the Coriolis effect. Heading south, air swerves west. Heading north, it swerves east.\"\n\"Either way, north of the equator, moving air always swerves to its right.\"\n\"South of the equator, it swerves to its left, so the pattern there is a mirror image.\"\n\"Trade winds in the tropics, westerlies farther out. They blow like this all year round, day after day.\"\n\"And as you'll see, these winds are what steer hurricanes.\"",
+   "parts": [
+    {
+     "id": "p1",
+     "title": "Air, up close",
+     "text": "The questions, then a lens into the sky: air as molecules flying about and crashing into each other. (24 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-1-cant-see-to-bump.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-1-cant-see-to-bump-sound.m4a",
+       "label": "Part 1, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p2",
+     "title": "Pressure and wind",
+     "text": "Their pushes are air pressure; crowded against thin behind a wall that lifts is wind; warm air spreads, thins and rises like a bubble. (35 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-2-pressure-to-rises.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-2-pressure-to-rises-sound.m4a",
+       "label": "Part 2, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p3",
+     "title": "A sea breeze",
+     "text": "The land warms faster than the sea, its air rises, the sea air pushes in, and it flows back high up: a whole loop. (25 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-3-beach-to-loop.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-3-beach-to-loop-sound.m4a",
+       "label": "Part 3, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p4",
+     "title": "The sun, and rising air",
+     "text": "The same beam straight down at the equator and slanting near a pole; then the globe's edge, up close, where the air rises. (28 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-4-planet-to-ceiling.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-4-planet-to-ceiling-sound.m4a",
+       "label": "Part 4, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p5",
+     "title": "The loops of air",
+     "text": "Out toward the poles, down near 30° (the Sahara's High), back along the ground: a Hadley cell, then its two neighbours. (32 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-5-sinks-to-poleward.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-5-sinks-to-poleward-sound.m4a",
+       "label": "Part 5, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p6",
+     "title": "The ground's own speed",
+     "text": "As if the Earth stood still, then spinning: the ground fastest at the equator, and air heading for it falling behind. (35 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-6-still-to-falls-behind.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-6-still-to-falls-behind-sound.m4a",
+       "label": "Part 6, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p7",
+     "title": "From the east, from the west",
+     "text": "The trade winds swing to blow from the east, the westerlies from the west, and the swerve gets its name. (26 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-7-from-east-to-coriolis.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-7-from-east-to-coriolis-sound.m4a",
+       "label": "Part 7, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p8",
+     "title": "Always to its right",
+     "text": "Heading south it swerves west, heading north east: to its right. Mirrored in the south. And these winds steer hurricanes. (20 s)",
+     "videos": [
+      "../stage2/shots-anim3/wind-8-right-to-steer.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/wind-8-right-to-steer-sound.m4a",
+       "label": "Part 8, its sound"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "engine",
+   "kind": "report",
+   "rarity": "epic",
+   "title": "The storm's engine",
+   "text": "Redone, 2:20: evaporation up close, heat carried and let go, a cloud that billows up.",
+   "why": "Your pins on round two: the \"Its fuel: heat\" chip (\"Don't like this at all\"), the heat lines (\"These look weird\"), the evaporation scene (\"just meh\") and the cloud \"building up from a line??\".",
+   "details": "To update: close Primer fully and open it again; Profile shows 0.6.0 at the bottom.\n\nFilms in Riffle play silent, so each film's sound (the voice and the effects together) is attached under it as its own clip: play the clip alongside the film, or open the animation in Primer to hear them together. The whole animation, with its sound, is also in the shots folder.\n\nYour pins, one by one:\n\n- The title chip is gone, and so are all title cards. A term is a built label on the thing it names (a dot, a leader line, a pill unrolling with the word), and a number stands on a sign that rises out of the sea, its board springing open.\n- No heat lines anywhere. Heat now has one look for the whole series: warm triangles pointing the way it flows. You see them where heat moves: carried off by each water molecule that breaks free, and leaving the vapour as it turns into drops in the cloud. Vapour itself is pale puffs, not squiggles.\n- Evaporation is shown up close: a lens opens on the sea's surface and you go through it, to water molecules jostling; the fastest break free, each taking its heat, and the water left behind turns a shade cooler.\n- The cloud grows out of the rising air: one bubble first over the column, then billows rising into place, up and out, and an anvil spreading at the top. Each billow is lit, shaded and overlapped like a cauliflower.\n\nMotion now follows the measured curves: labels arrive on an ease-out, signs on a small spring, the camera on a sentence-long sine, cuts and the lens zoom on an in-out, flows at a steady pace. Sounds are placed by their pictures (a tick just before a sign's board opens, a whoosh peaking with a move, a swell starting before the air rises), still the made sounds until the library ones are wired in.\n\nSCRIPT\n\n\"A hurricane is an engine. A gigantic one, wider than a whole country.\"\n\"Every engine burns fuel. So what does a hurricane burn?\"\n\"Not oil, and not gas. It runs on heat, and it takes that heat from the ocean.\"\n\"This is the Atlantic in late summer, coloured by how warm its surface is.\"\n\"Orange is the warmest water, near the equator. Blue is the coolest, toward the poles.\"\n\"To feed a hurricane, the surface has to be at least 27 °C. That's 80 °F.\"\n\"About as warm as a heated swimming pool.\"\n\"Why does warm water matter so much? Let's take a closer look.\"\n\"Water is made of molecules too, packed close together and jostling. The warmer the water, the faster they move.\"\n\"At the surface, the fastest ones can break free, and fly off into the air as a gas: water vapour.\"\n\"That's evaporation.\"\n\"Each molecule that escapes takes some heat with it. So the water left behind gets a little cooler.\"\n\"That heat isn't lost. It's hidden inside the vapour, and it goes wherever the air takes it.\"\n\"Remember the rising bubble? Warm, wet air is lighter too, so it rises.\"\n\"As it climbs, it spreads out and cools. And cooler air can't hold as much vapour.\"\n\"So a little way up, the vapour turns back into tiny drops of water. Billions of drops together: a cloud.\"\n\"And as the vapour turns back into water, it gives up the heat it was carrying.\"\n\"That heat is the hurricane's fuel.\"\n\"It warms the air inside the cloud, so the air rises even faster, and the cloud towers higher.\"\n\"All that rising air leaves less air pressing down on the sea. The pressure at the surface drops.\"\n\"So, just like a sea breeze, air rushes in from all around to fill the gap.\"\n\"On its way in, it picks up more warm vapour from the sea, and rises in turn.\"\n\"More vapour, more heat, faster rising, stronger winds. The engine feeds itself.\"\n\"As long as it stays over warm water, it keeps its fuel, and it can grow into a monster.\"\n\"And the sea takes time to warm up. Every day of summer sun adds a little more heat.\"\n\"So the sea is warmest, and hurricanes are busiest, from mid-August to mid-October.\"\n\"Warm water, rising air, clouds, and the heat they let go. That's the engine inside every hurricane.\"",
+   "parts": [
+    {
+     "id": "pins",
+     "title": "Your four pins",
+     "text": "A sign in the sea, not a chip; heat as triangles, carried off by escaping molecules; evaporation up close through a lens; a cloud that billows up out of the rising air.",
+     "images": [
+      "../stage2/shots-anim3/pin1-sign-not-chip.jpg",
+      "../stage2/shots-anim3/pin2-heat-as-triangles.jpg",
+      "../stage2/shots-anim3/pin3-evaporation-up-close.jpg",
+      "../stage2/shots-anim3/pin4-cloud-billows-up.jpg",
+      "../stage2/shots-anim3/pin4b-cloud-towers.jpg"
+     ]
+    },
+    {
+     "id": "p1",
+     "title": "What it runs on",
+     "text": "An engine wider than a country, running on heat from the ocean; the Atlantic coloured by warmth, warmest to coolest. (24 s)",
+     "videos": [
+      "../stage2/shots-anim3/engine-1-engine-to-colours.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/engine-1-engine-to-colours-sound.m4a",
+       "label": "Part 1, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p2",
+     "title": "Warm water, up close",
+     "text": "A sign stands up in the sea at 27 °C; a lens on the surface; the fastest water molecules break free: evaporation. (29 s)",
+     "videos": [
+      "../stage2/shots-anim3/engine-2-how-warm-to-evaporation.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/engine-2-how-warm-to-evaporation-sound.m4a",
+       "label": "Part 2, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p3",
+     "title": "Heat carried, then let go",
+     "text": "Each escaping molecule takes heat, the water left cools; the vapour rises and cools, turns to drops, a cloud billows up, and the heat comes out. (33 s)",
+     "videos": [
+      "../stage2/shots-anim3/engine-3-takes-heat-to-lets-go.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/engine-3-takes-heat-to-lets-go-sound.m4a",
+       "label": "Part 3, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p4",
+     "title": "The engine feeds itself",
+     "text": "The cloud towers, the pressure drops (Low), air rushes in picking up vapour, and the storm from above swirls as the cloud grows. (30 s)",
+     "videos": [
+      "../stage2/shots-anim3/engine-4-fuel-is-to-feeds.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/engine-4-fuel-is-to-feeds-sound.m4a",
+       "label": "Part 4, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p5",
+     "title": "Fuel, and the season",
+     "text": "Riding warm water it grows; the sun warms the sea day by day (24 to 29 °C); the busy months; the whole engine at once. (24 s)",
+     "videos": [
+      "../stage2/shots-anim3/engine-5-keeps-going-to-sum-up.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/engine-5-keeps-going-to-sum-up-sound.m4a",
+       "label": "Part 5, its sound"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "spin",
+   "kind": "report",
+   "rarity": "rare",
+   "title": "The spin and the paths",
+   "text": "Redone, 2:02: the swerve recalled, the swirl, then one storm's hook from Africa round the High.",
+   "why": "Your note: \"More thorough explanation. There is no rush on duration. Explain stuff in detail.\"",
+   "details": "To update: close Primer fully and open it again; Profile shows 0.6.0 at the bottom.\n\nFilms in Riffle play silent, so each film's sound (the voice and the effects together) is attached under it as its own clip: play the clip alongside the film, or open the animation in Primer to hear them together. The whole animation, with its sound, is also in the shots folder.\n\nNow that the wind animation explains the belts, this one can say why the storm goes where it goes: the trade winds carry it west, winds circling the High (made by the sinking air near 30°) turn it north, the westerlies sweep it east. The storm itself stays still and thin streaks circle it, the way the study found spin is shown.\n\nSCRIPT\n\n\"Warm water isn't enough. A hurricane also needs to spin.\"\n\"Remember the Coriolis effect? Because the Earth turns, moving air swerves.\"\n\"Heading south, it swerves west. Heading north, it swerves east. Either way, north of the equator, that's to its right.\"\n\"Now picture a patch of low pressure over a warm sea, where warm, wet air is rising.\"\n\"Air rushes in toward it from every side, aimed straight at the middle.\"\n\"But every stream swerves to its right. So it misses the middle, and swings around it instead.\"\n\"Seen from above, it all swirls counterclockwise. That's the spin.\"\n\"And the closer the air gets to the middle, the faster it whirls, like a skater pulling in their arms.\"\n\"South of the equator, air swerves to its left, so storms there spin clockwise.\"\n\"And right at the equator, there's almost no swerve at all.\"\n\"With nothing to set the air spinning, hurricanes almost never form within about 5° of the equator.\"\n\"Most start between about 5° and 20° from the equator, where the sea is warm and the swerve is strong enough.\"\n\"Now let's follow one storm, from start to finish.\"\n\"Many Atlantic hurricanes begin as a ripple in the winds blowing west off Africa.\"\n\"Out over the ocean, it's caught in the trade winds: the easterlies you met before.\"\n\"Like a leaf on a river, the storm drifts west, across the Atlantic toward the Caribbean.\"\n\"To its north sits a vast dome of high pressure, made by that sinking air near thirty degrees.\"\n\"Winds circle the high clockwise, and the storm follows them, around its western edge, turning north.\"\n\"Farther north, it reaches the westerlies, which sweep it back out to the east.\"\n\"So its path bends into a great hook: west, then north, then east.\"\n\"Out over cooler water, it runs short of fuel, and fades into an ordinary storm.\"\n\"And if a storm reaches land instead, it's cut off from the warm sea, and it weakens too.\"\n\"So the turning Earth gives a hurricane its spin. The winds decide where it goes, and warm water decides how long it lives.\"",
+   "parts": [
+    {
+     "id": "p1",
+     "title": "The swerve, recalled",
+     "text": "From the wind animation: heading south it swerves west, north it swerves east, always right. Air rushing into a Low swerves too. (31 s)",
+     "videos": [
+      "../stage2/shots-anim3/spin-1-needs-spin-to-misses.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/spin-1-needs-spin-to-misses-sound.m4a",
+       "label": "Part 1, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p2",
+     "title": "The spin, and where they start",
+     "text": "It swirls counterclockwise (clockwise in the south), not at the equator, so never within 5°, mostly 5° to 20°. (32 s)",
+     "videos": [
+      "../stage2/shots-anim3/spin-2-counter-to-where.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/spin-2-counter-to-where-sound.m4a",
+       "label": "Part 2, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p3",
+     "title": "One storm: west, then round",
+     "text": "A ripple off Africa, carried west by the trade winds, round the High's western edge as winds circle it clockwise. (31 s)",
+     "videos": [
+      "../stage2/shots-anim3/spin-3-follow-to-rounds.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/spin-3-follow-to-rounds-sound.m4a",
+       "label": "Part 3, its sound"
+      }
+     ]
+    },
+    {
+     "id": "p4",
+     "title": "The hook, and the end",
+     "text": "Swept east by the westerlies into a hook; it fades over cooler water, or weakens over land. The whole story in one picture. (28 s)",
+     "videos": [
+      "../stage2/shots-anim3/spin-4-westerlies-to-sum-up.mp4"
+     ],
+     "audio": [
+      {
+       "src": "../stage2/shots-anim3/spin-4-westerlies-to-sum-up-sound.m4a",
+       "label": "Part 4, its sound"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "path",
+   "kind": "report",
+   "rarity": "common",
+   "title": "The new path",
+   "text": "How wind works opens the topic, with a lesson of its own. Animations introduce, lessons expand.",
+   "why": "Ruled 2026-11-18: animations introduce a concept, lessons reinforce and expand it, tests test it.",
+   "details": "To update: close Primer fully and open it again; Profile shows 0.6.0 at the bottom.\n\n1. How wind works (animation, new): the \"How wind works\" banner.\n2. Why the wind blows (lesson, new, 10 steps): asks before it tells: which way wind blows between high and low, the beach breeze, the loop at the equator in order, where it sinks (a slider), the ground's speed, which way the trades blow, where the westerlies blow (a tap on the globe), which way air swerves. Seven new facts, each asked two or three ways, for review.\n3. The storm's engine (animation, redone): the \"Fuel, spin and paths\" banner.\n4. Warm water (lesson, as before).\n5. The spin and the way they go (animation, redone).\n6. The spin, and where they go (lesson, as before).\n7. A chest.\n8. The checkup (test): two new questions on wind (which way the wind blows between sea and land, and where the trade winds blow), then the five from before.\n\nIt's still a Tour: three lessons.",
+   "parts": [
+    {
+     "id": "nodes",
+     "title": "The path",
+     "text": "Eight nodes, two banners.",
+     "images": [
+      "../stage2/shots-anim3/path.jpg",
+      "../stage2/shots-anim3/lesson-westerlies-where.jpg"
+     ]
+    }
+   ]
+  }
+ ]
+}

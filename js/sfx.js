@@ -26,8 +26,30 @@ export const SOUNDS = {
   rumble: 'A soft, far-off rumble: a storm cloud.',
 };
 export const SOUND_NAMES = Object.keys(SOUNDS);
+
+// Each kind of sound: the file that plays it, where in that file its loudest moment is (seconds, measured),
+// and how it lines up with the picture (the second study's measures, docs/research/kurzgesagt-study-2.md, 2.5):
+//   align 'peak'   its loudest moment lands `lead` seconds before the picture's keyframe: a tick 40 ms ahead,
+//                  a whoosh (lead 0) peaking with the move's fastest moment
+//   align 'start'  it starts `lead` seconds before the keyframe and swells in: a process starting (rising
+//                  air, wind, a storm growing) begins about 350 ms before the picture
+// A scene asks for a kind by name on an action; the picture's keyframe is the action's moment plus its call's
+// `beat` (in its part's description: a sign's board pops half a second after the call, a lens's circle
+// arrives at 0.97 s). To use another recording for a kind, change its file here (and its peak), nothing else.
+export const KINDS = {
+  whoosh: { file: 'whoosh', peak: 0.415, align: 'peak', lead: 0 },
+  cut: { file: 'cut', peak: 0.015, align: 'peak', lead: 0.04 },
+  swell: { file: 'swell', peak: 1.89, align: 'start', lead: 0.35 },
+  pop: { file: 'pop', peak: 0.015, align: 'peak', lead: 0.04 },
+  chime: { file: 'chime', peak: 0.13, align: 'peak', lead: 0.04 },
+  wind: { file: 'wind', peak: 1.27, align: 'start', lead: 0.35 },
+  fizz: { file: 'fizz', peak: 0.775, align: 'start', lead: 0.2 },
+  rumble: { file: 'rumble', peak: 1.325, align: 'start', lead: 0.3 },
+};
+// When a sound of this kind should start, for a keyframe at `key` seconds.
+export const soundStart = (name, key) => { const K = KINDS[name]; return K ? key - (K.align === 'peak' ? K.peak : 0) - K.lead : key; };
 const BASE = new URL('../sounds/', import.meta.url);
-export const soundUrl = name => new URL(`${name}.m4a`, BASE).href;
+export const soundUrl = name => new URL(`${(KINDS[name] && KINDS[name].file) || name}.m4a`, BASE).href;
 
 export class Effects {
   // on(): whether they may sound (Animation sounds in Profile, unless told otherwise).

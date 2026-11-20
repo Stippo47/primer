@@ -20,6 +20,8 @@ import { SPHERE } from './views.js';
 import { STYLE, SST, warmBandsNow, rgba, mix, MOTION } from './look.js';
 import { dot, chip, mark } from './marks.js';
 import { Glide, soft as softEase } from '../../js/ease.js';
+import { streaks, label as builtLabel, pill } from '../../js/code.js';
+import { AIR_LAYERS } from './air.js';
 
 const TAU = Math.PI * 2, RAD = Math.PI / 180, DEG = 180 / Math.PI;
 const clamp01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
@@ -65,6 +67,21 @@ const backdrop = {
   draw(d) {
     const { c, view: v } = d;
     if (v.round) {
+      // in a scene, a quiet field of stars far behind the globe: a layer of depth (they turn with the world)
+      if (d.soft) {
+        const shift = ((v.centre[0] % 360) + 360) % 360;
+        c.save();
+        for (let i = 0; i < 70; i++) {
+          const hx = Math.sin(i * 12.9898) * 43758.5453, hy = Math.sin(i * 78.233) * 12345.678;
+          const fx = hx - Math.floor(hx), fy = hy - Math.floor(hy);
+          const x = ((fx * v.w * 1.6 - shift * v.w * 0.0025) % (v.w * 1.6) + v.w * 1.6) % (v.w * 1.6) - v.w * 0.3, y = fy * v.h;
+          if (Math.hypot(x - v.cx, y - v.cy) < v.r * 1.04) continue;
+          c.globalAlpha = 0.25 + 0.45 * ((i * 0.37) % 1);
+          c.fillStyle = i % 7 ? '#c9d4ff' : '#ffe9b8';
+          c.beginPath(); c.arc(x, y, i % 5 ? 0.9 : 1.6, 0, TAU); c.fill();
+        }
+        c.restore();
+      }
       const glow = c.createRadialGradient(v.cx, v.cy, v.r * 0.86, v.cx, v.cy, v.r * 1.16);
       glow.addColorStop(0, rgba('#4f7cff', 0.6)); glow.addColorStop(0.35, rgba('#4f7cff', 0.25)); glow.addColorStop(1, rgba('#4f7cff', 0));
       c.fillStyle = glow; c.beginPath(); c.arc(v.cx, v.cy, v.r * 1.16, 0, TAU); c.fill();
@@ -287,7 +304,9 @@ function routeLabel(d, rt, placed) {
   const a = shown(rt, d, false) * softEase(clamp01((p - 0.5) / 0.25));
   if (a <= 0.01) return;
   c.save(); c.globalAlpha = a;
-  chip(c, rt.label, best.cx, best.cy, { k: 1, width: v.w });
+  // in a scene a route's name is a term's pill, the series' label colour; in a lesson, the plain plate
+  if (d.soft) pill(c, rt.label, best.cx, best.cy, { width: v.w });
+  else chip(c, rt.label, best.cx, best.cy, { k: 1, width: v.w });
   c.restore();
 }
 
@@ -528,7 +547,14 @@ const marks = {
   draw(d) {
     const { c: g, view: v, m, now, S, W } = d, width = v.w;
     let busy = false;
-    const turning = (at, t0) => ({ size: v.size, turn: (now - t0) / 1000, south: at[1] < 0 });
+    // a storm's spin: in a lesson the drawing turns; in a scene it stays still (only breathing) and thin streaks
+    // circle it instead, the way the series shows spin (study 2, 1.8)
+    const turning = (at, t0) => ({ size: v.size, turn: d.soft ? 0 : (now - t0) / 1000, south: at[1] < 0 });
+    const spin = (at, x, y, k) => {
+      if (!d.soft || k <= 0.05) return;
+      const R = Math.max(12, 20 * v.size) * k;
+      streaks(g, x, y, R * 1.05, now / 1000, at[1] < 0 ? -1 : 1, Math.min(1, k * 1.2));
+    };
     const grow = m.grow.at(now);
     if (m.grow.moving(now)) busy = true;
     const scaled = (kind, k) => (kind === 'storm' ? k * grow : k);
@@ -536,6 +562,14 @@ const marks = {
       if (!v.visible(p.at)) continue;
       const [x, y] = v.proj(p.at), a = shown(p, d, false), k = d.soft ? pop(d, p.born) : 1;
       if (a <= 0.01) continue;
+      // in a scene, a point's name is a built label (a dot, a leader, a pill unrolling: js/code.js)
+      if (d.soft && p.label) {
+        g.save(); g.globalAlpha = a;
+        builtLabel(g, x, y, p.label, { age: now - p.born, side: x > width * 0.62 ? -1 : 1, width });
+        g.restore();
+        if (now - p.born < 1200 || p.out) busy = true;
+        continue;
+      }
       g.save(); g.globalAlpha = a;
       if (k < 1) { g.translate(x, y); g.scale(Math.max(0.01, k), Math.max(0.01, k)); g.translate(-x, -y); }
       dot(g, x, y, 6, '#1b1f5e', '#ffffff');
@@ -549,6 +583,7 @@ const marks = {
       if (a <= 0.01) continue;
       g.save(); g.globalAlpha = a;
       const above = mark(g, mk.kind, x, y, { k: scaled(mk.kind, k), ...turning(mk.at, mk.t0) });
+      if (mk.kind === 'storm') spin(mk.at, x, y, scaled('storm', k));
       if (mk.label) chip(g, mk.label, x, y - above, { k, width });
       g.restore();
       if (mk.kind === 'storm' || now - mk.t0 < 760 || mk.out) busy = true;
@@ -560,6 +595,7 @@ const marks = {
       const [x, y] = v.proj(at), k = pop(d, rt.born);
       g.save(); g.globalAlpha = a;
       mark(g, rt.rider, x, y, { k: scaled(rt.rider, k), ...turning(at, rt.born) });
+      if (rt.rider === 'storm') spin(at, x, y, scaled('storm', k));
       g.restore();
       if (rt.rider === 'storm' || now - rt.born < 760 || rt.out) busy = true;
     }
@@ -606,7 +642,7 @@ const key = {
 };
 
 // The stack, bottom to top.
-export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, routes, names, marks, routeNames, key];
+export const LAYERS = [backdrop, sea, seaData, land, borders, lines, finish, AIR_LAYERS.cells, AIR_LAYERS.winds, AIR_LAYERS.turning, routes, names, marks, AIR_LAYERS.signs, routeNames, key];
 
 // ---------------------------------------------------------------- shapes used by more than one call
 

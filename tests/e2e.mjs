@@ -1151,7 +1151,7 @@ try {
     return [];
   };
   const parts = await ev('__primer.parts.listParts()');
-  ok(JSON.stringify(parts) === JSON.stringify(['map', 'inputs', 'section']), 'the kit is the map, the inputs and the sea and sky: the globe is a preset of the map, not a part of its own', parts);
+  ok(JSON.stringify(parts) === JSON.stringify(['map', 'inputs', 'section', 'molecules']), 'the kit is the map, the inputs, the sea and sky and the molecules up close: the globe is a preset of the map, not a part of its own', parts);
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
     const cases = [];
@@ -1237,6 +1237,10 @@ try {
     flow: [[[-20, 18], [-35, 14], [-50, 16]], 'cyan', 0.3, 'Trade winds'], spiral: [[-45, 20], 1, 0.3, 9], style: ['warmth', 0.2], key: [true],
     carry: [1, 0.2], drops: [1, 0.2], cooling: [1, 0.2], days: [1, 0.2], gauge: [27, '°C', 0.2],
     sun: [1, 0.2], warm: [0.8, 0.2], vapour: [1, 0.2], rise: [1.5, 0.2], cloud: [0.9, 0.2], release: [1, 0.2], inflow: [1, 0.2], rain: [0.5, 0.2], view: ['cloud', 0.2], tag: ['cloud', 'Cloud'],
+    // round three: the air on the map, the sea and sky's loop and signs, the molecules
+    winds: ['all', 0.5, 0.2, true], turning: [true, true, true], cells: ['all', 1, 0.2, true], frame: [-0.3, 0.1, 0.2], sign: [[-40, 20], 'High', 'cyan'],
+    ground: [1, 0.2], heat: [1, 0.2], outflow: [1, 0.2], sink: [1, 0.2], beam: [1, 0.2], sunAngle: [30, 0.2], parcel: [0.6, 0.2, 18],
+    air: [0.6, 0.2], pushes: [1, 0.2], split: [1, 0.2], open: [1, 0.2], lift: [1, 0.2], escape: [1, 0.2],
   };
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
@@ -1473,7 +1477,7 @@ try {
     const topicFile = JSON.parse(readFileSync(join(dir, 'topic.json'), 'utf8'));
     const shown = await ev(`[...document.querySelectorAll('.node')].map(n=>n.dataset.kind+':'+n.dataset.node)`);
     ok((await text()).includes('Where hurricanes form') && JSON.stringify(shown) === JSON.stringify(topicFile.path.map(n => `${n.kind}:${n.id}`)), 'the pilot shows its path, a node for each whole thing', shown);
-    ok(topicFile.level === 'tour' && topicFile.path.filter(n => n.kind === 'lesson').length === 2, 'it is a Tour: two lessons, then a chest and a test');
+    ok(topicFile.level === 'tour' && topicFile.path.filter(n => n.kind === 'lesson').length === 3, 'it is a Tour: three lessons, each after its animation, then a chest and a test');
     await shot('20-pilot-path');
     let asked = 0, played = 0;
     const tapPlace = async (lon, lat) => {
@@ -1504,11 +1508,11 @@ try {
         await openNode(node.id);
         const first = await scene();
         ok(first.narrators.every(n => n === narrator), `${node.id}: every line has its clip, in the topic's narrator`, first.narrators);
-        ok(first.total >= 55 && first.total <= 150, `${node.id}: it runs ${first.total.toFixed(0)} seconds in ${narrator}'s voice`, first.total);
+        ok(first.total >= 55 && first.total <= 330, `${node.id}: it runs ${first.total.toFixed(0)} seconds in ${narrator}'s voice`, first.total);
         ok(await waitFor(`__primer.run.scene.state === 'playing'`, 4000), `${node.id}: it starts by itself, full screen`);
         await shot(`21-pilot-${node.id}-playing`);
         if (!played) {
-          ok(await sceneState('ended', 150000), `${node.id}: played through on its voice, line by line`);
+          ok(await sceneState('ended', 360000), `${node.id}: played through on its voice, line by line`);
           const fired = (await scene()).fired;
           const want = file.lines.reduce((n, x) => n + (x.do || []).length, 0);
           const lags = fired.map(x => +(x.at - x.want).toFixed(3));
@@ -2520,7 +2524,12 @@ try {
     await ev(`__h.run(['warm', 1, 0.3]); __h.run(['vapour', 1, 0.3]); __h.run(['cloud', 0.8, 0.3]); __h.run(['tag', 'cloud', 'Cloud'])`);
     await sleep(600);
     let sec = await ev('__h.debug()');
-    ok(sec.levels.warm === 1 && sec.levels.cloud === 0.8 && sec.tags.length === 1 && sec.frames > 10, 'the sea and sky: its levels glide where they are sent, a tag names a thing, and it keeps moving', sec);
+    ok(sec.levels.cloud === 0.8 && sec.levels.vapour === 1 && sec.levels.warm > 0.2 && sec.levels.warm < 1 && sec.tags.length === 1 && sec.frames > 10, 'the sea and sky: its levels glide where they are sent, a tag names a thing, and it keeps moving; a colour (the sea warming) takes its measured 2.1 seconds', sec);
+    let peak = 0;
+    for (let k = 0; k < 16; k++) { await sleep(100); peak = Math.max(peak, (await ev('__h.debug()')).levels.warm); }
+    await sleep(800);
+    sec = await ev('__h.debug()');
+    ok(peak > 1.02 && sec.levels.warm === 1, 'and the colour goes a touch past its target and settles back (the measured overshoot)', [peak, sec.levels.warm]);
     await shot('51-sea-and-sky');
     await ev(`document.getElementById('bench').setAttribute('data-off', '')`);
     const f0 = (await ev('__h.debug()')).frames;
@@ -2592,6 +2601,7 @@ try {
     // with Animation sounds off, nothing sounds, whatever Effects is
     await ev(`__primer.app.setPref('animSounds', false); __primer.app.setPref('effects', true); __dv.scene.sfx.heard.length = 0; __dv.scene.seekTo(__dv.scene.starts[1], true)`);
     await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
+    await waitFor(`__dv.scene.debug().effects.length > 0`, 3000);
     ok((await dv()).effects.length && (await dv()).effects.every(e => !e.played), 'with Animation sounds off, no sound plays, even with Effects on', (await dv()).effects);
     await ev(`__primer.app.setPref('animSounds', true); __primer.app.setPref('effects', false); true`);
     // the full-bleed layout: the app's box is the window, and the video reaches the bottom of the screen
@@ -2605,6 +2615,48 @@ try {
     await shot('53b-video-bottom');
     await ev(`__dv.remove()`);
     ok(await ev(`!document.documentElement.classList.contains('vid')`), 'closed, the page has its own ground back');
+
+    // round three: a closer look through a lens, zooming through it and back out, and sounds placed by their pictures
+    const closer = {
+      title: 'A closer look',
+      parts: {
+        sea: { part: 'section', settings: { view: 'surface', warm: 0.8 } },
+        close: { part: 'molecules', settings: { below: 'water', warm: 0.7, air: 0.5 } },
+      },
+      lines: [
+        { id: 'one', text: 'Here is the warm sea, and a sign stands up in it.', do: [
+          { at: 'warm', call: ['sea.rise', 1, 1], sound: 'swell' },
+          { at: 'sign', call: ['sea.sign', 'left', '27 °C'], sound: 'pop' }] },
+        { id: 'two', text: 'Let us take a closer look at the water.', do: [
+          { at: 'closer', call: ['shot.lens', 'close', 0.5, 0.75] },
+          { at: 'water', call: ['shot.cut', 'close', 'through'] }] },
+        { id: 'three', text: 'The fastest molecules break free. Then we go back out.', do: [
+          { at: 'break', call: ['close.escape', 1, 0.5] },
+          { at: 'back', call: ['shot.cut', 'sea', 'out'] }] },
+      ],
+    };
+    await ev(`(async()=>{const P=__primer;const file=P.data.sceneLesson(${JSON.stringify(closer)},'closer','scene-topic');const node={kind:'animation',id:'closer',title:'A closer look',file};
+      const {playVideo}=await import('/primer/js/screens/video.js');window.__dv=await playVideo(P.app,{id:'scene-topic',title:'T',narrator:'bella',path:[node]},node,{record:()=>{},media:p=>p,voice:{on:()=>false},captions:{on:()=>true},onLeave:()=>{},onNext:()=>{}});return true})()`);
+    const plan0 = await ev(`(()=>{const p=__dv.scene.plans[0];return {acts:p.actions.map(a=>a.t0),sounds:p.sounds.map(s=>({name:s.name,t:s.t}))}})()`);
+    const swell = plan0.sounds.find(x => x.name === 'swell'), pop = plan0.sounds.find(x => x.name === 'pop');
+    ok(swell && Math.abs((plan0.acts[0] - swell.t) - 0.35) < 0.01 && pop && Math.abs((pop.t - plan0.acts[1]) - 0.445) < 0.01,
+      "sounds are placed by their pictures: a process's swell starts 350 ms before it, a sign's pop lands 40 ms before its board springs open (half a second after the call)", plan0);
+    const plan1 = await ev(`__dv.scene.plans[1].sounds.map(s=>({name:s.name,t:s.t}))`);
+    ok(plan1.map(x => x.name).join() === 'pop,whoosh', 'a lens makes a soft pop as its circle opens, and zooming through it a whoosh', plan1);
+    await waitFor(`__dv.scene.debug().shots.lens === 'close'`, 15000);
+    await sleep(1200);
+    const lensOpen = await ev(`(()=>{const e=document.querySelector('.video .spart[data-part=close]');return {clip:e.style.clipPath,off:e.hasAttribute('data-off'),ring:!!document.querySelector('.video .slensring')}})()`);
+    ok(lensOpen.clip.startsWith('circle(') && !lensOpen.off && lensOpen.ring, 'a lens opens a circle onto the closer view, with its dot, leader and rim drawn over the picture', lensOpen);
+    await shot('53c-lens');
+    await waitFor(`__dv.scene.debug().shots.layout.close === 'full' && !__dv.scene.debug().shots.moving.length`, 15000);
+    const through = await ev(`(()=>{const e=document.querySelector('.video .spart[data-part=close]');return {clip:e.style.clipPath,sea:document.querySelector('.video .spart[data-part=sea]').hasAttribute('data-off')}})()`);
+    ok(through.clip === '' && through.sea, 'zooming through, the circle grows until the closer view fills the picture, and the wider one goes', through);
+    await waitFor(`__dv.scene.debug().shots.layout.sea === 'full' && !__dv.scene.debug().shots.moving.length`, 15000);
+    ok(JSON.stringify(await slots()) === '["sea:full","close:off"]', 'and back out, the wider view again', await slots());
+    await ev(`__dv.scene.seekTo(__dv.scene.starts[1] + 1.5, false)`);
+    await sleep(300);
+    ok((await dv()).shots.lens === 'close' && !(await dv()).shots.moving.length, 'seeking into a lens rebuilds it open, nothing still moving', (await dv()).shots);
+    await ev(`__dv.remove()`);
     // what's under the app's box is the app's dark, so an edge it doesn't cover can't show a lighter band
     const grounds = await ev(`(()=>{const bg=()=>getComputedStyle(document.documentElement).backgroundColor+'|'+getComputedStyle(document.body).backgroundColor;const tabs=bg();document.documentElement.classList.add('bare');const bare=bg();document.documentElement.classList.remove('bare');return {tabs,bare}})()`);
     ok(grounds.tabs === 'rgb(15, 20, 52)|rgb(15, 20, 52)' && grounds.bare === 'rgb(20, 26, 60)|rgb(20, 26, 60)', "the page's own ground is the tab bar's dark under the tabs, and the screen's ground without them", grounds);

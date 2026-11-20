@@ -31,8 +31,8 @@
 import * as parts from './parts.js';
 import { Clip, clipFor, DEFAULT_NARRATOR } from './narration.js';
 import { ReadAlong, saidOf, splitWords, findWords, readingTimes } from './readalong.js';
-import { Shots, SHOT_SOUND } from './shots.js';
-import { Effects } from './sfx.js';
+import { Shots, SHOT_SOUND, SHOT_BEAT } from './shots.js';
+import { Effects, soundStart } from './sfx.js';
 import { EASES } from './ease.js';
 
 export { saidOf, splitWords, normWord, findWords, readingTimes, READING } from './readalong.js';
@@ -156,6 +156,9 @@ export class Scene {
     // The voice is fetched and made ready before the scene can start: a tap must start it at once.
     this.urls = await this.clipUrls();
     this.sound = this.wantSound();
+    // the parts' descriptions, for when each call's picture lands (its `beat`), which places its sound
+    this.descs = {};
+    for (const name of this.partNames) { try { this.descs[name] = await parts.describe(this.partSpecs[name].part); } catch { this.descs[name] = null; } }
     this.layout();
     if (this.usesShots) this.shots = new Shots(this.stage, this.partNames, this.scene.shot);
     await this.build(0);
@@ -225,11 +228,29 @@ export class Scene {
     return null;
   }
 
-  // Runs an action as it happens, with its sound: its own (`sound`, "none" for none), or the one its shot makes.
+  // Runs an action as it happens. Its sound is played on its own time (plan: soundOf, sounds).
   fire(action, p) {
-    const made = this.run(action, p);
-    const sound = action.sound !== undefined ? action.sound : made;
-    if (sound && sound !== 'none') this.sfx.play(sound);
+    this.run(action, p);
+  }
+
+  // The sound an action makes: its own (`sound`, "none" for none), or the one its shot makes; and when, from
+  // its moment t0: the picture's keyframe (its call's beat) less the kind's lead (js/sfx.js, KINDS).
+  soundOf(action) {
+    let s = action.sound;
+    let beat = 0;
+    if (Array.isArray(action.call)) {
+      const head = String(action.call[0]);
+      if (head.startsWith('shot.')) {
+        const kind = head.slice(5), how = kind === 'cut' ? (action.call[2] || 'cut') : kind;
+        if (s === undefined && this.usesShots) s = kind === 'cut' ? SHOT_SOUND[how] : SHOT_SOUND[kind];
+        beat = SHOT_BEAT[how] || 0;
+      } else {
+        const { part, name } = splitCall(action.call, this.partNames);
+        const d = part && this.descs ? this.descs[part] : null;
+        beat = (d && d.calls && d.calls[name] && Number(d.calls[name].beat)) || 0;
+      }
+    }
+    return s && s !== 'none' ? { name: s, beat } : null;
   }
 
   // Whatever is still moving in every part lands now: after the picture is built at a moment.
@@ -259,7 +280,10 @@ export class Scene {
       const t0 = timeOf(a.from ?? '$start', false);
       return { a, n, t0, t1: Math.max(t0 + 0.01, timeOf(a.to ?? '$end', true)), span: true, p: stretch(a) };
     });
-    return { j, dur, ws, voiced: !!words, actions };
+    // each sound on its own time: ahead of its picture as its kind wants, never before the line starts
+    const sounds = [];
+    for (const x of actions) { const so = this.soundOf(x.a); if (so) sounds.push({ n: x.n, name: so.name, t: Math.max(0, soundStart(so.name, x.t0 + so.beat)) }); }
+    return { j, dur, ws, voiced: !!words, actions, sounds };
   }
 
   gapLen(j) { return j + 1 < this.lines.length ? GAP + (Number(this.lines[j].hold) || 0) : END_HOLD; }
@@ -280,7 +304,7 @@ export class Scene {
   place(j, t) {
     this.i = j;
     const p = this.plans[j];
-    this.cur = { ...p, actions: p.actions.map(x => ({ ...x, done: false, began: false })) };
+    this.cur = { ...p, actions: p.actions.map(x => ({ ...x, done: false, began: false })), sounds: p.sounds.map(x => ({ ...x, done: t > 0 && x.t <= t })) };
     for (const x of this.cur.actions) {
       if (t <= 0 || x.t0 > t) continue;   // at a line's very start, nothing has happened yet
       x.began = true;
@@ -328,6 +352,7 @@ export class Scene {
   // lights the caption's words said so far.
   advance(t) {
     const id = this.lines[this.cur.j].id;
+    for (const x of this.cur.sounds || []) { if (!x.done && t >= x.t) { x.done = true; this.sfx.play(x.name); } }
     for (const x of this.cur.actions) {
       if (x.done || t < x.t0) continue;
       const first = !x.began;
@@ -402,7 +427,8 @@ export class Scene {
     const old = new Map((this.cur ? this.cur.actions : []).map(x => [x.n, x]));
     this.layout();
     const p = this.plans[this.i];
-    this.cur = { ...p, actions: p.actions.map(x => ({ ...x, done: !!(old.get(x.n) || {}).done, began: !!(old.get(x.n) || {}).began })) };
+    const heardBefore = new Map((this.cur && this.cur.sounds ? this.cur.sounds : []).map(x => [x.n, x.done]));
+    this.cur = { ...p, actions: p.actions.map(x => ({ ...x, done: !!(old.get(x.n) || {}).done, began: !!(old.get(x.n) || {}).began })), sounds: p.sounds.map(x => ({ ...x, done: !!heardBefore.get(x.n) || (!!(old.get(x.n) || {}).began && x.t <= t) })) };
     this.cap.follow(p.ws);
     this.pausedAt = Math.min(t, p.dur);
     this.readFrom(this.pausedAt);
@@ -480,12 +506,8 @@ export class Scene {
     const out = [];
     for (let k = j; k < this.lines.length; k++) {
       for (const a of this.lines[k].do || []) {
-        let s = a.sound;
-        if (s === undefined && Array.isArray(a.call) && String(a.call[0]).startsWith('shot.') && this.shots) {
-          const kind = String(a.call[0]).slice(5);
-          s = kind === 'cut' ? SHOT_SOUND[a.call[2] || 'cut'] : SHOT_SOUND[kind];
-        }
-        if (s && s !== 'none') out.push(s);
+        const so = this.soundOf(a);
+        if (so) out.push(so.name);
       }
     }
     return out;

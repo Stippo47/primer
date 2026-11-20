@@ -6,7 +6,7 @@
 // untouched. Lessons and their media are kept by the app itself, in IndexedDB, never here.
 // Caches it makes are named primer-app-<VERSION>, and it only ever clears caches with that prefix: a test
 // page under the same address keeps its own (primer-stage0-phone-…), and those must survive.
-const VERSION = '0.5.10';
+const VERSION = '0.6.0';
 const PREFIX = 'primer-app-';
 const CACHE = PREFIX + VERSION;
 const FILES = [
@@ -25,6 +25,7 @@ const FILES = [
   'js/combo.js',
   'js/data.js',
   'js/ease.js',
+  'js/code.js',
   'js/facts.js',
   'js/feel.js',
   'js/gesture.js',
@@ -53,6 +54,7 @@ const FILES = [
   'parts/map/views.js',
   'parts/map/layers.js',
   'parts/map/marks.js',
+  'parts/map/air.js',
   'parts/map/look.js',
   'parts/map/world.js',
   'parts/map/thumb.svg',
@@ -60,6 +62,9 @@ const FILES = [
   'parts/section/part.json',
   'parts/section/section.js',
   'parts/section/thumb.svg',
+  'parts/molecules/part.json',
+  'parts/molecules/molecules.js',
+  'parts/molecules/thumb.svg',
   'parts/inputs/part.json',
   'parts/inputs/inputs.js',
   'parts/inputs/kit.js',

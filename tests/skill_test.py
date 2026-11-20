@@ -120,8 +120,10 @@ class Parts(unittest.TestCase):
             self.assertTrue(own, form)
     def test_scenes_shots_and_sounds_are_listed(self):
         r = run('parts')
-        for words in ('shot.cut(part: part, how?: choice cut|fade|push|back|zoom)', 'shot.split(', 'shot.inset(', 'sounds (an action\'s "sound"): whoosh:',
-                      'section: Sea and sky', 'camera(place: place, zoom: number', 'label(name: name', 'flow(path: list of place'):
+        for words in ('shot.cut(part: part, how?: choice cut|fade|push|back|zoom|through|out)', 'shot.split(', 'shot.inset(', 'shot.lens(part: part', 'sounds (an action\'s "sound"): whoosh:',
+                      'section: Sea and sky', 'camera(place: place, zoom: number', 'label(name: name', 'flow(path: list of place',
+                      'molecules: Up close', 'escape(level: number', 'winds(which: choice all|trades|westerlies|polar|none', 'turning(', 'cells(which: choice all|hadley|ferrel|polar|none',
+                      'frame(x: number', 'sign(place: place', 'parcel(height?: number', 'sunAngle(degrees: number', 'shore (choice none, right, land'):
             self.assertIn(words, r.stdout)
 
     def test_the_globe_is_a_preset_of_the_map(self):
@@ -130,7 +132,7 @@ class Parts(unittest.TestCase):
 
     def test_json(self):
         parts = json.loads(run('parts', '--json', check=True).stdout)
-        self.assertEqual(sorted(parts), ['globe', 'inputs', 'map', 'section'])
+        self.assertEqual(sorted(parts), ['globe', 'inputs', 'map', 'molecules', 'section'])
         self.assertIn('marking', parts['inputs'])
         globe, flat = parts['globe'], parts['map']
         self.assertEqual((globe['of'], globe['settings']['projection']['default'], globe['settings']['pinch']['default']), ('map', 'globe', False))
@@ -574,7 +576,7 @@ class SceneCheck(SceneWork):
         self.assertIn('"sound": "bleep" isn\'t a sound the kit has (whoosh, cut, swell', out)
         self.assertIn('a sound on its own happens "at" a word', out)
         self.assertIn('"ease" shapes a stretch', out)
-        self.assertIn('"ease" is one of soft, linear, in, out', out)
+        self.assertIn('"ease" is one of soft, linear, in, out, camera, transition, furniture, process, accumulate', out)
         self.assertIn('"range" is [from, to], each 0 to 1', out)
 
     def test_named_oceans_and_continents_are_labelled_while_they_matter(self):
@@ -595,6 +597,39 @@ class SceneCheck(SceneWork):
         self.assertIn('"Atlantis" isn\'t a country the map knows', out)
         r = run('check', self.scene_topic(lambda S: line(S, 'turn')['do'][0].update(call=['spinTo', 'Caribbean Sea', 0.6])))
         self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_an_animation_can_run_longer_than_a_scene_step(self):
+        """An animation on the path can have up to 60 lines before the checker suggests splitting it; a scene step
+        in a lesson stays at 30 (round three: animations explain thoroughly, and can run four minutes)."""
+        def longer(n):
+            def change(S):
+                base = S['lines'][0]
+                S['lines'] = S['lines'] + [{'id': f'more-{i}', 'text': 'And then the storm turns.', 'do': []} for i in range(n - len(S['lines']))]
+            return change
+        r = run('check', self.scene_topic(longer(44)))
+        self.assertNotIn('lines: a scene is usually', r.stdout)
+        r = run('check', self.scene_topic(longer(64)))
+        self.assertIn('64 lines: a scene is usually 2 to 60', r.stdout)
+        r = run('check', self.scene_topic(lesson_change=lambda L: L['steps'][1].update(lines=L['steps'][1]['lines'] + [{'id': f'more-{i}', 'text': 'And then.'} for i in range(32)])))
+        self.assertIn('lines: a scene is usually 2 to 30', r.stdout)
+
+    def test_a_lens_and_the_zoom_cuts_and_the_motion_families(self):
+        def good(S):
+            for x in S['lines']:
+                for a in x.get('do') or []:
+                    if 'call' in a and '.' not in a['call'][0]:
+                        a['call'][0] = 'globe.' + a['call'][0]
+            S['parts']['section'] = {'part': 'section', 'settings': {'view': 'surface'}}
+            S['parts']['close'] = {'part': 'molecules', 'settings': {'below': 'water'}}
+            line(S, 'storm')['do'].append({'at': 'storm', 'call': ['shot.lens', 'close', 0.5, 0.7]})
+            line(S, 'storm')['do'].append({'at': 'appears', 'call': ['shot.cut', 'close', 'through']})
+            line(S, 'end')['do'].append({'at': 'end', 'call': ['shot.cut', 'section', 'out']})
+            line(S, 'end')['do'].append({'at': 'end', 'call': ['shot.lens', 'none']})
+            line(S, 'track')['do'][0].update(ease='camera')
+        r = run('check', self.scene_topic(good))
+        self.assertEqual(r.returncode, 0, r.stdout)
+        out = self.errors(lambda S: (good(S), line(S, 'end')['do'].append({'at': 'end', 'call': ['shot.lens', 'chart']})))
+        self.assertIn('lens: "chart" isn\'t a part of this scene', out)
 
     def test_waits_are_refused(self):
         """An animation plays through like a video: a line can't wait for an answer any more."""

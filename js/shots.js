@@ -16,17 +16,31 @@
 // takes it away. Unlike the caption, which follows the voice, it stays put, so it reads like a film's title.
 //
 // The kinds of cut, and the sound each makes unless the action names its own (js/sfx.js):
-//   cut   at once, the new picture settling in from a touch closer     ("cut", a soft puff)
-//   fade  one picture dissolving into the other                        (no sound)
-//   push  the new one slides in from the right, the old out the left    ("whoosh")
-//   back  the same from the left                                        ("whoosh")
-//   zoom  the old one swells and fades, the new one grows into place    ("whoosh")
-import { soft, clamp01 } from './ease.js';
+//   cut      at once, the new picture settling in from a touch closer     ("cut", a soft puff)
+//   fade     one picture dissolving into the other                        (no sound)
+//   push     the new one slides in from the right, the old out the left    ("whoosh")
+//   back     the same from the left                                        ("whoosh")
+//   zoom     the old one swells and fades, the new one grows into place    ("whoosh")
+//   through  into a closer view: the lens (below) grows until it fills the picture while the old view
+//            swells past (the old picture zooming in); with no lens, from a small circle in the middle ("whoosh")
+//   out      back out again: the picture shrinks into a circle and goes, the wider view settling in behind
+//            it from a touch closer                                                                     ("whoosh")
+//
+// A lens is the measured callout (study 2, 1.2): a dot pops on the thing, a leader line draws itself up from
+// it at a steady pace, and a circle opens at its end on another part, a closer look, and holds. Cutting
+// "through" to that part then zooms through the circle. The transitions run on the measured in-out cubic
+// (js/ease.js, MOTION.transition), a zoom in log scale; the lens's leader and circle on the leader and
+// furniture families.
+import { soft, clamp01, MOTION } from './ease.js';
 
-export const CUTS = ['cut', 'fade', 'push', 'back', 'zoom'];
+export const CUTS = ['cut', 'fade', 'push', 'back', 'zoom', 'through', 'out'];
 export const CORNERS = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
-export const SHOT_SOUND = { cut: 'cut', fade: null, push: 'whoosh', back: 'whoosh', zoom: 'whoosh', split: 'whoosh', inset: 'pop', title: null };
-const MS = { cut: 900, fade: 650, push: 750, back: 750, zoom: 800, move: 750, inset: 550, title: 600 };
+export const SHOT_SOUND = { cut: 'cut', fade: null, push: 'whoosh', back: 'whoosh', zoom: 'whoosh', through: 'whoosh', out: 'whoosh', split: 'whoosh', inset: 'pop', lens: 'pop', title: null };
+const MS = { cut: 900, fade: 650, push: 850, back: 850, zoom: 850, through: 900, out: 900, move: 850, inset: 550, title: 600, lens: 1000, shut: 450 };
+// When a shot's picture lands, for its sound (js/sfx.js): a transition's fastest moment is its middle; a
+// lens's circle arrives once the dot and the leader are done.
+export const SHOT_BEAT = { cut: 0, fade: 0, push: 0.425, back: 0.425, zoom: 0.425, through: 0.45, out: 0.45, split: 0.425, inset: 0.3, lens: 0.97, title: 0 };
+const T = MOTION.transition.ease, F = MOTION.furniture.ease;
 
 export class Shots {
   // stage: the box the parts are in (.sstage). names: the parts, in order. opening: the first layout, as a
@@ -38,6 +52,8 @@ export class Shots {
     this.raf = 0;
     this.log = [];        // for the tests: every shot taken
     this.titles = [];     // the title card showing and any fading out: { el, text, t0, out }
+    this.lens = null;     // the lens open: { part, ax, ay, cx, cy, r, t0, shut }
+    this.ring = null;     // its dot, leader and ring, drawn on a canvas over the stage
     stage.classList.add('shots');
   }
 
@@ -46,6 +62,7 @@ export class Shots {
   // Back to the opening layout, at once (building the picture for a moment).
   reset() {
     this.moves.clear();
+    this.dropLens();
     for (const t of this.titles) t.el.remove();
     this.titles = [];
     this.layout = {};
@@ -57,6 +74,7 @@ export class Shots {
   // A shot call: cut, split or inset. now: at once (seeking). Returns the sound it makes, or null.
   run(kind, args, now = false) {
     if (kind === 'title') { this.log.push({ kind, args, now }); this.setTitle(args[0], now); return null; }
+    if (kind === 'lens') { this.log.push({ kind, args, now }); return this.openLens(args, now); }
     const known = n => this.names.includes(n);
     let next = { ...this.layout }, how = 'cut';
     if (kind === 'cut') {
@@ -64,6 +82,7 @@ export class Shots {
       if (!known(part)) return null;
       next = { [part]: 'full' };
       how = CUTS.includes(h) ? h : 'cut';
+      if (how === 'through' || how === 'out') { this.log.push({ kind, args, now }); this.zoomCut(part, how, now); return now ? null : SHOT_SOUND[how]; }
     } else if (kind === 'split') {
       const [a, b] = args;
       if (!known(a) || !known(b) || a === b) return null;
@@ -108,7 +127,8 @@ export class Shots {
       if (!el) continue;
       const after = this.box(n);
       let kind;
-      if (!was.slot) kind = slot.startsWith('inset') ? 'inset-in' : how === 'split' ? 'zoom-in' : `${how}-in`;
+      // a split's new half slides in from its own edge (the measured panel slide), over the half making room
+      if (!was.slot) kind = slot.startsWith('inset') ? 'inset-in' : how === 'split' ? (slot === 'top' ? 'drop-in' : 'rise-in') : `${how}-in`;
       else if (!slot) kind = was.slot.startsWith('inset') ? 'inset-out' : how === 'split' || how === 'inset' ? 'fade-out' : `${how}-out`;
       else if (was.slot !== slot) kind = 'move';
       else continue;
@@ -161,6 +181,7 @@ export class Shots {
   // Every moving part at `now`. True while any still moves.
   frame(now) {
     let titling = false;
+    const rims = [];
     for (const t of this.titles) {
       const kin = soft(clamp01((now - t.t0) / MS.title)), kout = t.out ? soft(clamp01((now - t.out) / (MS.title * 0.7))) : 0;
       t.el.style.opacity = String((kin * (1 - kout)).toFixed(3));
@@ -172,10 +193,31 @@ export class Shots {
     this.titles = this.titles.filter(t => !t.gone);
     for (const [n, mv] of this.moves) {
       const el = this.el(n);
-      const k = clamp01((now - mv.t0) / mv.ms), e = soft(k), out = 1 - e;
+      const k = clamp01((now - mv.t0) / mv.ms), e = mv.kind.startsWith('fade') ? soft(k) : T(k), out = 1 - e;
       let tf = '', op = '';
       switch (mv.kind) {
-        case 'cut-in': tf = `scale(${(1 + 0.05 * (1 - (1 - (1 - k) * (1 - k)))).toFixed(4)})`; break;
+        case 'cut-in': tf = `scale(${(1 + 0.05 * (1 - F(k))).toFixed(4)})`; break;
+        case 'through-in': case 'out-old': {
+          // a circle growing to fill the picture (through) or shrinking away (out), in log scale
+          const L = mv.lens, full = Math.hypot(this.stage.clientWidth, this.stage.clientHeight);
+          const r0 = L.r0, r1 = full, kk = mv.kind === 'through-in' ? e : 1 - e;
+          const r = r0 * Math.pow(r1 / r0, kk);
+          if (el) el.style.clipPath = k >= 1 && mv.kind === 'through-in' ? '' : `circle(${r.toFixed(1)}px at ${L.cx.toFixed(1)}px ${L.cy.toFixed(1)}px)`;
+          // the lens's white rim rides the circle's edge, fading as it fills the picture (or as it shrinks away)
+          rims.push({ x: L.cx, y: L.cy, r: mv.kind === 'out-old' ? r * Math.pow(0.6, e) : r, a: k >= 1 ? 0 : mv.kind === 'through-in' ? 1 - e : Math.min(1, 1.4 * (1 - e)) });
+          const sc = mv.kind === 'through-in' ? 1 : Math.pow(0.6, e);
+          tf = `scale(${sc.toFixed(4)})`;
+          if (mv.kind === 'out-old') { if (el) el.style.transformOrigin = `${L.cx}px ${L.cy}px`; }
+          break;
+        }
+        case 'through-old': {
+          // the old view swells toward the lens as if the camera flew into it, and dims
+          const L = mv.lens;
+          if (el) el.style.transformOrigin = `${L.cx}px ${L.cy}px`;
+          tf = `scale(${Math.pow(2.4, e).toFixed(4)})`; op = 1 - 0.5 * e;
+          break;
+        }
+        case 'out-new': tf = `scale(${Math.pow(1.35, 1 - e).toFixed(4)})`; break;
         case 'fade-in': op = e; break;
         case 'fade-out': op = out; break;
         case 'push-in': tf = `translateX(${(100 * out).toFixed(2)}%)`; break;
@@ -183,6 +225,8 @@ export class Shots {
         case 'back-in': tf = `translateX(${(-100 * out).toFixed(2)}%)`; break;
         case 'back-out': tf = `translateX(${(100 * e).toFixed(2)}%)`; break;
         case 'zoom-in': tf = `scale(${(0.84 + 0.16 * e).toFixed(4)})`; op = e; break;
+        case 'rise-in': tf = `translateY(${(100 * out).toFixed(2)}%)`; break;
+        case 'drop-in': tf = `translateY(${(-100 * out).toFixed(2)}%)`; break;
         case 'zoom-out': tf = `scale(${(1 + 0.3 * e).toFixed(4)})`; op = out; break;
         case 'inset-in': tf = `scale(${(0.6 + 0.4 * e).toFixed(4)})`; op = e; break;
         case 'inset-out': tf = `scale(${(1 - 0.4 * e).toFixed(4)})`; op = out; break;
@@ -200,15 +244,151 @@ export class Shots {
         default: break;
       }
       if (el) {
-        el.style.transformOrigin = mv.kind.startsWith('inset') ? this.corner(n) : '50% 50%';
+        if (!['through-in', 'through-old', 'out-old'].includes(mv.kind)) el.style.transformOrigin = mv.kind.startsWith('inset') ? this.corner(n) : '50% 50%';
         el.style.transform = k >= 1 ? '' : tf;
         el.style.opacity = k >= 1 ? '' : op === '' ? '' : String(Number(op).toFixed(3));
-        if (k >= 1 && mv.out) { el.setAttribute('data-off', ''); el.style.zIndex = ''; }
+        if (k >= 1 && mv.out) { el.setAttribute('data-off', ''); el.style.zIndex = ''; el.style.clipPath = ''; el.style.transformOrigin = '50% 50%'; }
+        if (k >= 1 && mv.kind === 'through-in') { el.style.clipPath = ''; el.style.transformOrigin = '50% 50%'; }
         if (k >= 1 && !mv.out && !String(el.dataset.slot || '').startsWith('inset')) el.style.zIndex = '';
       }
       if (k >= 1) this.moves.delete(n);
     }
-    return this.moves.size > 0 || titling;
+    const lensing = this.lens ? this.drawLens(now) : this.drawRims(rims);
+    return this.moves.size > 0 || titling || lensing;
+  }
+
+  // ---- the lens: a closer look, opened over the picture
+
+  // ["lens", part, x, y]: a dot at x, y (shares of the stage), a leader, and a circle onto the part above it.
+  // ["lens", "none"] shuts it. Returns the sound it makes.
+  openLens([part, x = 0.5, y = 0.7], now) {
+    const t0 = performance.now();
+    if (part === 'none' || !this.names.includes(part)) {
+      if (this.lens && !this.lens.shut) this.lens.shut = now ? t0 - 1e6 : t0;
+      if (now) this.dropLens();
+      this.frame(t0); this.loop();
+      return null;
+    }
+    const W = this.stage.clientWidth, H = this.stage.clientHeight;
+    const r = Math.min(W, H) * 0.34, ax = clamp01(Number(x)) * W, ay = clamp01(Number(y)) * H;
+    // the circle sits above the dot, inside the picture
+    const cx = Math.max(r + 14, Math.min(W - r - 14, W / 2 + (ax - W / 2) * 0.35));
+    const cy = Math.max(r + 70, ay - r - H * 0.1);
+    if (this.lens) this.dropLens();
+    this.lens = { part, ax, ay, cx, cy, r, t0: now ? t0 - 1e6 : t0, shut: null };
+    const el = this.el(part);
+    el.dataset.slot = 'lens';
+    el.removeAttribute('data-off');
+    el.style.zIndex = '4';
+    el.style.transform = ''; el.style.opacity = '';
+    this.layout[part] = 'lens';
+    this.frame(t0);
+    this.loop();
+    return now ? null : SHOT_SOUND.lens;
+  }
+
+  // The lens drawn at `now`: the part clipped to its circle, and the dot, leader and ring over it. True while
+  // anything of it moves.
+  drawLens(now) {
+    const L = this.lens;
+    if (!L) return false;
+    const el = this.el(L.part);
+    const age = now - L.t0;
+    const dot = F(clamp01(age / 150)), lead = MOTION.leader.ease(clamp01((age - 120) / 400)), open = F(clamp01((age - 520) / 450));
+    const shut = L.shut ? clamp01((now - L.shut) / MS.shut) : 0;
+    const vis = (1 - shut);
+    const r = L.r * open * (1 - T(shut));
+    if (el) el.style.clipPath = `circle(${Math.max(0, r).toFixed(1)}px at ${L.cx.toFixed(1)}px ${L.cy.toFixed(1)}px)`;
+    const g = this.ringContext();
+    g.globalAlpha = vis;
+    // the leader, from the dot to the circle's edge
+    const dx = L.cx - L.ax, dy = L.cy - L.ay, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+    const ex = L.cx - ux * L.r, ey = L.cy - uy * L.r;
+    if (lead > 0) {
+      g.strokeStyle = '#ffffff'; g.lineWidth = 3; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(L.ax, L.ay); g.lineTo(L.ax + (ex - L.ax) * lead, L.ay + (ey - L.ay) * lead); g.stroke();
+    }
+    g.fillStyle = '#7b4cf0'; g.beginPath(); g.arc(L.ax, L.ay, 8 * dot, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(L.ax, L.ay, 4 * dot, 0, Math.PI * 2); g.fill();
+    if (r > 1) {
+      g.strokeStyle = 'rgba(6,8,48,0.45)'; g.lineWidth = 9; g.beginPath(); g.arc(L.cx, L.cy + 4, r, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.beginPath(); g.arc(L.cx, L.cy, r, 0, Math.PI * 2); g.stroke();
+    }
+    if (L.shut && shut >= 1) { this.dropLens(); return false; }
+    return age < 1000 || !!L.shut;
+  }
+
+  // The rims of circles zooming through or out (no lens open meanwhile).
+  drawRims(rims) {
+    if (!rims.length) { if (this.ring) { this.ring.remove(); this.ring = null; } return false; }
+    const g = this.ringContext();
+    for (const rm of rims) {
+      if (rm.a <= 0.01 || rm.r <= 1) continue;
+      g.globalAlpha = rm.a;
+      g.strokeStyle = '#ffffff'; g.lineWidth = 5; g.beginPath(); g.arc(rm.x, rm.y, rm.r, 0, Math.PI * 2); g.stroke();
+    }
+    g.globalAlpha = 1;
+    return false;
+  }
+
+  // The canvas over the stage the lens's dot, leader and rim are drawn on, cleared and sized to the stage.
+  ringContext() {
+    if (!this.ring) {
+      this.ring = document.createElement('canvas');
+      this.ring.className = 'slensring';
+      this.ring.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none';
+      this.stage.append(this.ring);
+    }
+    const c = this.ring, dpr = Math.min(2, window.devicePixelRatio || 1), W = this.stage.clientWidth, H = this.stage.clientHeight;
+    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, W, H);
+    return g;
+  }
+
+  // Takes the lens away at once: its part back off screen (unless something else shows it), its ring gone.
+  dropLens() {
+    const L = this.lens;
+    if (L) {
+      const el = this.el(L.part);
+      if (el && this.layout[L.part] === 'lens') { el.setAttribute('data-off', ''); el.style.clipPath = ''; el.style.zIndex = ''; delete this.layout[L.part]; }
+    }
+    this.lens = null;
+    if (this.ring) { this.ring.remove(); this.ring = null; }
+  }
+
+  // A cut through the lens into its part, or out again from a part into the wider view.
+  zoomCut(part, how, now) {
+    const t0 = performance.now(), W = this.stage.clientWidth, H = this.stage.clientHeight;
+    const was = Object.entries(this.layout).filter(([n, sl]) => n !== part && sl === 'full').map(([n]) => n);
+    const L = this.lens && this.lens.part === part ? this.lens : null;
+    const geo = L ? { cx: L.cx, cy: L.cy, r0: L.r } : how === 'out' && this.lastLens ? { ...this.lastLens } : { cx: W / 2, cy: H * 0.45, r0: Math.min(W, H) * 0.08 };
+    // through: remember where it went in, so coming out shrinks back to the same place
+    if (how === 'through') this.lastLens = { cx: geo.cx, cy: geo.cy, r0: geo.r0 };
+    this.lens = null;
+    const el = this.el(part);
+    if (now) {
+      for (const n of this.names) { const e = this.el(n); if (!e) continue; e.style.clipPath = ''; e.style.transform = ''; e.style.opacity = ''; e.style.zIndex = ''; e.style.transformOrigin = '50% 50%'; }
+      this.place({ [part]: 'full' }, true);
+      return;
+    }
+    if (how === 'through') {
+      el.dataset.slot = 'full'; el.removeAttribute('data-off'); el.style.zIndex = '4';
+      this.layout = { [part]: 'full' };
+      this.moves.set(part, { kind: 'through-in', t0, ms: MS.through, lens: geo });
+      for (const n of was) { this.moves.set(n, { kind: 'through-old', t0, ms: MS.through, lens: geo, out: true }); }
+    } else {
+      // out: the old full part shrinks into its circle; the new one is already there behind it
+      const old = was[0] || null;
+      el.dataset.slot = 'full'; el.removeAttribute('data-off'); el.style.zIndex = '1'; el.style.clipPath = '';
+      this.layout = { [part]: 'full' };
+      this.moves.set(part, { kind: 'out-new', t0, ms: MS.out });
+      if (old) { const e = this.el(old); e.style.zIndex = '4'; this.moves.set(old, { kind: 'out-old', t0, ms: MS.out, lens: { ...geo, r0: Math.max(10, geo.r0 * 0.5) }, out: true }); }
+      for (const n of was.slice(1)) { const e = this.el(n); if (e) e.setAttribute('data-off', ''); }
+    }
+    this.frame(t0);
+    this.loop();
   }
 
   corner(n) {
@@ -217,12 +397,15 @@ export class Shots {
   }
 
   // Everything moving lands now.
-  finish() { this.frame(performance.now() + 1e7); }
+  finish() {
+    if (this.lens) { this.lens.t0 -= 1e7; if (this.lens.shut) this.lens.shut -= 1e7; }
+    this.frame(performance.now() + 1e7);
+  }
 
   // Which parts show, and where: for the tests and the film.
   state() {
     return { layout: { ...this.layout }, moving: [...this.moves.keys()], off: this.names.filter(n => { const el = this.el(n); return el && el.hasAttribute('data-off'); }),
-      title: (this.titles.find(t => !t.out) || {}).text || null };
+      title: (this.titles.find(t => !t.out) || {}).text || null, lens: this.lens && !this.lens.shut ? this.lens.part : null };
   }
 
   remove() {
@@ -231,5 +414,6 @@ export class Shots {
     this.raf = 0;
     for (const t of this.titles) t.el.remove();
     this.titles = [];
+    this.dropLens();
   }
 }
