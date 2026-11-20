@@ -20,8 +20,8 @@
 :is(.cghost, .cshard) .cnum::before { content: attr(data-text); }
 .combo:not(.on) > .cbody .cnum { color: var(--muted); }
 
-/* a shine sweeping across (silver, gold; a faint rainbow on platinum, diamond and titanium; a tier can tint
-   it, and slow it: copper's is a slow warm one), off to the side until it goes */
+/* a shine sweeping across (silver, gold, platinum, diamond and the gems; a tier can tint it, and slow it:
+   copper's is a slow warm one; the rainbow one is left for prism, set aside), off to the side until it goes */
 .cshine { position: absolute; inset: 0; opacity: 0; transform: translateX(-100%);
   background: linear-gradient(105deg, transparent 0 34%, var(--sh, rgba(255, 255, 255, 0.6)) 34% 46%, transparent 46% 51%, var(--sh2, rgba(255, 255, 255, 0.35)) 51% 55%, transparent 55%); }
 .cshine.prism { background: linear-gradient(105deg, transparent 0 34%, rgba(255, 111, 163, 0.38) 34% 40%, rgba(255, 207, 61, 0.38) 40% 46%, rgba(47, 208, 255, 0.38) 46% 52%, transparent 52%); }
@@ -103,6 +103,12 @@
   -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent); mask-image: radial-gradient(closest-side, #000 30%, transparent); opacity: 0; }
 .combo.idle > .crays > i { opacity: 1; animation: c-rays 6s infinite linear; }
 @keyframes c-rays { from { transform: translateY(-50%) scaleY(0.62) rotate(0deg); } to { transform: translateY(-50%) scaleY(0.62) rotate(30deg); } }
+/* a second, finer set turning the other way (eternal), or long fine streamers (the eclipse's corona); their
+   pattern repeats every 15 degrees */
+.combo.idle > .crays:is(.two, .fine) > i { animation-name: c-rays-back; }
+.combo.idle > .crays.fine > i { animation-name: c-rays-fine; }
+@keyframes c-rays-back { from { transform: translateY(-50%) scaleY(0.62) rotate(0deg); } to { transform: translateY(-50%) scaleY(0.62) rotate(-15deg); } }
+@keyframes c-rays-fine { from { transform: translateY(-50%) scaleY(0.62) rotate(0deg); } to { transform: translateY(-50%) scaleY(0.62) rotate(15deg); } }
 /* motes rising past it (legendary) */
 .cmote { position: absolute; z-index: 3; top: 30px; width: 4px; height: 4px; border-radius: 50%; opacity: 0; pointer-events: none; }
 .combo.idle > .cmote { animation: c-mote 3s var(--d, 0s) infinite ease-out both; }
@@ -120,11 +126,120 @@
 .combo.idle > .cpulse:not(.out) { animation: c-in 3s var(--d, 0s) infinite ease-in both; }
 @keyframes c-out { 0% { opacity: 0.9; transform: scale(0.95); } 100% { opacity: 0; transform: scale(1.5, 1.8); } }
 @keyframes c-in { 0% { opacity: 0; transform: scale(1.6, 1.9); } 30% { opacity: 0.8; } 100% { opacity: 0; transform: scale(0.3); } }
-/* echoes of the chip drifting out of step behind it (multiverse) */
+/* echoes of the chip fanning out of step behind it (multiverse): three, each swinging its own way */
 .cecho { position: absolute; z-index: -1; inset: 0; border-radius: 13px; pointer-events: none; opacity: 0; }
 .combo.idle > .cecho { opacity: 1; animation: c-echo 3s infinite alternate ease-in-out; }
-.combo.idle > .cecho.e1 { animation-delay: -1.5s; }
-@keyframes c-echo { from { transform: translate(-4px, -2px); } to { transform: translate(4px, 3px); } }
+.combo.idle > .cecho.e1 { animation-name: c-echo1; animation-delay: -1s; }
+.combo.idle > .cecho.e2 { animation-name: c-echo2; animation-delay: -2s; }
+@keyframes c-echo { from { transform: translate(-8px, -2px) rotate(-5deg); } to { transform: translate(6px, 2px) rotate(3deg); } }
+@keyframes c-echo1 { from { transform: translate(8px, 2px) rotate(5deg); } to { transform: translate(-6px, -1px) rotate(-3deg); } }
+@keyframes c-echo2 { from { transform: translate(-3px, 4px) scale(1.08); } to { transform: translate(3px, -3px) scale(0.96); } }
+
+/* the anodised edge (titanium): a faint rainbow on a wheel behind the face, half a turn every six seconds */
+.cano { position: absolute; inset: 0; }
+.cano > i { position: absolute; left: 50%; top: 50%; width: 110px; height: 110px; margin: -55px 0 0 -55px; }
+.combo.idle > .cbody > .cano > i { animation: c-half 6s infinite linear; }
+@keyframes c-half { to { transform: rotate(180deg); } }
+@keyframes c-turn { to { transform: rotate(360deg); } }
+
+/* the oil-slick sheen (obsidian) and aurora's near curtains slide like the sky's strips; the near ones faster */
+.combo.idle > .cbody > .crib.quick { animation-duration: 3s; }
+
+/* opal's play-of-colour: each patch's second colour comes up as the wave of light crosses it */
+.combo.idle > .cbody > .fx.play { animation-name: c-play; animation-duration: 3s; }
+@keyframes c-play { 0% { opacity: 0; } 18% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+/* a big twinkle (platinum's, as its sweep leaves): it opens, turns a little and closes */
+.combo.idle > .cs.big { animation-name: c-twinkle; }
+@keyframes c-twinkle { 0% { opacity: 0; transform: scale(0.2) rotate(-25deg); } 8% { opacity: 1; transform: scale(1.15) rotate(0deg); } 15% { opacity: 1; transform: scale(0.9) rotate(8deg); }
+  26%, 100% { opacity: 0; transform: scale(0.25) rotate(30deg); } }
+
+/* rings like an atom's round the chip (nebula): tilted (inline), rocking, a spark running round each */
+.catom { position: absolute; z-index: -1; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.catom.front { z-index: 3; }
+.catom > i { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.combo.idle > .catom > i { animation: c-rock 3s var(--d, 0s) infinite alternate ease-in-out; }
+@keyframes c-rock { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+.chalf { position: absolute; top: 0; overflow: hidden; }
+.cell { position: absolute; box-sizing: border-box; border: 1.6px solid; border-radius: 50%; transform: scaleY(0.34); }
+.carm { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.cdot { position: absolute; top: -4px; width: 8px; height: 8px; border-radius: 50%; transform: scaleY(2.94); }
+.combo.idle > .catom .carm { animation: c-turn var(--p, 2s) infinite linear; }
+.combo.idle > .catom .cdot { animation: c-unturn var(--p, 2s) infinite linear; }
+@keyframes c-unturn { from { transform: rotate(0deg) scaleY(2.94); } to { transform: rotate(-360deg) scaleY(2.94); } }
+
+/* a dial like an astrolabe's turning behind the chip (celestial): fine ticks, a bold one every 30 degrees,
+   and a thin ring; a turn of 30 degrees in six seconds lands where it began */
+.cwheel { position: absolute; z-index: -1; left: -26px; right: -26px; top: -9px; bottom: -14px; overflow: hidden; pointer-events: none; }
+.cwheel > i { position: absolute; left: 0; right: 0; top: 50%; aspect-ratio: 1; transform: translateY(-50%) scaleY(0.55); opacity: 0;
+  -webkit-mask-image: radial-gradient(closest-side, transparent 82%, #000 83% 89%, transparent 90%); mask-image: radial-gradient(closest-side, transparent 82%, #000 83% 89%, transparent 90%); }
+.cwheel > i.major { -webkit-mask-image: radial-gradient(closest-side, transparent 78%, #000 79% 91%, transparent 92%); mask-image: radial-gradient(closest-side, transparent 78%, #000 79% 91%, transparent 92%); }
+.cwheel > i.band { -webkit-mask-image: none; mask-image: none; }
+.combo.idle > .cwheel > i { opacity: 0.8; animation: c-wheel 6s infinite linear; }
+.combo.idle > .cwheel > i.band { animation: none; }
+@keyframes c-wheel { from { transform: translateY(-50%) scaleY(0.55) rotate(0deg); } to { transform: translateY(-50%) scaleY(0.55) rotate(30deg); } }
+
+/* a shooting star across the sky now and then (celestial) */
+.cshoot { position: absolute; left: 0; top: 0; width: 22px; height: 1.6px; border-radius: 1px; opacity: 0; transform-origin: 100% 50%; }
+.combo.idle > .cbody > .cshoot { animation: c-shoot 6s 1s infinite linear both; }
+@keyframes c-shoot { 0% { opacity: 0; transform: translate(-24px, 2px) rotate(14deg); } 3% { opacity: 1; } 13% { opacity: 0.9; } 17%, 100% { opacity: 0; transform: translate(80px, 22px) rotate(14deg); } }
+
+/* a supernova: the flare in the middle on every beat, spikes of light bursting out, shock rings racing out
+   (one fire, one blue, half a beat apart) and bits flung outward */
+.cflare { position: absolute; left: 22%; right: 22%; top: 0; bottom: 0; opacity: 0.6; }
+.combo.idle > .cbody > .cflare { animation: c-flare 3s infinite ease-out; }
+@keyframes c-flare { 0% { opacity: 1; transform: scale(1.6); } 30% { opacity: 0.35; transform: scale(0.85); } 100% { opacity: 0.55; transform: scale(1); } }
+.combo.idle > .crays.burst > i { animation: c-raysburst 3s infinite ease-out; }
+@keyframes c-raysburst { 0% { opacity: 1; transform: translateY(-50%) scaleY(0.62) scale(0.75) rotate(0deg); } 100% { opacity: 0; transform: translateY(-50%) scaleY(0.62) scale(1.3) rotate(6deg); } }
+.cshock { position: absolute; z-index: -1; left: 50%; top: 50%; width: 150px; height: 60px; margin: -30px 0 0 -75px; opacity: 0; pointer-events: none; }
+.combo.idle > .cshock { animation: c-shock 3s var(--d, 0s) infinite ease-out both; }
+@keyframes c-shock { 0% { opacity: 0; transform: scale(0.42); } 8% { opacity: 1; } 55% { opacity: 0.85; } 100% { opacity: 0; transform: scale(1.1); } }
+.cdeb { position: absolute; z-index: -1; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.cdeb > i { position: absolute; left: 0; top: -1.5px; width: 14px; height: 3px; border-radius: 2px; opacity: 0; }
+.combo.idle > .cdeb > i { animation: c-deb 3s var(--d, 0s) infinite cubic-bezier(.2, .7, .4, 1) both; }
+@keyframes c-deb { 0% { opacity: 0; transform: translateX(22px) scaleX(0.5); } 10% { opacity: 1; } 60% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(78px) scaleX(1.4); } }
+/* or drawn in from outside to the chip's edge, and gone (void) */
+.combo.idle > .cdeb.in > i { animation-name: c-debin; animation-timing-function: ease-in; }
+@keyframes c-debin { 0% { opacity: 0; transform: translateX(84px) scaleX(-0.6); } 30% { opacity: 0.9; } 85% { opacity: 0.8; } 100% { opacity: 0; transform: translateX(30px) scaleX(-1.4); } }
+
+/* darkness spreading round the void, breathing */
+.cabyss { position: absolute; z-index: -1; left: -30px; right: -30px; top: -9px; bottom: -16px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 4, 0.92) 50%, rgba(2, 2, 14, 0.55) 72%, transparent); }
+.combo.idle > .cabyss { animation: c-abyss 3s infinite alternate ease-in-out; }
+@keyframes c-abyss { from { opacity: 0.7; transform: scale(0.92); } to { opacity: 1; transform: scale(1.08); } }
+
+/* the eclipse: the corona's streamers turning opposite ways, the moon sliding to and fro, the diamond ring
+   flaring on the edge where the sun peeks past */
+.ccorona { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.ccorona > i { position: absolute; width: 66px; height: 66px; margin: -33px 0 0 -33px; border-radius: 50%;
+  -webkit-mask-image: radial-gradient(closest-side, transparent 36%, #000 42%, transparent 96%); mask-image: radial-gradient(closest-side, transparent 36%, #000 42%, transparent 96%); }
+.combo.idle > .cbody > .ccorona > i { animation: c-cor 6s infinite linear; }
+.combo.idle > .cbody > .ccorona.back > i { animation-name: c-cor-back; }
+@keyframes c-cor { to { transform: rotate(30deg); } }
+@keyframes c-cor-back { to { transform: rotate(-30deg); } }
+.cmoon { position: absolute; border-radius: 50%; background: radial-gradient(circle at 40% 36%, #1c1a34, #05040c 72%); transform: translateX(-3.2px); }
+.combo.idle > .cbody > .cmoon { animation: c-moon 6s infinite ease-in-out; }
+@keyframes c-moon { 0%, 100% { transform: translateX(-3.2px); } 50% { transform: translateX(3.2px); } }
+.cbead { position: absolute; width: 30px; height: 30px; opacity: 0; }
+.cbead svg { display: block; }
+.cbead.r { opacity: 1; }
+.combo.idle > .cbody > .cbead { animation: c-ring 6s -3s infinite ease-in-out; }
+.combo.idle > .cbody > .cbead.r { animation-delay: 0s; }
+@keyframes c-ring { 0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); } 14%, 86% { opacity: 0; transform: scale(0.35) rotate(25deg); } }
+
+/* the singularity: rings of space flowing inward, lensed starlight sliding round the ring, the point */
+.cfall { position: absolute; left: -15%; top: -15%; width: 130%; height: 130%; box-sizing: border-box; border: 1.8px solid; border-radius: 50%; opacity: 0; }
+.combo.idle > .cbody > .cfall { animation: c-fall 3s var(--d, 0s) infinite cubic-bezier(.4, 0, .8, .6); }
+@keyframes c-fall { 0% { opacity: 0; transform: scale(1); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(0.04); } }
+.carcs { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); overflow: hidden; border-radius: 50%;
+  -webkit-mask-image: radial-gradient(closest-side, transparent 80%, #000 90% 97%, transparent 100%); mask-image: radial-gradient(closest-side, transparent 80%, #000 90% 97%, transparent 100%); }
+.carcs > i { position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px; }
+.combo.idle > .cbody > .carcs > i { animation: c-half 3s infinite linear; }
+.carcs.out { z-index: -1; pointer-events: none; -webkit-mask-image: radial-gradient(closest-side, transparent 84%, #000 91% 96%, transparent 100%); mask-image: radial-gradient(closest-side, transparent 84%, #000 91% 96%, transparent 100%); }
+.combo.idle > .carcs.out > i { animation: c-half-back 6s infinite linear; }
+@keyframes c-half-back { to { transform: rotate(-180deg); } }
+.ccore2 { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; opacity: 0.8; }
+.combo.idle > .cbody > .ccore2 { animation: c-star 1.5s infinite ease-in-out; }
 
 /* reaching a tier: a ring and a few bits of its colour; losing it: the old chip, breaking away */
 .cring { position: absolute; z-index: -1; inset: -2px; border-radius: 15px; border: 2.5px solid var(--c-burst); opacity: 0; pointer-events: none; }

@@ -1,0 +1,82 @@
+{
+  "title": "Combo tiers, round four",
+  "topic": "stage2",
+  "order": 15,
+  "cards": [
+    {
+      "id": "tiers-round-four",
+      "kind": "report",
+      "rarity": "rare",
+      "title": "The tiers, round four",
+      "text": "Every round-three note done: the gems rich again, opal and the sky redone, the far end new.",
+      "why": "Your notes: copper's side, titanium's rainbow, platinum's twinkle, the gems reverting, opal meh, obsidian's oil slick, the sky and far end underwhelming, no black-hole art. Mark any part that's still off.",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom.\n\nThresholds and shields are as you left them. Only the looks changed: copper, platinum, titanium, the five gems, obsidian, opal, the four sky tiers and the five at the far end. Wood, tin, silver and gold are untouched.\n\nEach part's first film shows its group side by side; the rest are one tier each, six seconds, looping, shown bigger than on the phone. The gems part also has round two (left) beside now (right) for each gem.\n\nEverything still runs on cheap layers: soft gradients and moving shapes, no blur, so it stays smooth on the phone.",
+      "parts": [
+        {
+          "id": "metals",
+          "title": "Copper, platinum, titanium",
+          "text": "Copper's side is now a verdigris green. Platinum has no rainbow: a clean white sweep, and a big star twinkles on its top corner just as the sweep leaves. Titanium's rainbow edge is fainter and slowly turns round the border (half a turn every six seconds).",
+          "videos": [
+            "../stage2/shots-combo4/groups/metals.mp4",
+            "../stage2/shots-combo4/tiers/03-copper.mp4",
+            "../stage2/shots-combo4/tiers/06-platinum.mp4",
+            "../stage2/shots-combo4/tiers/14-titanium.mp4"
+          ]
+        },
+        {
+          "id": "gems",
+          "title": "The gems",
+          "text": "Round two's richness is back: bright, bold facets, the light running across them every few seconds, sparkles round the chip and a stronger glow. Each keeps its own cut. Emerald: two broad steps and a split table, a slow green sheen. Sapphire: a brighter dome that glows from inside at the bottom, its star brighter. Crystal: lighter points, the light running point to point. Ruby: lighter princess cut, fiery glints and a warm sheen. Diamond: unchanged except its sheen is plain white now, no rainbow.",
+          "videos": [
+            "../stage2/shots-combo4/groups/gems.mp4",
+            { "src": "../stage2/shots-combo4/compare/07-emerald.mp4", "sides": ["Round two", "Now"] },
+            { "src": "../stage2/shots-combo4/compare/08-sapphire.mp4", "sides": ["Round two", "Now"] },
+            { "src": "../stage2/shots-combo4/compare/09-crystal.mp4", "sides": ["Round two", "Now"] },
+            { "src": "../stage2/shots-combo4/compare/10-ruby.mp4", "sides": ["Round two", "Now"] },
+            { "src": "../stage2/shots-combo4/compare/11-diamond.mp4", "sides": ["Round two", "Now"] },
+            "../stage2/shots-combo4/tiers/07-emerald.mp4",
+            "../stage2/shots-combo4/tiers/08-sapphire.mp4",
+            "../stage2/shots-combo4/tiers/09-crystal.mp4",
+            "../stage2/shots-combo4/tiers/10-ruby.mp4",
+            "../stage2/shots-combo4/tiers/11-diamond.mp4"
+          ]
+        },
+        {
+          "id": "stones",
+          "title": "Obsidian and opal",
+          "text": "Obsidian keeps its black glass and ripples, with a faint oil-slick sheen of teal, violet, gold and pink drifting over it. Opal is now a black opal: a deep blue-black stone packed with flames of vivid colour, and as a wave of light crosses it (with its gloss) each flame changes colour, the way an opal shifts as you tilt it.",
+          "videos": [
+            "../stage2/shots-combo4/groups/stones.mp4",
+            "../stage2/shots-combo4/tiers/12-obsidian.mp4",
+            "../stage2/shots-combo4/tiers/13-opal.mp4"
+          ]
+        },
+        {
+          "id": "sky",
+          "title": "The sky",
+          "text": "Nebula: brighter clouds and three rings round it like an atom's, each tilted its own way and rocking, a bright spark running round each, passing in front of the chip and behind it. Aurora: a far layer of curtains and a quicker near one. Celestial: a gold dial like an astrolabe's turning behind it, and a shooting star crossing its sky. Eternal: two sets of rays turning opposite ways, motes of light rising, a stronger glow.",
+          "videos": [
+            "../stage2/shots-combo4/groups/sky.mp4",
+            "../stage2/shots-combo4/tiers/15-aurora.mp4",
+            "../stage2/shots-combo4/tiers/16-nebula.mp4",
+            "../stage2/shots-combo4/tiers/17-celestial.mp4",
+            "../stage2/shots-combo4/tiers/18-eternal.mp4"
+          ]
+        },
+        {
+          "id": "far",
+          "title": "The far end",
+          "text": "Supernova: the star blowing apart, streaks of its shell, a flare every beat, spikes of light, a fire shock ring and a blue one racing out, bits flung outward. Eclipse: the moon slides to and fro over the sun, so a crescent shows on one side then the other, with the diamond ring flaring there; the corona shimmers, long streamers turn behind. Singularity (no black hole): starlight bent into a ring inside the chip and a wider one round it, bright arcs sliding round, rings of space falling inward, sparks spiralling in. Multiverse: other universes drifting by in bubbles, three copies of the chip fanning out behind. Void: darkness spreading round it, specks of light drawn in and going out, faint far galaxies inside.",
+          "videos": [
+            "../stage2/shots-combo4/groups/far.mp4",
+            "../stage2/shots-combo4/tiers/19-supernova.mp4",
+            "../stage2/shots-combo4/tiers/20-eclipse.mp4",
+            "../stage2/shots-combo4/tiers/21-singularity.mp4",
+            "../stage2/shots-combo4/tiers/22-multiverse.mp4",
+            "../stage2/shots-combo4/tiers/23-void.mp4"
+          ]
+        }
+      ]
+    }
+  ]
+}
