@@ -1241,6 +1241,8 @@ try {
     winds: ['all', 0.5, 0.2, true], turning: [true, true, true], cells: ['all', 1, 0.2, true], frame: [-0.3, 0.1, 0.2], sign: [[-40, 20], 'High', 'cyan'],
     ground: [1, 0.2], heat: [1, 0.2], outflow: [1, 0.2], sink: [1, 0.2], beam: [1, 0.2], sunAngle: [30, 0.2], parcel: [0.6, 0.2, 18],
     air: [0.6, 0.2], pushes: [1, 0.2], split: [1, 0.2], open: [1, 0.2], lift: [1, 0.2], escape: [1, 0.2],
+    // round four: a storm dying away, vapour condensing (the map's parcel shares its name with the sea and sky's)
+    weaken: [0.5, 0.2], condense: [1, 0.2],
   };
   for (const name of parts) {
     const desc = await ev(`__primer.parts.describe(${JSON.stringify(name)})`);
@@ -1255,6 +1257,36 @@ try {
       ok(res.every(x => !x.includes(':')), `${name}${projection ? ` (${projection})` : ''}: every call in its description works`, res);
       await ev(`__h.remove();document.getElementById('bench').remove()`);
     }
+  }
+
+  // Round four: in a scene every hurricane turns (its turn counted up frame by frame), and dies away slowly;
+  // a parcel of air keeps its eastward speed, so heading for the equator it drifts west of its aim
+  {
+    await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px';document.body.append(d);window.__h=await __primer.parts.mount('globe',d,{style:'day',spin:'locked',tap:'none',view:[-40,18]},{motion:'soft'});return true})()`);
+    await ev(`__h.run(['marker',[-45,18],'storm']);true`);
+    const s0 = (await ev('__h.debug()')).spun;
+    await sleep(1000);
+    const s1 = (await ev('__h.debug()')).spun;
+    ok(s1 - s0 > 0.3 && s1 - s0 < 0.9, `a hurricane in a scene turns, calmly (${(s1 - s0).toFixed(2)} of a lesson storm's seconds of turning in one second)`, [s0, s1]);
+    await ev(`__h.run(['weaken', 0.6, 0.3]);true`);
+    await sleep(500);
+    const s2 = (await ev('__h.debug()')).spun;
+    await sleep(1000);
+    const s3 = (await ev('__h.debug()')).spun, weak = (await ev('__h.debug()')).weak;
+    ok(Math.abs(weak - 0.6) < 1e-6 && s3 - s2 < (s1 - s0) * 0.7, 'weakening, it turns slower', { weak, before: s1 - s0, after: s3 - s2 });
+    await ev(`__h.run(['parcel',[-30,30],2,1,0,'both',0.3]);true`);
+    const pc = (await ev('__h.debug()')).parcels;
+    ok(pc.length === 1 && pc[0].progress === 1 && Math.abs(pc[0].drag - 0.3) < 1e-6, 'a parcel of air is set off toward a latitude, with friction slowly bringing its speed up', pc);
+    const paths = await ev(`import('/primer/parts/map/air.js').then(A => ({ south: A.parcelPath([-30, 30], 2).at(-1), north: A.parcelPath([-30, 30], 55).at(-1), dragged: A.parcelPath([-30, 30], 2, 0.5).at(-1) }))`);
+    ok(paths.south[0] < -40 && paths.north[0] > -30 && paths.dragged[0] > paths.south[0], 'heading for the equator it falls behind, to the west of its aim; heading for a pole it pulls ahead, east; dragged along by friction it drifts less', paths);
+    await ev(`__h.remove();document.getElementById('bench').remove()`);
+    // the molecules: vapour condensing into drops, then letting its heat go
+    await ev(`(async()=>{const d=document.createElement('div');d.id='bench';d.style.cssText='position:fixed;left:16px;top:120px;width:382px;height:420px';document.body.append(d);window.__h=await __primer.parts.mount('molecules',d,{below:'none',carry:1},{motion:'soft'});return true})()`);
+    await ev(`__h.run(['condense',1,0.2]);__h.run(['release',1,0.2]);__h.run(['tag','drop','Drops forming']);true`);
+    await sleep(500);
+    const mol = await ev('__h.debug()');
+    ok(mol.levels.condense === 1 && mol.levels.release === 1 && mol.tags[0].thing === 'drop', 'up close, vapour sticks together into drops and lets its heat go', mol);
+    await ev(`__h.remove();document.getElementById('bench').remove()`);
   }
 
   // The tools that explain a mechanism: air spiralling in, the way the Earth bends it; old winds cleared alone;
@@ -2252,6 +2284,12 @@ try {
   const capWords = await ev(`[...document.querySelectorAll('.sline .w')].map((w,i)=>w.classList.contains('said'))`);
   ok(litSeen.every((x, k) => k === 0 || x >= litSeen[k - 1]) && litSeen.at(-1) > litSeen[0] && litSeen[0] > 0, `the caption's words light in order as they're said (${litSeen.join(', ')} of ${capWords.length})`, litSeen);
   ok(capWords.indexOf(false) === -1 || capWords.slice(capWords.indexOf(false)).every(x => !x), 'every word said so far is lit, none after it', capWords);
+  // round four: no plate behind the caption, a halo round its letters, at most two lines at a time, in pages
+  // that end where a phrase does
+  const capLook = await ev(`(()=>{const el=document.querySelector('.sline'),cs=getComputedStyle(el),lh=parseFloat(cs.lineHeight);return {lines:Math.round(el.getBoundingClientRect().height/lh),bg:cs.backgroundColor,shadow:cs.textShadow,size:parseFloat(cs.fontSize),pages:__primer.run.scene.cap.pages.length}})()`);
+  ok(capLook.lines <= 2 && /rgba\(0, 0, 0, 0\)|transparent/.test(capLook.bg) && capLook.shadow !== 'none' && capLook.size >= 20, 'the caption has no plate behind it, a dark halo round its letters, slightly bigger type, and never more than two lines', capLook);
+  const paged = await ev(`import('/primer/js/readalong.js').then(m => { const w = "So, seen from the ground, the air keeps blowing in from the east. That's why the trade winds blow from east to west.".split(' '); return m.pagesOf(w, (i, j) => w.slice(i, j + 1).join(' ').length <= 58).map(([a, b]) => w.slice(a, b + 1).join(' ')); })`);
+  ok(paged.length === 3 && paged[1].endsWith('east.') && paged[2].startsWith("That's"), 'a long caption is split into pages at its phrases, a sentence never running into the next page', paged);
   await shot('31-video-caption-lit');
   // A tap on the picture brings the controls up, over it; they go again by themselves.
   await tapPicture();
@@ -2352,7 +2390,11 @@ try {
   await openNode('engine');
   d = await scene();
   ok(d.state === 'playing' && !d.sound && (await ev('__primer.run.scene.clips.length')) === 0, 'with Voice off it starts by itself, on the reading clock, with no player made', d);
-  ok(!(await ev(`document.querySelector('.scene').classList.contains('nocap')`)) && await ev(`document.querySelector('[data-sc=captions]').hidden`), 'its captions are on, though turned off with the voice, and their button is gone', await scene());
+  ok(!(await ev(`document.querySelector('.scene').classList.contains('nocap')`)) && !(await ev(`document.querySelector('[data-sc=captions]').hidden`)), 'its captions are on, though turned off with the voice: with no voice they are the words; their button stays (round four)', await scene());
+  await control('captions');
+  ok(await ev(`document.querySelector('.scene').classList.contains('nocap')`) && (await ev(`__primer.store.get('prefs')`)).captions === false, 'and hides them, for this viewing only: the remembered choice is untouched (still off)');
+  await control('captions');
+  ok(!(await ev(`document.querySelector('.scene').classList.contains('nocap')`)), 'and brings them back');
   const readLit = [];
   for (let k = 0; k < 6; k++) { readLit.push((await scene()).lit.lit); await sleep(250); }
   ok(readLit.at(-1) > readLit[0], `the words light at reading pace (${readLit.join(', ')})`, readLit);
@@ -2440,14 +2482,64 @@ try {
   await control('voice');
   await sleep(1200);
   ok((await scene()).sound && !(await scene()).failed, 'the speaker tries the voice again; a clip whose clock stands still is not called silent at once');
-  await waitFor(`__primer.run.scene.debug().failed`, 5000);
+  await waitFor(`__primer.run.scene.debug().misses === 1`, 5000);
   d = await scene();
-  ok(d.failed === 'silent' && !d.sound && (await ev(`document.querySelector('.snote').textContent`)).includes('No sound played'), 'after about 2.5 seconds it is, and says so, and the line reads on from its caption', d);
+  ok(d.misses === 1 && d.quietLine === d.line && d.sound && !d.failed && (await ev(`document.querySelector('.snote').hidden`)), 'after about 2.5 seconds still, that one line reads on from its caption, quietly: the next line will try its own clip (round four)', d);
+  await waitFor(`__primer.run.scene.debug().failed`, 20000);
+  d = await scene();
+  ok(d.failed === 'silent' && !d.sound && (await ev(`document.querySelector('.snote').textContent`)).includes('No sound played'), "when the next line's clip stands still too, it says so, and the rest reads on from its captions", d);
   await ev(`HTMLMediaElement.prototype.play = window.__realPlay; true`);
   await control('voice');
   await sleep(1200);
   d = await scene();
   ok(d.sound && !d.failed && d.clip && d.clip.status === 'playing', 'the speaker tries the voice again, from the same moment', d.clip);
+  await control('close');
+  await sleep(300);
+
+  // Round four: "No sound played", then the voice started. A clip that is slow to load isn't silent, a phone
+  // that wants a tap but says nothing isn't silent, and one quiet clip doesn't silence the rest.
+  console.log('A slow voice is waited for, never called silent');
+  await ev(`(() => {
+    const P = HTMLMediaElement.prototype, rs = Object.getOwnPropertyDescriptor(P, 'readyState');
+    window.__rs = rs; window.__realPause = P.pause;
+    window.__slowUntil = 0;
+    Object.defineProperty(P, 'readyState', { configurable: true, get() { return performance.now() < window.__slowUntil ? 1 : rs.get.call(this); } });
+    P.pause = function () { this.__off = true; return window.__realPause.call(this); };
+    // the clip has nothing to play for four seconds (still loading, as on a phone readying every clip in a
+    // tap), then plays
+    P.play = function () { const el = this; el.__off = false; const wait = Math.max(0, window.__slowUntil - performance.now()); return new Promise(res => setTimeout(() => { if (el.__off) return res(); window.__realPlay.call(el).then(res, res); }, wait)); };
+    return true; })()`);
+  await openNode('engine');
+  await ev(`window.__slowUntil = performance.now() + 4000; __primer.run.scene.seekTo(0, true); true`);
+  await sleep(3300);
+  d = await scene();
+  ok(!d.failed && d.sound && d.clip && d.clip.status === 'starting' && d.clip.waiting && (await ev(`document.querySelector('.snote').hidden`)), 'a clip still loading after 3.3 seconds is waiting, not silent: no "No sound played" (before round four it was called silent at 2.5 seconds)', d);
+  ok(await waitFor(`__primer.run.scene.debug().clip && __primer.run.scene.debug().clip.status === 'playing'`, 4000), 'and once it has loaded, it plays: the voice starts, late but whole');
+  d = await scene();
+  ok(d.sound && !d.failed && d.misses === 0, 'nothing was lost: the scene is voiced from there on', d);
+  await control('close');
+  await sleep(300);
+  await ev(`window.__slowUntil = 0; HTMLMediaElement.prototype.play = function () { return Promise.resolve(); }; true`);
+  await openNode('engine');
+  await sleep(3400);
+  d = await scene();
+  ok(d.state === 'ready' && !d.failed && !d.note && d.ui, 'a phone that wants a tap but says nothing (its first clip, started by itself, never moves): it waits on its picture for a tap on play, never saying "No sound played"', d);
+  await ev(`HTMLMediaElement.prototype.play = window.__realPlay; true`);
+  await f.tap('[data-sc=play]');
+  ok(await waitFor(`__primer.run.scene.debug().clip && __primer.run.scene.debug().clip.status === 'playing'`, 4000) && (await scene()).sound, 'and the tap starts the voice');
+  await control('close');
+  await sleep(300);
+  // one quiet clip: its line reads on, the next line is voiced
+  await openNode('engine');
+  await waitFor(`__primer.run.scene.state === 'playing'`, 4000);
+  await ev(`(() => { const s = __primer.run.scene, real = window.__realPlay; window.__mute = s.urls[1].url; HTMLMediaElement.prototype.play = function () { return this.src === window.__mute ? Promise.resolve() : real.call(this); }; s.seekTo(s.starts[1], true); return true; })()`);
+  await waitFor(`__primer.run.scene.debug().misses === 1`, 6000);
+  d = await scene();
+  ok(d.line === 1 && d.quietLine === 1 && d.sound && !d.failed && !d.note, 'one clip that plays no sound: its line reads on from its caption, with no note', d);
+  ok(await waitFor(`__primer.run.scene.debug().line === 2 && __primer.run.scene.debug().clip && __primer.run.scene.debug().clip.status === 'playing'`, 15000), 'and the next line is voiced again by itself');
+  d = await scene();
+  ok(d.sound && !d.failed && d.misses === 0, 'the voice carries on', d);
+  await ev(`HTMLMediaElement.prototype.play = window.__realPlay; HTMLMediaElement.prototype.pause = window.__realPause; Object.defineProperty(HTMLMediaElement.prototype, 'readyState', window.__rs); true`);
   await control('close');
   await sleep(300);
 

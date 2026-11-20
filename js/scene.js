@@ -42,7 +42,7 @@ export const NARRATORS = { heart: 'Heart', george: 'George', bella: 'Bella', 'ch
 export const GAP = 0.45;            // seconds between lines
 export const END_HOLD = 0.6;        // seconds on the last line's picture before the end
 export const UI_FADE_MS = 3000;     // the controls fade after this long without a touch, while it plays
-export const CAPTION_LINES = 4;     // a caption over the picture takes at most this many lines (primer fit)
+export const CAPTION_LINES = 2;     // a caption shows at most this many lines at a time: a line's words in pages (primer fit)
 const BACK_TO_PREVIOUS = 1.5;       // back this early in a line goes to the line before
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -67,8 +67,9 @@ export const sceneIcon = {
   skip: s => I('<path d="M21 6v16" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/><path d="M6.5 7.3v13.4a1 1 0 0 0 1.6.8L16.8 15a1.2 1.2 0 0 0 0-2L8.1 6.5a1 1 0 0 0-1.6.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>', s),
   voice: s => I('<path d="M4.5 11h4l6-5v16l-6-5h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 10.3a5 5 0 0 1 0 7.4M21.5 7.4a9 9 0 0 1 0 13.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>', s),
   quiet: s => I('<path d="M4.5 11h4l6-5v16l-6-5h-4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 10.5l6 7M24.5 10.5l-6 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>', s),
-  captions: s => I('<rect x="3.5" y="6.5" width="21" height="15" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 13h6M17 13h3M8 17h3M14 17h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>', s),
-  nocaptions: s => I('<rect x="3.5" y="6.5" width="21" height="15" rx="4" fill="none" stroke="currentColor" stroke-width="2.4" opacity="0.55"/><path d="M8 13h6M8 17h3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/><path d="M5 4.5l18 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>', s),
+  // captions: the familiar CC box, filled when they're on, an outline crossed through when they're off
+  captions: s => I('<rect x="2" y="5.5" width="24" height="17" rx="4.5" fill="currentColor"/><text x="14" y="18.6" text-anchor="middle" font-family="Nunito, system-ui, sans-serif" font-weight="900" font-size="11.5" fill="#141a4a">CC</text>', s),
+  nocaptions: s => I('<rect x="3" y="6.5" width="22" height="15" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><text x="14" y="18.2" text-anchor="middle" font-family="Nunito, system-ui, sans-serif" font-weight="900" font-size="11" fill="currentColor">CC</text><path d="M4 4l20 20" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>', s),
   close: s => I('<path d="M8 8l12 12M20 8L8 20" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>', s),
   again: s => I('<path d="M7.5 9.5A8 8 0 1 1 6 15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M5 4.8v6h6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>', s),
 };
@@ -76,6 +77,7 @@ export const sceneIcon = {
 const NOTES = {
   silent: 'No sound played, so it reads on by itself. Tap the speaker to try the voice again.',
   missing: 'This voice comes down when there is signal. Reading it for now.',
+  tap: 'Tap play to hear the voice.',
 };
 
 // ---------------------------------------------------------------- the player
@@ -101,6 +103,10 @@ export class Scene {
     this.sound = false;       // whether lines are being voiced
     this.failed = null;       // set once no sound played: the rest is read
     this.tapped = false;      // whether a tap has started it: until then, a phone that wants a tap gets one
+    this.tapping = false;     // true only while a touch is being handled: a clip made ready then may start later
+    this.misses = 0;          // lines in a row whose clip played no sound: one is read, two and the rest are
+    this.quietLine = -1;      // the line being read on its own clock after its clip played no sound
+    this.askedTap = false;    // whether it has already stopped once, after a tap, to ask for another
     this.fired = [];          // every action run in time, with the clock then: for the tests
     this.clips = [];
     this.clip = null;
@@ -125,7 +131,7 @@ export class Scene {
       <div class="scap"><p class="sline"></p></div>
       <div class="sui">
         <div class="sscrim"></div>
-        <div class="stop">${video ? btn('close', 'Close', sceneIcon.close(22)) : ''}<span class="sgrow"></span>${btn('voice', 'Voice', '')}${btn('captions', 'Captions', '')}</div>
+        <div class="stop">${video ? btn('close', 'Close', sceneIcon.close(22)) : ''}<span class="sgrow"></span>${btn('voice', 'Voice', '')}${btn('captions', 'Captions', '', ' cc')}</div>
         <div class="smid">${btn('back', 'The line before', sceneIcon.back(24), ' side')}${btn('play', 'Play', sceneIcon.play(34), ' big')}${btn('skip', 'The next line', sceneIcon.skip(24), ' side')}</div>
         <div class="sbot"><div class="stimes"><span class="snow">0:00</span><span class="stotal">0:00</span></div>
           <div class="sbar" role="slider" aria-label="Where it is" aria-valuemin="0"><div class="strack"><b class="sfill"></b><span class="sticks"></span></div><i class="sknob"></i></div></div>
@@ -138,7 +144,7 @@ export class Scene {
     const q = s => this.root.querySelector(s);
     this.root = this.el.querySelector('.scene');
     this.stage = q('.sstage');
-    this.cap = new ReadAlong(q('.sline'));
+    this.cap = new ReadAlong(q('.sline'), '', { pages: CAPTION_LINES });
     this.note = q('.snote');
     this.endEl = q('.send');
     this.bar = q('.sbar');
@@ -263,7 +269,7 @@ export class Scene {
 
   // When everything on line j happens: by its clip's word times, or by the reading clock.
   plan(j) {
-    const line = this.lines[j], said = saidOf(line), clip = this.sound ? this.urls[j] : null;
+    const line = this.lines[j], said = saidOf(line), clip = this.sound && j !== this.quietLine ? this.urls[j] : null;
     const words = clip && clip.url && clip.words.length === splitWords(said).length ? clip.words : null;
     const read = readingTimes(said);
     const ws = words || read.words;
@@ -385,6 +391,7 @@ export class Scene {
     if (this.sound && c && c.url && this.cur.voiced) {
       const primed = this.clips[this.i];
       const clip = (this.clip = primed && primed.status === 'primed' ? primed : new Clip(c.url));
+      if (clip !== primed) clip.inTap = this.tapping;
       this.clips[this.i] = clip;
       clip.on(what => this.clipSaid(what, clip));
       if (t > 0) clip.seek(t);
@@ -398,28 +405,44 @@ export class Scene {
     this.loop();
   }
 
+  // What a clip says: it's playing, it has ended, or it failed (refused by the phone, silent, or an error).
+  // Round four ("No sound played", then it started): a false "no sound" is worse than a wait, so
+  //  - a clip that hadn't been made ready in a tap and didn't start (refused, or before any tap standing
+  //    still: a phone that wants a tap but says nothing) stops and waits for a tap on play, with no "no sound";
+  //    after a first tap it asks this way only once;
+  //  - one clip that plays no sound costs only its line, which reads on from its caption, and the next line
+  //    tries its own clip; only when two lines in a row play nothing is it "No sound played", and the rest is
+  //    read (the speaker tries again);
+  //  - refused even though it was made ready in a tap, the phone won't have it: the rest is read, at once.
   clipSaid(what, clip) {
     if (clip !== this.clip || this.state === 'ended') return;
+    if (what === 'playing') { this.misses = 0; return; }
     if (what === 'ended') this.lineSaid();
-    if (what === 'failed') {
-      const t = Math.min(clip.time, this.cur.dur);
-      this.stopClip();
-      if (clip.why === 'refused' && !this.tapped) {
-        // It tried to start by itself and the phone wants a tap first: it waits for one, on play.
-        this.pausedAt = t;
-        this.pausedFrom = 'playing';
-        this.set('ready');
-        this.showUi();
-        return;
-      }
-      // No sound: the rest is read. This line carries on from where the clip had got to.
-      this.sound = false;
-      this.failed = clip.why || 'silent';
-      this.showNote('silent');
-      this.setVoiceButton();
-      this.setCaptions();
-      this.replan(t);
+    if (what !== 'failed') return;
+    const t = Math.min(clip.time, this.cur.dur);
+    this.stopClip();
+    const wantsTap = clip.why === 'refused' || (clip.why === 'silent' && !this.tapped);
+    if (wantsTap && !clip.inTap && !this.askedTap) {
+      if (this.tapped) { this.askedTap = true; this.showNote('tap'); }
+      this.pausedAt = t;
+      this.pausedFrom = 'playing';
+      this.set('ready');
+      this.showUi();
+      return;
     }
+    if (clip.why !== 'refused' && ++this.misses < 2 && this.i + 1 < this.lines.length) {
+      // this line reads on from where its clip had got to; the next line tries its own
+      this.quietLine = this.i;
+      this.replan(t);
+      return;
+    }
+    // No sound: the rest is read. This line carries on from where the clip had got to.
+    this.sound = false;
+    this.failed = clip.why || 'silent';
+    this.showNote('silent');
+    this.setVoiceButton();
+    this.setCaptions();
+    this.replan(t);
   }
 
   // The plans worked out again (the voice came or went), keeping what has happened on this line.
@@ -495,6 +518,7 @@ export class Scene {
       if (!c || !c.url || (this.clip && this.clips[k] === this.clip)) continue;
       if (this.clips[k]) this.clips[k].stop();
       this.clips[k] = new Clip(c.url);
+      this.clips[k].inTap = this.tapping;
       this.clips[k].prime();
     }
   }
@@ -579,6 +603,7 @@ export class Scene {
   // The clips are primed first, while the tap still counts.
   async seekTo(T, play) {
     if (this.busy || this.state === 'loading') return;
+    if (this.quietLine >= 0) { this.quietLine = -1; this.layout(); }
     T = Math.max(0, Math.min(this.total, T));
     let j = 0;
     while (j + 1 < this.lines.length && this.starts[j + 1] <= T + 1e-6) j++;
@@ -616,6 +641,9 @@ export class Scene {
     const on = !(this.opts.voice && this.opts.voice()) || !!this.failed;
     if (this.opts.setVoice) this.opts.setVoice(on);
     this.failed = null;
+    this.misses = 0;
+    this.quietLine = -1;
+    this.capsHere = undefined;
     this.hideNote();
     const playing = this.state === 'playing';
     const t = playing ? this.clock(performance.now()) : this.pausedAt;
@@ -629,11 +657,17 @@ export class Scene {
     else this.paintBar(this.where());
   }
 
-  // Captions on or off: remembered. With no sound, they are always on.
-  capsOn() { return !this.sound || !this.opts.captions || this.opts.captions() !== false; }
+  // Captions on or off, from their button, always there (round four: "ability to toggle captions"): with the
+  // voice, the choice is remembered; with no voice (turned off, or none played), the captions are the words,
+  // so they come on, and the button hides them for this viewing only.
+  capsOn() {
+    if (this.capsHere !== undefined) return this.capsHere;
+    return !this.sound || !this.opts.captions || this.opts.captions() !== false;
+  }
   toggleCaptions() {
-    if (!this.sound) return;
-    if (this.opts.setCaptions) this.opts.setCaptions(!this.capsOn());
+    const on = !this.capsOn();
+    if (this.sound) { this.capsHere = undefined; if (this.opts.setCaptions) this.opts.setCaptions(on); }
+    else this.capsHere = on;
     this.setCaptions();
   }
 
@@ -655,6 +689,11 @@ export class Scene {
   // ---- touches
 
   tap(e) {
+    this.tapping = true;
+    try { return this.tapNow(e); } finally { this.tapping = false; }
+  }
+
+  tapNow(e) {
     if (this.state === 'loading') return null;
     const b = e.target.closest('[data-sc]');
     if (b) {
@@ -707,7 +746,8 @@ export class Scene {
       const { T } = this.drag;
       this.drag = null;
       this.root.classList.remove('dragging');
-      this.seekTo(T, play).then(() => this.fadeLater());
+      this.tapping = true;
+      try { this.seekTo(T, play).then(() => this.fadeLater()); } finally { this.tapping = false; }
     };
     addEventListener('pointermove', move);
     addEventListener('pointerup', up);
@@ -760,9 +800,10 @@ export class Scene {
     const on = this.capsOn();
     this.root.classList.toggle('nocap', !on);
     const b = this.root.querySelector('[data-sc=captions]');
-    b.innerHTML = on ? sceneIcon.captions(22) : sceneIcon.nocaptions(22);
+    b.innerHTML = on ? sceneIcon.captions(26) : sceneIcon.nocaptions(26);
     b.setAttribute('aria-pressed', String(on));
-    b.hidden = !this.sound;   // with no voice, captions are all there is: always on
+    b.setAttribute('aria-label', on ? 'Captions on' : 'Captions off');
+    b.classList.toggle('off', !on);
   }
 
   showNote(which) {
@@ -784,7 +825,8 @@ export class Scene {
     return { state: this.state, line: this.i, id: this.lines[this.i] && this.lines[this.i].id, sound: this.sound, failed: this.failed,
       t: this.state === 'playing' ? this.clock(performance.now()) : null, at: this.where(), total: this.total, starts: this.starts,
       voiced: this.cur ? this.cur.voiced : false, ui: !!this.ui, captions: this.capsOn(), lit: this.cap.state(), tapped: this.tapped,
-      clip: this.clip ? { status: this.clip.status, time: this.clip.time, started: this.clip.started, why: this.clip.why } : null,
+      clip: this.clip ? { status: this.clip.status, time: this.clip.time, started: this.clip.started, why: this.clip.why, waiting: !!this.clip.waiting, inTap: !!this.clip.inTap } : null,
+      misses: this.misses, quietLine: this.quietLine, note: this.note && !this.note.hidden ? this.note.dataset.note : '',
       fired: this.fired.slice(), narrators: (this.urls || []).map(c => (c ? c.narrator : null)),
       shots: this.shots ? this.shots.state() : null, effects: this.sfx.heard.slice() };
   }
@@ -799,13 +841,20 @@ export class Scene {
     this.hideUi();
   }
 
-  // For `primer fit`: how many lines the caption on screen takes, and how far past CAPTION_LINES it goes.
+  // For `primer fit`: how many lines the caption on screen takes at most, page by page, and how far past
+  // CAPTION_LINES its worst page goes.
   measure() {
     const el = this.root.querySelector('.sline');
     const cs = getComputedStyle(el), lh = parseFloat(cs.lineHeight) || 24;
-    const inner = el.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    const lines = Math.max(1, Math.round(inner / lh));
-    return { line: this.lines[this.i] && this.lines[this.i].id, lines, over: Math.max(0, Math.round(inner - lh * CAPTION_LINES)), stage: Math.round(this.stage.getBoundingClientRect().height) };
+    let worst = 0;
+    const pages = this.cap.pages ? this.cap.pages.length : 1, was = this.cap.page;
+    for (let p = 0; p < pages; p++) {
+      if (this.cap.pages) this.cap.showPage(p);
+      worst = Math.max(worst, el.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom));
+    }
+    if (this.cap.pages) this.cap.showPage(Math.max(0, was));
+    const lines = Math.max(1, Math.round(worst / lh));
+    return { line: this.lines[this.i] && this.lines[this.i].id, lines, pages, over: Math.max(0, Math.round(worst - lh * CAPTION_LINES)), stage: Math.round(this.stage.getBoundingClientRect().height) };
   }
 
   dropParts() {

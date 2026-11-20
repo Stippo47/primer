@@ -120,23 +120,117 @@ export function align(written, spoken) {
   return out;
 }
 
+// A caption in pieces (round four: "less lines at a time"): the words of a line split into pages of at most
+// `lines` lines each, cut where a phrase ends. fits(i, j) says whether words i..j (inclusive) fit in that
+// many lines. A page ends at a sentence's end once it has a few words; at a comma, a colon or a dash once it
+// is past half full; before a joining word (and, but, so...) when it must; and anywhere only if one phrase is
+// too long for a page. Returns [[first, last], ...].
+const JOINS = new Set(['and', 'but', 'so', 'or', 'because', 'which', 'that', 'where', 'when', 'while', 'as', 'then', 'until', 'with', 'into', 'from', 'like']);
+export function pagesOf(words, fits, { full = n => n } = {}) {
+  const out = [];
+  const ends = w => /[.!?]["”’)]*$/.test(w), pause = w => /[,;:]["”’)]*$/.test(w) || /[—–]$/.test(w);
+  let i = 0;
+  while (i < words.length) {
+    let j = i;
+    while (j + 1 < words.length && fits(i, j + 1)) j++;
+    if (j + 1 >= words.length) { out.push([i, j]); break; }
+    // the page is as full as it can be at j: cut at the best phrase end inside it
+    let cut = -1;
+    for (let k = j; k > i + 1 && cut < 0; k--) if (ends(words[k])) cut = k;
+    if (cut < 0) for (let k = j; k > i && cut < 0; k--) if (pause(words[k]) && full(k - i + 1) >= full(j - i + 1) * 0.45) cut = k;
+    if (cut < 0) for (let k = j; k > i + 1 && cut < 0; k--) if (JOINS.has(normWord(words[k]))) cut = k - 1;
+    if (cut < 0) cut = j;
+    out.push([i, cut]);
+    i = cut + 1;
+  }
+  // a sentence's end inside a page that has room before it still ends the page there when what follows is a
+  // phrase of its own: one thought a page reads calmer
+  const split = [];
+  for (const [a, b] of out) {
+    let s = a;
+    for (let k = a + 2; k < b - 1; k++) if (ends(words[k])) { split.push([s, k]); s = k + 1; }
+    split.push([s, b]);
+  }
+  return split;
+}
+
 export class ReadAlong {
   // el: where the words go (its contents are replaced). It gets the class `ra`; while words are being said
-  // it has `reading`, and each said word has `said`.
-  constructor(el, text = '') {
+  // it has `reading`, and each said word has `said`. pages: a number of lines (a caption): the words are
+  // shown a page at a time, at most that many lines, each page in turn as its first word is said.
+  constructor(el, text = '', { pages = 0 } = {}) {
     this.el = el;
+    this.pageLines = Math.max(0, Number(pages) || 0);
     el.classList.add('ra');
     this.set(text);
   }
 
   set(text) {
     this.text = String(text ?? '');
-    this.el.innerHTML = markup(this.text);
-    this.spans = [...this.el.querySelectorAll('.w')];
     this.words = wordsOf(this.text).map(x => x.w);
     this.times = null;
     this.lit = -1;
     this.el.classList.remove('reading');
+    if (this.pageLines) {
+      this.pages = this.paginate();
+      this.page = -1;
+      this.showPage(0);
+      return;
+    }
+    this.el.innerHTML = markup(this.text);
+    this.spans = [...this.el.querySelectorAll('.w')];
+  }
+
+  // The caption's pages, measured with its own font across its own width.
+  paginate() {
+    const words = this.words;
+    if (!words.length) return [[0, -1]];
+    const cs = getComputedStyle(this.el), g = (ReadAlong.ctx = ReadAlong.ctx || document.createElement('canvas').getContext('2d'));
+    g.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const box = this.el.parentElement || this.el;
+    const width = Math.max(120, Math.min(parseFloat(cs.maxWidth) || Infinity, box.clientWidth || 340) - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0));
+    const space = g.measureText(' ').width, wid = words.map(w => g.measureText(w).width);
+    // whether words i..j wrap into no more than the page's lines (greedy, as the browser wraps), with a little room
+    const fits = (i, j) => {
+      let lines = 1, run = 0;
+      for (let k = i; k <= j; k++) {
+        const add = (run ? space : 0) + wid[k];
+        if (run && run + add > width * 0.97) { lines++; run = wid[k]; } else run += add;
+        if (lines > this.pageLines) return false;
+      }
+      return true;
+    };
+    return pagesOf(words, fits, { full: n => n });
+  }
+
+  // Shows page p: its words only, each still lit or not by the voice.
+  showPage(p) {
+    if (!this.pageLines || p === this.page) return;
+    this.page = p;
+    const [a, b] = this.pages[Math.max(0, Math.min(this.pages.length - 1, p))];
+    // the page's own words, keeping the stressed ones (the whole text's stars, cut to this page)
+    const marks = wordsOf(this.text).slice(a, b + 1);
+    let html = '', inKey = false;
+    marks.forEach((m, k) => {
+      if (inKey && !m.key) { html += '</span>'; inKey = false; }
+      if (k) html += ' ';
+      if (m.key && !inKey) { html += '<span class="key">'; inKey = true; }
+      html += `<span class="w">${esc(m.w)}</span>`;
+    });
+    if (inKey) html += '</span>';
+    this.el.innerHTML = html;
+    this.spans = [...this.el.querySelectorAll('.w')];
+    this.first = a;
+    this.el.dataset.page = String(p);
+    for (let i = 0; i < this.spans.length; i++) this.spans[i].classList.toggle('said', a + i <= this.lit);
+  }
+
+  // The page that word k (the last said; -1 before any) is on.
+  pageOf(k) {
+    if (!this.pages) return 0;
+    const at = Math.max(0, k);
+    for (let p = 0; p < this.pages.length; p++) if (at <= this.pages[p][1]) return p;
+    return this.pages.length - 1;
   }
 
   // Times for the words from what is said: spoken words [[w, s, e]] (a clip's, or a reading clock's).
@@ -146,24 +240,34 @@ export class ReadAlong {
     return this;
   }
 
-  // Lights every word said by time t (seconds), the rest a softer tone.
+  // Lights every word said by time t (seconds), the rest a softer tone. In pages, the page turns as its first
+  // word is said.
   paint(t) {
     if (!this.times) return;
     this.el.classList.add('reading');
     let k = -1;
     while (k + 1 < this.times.length && this.times[k + 1][0] <= t + 0.04) k++;
     if (k === this.lit) return;
-    for (let i = 0; i < this.spans.length; i++) this.spans[i].classList.toggle('said', i <= k);
     this.lit = k;
+    if (this.pageLines) {
+      this.showPage(this.pageOf(k));
+      for (let i = 0; i < this.spans.length; i++) this.spans[i].classList.toggle('said', this.first + i <= k);
+      return;
+    }
+    for (let i = 0; i < this.spans.length; i++) this.spans[i].classList.toggle('said', i <= k);
   }
 
-  // Every word plain again: the reading is over, or was stopped.
+  // Every word plain again: the reading is over, or was stopped. A caption in pages keeps its last page.
   finish() {
     this.el.classList.remove('reading');
+    if (this.pageLines && this.lit >= 0) this.showPage(this.pageOf(this.words.length - 1));
     for (const s of this.spans) s.classList.remove('said');
     this.lit = -1;
   }
 
-  // For the tests: how many words are lit, of how many.
-  state() { return { lit: this.lit + 1, of: this.spans.length, reading: this.el.classList.contains('reading') }; }
+  // For the tests: how many words are lit, of how many; in pages, which page shows, of how many.
+  state() {
+    if (this.pageLines) return { lit: this.lit + 1, of: this.words.length, reading: this.el.classList.contains('reading'), page: this.page, pages: this.pages.length };
+    return { lit: this.lit + 1, of: this.spans.length, reading: this.el.classList.contains('reading') };
+  }
 }
