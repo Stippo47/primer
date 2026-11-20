@@ -401,3 +401,11 @@ Their words are in primer-data `notes/answers-2026-11-19f.md`, with the pinned f
 - **The bottom band is now dead space under the tab bar.** Waiting on the hidden screen panel's numbers to fix it for certain.
 - **Combo tiers:** thresholds and shields good. Copper's side goes green; titanium's rainbow fainter, with a slow turn round the border; platinum loses the rainbow and gets a larger star twinkle at the end of its shine; the gems other than diamond "reverted" (back toward round two's richer look), diamond loses its rainbow sheen; obsidian gets a slight oil-slick hue; opal "meh"; the sky tiers underwhelm (nebula could have animated, shifting electron-like rings); the far end underwhelms and the black-hole art is disliked.
 - **Forms round five: good** (beads slide, the tape's unit).
+
+### Sounds from a library (my calls, branch s2-sounds, deck `stage2-sounds`)
+
+- **Only CC0 recordings**, from Freesound (sounds marked Creative Commons 0, each page checked) and Kenney's Interface Sounds, UI Audio and Impact Sounds packs. No credit is owed; it's kept in `sounds/library/SOURCES.md` anyway. Nothing non-commercial or share-alike was needed.
+- **98 candidates, 6 to 10 a kind**, in `sounds/library/candidates/` as `<kind>-<n>-<what>.m4a`: whoosh 9, cut 9, swell 8, pop 9, chime 10, wind 6, fizz 9, rumble 9, crack 9, shatter 10, button press 10. About 1.4 MB in all; none over 36 kB.
+- **Each cut to its useful moment and levelled within its kind**: high-passed (90 Hz; wind 60, rumble 45), faded at both ends, the scenes' sounds at -27.5 LUFS like the made ones, presses at -28, crack and shatter louder at -25 (with a fast limiter of up to 8 dB, since a crack is all peak); mono AAC, 80 kbps.
+- **Dropped unheard, by measurement:** flat-topped (clipped) sources, recordings that needed 20 dB or more of gain (hiss), ones mostly silence, cracks that were only scattered clicks, glass with a long ring (the "twinkly" complaint), and synth blips that read as 8-bit.
+- **The deck's picks are guesses from shape and brightness**, two a kind; I couldn't listen. Nothing is wired in until they've ticked.
