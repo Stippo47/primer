@@ -23,7 +23,7 @@ import { visitNode } from './screens/node.js';
 import { playVideo } from './screens/video.js';
 import { DEFAULT_NARRATOR, NARRATORS } from './scene.js';
 
-const VERSION = '0.5.8'; // keep in step with sw.js
+const VERSION = '0.5.9'; // keep in step with sw.js
 const root = document.getElementById('app');
 const view = document.getElementById('view');
 const isLocalHost = ['localhost', '127.0.0.1'].includes(location.hostname);
