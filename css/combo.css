@@ -240,6 +240,48 @@
 .combo.idle > .cbody > .cpsr { animation: c-psr 0.75s infinite ease-out; }
 @keyframes c-psr { 0% { opacity: 1; transform: scale(1.5); } 60%, 100% { opacity: 0.55; transform: scale(0.8); } }
 
+/* supernova, shells: shock fronts racing out one after another from the hot core, each the chip's shape,
+   with a ragged edge of its own (a mask made in js/combo.js); inside the chip and the same again behind it, so each carries on past the edge */
+.cshock { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.cshock.out { z-index: -1; }
+.combo.idle > .cbody > .cshock, .combo.idle > .cshock.out { animation: c-shock 6s var(--d, 0s) infinite cubic-bezier(.3, .45, .65, 1); }
+@keyframes c-shock { 0% { opacity: 0; transform: scale(0.08); } 6% { opacity: 1; } 62% { opacity: 0.95; } 100% { opacity: 0; transform: scale(1.42); } }
+.ccore3 { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; }
+.combo.idle > .cbody > .ccore3 { animation: c-core3 1.5s infinite ease-out; }
+@keyframes c-core3 { 0% { opacity: 1; transform: scale(1.3); } 70%, 100% { opacity: 0.7; transform: scale(0.85); } }
+
+/* supernova, ringneb: every three seconds the core flashes, its light runs out to the ring, the pearls flare
+   one after another round it, and the haze round the chip blooms */
+.combo.idle > .cbody > .ccore3.flash { animation: c-core4 3s infinite ease-out; }
+@keyframes c-core4 { 0% { opacity: 1; transform: scale(1.7); } 25%, 100% { opacity: 0.75; transform: scale(0.9); } }
+.cpulse { position: absolute; opacity: 0; transform: rotate(-14deg) scale(0.1); }
+.combo.idle > .cbody > .cpulse { animation: c-rpulse 3s infinite cubic-bezier(.2, .6, .4, 1); }
+@keyframes c-rpulse { 0% { opacity: 0; transform: rotate(-14deg) scale(0.1); } 8% { opacity: 1; } 22% { opacity: 0.9; transform: rotate(-14deg) scale(1); } 34%, 100% { opacity: 0; transform: rotate(-14deg) scale(1.12); } }
+.cpearl { position: absolute; width: 8px; height: 8px; border-radius: 50%; opacity: 0.6; transform: scale(0.7); }
+.combo.idle > .cbody > .cpearl { animation: c-pearl 3s var(--d, 0s) infinite ease-out both; }
+@keyframes c-pearl { 0% { opacity: 0.6; transform: scale(0.7); } 6% { opacity: 1; transform: scale(1.6); } 40%, 100% { opacity: 0.6; transform: scale(0.7); } }
+.chaze { position: absolute; z-index: -1; left: -24px; right: -24px; top: -9px; bottom: -13px; pointer-events: none; opacity: 0; }
+.combo.idle > .chaze { animation: c-haze 3s infinite ease-out; }
+@keyframes c-haze { 0% { opacity: 0.3; transform: scale(0.85); } 30% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.3; transform: scale(0.85); } }
+
+/* supernova, rays: two sets of uneven rays bursting out by turns, a fresh burst every three-quarters of a
+   second, and debris streaking out along spokes, slowing as it goes; inside the chip and again behind it,
+   lined up on the chip's middle, fading out toward the edge of the space round it */
+.csun, .cejs { position: absolute; z-index: -1; left: -26px; right: -26px; top: -9px; bottom: -14px; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent); mask-image: radial-gradient(closest-side, #000 72%, transparent); }
+.csun.in, .cejs.in { z-index: auto; inset: 0; -webkit-mask-image: none; mask-image: none; }
+.csun.in { opacity: 0.85; }
+.csun > i { position: absolute; left: 50%; top: 29px; width: 120px; height: 120px; margin: -60px 0 0 -60px; opacity: 0;
+  -webkit-mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.8) 55%, transparent); mask-image: radial-gradient(closest-side, #000 20%, rgba(0, 0, 0, 0.8) 55%, transparent); }
+.csun.in > i, .cejs.in > .cej { top: 50%; }
+.combo.idle > .csun > i, .combo.idle > .cbody > .csun > i { animation: c-sun 1.5s infinite cubic-bezier(.2, .6, .4, 1); }
+.combo.idle > .csun > i.b, .combo.idle > .cbody > .csun > i.b { animation-delay: -0.75s; }
+@keyframes c-sun { 0% { opacity: 0; transform: scaleY(0.6) scale(0.35); } 15% { opacity: 1; } 100% { opacity: 0; transform: scaleY(0.6) scale(1.25); } }
+.cej { position: absolute; left: 50%; top: 29px; width: 0; height: 0; }
+.cej > i { position: absolute; left: 0; top: -1.1px; width: 14px; height: 2.2px; border-radius: 1.1px; opacity: 0; }
+.combo.idle > .cejs > .cej > i, .combo.idle > .cbody > .cejs > .cej > i { animation: c-ej 3s var(--d, 0s) infinite cubic-bezier(.15, .6, .35, 1) both; }
+@keyframes c-ej { 0% { opacity: 0; transform: translateX(2px) scaleX(0.4); } 10% { opacity: 1; } 70% { opacity: 0.85; } 100% { opacity: 0; transform: translateX(62px) scaleX(1.2); } }
+
 /* eclipse, transit: the moon crossing the sun; the day sky gone and the corona out at totality, a bead of light
    at the edge where the sun goes and where it comes back */
 .cday, .ctcor { position: absolute; inset: 0; }

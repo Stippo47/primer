@@ -1840,19 +1840,20 @@ try {
     console.log('The combo comes alive: a tier at each threshold, a miss drops it, reduced motion stills it');
     {
       const TIERS = await ev(`import('/primer/js/combo.js').then(m => m.LADDER.map(t => ({ id: t.id, at: t.at, shields: t.shields })))`);
-      // the 23 kept (2026-11-19), low to high above plain, their gaps growing three tiers at a time
+      // the 23 kept (2026-11-19), less eclipse (gone 2026-11-20), low to high above plain, their gaps growing
+      // three tiers at a time; the others kept their starts, so supernova's run is the one gap longer than the next
       const KEPT = ['wood', 'tin', 'copper', 'silver', 'gold', 'platinum', 'emerald', 'sapphire', 'crystal', 'ruby', 'diamond', 'obsidian', 'opal', 'titanium',
-        'aurora', 'nebula', 'celestial', 'eternal', 'supernova', 'eclipse', 'singularity', 'multiverse', 'void'];
-      const AT = [3, 6, 9, 13, 17, 21, 26, 31, 36, 42, 48, 54, 62, 70, 78, 88, 98, 108, 121, 134, 147, 163, 179];
+        'aurora', 'nebula', 'celestial', 'eternal', 'supernova', 'singularity', 'multiverse', 'void'];
+      const AT = [3, 6, 9, 13, 17, 21, 26, 31, 36, 42, 48, 54, 62, 70, 78, 88, 98, 108, 121, 147, 163, 179];
       const want = { 0: 'plain', 2: 'plain', 3: 'wood', 5: 'wood', 6: 'tin', 9: 'copper', 12: 'copper', 13: 'silver', 17: 'gold', 20: 'gold', 21: 'platinum', 35: 'sapphire', 36: 'crystal',
-        48: 'diamond', 77: 'titanium', 78: 'aurora', 178: 'multiverse', 179: 'void', 999: 'void' };
+        48: 'diamond', 77: 'titanium', 78: 'aurora', 121: 'supernova', 134: 'supernova', 146: 'supernova', 147: 'singularity', 178: 'multiverse', 179: 'void', 999: 'void' };
       const got = {};
       for (const n of Object.keys(want)) got[n] = await comboTier(n);
       const gaps = AT.map((a, i) => a - (i ? AT[i - 1] : 0));
       ok(JSON.stringify(TIERS.map(t => t.id)) === JSON.stringify(['plain', ...KEPT]) && JSON.stringify(TIERS.map(t => t.at)) === JSON.stringify([0, ...AT])
-        && gaps.every((g, i) => !i || g >= gaps[i - 1]) && Object.entries(want).every(([n, id]) => got[n] === id),
-        `the 23 tiers kept, in one table, in their order: plain, then wood at 3 up to void at 179, every gap at least the one before (${gaps.join(', ')})`, { TIERS, got });
-      ok(JSON.stringify(TIERS.map(t => t.shields)) === JSON.stringify([0, 0, 0, 1, 1, 1, ...Array(18).fill(2)]),
+        && gaps.every((g, i) => !i || g >= gaps[i - 1] || KEPT[i - 1] === 'singularity') && Object.entries(want).every(([n, id]) => got[n] === id),
+        `the 22 tiers, in one table, in their order: plain, then wood at 3 up to void at 179, eclipse gone and supernova running on to 147, every other gap at least the one before (${gaps.join(', ')})`, { TIERS, got });
+      ok(JSON.stringify(TIERS.map(t => t.shields)) === JSON.stringify([0, 0, 0, 1, 1, 1, ...Array(17).fill(2)]),
         'their shields, in the same table: none on plain, wood and tin, one from copper to gold, two from platinum up', TIERS.map(t => `${t.id}:${t.shields}`));
       // the ones not kept: drawn the same way, never reached by a count
       const spare = await ev(`import('/primer/js/combo.js').then(m => {
@@ -1871,19 +1872,21 @@ try {
           const s = [...c.el.querySelectorAll('*')].filter(e => !e.closest('.cnum')).map(e => e.tagName + '.' + (e.getAttribute('class') || '') + (e.getAttribute('d') ? ':' + e.getAttribute('d').replace(/[^MLCQAZHV]/g, '').length : '')).join('|');
           c.remove(); return s; };
         const groups = { metals: ['tin', 'copper', 'silver', 'gold', 'platinum', 'titanium'], gems: ['emerald', 'sapphire', 'crystal', 'ruby', 'diamond'], stones: ['obsidian', 'opal'],
-          sky: ['aurora', 'nebula', 'celestial', 'eternal'], far: ['supernova', 'eclipse', 'singularity', 'multiverse', 'void'] };
+          sky: ['aurora', 'nebula', 'celestial', 'eternal'], far: ['supernova', 'singularity', 'multiverse', 'void'] };
         const out = {}; for (const [g, ids] of Object.entries(groups)) { const sigs = ids.map(sig); out[g] = new Set(sigs).size === ids.length; }
         h.remove(); return out })`);
       ok(Object.values(shapes).every(Boolean), 'alike tiers are drawn differently, not just coloured differently: metals, gems, dark stones, sky and the far end each have no two the same once colour is taken out', shapes);
-      // the ideas drawn for the tiers redone (opal three, supernova, eclipse and multiverse two each): each draws,
-      // is never reached by a count, and the table uses the picked one
+      // the ideas drawn for the tiers redone (opal five, supernova five, eclipse and multiverse two each): each
+      // draws, is never reached by a count, and the table uses the picked one; eclipse, gone from the ladder,
+      // has no pick
       const trials = await ev(`import('/primer/js/combo.js').then(m => {
         const h = document.createElement('div'); h.className = 'rtop'; document.body.append(h);
         const drawn = m.TRIALS.map(t => { const c = new m.Combo(h, { count: 130, look: t.id, pips: false }); const d = c.debug(); const kids = c.el.querySelectorAll('.cbody > *').length; c.remove(); return { id: t.id, tier: d.tier, at: t.at, kids }; });
-        const picked = Object.entries(m.PICK).every(([id, idea]) => m.lookOf(id).face === m.lookOf(id + '-' + idea).face);
-        h.remove(); return { drawn, picked } })`);
-      ok(trials.drawn.length === 9 && trials.drawn.every(t => t.tier === t.id && t.at === null && t.kids >= 3) && trials.picked,
-        `the ${trials.drawn.length} ideas for opal, supernova, eclipse and multiverse each draw by name, none reached by a count, and the table uses the picks`, trials);
+        const picked = Object.entries(m.PICK).every(([id, idea]) => m.lookOf(id) && m.lookOf(id).at !== null && m.lookOf(id).face === m.lookOf(id + '-' + idea).face && m.lookOf(id).cell === m.lookOf(id + '-' + idea).cell);
+        const noEclipse = !m.LADDER.some(t => t.id === 'eclipse') && !('eclipse' in m.PICK) && !!m.lookOf('eclipse-annular');
+        h.remove(); return { drawn, picked, noEclipse, pick: m.PICK } })`);
+      ok(trials.drawn.length === 14 && trials.drawn.every(t => t.tier === t.id && t.at === null && t.kids >= 3) && trials.picked && trials.noEclipse,
+        `the ${trials.drawn.length} ideas for opal, supernova, eclipse and multiverse each draw by name, none reached by a count, and the table uses the picks (eclipse has none: it's off the ladder)`, trials);
       // the rule on its own: data plus one mechanism
       const rule = await ev(`import('/primer/js/combo.js').then(m => { const a = m.afterAnswer; return [
         a({ n: 17, cracks: 0 }, 'wrong'), a({ n: 17, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 1 }, 'wrong'), a({ n: 30, cracks: 2 }, 'wrong'),

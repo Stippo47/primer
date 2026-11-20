@@ -1,0 +1,59 @@
+{
+  "title": "Combo tiers, round six",
+  "topic": "stage2",
+  "order": 19,
+  "cards": [
+    {
+      "id": "tiers-round-six",
+      "kind": "report",
+      "rarity": "common",
+      "title": "The far end, round six",
+      "text": "Eclipse is gone, branches is in, and supernova has a new look. Here's the far end as a group now.",
+      "why": "Your notes: remove eclipse, multiverse is branches, supernova still weak (three styles on the next Spreads), opal in voronoi cells (also a Spread).",
+      "details": "To update: close Primer fully and open it again; Profile shows the new version at the bottom.\n\nEclipse is off the ladder. The others keep where they start, so supernova now runs from 121 right in a row to singularity at 147. Eclipse's drawings are kept but never shown.\n\nThe group films show each tier at its own count, six seconds, looping, bigger than on the phone. The app uses my picks (large opal cells, the shells supernova) until you say otherwise.",
+      "parts": [
+        {
+          "id": "far-end",
+          "title": "The far end now",
+          "text": "Four tiers: supernova (shells, my pick), singularity, multiverse (branches) and void.",
+          "videos": ["../stage2/shots-combo6/groups/far.mp4"]
+        },
+        {
+          "id": "stones",
+          "title": "The dark stones now",
+          "text": "Obsidian beside the new opal (large cells, my pick).",
+          "videos": ["../stage2/shots-combo6/groups/stones.mp4"]
+        }
+      ]
+    },
+    {
+      "id": "opal-cells",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Opal: voronoi cells",
+      "text": "Rolling's rainbow broken into cells, each flashing its own colour as light rolls by. Tick the ones you like.",
+      "why": "My pick is large: on the phone the fine cells blur into a speckle like terrazzo. The large ones read as patches of fire, which is what an opal shows.",
+      "pick": ["opal-large"],
+      "details": "Rolling's pearly opal with the rainbow sliding under the milk, now split into irregular cells. As the light rolls across, each cell in turn flashes to a colour of its own.\n\nEach film is six seconds, looping, bigger than on the phone. The app uses large for now.",
+      "items": [
+        { "id": "opal-large", "label": "Large cells", "video": "../stage2/shots-combo6/ideas/opal-large.mp4", "text": "About fifteen cells on the chip, each its own colour, flashing to another as the light crosses." },
+        { "id": "opal-fine", "label": "Fine cells", "video": "../stage2/shots-combo6/ideas/opal-fine.mp4", "text": "The same with about fifty-five small cells, more like a mosaic." }
+      ]
+    },
+    {
+      "id": "supernova-styles",
+      "kind": "board",
+      "rarity": "uncommon",
+      "title": "Supernova: three styles",
+      "text": "Three new supernovas, none of them the pulsar or the collapse. Tick the ones you like.",
+      "why": "My pick is shells: it's the most colourful and the most plainly an explosion, and it never stops moving. Next to the other far-end tiers, rays looks like a dark chip with a light in it, and the ring nebula looks like an orbit, close to celestial's and nebula's rings.",
+      "pick": ["supernova-shells"],
+      "details": "Each film is six seconds, looping. The app uses shells for now.",
+      "items": [
+        { "id": "supernova-shells", "label": "Shells", "video": "../stage2/shots-combo6/ideas/supernova-shells.mp4", "text": "The star throwing off its layers: shock fronts racing out from a hot core one after another, white-blue, gold, orange and red, out past the chip." },
+        { "id": "supernova-ringneb", "label": "Ring nebula", "video": "../stage2/shots-combo6/ideas/supernova-ringneb.mp4", "text": "A bright core in a tilted ring strung with pearls of light. The core flashes, and the pearls flare one after another round the ring as its light arrives." },
+        { "id": "supernova-rays", "label": "Rays", "video": "../stage2/shots-combo6/ideas/supernova-rays.mp4", "text": "Rays of white and gold bursting out past the chip again and again, with streaks of debris flung out along them." }
+      ]
+    }
+  ]
+}
