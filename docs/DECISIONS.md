@@ -425,3 +425,7 @@ Their words are in primer-data `notes/answers-2026-11-19g.md`; files in `sounds/
 
 - **Picked:** whoosh 1, 6, 7, 8 ("soften them a bit and maybe extend the duration when needed"); cut 1, 2; swell 1; pop 1, 3, 4; chime 1, 7; wind 1, 2, 4, and keep 2 and 5 for creepier moments; fizz 4; rumble 1, 2, 3, 4, 5, 7, 8, 9; crack 3, 4, 5 (ice); shatter 5 (tile breaking). Button taps: 2 (click), 9 (switch), 10 (soft switch).
 - **How they're used (my call):** each kind plays one of its picked sounds, varied so repeats don't sound identical; whooshes get softened (a gentle low-pass and a slower attack) and can be time-stretched to fit a longer move. The combo's crack plays the ice cracks, its shatter the tile break. Wired in once the animation round that's running now lands, since it owns the scene sound table.
+
+## 2026-11-20: combo tiers, round four on the phone
+
+Their words (from the deck's answer files): metals good. **Gems: revert to round two's style, "where they were all pretty similar. Just shift how the lines work"**: one shared rich gem look, each gem told apart by its facet lines. Obsidian good, **opal not** (a third try). Sky good: **eternal gets the disk celestial has, maybe with clock hands; celestial needs something else.** Far end "not great": **singularity good** (the bottom half of its ring could show in front of the chip), **void's stars should look like they're going in, not drifting left**, and supernova, eclipse and multiverse are disliked.
