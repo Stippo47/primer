@@ -2509,7 +2509,12 @@ try {
     await ev(`__h.run(['warm', 1, 0.3]); __h.run(['vapour', 1, 0.3]); __h.run(['cloud', 0.8, 0.3]); __h.run(['tag', 'cloud', 'Cloud'])`);
     await sleep(600);
     let sec = await ev('__h.debug()');
-    ok(sec.levels.warm === 1 && sec.levels.cloud === 0.8 && sec.tags.length === 1 && sec.frames > 10, 'the sea and sky: its levels glide where they are sent, a tag names a thing, and it keeps moving', sec);
+    ok(sec.levels.cloud === 0.8 && sec.levels.vapour === 1 && sec.levels.warm > 0.2 && sec.levels.warm < 1 && sec.tags.length === 1 && sec.frames > 10, 'the sea and sky: its levels glide where they are sent, a tag names a thing, and it keeps moving; a colour (the sea warming) takes its measured 2.1 seconds', sec);
+    let peak = 0;
+    for (let k = 0; k < 16; k++) { await sleep(100); peak = Math.max(peak, (await ev('__h.debug()')).levels.warm); }
+    await sleep(800);
+    sec = await ev('__h.debug()');
+    ok(peak > 1.02 && sec.levels.warm === 1, 'and the colour goes a touch past its target and settles back (the measured overshoot)', [peak, sec.levels.warm]);
     await shot('51-sea-and-sky');
     await ev(`document.getElementById('bench').setAttribute('data-off', '')`);
     const f0 = (await ev('__h.debug()')).frames;
@@ -2581,6 +2586,7 @@ try {
     // with Animation sounds off, nothing sounds, whatever Effects is
     await ev(`__primer.app.setPref('animSounds', false); __primer.app.setPref('effects', true); __dv.scene.sfx.heard.length = 0; __dv.scene.seekTo(__dv.scene.starts[1], true)`);
     await waitFor(`__dv.scene.debug().shots.layout.section === 'full'`, 8000);
+    await waitFor(`__dv.scene.debug().effects.length > 0`, 3000);
     ok((await dv()).effects.length && (await dv()).effects.every(e => !e.played), 'with Animation sounds off, no sound plays, even with Effects on', (await dv()).effects);
     await ev(`__primer.app.setPref('animSounds', true); __primer.app.setPref('effects', false); true`);
     // the full-bleed layout: the app's box is the window, and the video reaches the bottom of the screen
@@ -2768,7 +2774,8 @@ try {
   const walk = d => { for (const n of readdirSync(join(ROOT, d))) { const p = join(d, n); if (statSync(join(ROOT, p)).isDirectory()) walk(p); else ownFiles.push(p.split(sep).join('/')); } };
   for (const d of ['css', 'js', 'parts', 'vendor', 'icons', 'sounds']) walk(d);
   const swText = readFileSync(join(ROOT, 'sw.js'), 'utf8');
-  const missing = ownFiles.filter(p => !p.endsWith('.md') && !swText.includes(`'${p}'`));
+  // the library's candidate sounds are for choosing by ear on a deck, not part of the app (until one is wired in)
+  const missing = ownFiles.filter(p => !p.endsWith('.md') && !p.startsWith('sounds/library/') && !swText.includes(`'${p}'`));
   ok(missing.length === 0, "every one of the app's files is kept for offline", missing);
   const appVersion = readFileSync(join(ROOT, 'js', 'app.js'), 'utf8').match(/const VERSION = '([^']+)'/)[1];
   const swVersion = swText.match(/const VERSION = '([^']+)'/)[1];

@@ -127,7 +127,8 @@ export class Shots {
       if (!el) continue;
       const after = this.box(n);
       let kind;
-      if (!was.slot) kind = slot.startsWith('inset') ? 'inset-in' : how === 'split' ? 'zoom-in' : `${how}-in`;
+      // a split's new half slides in from its own edge (the measured panel slide), over the half making room
+      if (!was.slot) kind = slot.startsWith('inset') ? 'inset-in' : how === 'split' ? (slot === 'top' ? 'drop-in' : 'rise-in') : `${how}-in`;
       else if (!slot) kind = was.slot.startsWith('inset') ? 'inset-out' : how === 'split' || how === 'inset' ? 'fade-out' : `${how}-out`;
       else if (was.slot !== slot) kind = 'move';
       else continue;
@@ -224,6 +225,8 @@ export class Shots {
         case 'back-in': tf = `translateX(${(-100 * out).toFixed(2)}%)`; break;
         case 'back-out': tf = `translateX(${(100 * e).toFixed(2)}%)`; break;
         case 'zoom-in': tf = `scale(${(0.84 + 0.16 * e).toFixed(4)})`; op = e; break;
+        case 'rise-in': tf = `translateY(${(100 * out).toFixed(2)}%)`; break;
+        case 'drop-in': tf = `translateY(${(-100 * out).toFixed(2)}%)`; break;
         case 'zoom-out': tf = `scale(${(1 + 0.3 * e).toFixed(4)})`; op = out; break;
         case 'inset-in': tf = `scale(${(0.6 + 0.4 * e).toFixed(4)})`; op = e; break;
         case 'inset-out': tf = `scale(${(1 - 0.4 * e).toFixed(4)})`; op = out; break;

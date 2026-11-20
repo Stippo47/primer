@@ -44,4 +44,15 @@ Each animation was rendered whole, looked at as frame sheets at 4 and 1 frames a
 26. **Vapour puffs read as grey smoke** over the violet sky (pale cyan at half strength turns grey there). Fixed: brighter, a soft cyan rim under a pale body, so they read as vapour.
 27. **Heat triangles fading out turned brown** at low strength. Fixed: they shrink as they fade.
 28. **"Falling behind" was too small to see**: the dotted aim and the bent path sat in a corner of a whole globe. Fixed: the camera closes in on them.
-29. **The two swerves and their names crowded each other** in the wind animation (and "To its right" sat on "Heading north" in the spin). Fixed: the pairs are 40 degrees apart, the camera closes in, and "To its right" sits between and below them.
+29. **The two swerves and their names crowded each other** in the wind animation, and a third label, "To its right", landed on "Heading north" in both films. Fixed: the pairs are 40 degrees apart, the camera closes in, and the extra label is gone (the caption says it, the two bent arrows show it).
+30. **The cloud's very first moment was a single ball**, lit and shaded like a moon. Fixed: it starts as a small knot of five bubbles over the rising air.
+31. **One ask was heard as "sought the winds..."** in George's voice, and five lines in Chatterbox A came back flagged after four takes (the words were right; the takes ran on after the last word). Reworded the ask so it no longer starts with "Sort", and tried the flagged clips again.
+32. **A split showed a stray rectangle for a few frames**: the half moving up slid across the half fading in. Fixed: the new half slides in from its own edge over the one making room (the measured panel slide, in-out cubic), at full strength.
+33. **The tests caught the new parts missing from the offline list** (a lesson's globe wouldn't open with no signal, since the map now loads the air layers). Fixed: they're in the service worker's list.
+
+## Still open (only the phone can say)
+
+- Whether four minutes of "How wind works" holds attention, and whether its middle (the loops on the globe's edge) reads at phone size.
+- Whether the molecules read as molecules on the phone, and whether the close-ups' motion is too busy.
+- The effects against the voice on the phone's own speaker.
+- A quiet music bed under the voice: the study measured one in every film; Primer has a music switch but no bed in scenes yet.

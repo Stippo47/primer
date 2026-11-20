@@ -105,8 +105,8 @@ export async function mount(el, settings, ctx = {}) {
         need: 0.82 + edge * 0.15 + row * 0.01 + R() * 0.01, ph: R() * TAU });
     }
   }
-  // the first puff is a single bubble right over the column, where the rising air first makes cloud
-  puffs.push({ x: 0, y: 486, r: 42, need: 0.0, ph: 0.3 });
+  // the first of it is a small knot of bubbles right over the column, where the rising air first makes cloud
+  for (const [x, y, r, need] of [[0, 488, 30, 0], [-27, 480, 22, 0.012], [25, 476, 21, 0.02], [5, 506, 24, 0.008], [-8, 462, 18, 0.028]]) puffs.push({ x, y, r, need, ph: R() * TAU });
   puffs.sort((a, b) => a.need - b.need);
   // vapour: a fixed set of puffs, each on its own loop up from the sea
   const vap = Array.from({ length: 44 }, (_, i) => ({ x: shore === 'right' ? -330 + R() * 320 : (R() - 0.5) * 2 * 330, ph: R(), sway: R() * TAU, r: 0.8 + R() * 0.5, turn: R() * TAU, i }));
